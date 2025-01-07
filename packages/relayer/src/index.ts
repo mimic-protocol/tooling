@@ -7,20 +7,18 @@ export function executeTask(opts: { dir: string }) {
   const outputPath = path.join('output.json')
 
   const output: any[] = []
-  const imports: any = {
+  const imports: WebAssembly.Imports = {
     index: {
-      environment: {
-        create: (value: number): void => {
-          console.log(`>>> environment.create(${value})`)
-          output.push(value)
-        },
-      }
+      'environment.create': (value: number): void => {
+        console.log(`>>> environment.create(${value})`)
+        output.push(value)
+      },
     }
   }
 
   const inputData = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
   if (inputData.environmentCalls?.includes('getNumber')) {
-    imports.index.environment.getNumber = (): number => {
+    imports.index['environment.getNumber'] = (): number => {
       console.log('>>> getNumber called')
       return Math.floor(Math.random() * 10)
     }
