@@ -1,0 +1,20 @@
+{
+  "name": "@mimicprotocol/tooling",
+  "private": true,
+  "version": "0.0.1",
+  "license": "Unlicensed",
+  "scripts": {
+    "prepare": "yarn build",
+    "build": "yarn workspaces run build",
+    "lint": "yarn workspaces run lint",
+    "test": "yarn workspaces run test"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/lib-ts",
+      "packages/cli",
+      "packages/example",
+      "packages/relayer"
+    ]
+  }
+}

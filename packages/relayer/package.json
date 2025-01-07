@@ -1,0 +1,16 @@
+{
+  "name": "@mimicprotocol/relayer",
+  "version": "0.0.1",
+  "license": "Unlicensed",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/bin/relayer.js --dir ../example/build/"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^4.0.0"
+  }
+}
