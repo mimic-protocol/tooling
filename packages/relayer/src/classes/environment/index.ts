@@ -1,4 +1,4 @@
-export default class Enviroment {
+export default class Environment {
   getNumber(): number {
     console.log('>>> getNumber called')
     return Math.floor(Math.random() * 10)

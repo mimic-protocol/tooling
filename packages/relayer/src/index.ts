@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import Enviroment from './classes/enviroment'
+import Environment from './classes/environment'
 
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
@@ -10,7 +10,7 @@ export async function executeTask(opts: { dir: string }) {
 
   const output: number[] = []
   const inputData = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
-  const environment = new Enviroment()
+  const environment = new Environment()
 
   const environmentImports: Record<string, Function> = {}
   for (const call of inputData.environmentCalls || []) {
