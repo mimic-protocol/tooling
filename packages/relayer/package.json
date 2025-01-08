@@ -7,10 +7,12 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/bin/relayer.js --dir ../example/build/"
+    "start": "node ./dist/bin/relayer.js --dir ../example/build/",
+    "lint": "eslint . --fix"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "eslint-config-mimic": "^0.0.3",
     "typescript": "^4.0.0"
   }
 }

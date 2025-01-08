@@ -1,6 +1,7 @@
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as ts from 'typescript'
 
 export default function (args: string[]) {
   let taskFile = 'src/task.ts'
@@ -26,11 +27,35 @@ export default function (args: string[]) {
     process.exit(result.status || 1)
   }
 
-  // This should be done using AST instead
   const fileContents = fs.readFileSync(taskFile, 'utf-8')
-  const environmentCalls: string[] = []
-  if (fileContents.includes('environment.getNumber')) environmentCalls.push('getNumber')
+  const environmentCalls: string[] = extractEnvironmentCalls(fileContents)
   const inputsJson = { environmentCalls }
   fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(inputsJson, null, 2))
   console.log(`Build complete! Artifacts in ${outputDir}/`)
+}
+
+function extractEnvironmentCalls(source: string): string[] {
+  const environmentCalls: Set<string> = new Set()
+
+  const sourceFile = ts.createSourceFile(
+    'task.ts',
+    source,
+    ts.ScriptTarget.ES2020,
+    true,
+    ts.ScriptKind.TS
+  )
+
+  function visit(node: ts.Node) {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const { expression, name } = node.expression
+      if (ts.isIdentifier(expression) && expression.escapedText === 'environment') {
+        environmentCalls.add(name.escapedText.toString())
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+
+  return Array.from(environmentCalls)
 }
