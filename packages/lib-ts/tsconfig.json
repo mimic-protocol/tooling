@@ -1,4 +1,4 @@
 {
-  "extends": "assemblyscript/std/assembly",
-  "include": ["index.ts"]
+  "extends": "assemblyscript/std/assembly.json",
+  "include": ["./**/*.ts"]
 }
