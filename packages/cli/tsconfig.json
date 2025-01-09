@@ -6,8 +6,5 @@
     "strict": true,
     "types": ["node"]
   },
-  "include": [
-    "src/**/*",
-    "bin/**/*"
-  ]
+  "include": [ "src/**/*" ]
 }
