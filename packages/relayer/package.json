@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/bin/relayer.js --dir ../example/build/",
-    "lint": "eslint . --fix"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

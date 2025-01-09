@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import Environment from './classes/environment'
+import Environment from './classes/Environment'
 
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
@@ -10,24 +10,11 @@ export async function executeTask(opts: { dir: string }) {
 
   const output: number[] = []
   const inputData = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
-  const environment = new Environment()
 
-  const environmentImports: Record<string, Function> = {}
-  for (const call of inputData.environmentCalls || []) {
-    switch (call) {
-      case 'getNumber':
-        environmentImports[`environment.${call}`] = environment.getNumber
-        break
-      case 'create':
-        environmentImports[`environment.${call}`] = (value: number) => environment.create(value, output)
-        break
-      default:
-        throw new Error('Unknown environment call: ' + call)
-    }
-  }
+  const environment = new Environment(output)
 
   const imports: WebAssembly.Imports = {
-    index: environmentImports,
+    index: environment.generate(inputData.environmentCalls),
   }
 
   try {
@@ -37,7 +24,7 @@ export async function executeTask(opts: { dir: string }) {
 
     if (typeof instance.exports.main === 'function') {
       instance.exports.main()
-      fs.writeFileSync(outputPath, JSON.stringify(output, null, 2))
+      fs.writeFileSync(outputPath, JSON.stringify(environment.getOutput(), null, 2))
       console.log('Task executed successfully')
     } else {
       console.log('No main found in exports:', Object.keys(instance.exports))

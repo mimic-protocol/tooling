@@ -35,7 +35,7 @@ export default function (args: string[]) {
 }
 
 function extractEnvironmentCalls(source: string): string[] {
-  const environmentCalls: Set<string> = new Set()
+  const environmentCalls = new Set<string>()
 
   const sourceFile = ts.createSourceFile(
     'task.ts',
