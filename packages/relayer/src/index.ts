@@ -8,10 +8,9 @@ export async function executeTask(opts: { dir: string }) {
   const inputsPath = path.join(opts.dir, 'inputs.json')
   const outputPath = path.join('output.json')
 
-  const output: number[] = []
   const inputData = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
 
-  const environment = new Environment(output)
+  const environment = new Environment()
 
   const imports: WebAssembly.Imports = {
     index: environment.generate(inputData.environmentCalls),

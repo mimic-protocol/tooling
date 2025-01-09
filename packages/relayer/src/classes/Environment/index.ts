@@ -2,12 +2,7 @@ import Base from '../Base'
 
 export default class Environment extends Base {
   private prefix = 'environment'
-  private output: number[]
-
-  constructor(output: number[]) {
-    super()
-    this.output = output
-  }
+  private output: number[] = []
 
   getNumber(): number {
     console.log('>>> getNumber called')
