@@ -1,6 +1,4 @@
-import Base from '../Base'
-
-export default class Environment extends Base {
+export default class Environment {
   private prefix = 'environment'
   private output: number[] = []
 

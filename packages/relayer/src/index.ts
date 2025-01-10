@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import Environment from './classes/Environment'
+import Environment from './environment'
 
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')

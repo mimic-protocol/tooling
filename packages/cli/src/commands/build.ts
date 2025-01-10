@@ -3,6 +3,7 @@ import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
+
 export default class Build extends Command {
   static override description = 'Builds task'
 
@@ -48,13 +49,7 @@ export default class Build extends Command {
 function extractEnvironmentCalls(source: string): string[] {
   const environmentCalls = new Set<string>()
 
-  const sourceFile = ts.createSourceFile(
-    'task.ts',
-    source,
-    ts.ScriptTarget.ES2020,
-    true,
-    ts.ScriptKind.TS
-  )
+  const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
 
   function visit(node: ts.Node) {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
