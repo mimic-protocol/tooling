@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "assemblyscript": "^0.27.31"
+  },
+  "dependencies": {
+    "eslint-config-mimic": "^0.0.3"
   }
 }
