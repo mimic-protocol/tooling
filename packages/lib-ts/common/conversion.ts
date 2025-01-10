@@ -1,6 +1,5 @@
-import { Bytes } from './collections'
+import { Bytes } from './Bytes'
 
-/** Host type conversion interface */
 export declare namespace typeConversion {
   function bytesToString(bytes: Uint8Array): string
   function bytesToHex(bytes: Uint8Array): string
