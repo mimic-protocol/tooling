@@ -1,35 +1,17 @@
 export default class Environment {
-  private prefix = 'environment'
-  private output: number[] = []
+  public intents: number[] = []
+  private _value: number | undefined
 
-  getNumber(): number {
-    console.log('>>> getNumber called')
-    return Math.floor(Math.random() * 10)
+  setValue(value: number) {
+    this._value = value
   }
 
-  create(value: number): void {
-    console.log(`>>> ${this.prefix}.create(${value})`)
-    this.output.push(value)
+  getValue(): number {
+    if (!this._value) throw Error('"getValue" was not populated')
+    return this._value
   }
 
-  getOutput(): number[] {
-    return this.output
-  }
-
-  generate(calls: string[]): Record<string, (...args: never) => unknown> {
-    const imports: Record<string, (...args: never) => unknown> = {}
-    for (const call of calls) {
-      switch (call) {
-        case 'getNumber':
-          imports[`${this.prefix}.${call}`] = this.getNumber
-          break
-        case 'create':
-          imports[`${this.prefix}.${call}`] = this.create.bind(this)
-          break
-        default:
-          throw new Error('Unknown environment call: ' + call)
-      }
-    }
-    return imports
+  createIntent(intent: number): void {
+    this.intents.push(intent)
   }
 }
