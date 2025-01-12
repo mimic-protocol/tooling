@@ -39,16 +39,14 @@ export default class Build extends Command {
     }
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
-    const environmentCalls: string[] = extractEnvironmentCalls(fileContents)
-    const inputsJson = { environmentCalls }
-    fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(inputsJson, null, 2))
+    const environmentCalls = extractEnvironmentCalls(fileContents)
+    fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
 
 function extractEnvironmentCalls(source: string): string[] {
   const environmentCalls = new Set<string>()
-
   const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
 
   function visit(node: ts.Node) {
@@ -62,6 +60,5 @@ function extractEnvironmentCalls(source: string): string[] {
   }
 
   visit(sourceFile)
-
   return Array.from(environmentCalls)
 }

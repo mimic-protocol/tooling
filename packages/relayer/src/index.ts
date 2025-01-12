@@ -7,13 +7,12 @@ export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
   const inputsPath = path.join(opts.dir, 'inputs.json')
   const outputPath = path.join('output.json')
-
-  const inputData = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
+  const requestedCalls = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
 
   const environment = new Environment()
 
   const imports: WebAssembly.Imports = {
-    index: environment.generate(inputData.environmentCalls),
+    index: environment.generate(requestedCalls),
   }
 
   try {
