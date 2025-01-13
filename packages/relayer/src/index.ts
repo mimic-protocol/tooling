@@ -6,15 +6,14 @@ import Environment from './environment'
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
   const inputsPath = path.join(opts.dir, 'inputs.json')
-  // const manifestPath = path.join(opts.dir, 'manifest.json')
+  const manifestPath = path.join(opts.dir, 'manifest.json')
   const outputPath = path.join('output.json')
+
   const requestedCalls = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
-  // const manifestInputs = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
-  // TODO update placeholder
-  const manifestInputs = { firstStaticNumber: 2, secondStaticNumber: 3 }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
 
   const environment = generateEnvironment(requestedCalls)
-  const imports = generateEnvironmentImports(environment, requestedCalls, manifestInputs)
+  const imports = generateEnvironmentImports(environment, requestedCalls, manifest.inputs)
 
   try {
     const wasmBuffer = fs.readFileSync(wasmPath)

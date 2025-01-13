@@ -1,25 +1,32 @@
 import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
+import { load } from 'js-yaml'
 import * as path from 'path'
 import * as ts from 'typescript'
 
-export default class Build extends Command {
-  static override description = 'Builds task'
+import { validateManifest } from '../ManifestValidator'
+
+export default class Compile extends Command {
+  static override description = 'Compiles task'
 
   static override examples = ['<%= config.bin %> <%= command.id %> --task src/task.ts --output ./output']
 
   static override flags = {
-    task: Flags.string({ char: 't', description: 'task to build', default: 'src/task.ts' }),
-    output: Flags.string({ char: 'o', description: 'output directory', default: './output' }),
+    task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
+    manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
+    output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = await this.parse(Build)
-    const { task: taskFile, output: outputDir } = flags
+    const { flags } = await this.parse(Compile)
+    const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
 
-    console.log(`Building AssemblyScript from ${taskFile}...`)
+    console.log(`Compiling AssemblyScript from ${taskFile}...`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
+
+    const loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
+    const manifest = validateManifest(loadedManifest)
 
     const ascArgs = [
       taskFile,
@@ -41,6 +48,7 @@ export default class Build extends Command {
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
     const environmentCalls = extractEnvironmentCalls(fileContents)
     fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
+    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
