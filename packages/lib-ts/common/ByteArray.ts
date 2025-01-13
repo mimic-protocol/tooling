@@ -74,7 +74,6 @@ export class ByteArray extends Uint8Array {
    */
   static fromHexString(hex: string): ByteArray {
     assert(hex.length % 2 == 0, 'input ' + hex + ' has odd length')
-    // Skip possible `0x` prefix.
     if (hex.length >= 2 && hex.charAt(0) == '0' && hex.charAt(1) == 'x') {
       hex = hex.substr(2)
     }
@@ -164,8 +163,6 @@ export class ByteArray extends Uint8Array {
     return x
   }
 
-  /** Create a new `ByteArray` that consist of `this` directly followed by
-   * the bytes from `other` */
   concat(other: ByteArray): ByteArray {
     const newArray = new ByteArray(this.length + other.length)
     newArray.set(this, 0)
@@ -173,8 +170,6 @@ export class ByteArray extends Uint8Array {
     return newArray
   }
 
-  /** Create a new `ByteArray` that consists of `this` directly followed by
-   * the representation of `other` as bytes */
   concatI32(other: i32): ByteArray {
     return this.concat(ByteArray.fromI32(other))
   }

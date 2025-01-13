@@ -137,8 +137,6 @@ export class BigInt extends Uint8Array {
     return y
   }
 
-  // Operators
-
   @operator('+')
   plus(other: BigInt): BigInt {
     assert(this !== null, "Failed to sum BigInts because left hand side is 'null'")
@@ -233,7 +231,6 @@ export class BigInt extends Uint8Array {
    * Returns −1 if a < b, 1 if a > b, and 0 if A == B
    */
   static compare(a: BigInt, b: BigInt): i32 {
-    // Check if a and b have the same sign.
     const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
     const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
 
@@ -244,7 +241,6 @@ export class BigInt extends Uint8Array {
       return -1
     }
 
-    // Check how many bytes of a and b are relevant to the magnitude.
     let aRelevantBytes = a.length
     while (
       aRelevantBytes > 0 &&
@@ -260,8 +256,6 @@ export class BigInt extends Uint8Array {
       bRelevantBytes -= 1
     }
 
-    // If a and b are positive then the one with more relevant bytes is larger.
-    // Otherwise the one with less relevant bytes is larger.
     if (aRelevantBytes > bRelevantBytes) {
       return aIsNeg ? -1 : 1
     }
@@ -269,10 +263,6 @@ export class BigInt extends Uint8Array {
       return aIsNeg ? 1 : -1
     }
 
-    // We now know that a and b have the same sign and number of relevant bytes.
-    // If a and b are both negative then the one of lesser magnitude is the
-    // largest, however since in two's complement the magnitude is flipped, we
-    // may use the same logic as if a and b are positive.
     const relevantBytes = aRelevantBytes
     for (let i = 1; i <= relevantBytes; i++) {
       if (a[relevantBytes - i] < b[relevantBytes - i]) {
