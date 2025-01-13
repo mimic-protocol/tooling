@@ -1,3 +1,8 @@
+// This file is based on code from "The Graph Node" (https://github.com/graphprotocol/graph-node).
+// Licensed under the MIT License.
+// Copyright (c) 2018 Graph Protocol, Inc. and contributors.
+// Modified by Mimic Protocol, 2025.
+
 import { Bytes } from './Bytes'
 
 export declare namespace typeConversion {

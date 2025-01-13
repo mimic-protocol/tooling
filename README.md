@@ -52,6 +52,11 @@ To read more about our auditing and related security processes please refer to t
 However, if you found any potential issue in any of our smart contracts or in any piece of code you consider critical
 for the safety of the protocol, please contact us through <a href="mailto:security@mimic.fi">security@mimic.fi</a>.
 
+## Third-Party Licenses
+
+This project includes code from [The Graph Node](https://github.com/graphprotocol/graph-node), licensed under the MIT License.  
+See the `LICENSE-MIT` file for details.
+
 ## License
 
 GPL 3.0
