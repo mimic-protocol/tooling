@@ -39,8 +39,7 @@ function generateEnvironment(requestedCalls: string[]): Environment {
 function generateEnvironmentImports(environment: Environment, requestedCalls: string[]): WebAssembly.Imports {
   const imports: { [key: string]: (...args: never) => unknown } = {}
   requestedCalls.forEach((requestedCall) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const prop = (environment as any)[requestedCall]
+    const prop = environment[requestedCall as keyof Environment]
     if (prop === undefined || typeof prop !== 'function') throw new Error(`Invalid requested call "${requestedCall}"`)
     imports[`environment.${requestedCall}`] = prop.bind(environment)
   })
