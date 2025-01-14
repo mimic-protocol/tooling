@@ -5,7 +5,7 @@ export type Manifest = {
     type: string
     schedule: string
   }
-  inputs: { [key: string]: unknown}
+  inputs: { [key: string]: unknown }
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

@@ -1,0 +1,8 @@
+version: 1.0.0
+name: sample task
+trigger:
+  type: cron
+  schedule: "0 0 * * *"
+inputs:
+  - firstStaticNumber: 2
+  - secondStaticNumber: 3

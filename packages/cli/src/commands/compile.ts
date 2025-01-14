@@ -25,7 +25,16 @@ export default class Compile extends Command {
     console.log(`Compiling AssemblyScript from ${taskFile}...`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-    const loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
+    let loadedManifest
+    try {
+      loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) {
+      this.error('Could not find manifest.yaml', {
+        code: 'FileNotFound',
+        suggestions: ['Use the --manifest flag to specify the correct path'],
+      })
+    }
     const manifest = validateManifest(loadedManifest)
 
     const ascArgs = [
@@ -41,8 +50,10 @@ export default class Compile extends Command {
 
     const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })
     if (result.status !== 0) {
-      console.error('AssemblyScript compilation failed')
-      process.exit(result.status || 1)
+      this.error('AssemblyScript compilation failed', {
+        code: 'BuildError',
+        suggestions: ['Check the AssemblyScript file'],
+      })
     }
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
