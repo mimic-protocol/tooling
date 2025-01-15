@@ -36,7 +36,8 @@ export class Bytes extends ByteArray {
     return changetype<Bytes>(ByteArray.empty())
   }
 
-  concat(other: Bytes): Bytes {
+  concat(other: ByteArray): Bytes {
+    assert(other instanceof Bytes, 'Argument must be of type Bytes')
     return changetype<Bytes>(super.concat(other))
   }
 
