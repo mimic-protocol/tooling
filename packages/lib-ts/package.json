@@ -7,7 +7,9 @@
     "build": "asc index.ts -b build/lib.wasm --disableWarning 235",
     "asbuild:debug": "asc assembly/index.ts --target debug",
     "asbuild:release": "asc assembly/index.ts --target release",
-    "asbuild": "yarn asbuild:debug && yarn asbuild:release"
+    "asbuild": "yarn asbuild:debug && yarn asbuild:release",
+    "lint": "echo 'no lint yet'",
+    "test": "echo 'no tests yet'"
   },
   "devDependencies": {
     "assemblyscript": "^0.27.31"
