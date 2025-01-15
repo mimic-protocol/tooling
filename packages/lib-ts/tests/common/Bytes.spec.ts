@@ -30,6 +30,9 @@ describe('Bytes tests', () => {
     const utf8String = 'hello'
     const bytes = Bytes.fromUTF8(utf8String)
     expect(bytes.length).toBe(utf8String.length)
+    for (let i = 0; i < bytes.length; i++) {
+      expect(bytes[i]).toBe(utf8String.charCodeAt(i) as u8)
+    }
   })
 
   it('creates Bytes from i32', () => {
