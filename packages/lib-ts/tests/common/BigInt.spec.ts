@@ -1,10 +1,11 @@
 import { BigInt } from '../../common/BigInt'
 import { ByteArray } from '../../common/ByteArray'
 import { Bytes } from '../../common/Bytes'
+import { MAX_I32, MAX_I64, MAX_U32, MAX_U64 } from '../helpers'
 
 describe('BigInt tests', () => {
   it('creates BigInt from i32', () => {
-    const int32Value = 123456
+    const int32Value: i32 = MAX_I32
     const bigInt = BigInt.fromI32(int32Value)
     expect(bigInt.length).toBe(4)
     expect(bigInt[0]).toBe((int32Value & 0xff) as u8)
@@ -14,13 +15,13 @@ describe('BigInt tests', () => {
   })
 
   it('creates BigInt from u32', () => {
-    const uint32Value = 4294967295
+    const uint32Value: u32 = MAX_U32
     const bigInt = BigInt.fromU32(uint32Value)
     expect(bigInt.length).toBeGreaterThanOrEqual(4)
   })
 
   it('creates BigInt from i64', () => {
-    const int64Value: i64 = 9223372036854775807
+    const int64Value: i64 = MAX_I64
     const bigInt = BigInt.fromI64(int64Value)
     expect(bigInt.length).toBe(8)
     for (let i = 0; i < 8; i++) {
@@ -29,7 +30,7 @@ describe('BigInt tests', () => {
   })
 
   it('creates BigInt from u64', () => {
-    const uint64Value: u64 = 18446744073709551615
+    const uint64Value: u64 = MAX_U64
     const bigInt = BigInt.fromU64(uint64Value)
     expect(bigInt.length).toBeGreaterThanOrEqual(8)
   })

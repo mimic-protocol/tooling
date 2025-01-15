@@ -1,9 +1,9 @@
 import { ByteArray } from '../../common/ByteArray'
-import { getHexString } from '../helpers'
+import { getHexString, MAX_I32, MAX_I64, MAX_U32, MAX_U64 } from '../helpers'
 
 describe('ByteArray tests', () => {
   it('creates ByteArray from i32', () => {
-    const int32Value = 123456
+    const int32Value: i32 = MAX_I32
     const byteArray = ByteArray.fromI32(int32Value)
     expect(byteArray.length).toBe(4)
     expect(byteArray[0]).toBe((int32Value & 0xff) as u8)
@@ -13,7 +13,7 @@ describe('ByteArray tests', () => {
   })
 
   it('creates ByteArray from u32', () => {
-    const uint32Value = 4294967295 // Max value of `u32`
+    const uint32Value: u32 = MAX_U32
     const byteArray = ByteArray.fromU32(uint32Value)
     expect(byteArray.length).toBe(4)
     expect(byteArray[0]).toBe((uint32Value & 0xff) as u8)
@@ -23,7 +23,7 @@ describe('ByteArray tests', () => {
   })
 
   it('creates ByteArray from i64', () => {
-    const int64Value: i64 = 9223372036854775807 // Max value of `i64`
+    const int64Value: i64 = MAX_I64
     const byteArray = ByteArray.fromI64(int64Value)
     expect(byteArray.length).toBe(8)
     for (let i = 0; i < 8; i++) {
@@ -32,7 +32,7 @@ describe('ByteArray tests', () => {
   })
 
   it('creates ByteArray from u64', () => {
-    const uint64Value: u64 = 18446744073709551615 // Max value of `u64`
+    const uint64Value: u64 = MAX_U64
     const byteArray = ByteArray.fromU64(uint64Value)
     expect(byteArray.length).toBe(8)
     for (let i = 0; i < 8; i++) {
