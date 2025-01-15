@@ -54,8 +54,8 @@ for the safety of the protocol, please contact us through <a href="mailto:securi
 
 ## Third-Party Licenses
 
-This project includes code from [The Graph Node](https://github.com/graphprotocol/graph-node), licensed under the MIT License.  
-See the `LICENSE-MIT` file for details.
+This project includes code from [The Graph Tooling](https://github.com/graphprotocol/graph-tooling), licensed under the MIT License.  
+See the [LICENSE-MIT](https://github.com/graphprotocol/graph-tooling/blob/27659e56adfa3ef395ceaf39053dc4a31e6d86b7/LICENSE-MIT) file for details.
 
 ## License
 
