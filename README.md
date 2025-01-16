@@ -5,8 +5,8 @@
 <h4 align="center">Blockchain automation protocol</h4>
 
 <p align="center">
-  <a href="https://github.com/mimic-protocol/tooling/actions/workflows/build.yml">
-    <img src="https://github.com/mimic-protocol/tooling/actions/workflows/build.yml/badge.svg" alt="Build">
+  <a href="https://github.com/mimic-protocol/tooling/actions/workflows/ci.yml">
+    <img src="https://github.com/mimic-protocol/tooling/actions/workflows/ci.yml/badge.svg" alt="Build">
   </a>
   <a href="https://discord.mimic.fi">
     <img alt="Discord" src="https://img.shields.io/discord/989984112397922325">
