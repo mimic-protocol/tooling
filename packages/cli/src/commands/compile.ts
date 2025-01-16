@@ -28,9 +28,8 @@ export default class Compile extends Command {
     let loadedManifest
     try {
       loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_err) {
-      this.error('Could not find manifest.yaml', {
+    } catch {
+      this.error(`Could not find ${manifestDir}`, {
         code: 'FileNotFound',
         suggestions: ['Use the --manifest flag to specify the correct path'],
       })

@@ -4,8 +4,8 @@ import * as fs from 'fs'
 
 describe('compile', () => {
   const basePath = `${__dirname}/../fixtures`
-  const taskPath = `${basePath}/task.ts`
-  const manifestPath = `${basePath}/manifest.yaml`
+  const taskPath = `${basePath}/tasks/task.ts`
+  const manifestPath = `${basePath}/manifests/manifest.yaml`
   const outputDir = `${basePath}/output`
 
   afterEach('delete generated files', () => {
@@ -43,7 +43,7 @@ describe('compile', () => {
         it('throws an error', async () => {
           const { error } = await runCommand([
             'compile',
-            `--task ${basePath}/invalid-task.ts`,
+            `--task ${basePath}/tasks/invalid-task.ts`,
             `--manifest ${manifestPath}`,
             `--output ${outputDir}`,
           ])
@@ -61,7 +61,7 @@ describe('compile', () => {
         const { error } = await runCommand([
           'compile',
           `--task ${taskPath}`,
-          `--manifest ${basePath}/invalid-manifest.yaml`,
+          `--manifest ${basePath}/manifests/invalid-manifest.yaml`,
           `--output ${outputDir}`,
         ])
 
@@ -73,15 +73,17 @@ describe('compile', () => {
   })
 
   context('when the manifest does not exist', () => {
+    let inexistentManifestPath = `${manifestPath}-none`
+
     it('throws an error', async () => {
       const { error } = await runCommand([
         'compile',
         `--task ${taskPath}`,
-        `--manifest ${manifestPath}-no`,
+        `--manifest ${inexistentManifestPath}`,
         `--output ${outputDir}`,
       ])
 
-      expect(error?.message).to.be.equal('Could not find manifest.yaml')
+      expect(error?.message).to.be.equal(`Could not find ${inexistentManifestPath}`)
       expect(error?.code).to.be.equal('FileNotFound')
       expect(error?.suggestions?.length).to.be.gt(0)
     })
