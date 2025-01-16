@@ -40,7 +40,6 @@ export class BigInt extends Uint8Array {
   }
 
   static fromU64(x: u64): BigInt {
-    console.log(`Received u64: ${x}`)
     const byteArray = ByteArray.fromU64(x)
     return BigInt.fromUnsignedBytes(byteArray)
   }
