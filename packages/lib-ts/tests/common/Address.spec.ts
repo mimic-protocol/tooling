@@ -7,11 +7,11 @@ describe('Address', () => {
   describe('fromString', () => {
     describe('when the string is valid', () => {
       it('converts a valid string to an Address', () => {
-        const validAddressStr = getRandomAddress()
-        const address = Address.fromString(validAddressStr)
+        const validAddress = getRandomAddress()
+        const address = Address.fromString(validAddress)
 
         expect(address.length).toBe(20)
-        expect(address.toHex()).toBe(validAddressStr)
+        expect(address.toHex()).toBe(validAddress)
       })
     })
 
