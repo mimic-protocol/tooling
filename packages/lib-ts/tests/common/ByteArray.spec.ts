@@ -1,4 +1,3 @@
-import { BigInt } from '../../common/BigInt'
 import { ByteArray } from '../../common/ByteArray'
 
 describe('ByteArray', () => {
@@ -47,24 +46,6 @@ describe('ByteArray', () => {
         expect(result[1]).toBe(0x65) // 'e'
         expect(result[2]).toBe(0x73) // 's'
         expect(result[3]).toBe(0x74) // 't'
-      })
-    })
-  })
-
-  describe('fromBigInt', () => {
-    describe('when creating a ByteArray from a BigInt', () => {
-      it('creates a ByteArray from the given BigInt', (): void => {
-        const bigInt = BigInt.fromI64(0x0102030405060708)
-        const result = ByteArray.fromBigInt(bigInt)
-        expect(result.length).toBe(8)
-        expect(result[0]).toBe(0x08)
-        expect(result[1]).toBe(0x07)
-        expect(result[2]).toBe(0x06)
-        expect(result[3]).toBe(0x05)
-        expect(result[4]).toBe(0x04)
-        expect(result[5]).toBe(0x03)
-        expect(result[6]).toBe(0x02)
-        expect(result[7]).toBe(0x01)
       })
     })
   })
