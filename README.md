@@ -12,7 +12,7 @@
     <img alt="Discord" src="https://img.shields.io/discord/989984112397922325">
   </a>
   <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/license-GLP_3.0-green">
+    <img src="https://img.shields.io/badge/Unlicensed-grey">
   </a>
 </p>
 
