@@ -11,7 +11,8 @@
     "postinstall": "yarn build",
     "build": "rm -rf dist && tsc",
     "start": "yarn build && node ./bin/run.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "echo 'no tests yet'"
   },
   "dependencies": {
     "@oclif/core": "^4.2.2",
