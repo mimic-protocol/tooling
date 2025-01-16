@@ -16,7 +16,6 @@ export default {
    */
   async instantiate(memory, createImports, instantiate, binary) {
     let instance // Imports can reference this
-
     const myImports = {
       env: {
         memory,
@@ -32,8 +31,6 @@ export default {
     instance = instantiate(binary, createImports(myImports))
     return instance
   },
-  /** Enable code coverage. */
-  // coverage: ["assembly/**/*.ts"],
   /**
    * Specify if the binary wasm file should be written to the file system.
    */

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "asc index.ts -b build/lib.wasm --disableWarning 235",
-    "test": "asp --summary",
+    "test": "asp",
     "lint": "eslint ."
   },
   "devDependencies": {

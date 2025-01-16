@@ -1,9 +1,10 @@
-// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling).
-// (Commit hash: 7faa3098b2e6c61f09fc81b8b2d333e66b0080d1)
+// eslint-disable-next-line no-secrets/no-secrets
+// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling/tree/7faa3098b2e6c61f09fc81b8b2d333e66b0080d1).
 // Licensed under the MIT License.
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { BigInt } from './BigInt'
 import { Bytes } from './Bytes'
 import { typeConversion } from './conversion'
 
@@ -90,7 +91,7 @@ export class ByteArray extends Uint8Array {
     return changetype<ByteArray>(ByteArray.wrap(utf8))
   }
 
-  static fromBigInt(bigInt: bigint): ByteArray {
+  static fromBigInt(bigInt: BigInt): ByteArray {
     return changetype<ByteArray>(bigInt)
   }
 
@@ -110,7 +111,6 @@ export class ByteArray extends Uint8Array {
    * Interprets the byte array as a little-endian U32.
    * Throws in case of overflow.
    */
-
   toU32(): u32 {
     for (let i = 4; i < this.length; i++) {
       if (this[i] != 0) {
@@ -138,7 +138,6 @@ export class ByteArray extends Uint8Array {
    * Interprets the byte array as a little-endian I32.
    * Throws in case of overflow.
    */
-
   toI32(): i32 {
     const isNeg = this.length > 0 && this[this.length - 1] >> 7 == 1
     const padding = isNeg ? 255 : 0
@@ -179,7 +178,6 @@ export class ByteArray extends Uint8Array {
    * Interprets the byte array as a little-endian I64.
    * Throws in case of overflow.
    */
-
   toI64(): i64 {
     const isNeg = this.length > 0 && this[this.length - 1] >> 7 == 1
     const padding = isNeg ? 255 : 0
@@ -217,7 +215,6 @@ export class ByteArray extends Uint8Array {
    * Interprets the byte array as a little-endian U64.
    * Throws in case of overflow.
    */
-
   toU64(): u64 {
     for (let i = 8; i < this.length; i++) {
       if (this[i] != 0) {

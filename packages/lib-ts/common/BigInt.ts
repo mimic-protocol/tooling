@@ -1,5 +1,5 @@
-// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling).
-// (Commit hash: 7faa3098b2e6c61f09fc81b8b2d333e66b0080d1)
+// eslint-disable-next-line no-secrets/no-secrets
+// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling/tree/7faa3098b2e6c61f09fc81b8b2d333e66b0080d1).
 // Licensed under the MIT License.
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
@@ -40,6 +40,7 @@ export class BigInt extends Uint8Array {
   }
 
   static fromU64(x: u64): BigInt {
+    console.log(`Received u64: ${x}`)
     const byteArray = ByteArray.fromU64(x)
     return BigInt.fromUnsignedBytes(byteArray)
   }
@@ -51,7 +52,6 @@ export class BigInt extends Uint8Array {
   /**
    * `bytes` assumed to be little-endian. If your input is big-endian, call `.reverse()` first.
    */
-
   static fromSignedBytes(bytes: Bytes): BigInt {
     const byteArray = <ByteArray>bytes
     return BigInt.fromByteArray(byteArray)
@@ -64,7 +64,6 @@ export class BigInt extends Uint8Array {
   /**
    * `bytes` assumed to be little-endian. If your input is big-endian, call `.reverse()` first.
    */
-
   static fromUnsignedBytes(bytes: ByteArray): BigInt {
     const signedBytes = new BigInt(bytes.length + 1)
     for (let i = 0; i < bytes.length; i++) {
@@ -127,7 +126,8 @@ export class BigInt extends Uint8Array {
   }
 
   sqrt(): BigInt {
-    const x: BigInt = this // eslint-disable-line @typescript-eslint/no-this-alias -- Using variables instead of this makes it more clear
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- Using variables instead of this makes it more clear
+    const x: BigInt = this
     let z = x.plus(BigInt.fromI32(1)).div(BigInt.fromI32(2))
     let y = x
     while (z < y) {

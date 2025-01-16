@@ -1,5 +1,5 @@
-// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling).
-// (Commit hash: 7faa3098b2e6c61f09fc81b8b2d333e66b0080d1)
+// eslint-disable-next-line no-secrets/no-secrets
+// This file is based on code from "The Graph Tooling" (https://github.com/graphprotocol/graph-tooling/tree/7faa3098b2e6c61f09fc81b8b2d333e66b0080d1).
 // Licensed under the MIT License.
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
