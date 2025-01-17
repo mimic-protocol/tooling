@@ -6,6 +6,7 @@ trigger:
   delta: "1h"
 inputs:
   - firstStaticNumber: 2
-  - secondStaticNumber: 3
+    wrongValue: 3
+  - secondStaticNumber: 5
 abis:
   - ERC20: './abis/ERC20.json'

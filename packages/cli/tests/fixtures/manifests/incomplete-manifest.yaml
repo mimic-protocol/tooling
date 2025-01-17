@@ -1,9 +1,3 @@
-version: 1.0.0
-name: sample task
-trigger:
-  type: cron
-  schedule: "0 0 * * *"
-  delta: "1h"
 inputs:
   - firstStaticNumber: 2
   - secondStaticNumber: 3

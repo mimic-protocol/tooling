@@ -1,0 +1,75 @@
+import { expect } from 'chai'
+
+import { validateManifest } from '../src/ManifestValidator'
+
+describe('ManifestValidator', () => {
+  const manifest = {
+    version: '1.0.0',
+    name: 'sample task',
+    trigger: { type: 'cron', schedule: '0 0 * * *', delta: '1h' },
+    inputs: [{ firstStaticNumber: 2 }, { secondStaticNumber: 3 }],
+    abis: [{ ERC20: './abis/ERC20.json' }],
+  }
+
+  describe('validateManifest', () => {
+    context('when the manifest is valid', () => {
+      it('returns the parsed manifest', () => {
+        const parsedManifest = validateManifest(manifest)
+
+        expect(parsedManifest).to.not.be.undefined
+        expect(Array.isArray(parsedManifest.inputs)).to.be.false
+        expect(Array.isArray(parsedManifest.abis)).to.be.false
+      })
+    })
+
+    context('when the manifest is not valid', () => {
+      const itReturnsAnError = (m, error) => {
+        it('returns an error', () => {
+          expect(() => validateManifest(m)).to.throw(error)
+        })
+      }
+
+      context('when the inputs are not unique', () => {
+        itReturnsAnError({ ...manifest, inputs: [{ first: 1 }, { first: 2 }, { second: 3 }] }, 'Duplicate Entry')
+      })
+
+      context('when the abis are not unique', () => {
+        itReturnsAnError(
+          { ...manifest, abis: [{ first: 'first' }, { first: 'something' }, { second: 'second' }] },
+          'Duplicate Entry'
+        )
+      })
+
+      context('when there is more than one entry on inputs', () => {
+        itReturnsAnError({ ...manifest, inputs: [{ first: 2, second: 4 }] }, 'More than one entry')
+      })
+
+      context('when there is more than one entry on abis', () => {
+        itReturnsAnError({ ...manifest, abis: [{ first: 'first', second: 'second' }] }, 'More than one entry')
+      })
+
+      context('when the version is invalid', () => {
+        itReturnsAnError({ ...manifest, version: '1.a' }, 'Must be a valid version (x.y.z)')
+      })
+
+      context('when the trigger is invalid', () => {
+        context('when the trigger is cron', () => {
+          context('when the type is not cron', () => {
+            itReturnsAnError(
+              { ...manifest, trigger: { ...manifest.trigger, type: 'notcron' } },
+              'Invalid literal value, expected \\"cron\\"'
+            )
+          })
+
+          context('when the schedule is invalid', () => {
+            itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, schedule: '0 0' } }, 'Invalid Schedule')
+          })
+
+          context('when the delta is invalid', () => {
+            itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, delta: '2' } }, 'Invalid Delta')
+          })
+        })
+      })
+    })
+  })
+})
