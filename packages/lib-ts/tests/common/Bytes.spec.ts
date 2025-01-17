@@ -1,12 +1,12 @@
 import { ByteArray } from '../../common/ByteArray'
 import { Bytes } from '../../common/Bytes'
-import { getHexString } from '../helpers'
+import { randomHex } from '../helpers'
 
 describe('Bytes', () => {
   describe('fromByteArray', () => {
     describe('when creating Bytes from a ByteArray', () => {
       it('creates Bytes with the same length and content as the ByteArray', (): void => {
-        const byteArray = ByteArray.fromHexString(getHexString(6))
+        const byteArray = ByteArray.fromHexString(randomHex(6))
         const bytes = Bytes.fromByteArray(byteArray)
         expect(bytes.length).toBe(byteArray.length)
         expect(bytes.toHex()).toBe(byteArray.toHex())
@@ -30,7 +30,7 @@ describe('Bytes', () => {
   describe('fromHexString', () => {
     describe('when creating Bytes from a valid hex string', () => {
       it('creates Bytes with the correct values', (): void => {
-        const hexString = getHexString(8)
+        const hexString = randomHex(8)
         const bytes = Bytes.fromHexString(hexString)
         expect(bytes.length).toBe(4)
         expect(bytes.toHex()).toBe(hexString.toLowerCase())
@@ -63,8 +63,8 @@ describe('Bytes', () => {
   describe('concat', () => {
     describe('when concatenating two Bytes', () => {
       it('returns a Bytes instance with the combined length', (): void => {
-        const bytes1 = Bytes.fromHexString(getHexString(10))
-        const bytes2 = Bytes.fromHexString(getHexString(10))
+        const bytes1 = Bytes.fromHexString(randomHex(10))
+        const bytes2 = Bytes.fromHexString(randomHex(10))
         const concatenatedBytes = bytes1.concat(bytes2)
         expect(concatenatedBytes.length).toBe(bytes1.length + bytes2.length)
       })
@@ -74,7 +74,7 @@ describe('Bytes', () => {
   describe('concatI32', () => {
     describe('when concatenating Bytes with an i32 value', () => {
       it('returns a Bytes instance with the correct combined length', (): void => {
-        const bytes = Bytes.fromHexString(getHexString(8))
+        const bytes = Bytes.fromHexString(randomHex(8))
         const int32Value = 99999
         const concatenatedBytes = bytes.concatI32(int32Value)
         expect(concatenatedBytes.length).toBe(bytes.length + 4)

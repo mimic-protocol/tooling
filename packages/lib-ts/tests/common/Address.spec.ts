@@ -1,13 +1,12 @@
 import { Address } from '../../common/Address'
 import { Bytes } from '../../common/Bytes'
-import { NULL_ADDRESS } from '../../common/utils'
-import { getHexString, getRandomAddress } from '../helpers'
+import { NULL_ADDRESS, randomAddress, randomHex } from '../helpers'
 
 describe('Address', () => {
   describe('fromString', () => {
     describe('when the string is valid', () => {
       it('converts a valid string to an Address', () => {
-        const validAddress = getRandomAddress()
+        const validAddress = randomAddress()
         const address = Address.fromString(validAddress)
 
         expect(address.length).toBe(20)
@@ -18,14 +17,14 @@ describe('Address', () => {
     describe('when the string length is invalid', () => {
       it('throws an error for short strings', () => {
         expect(() => {
-          const shortAddress = getHexString(10)
+          const shortAddress = randomHex(10)
           Address.fromString(shortAddress)
         }).toThrow('Invalid string for H160')
       })
 
       it('throws an error for long strings', () => {
         expect(() => {
-          const longAddress = getHexString(50)
+          const longAddress = randomHex(50)
           Address.fromString(longAddress)
         }).toThrow('Invalid string for H160')
       })
@@ -35,7 +34,7 @@ describe('Address', () => {
   describe('fromBytes', () => {
     describe('when the Bytes object has a valid length', () => {
       it('converts a valid Bytes object to an Address', () => {
-        const validBytes = Bytes.fromHexString(getRandomAddress())
+        const validBytes = Bytes.fromHexString(randomAddress())
         const address = Address.fromBytes(validBytes)
 
         expect(address.length).toBe(20)
@@ -46,14 +45,14 @@ describe('Address', () => {
     describe('when the Bytes object has an invalid length', () => {
       it('throws an error for short Bytes objects', () => {
         expect(() => {
-          const shortBytes = Bytes.fromHexString(getHexString(10))
+          const shortBytes = Bytes.fromHexString(randomHex(10))
           Address.fromBytes(shortBytes)
         }).toThrow('Bytes of length 5 can not be converted to 20 byte addresses')
       })
 
       it('throws an error for long Bytes objects', () => {
         expect(() => {
-          const longBytes = Bytes.fromHexString(getHexString(50))
+          const longBytes = Bytes.fromHexString(randomHex(50))
           Address.fromBytes(longBytes)
         }).toThrow('Bytes of length 25 can not be converted to 20 byte addresses')
       })
