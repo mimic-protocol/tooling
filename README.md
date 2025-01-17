@@ -52,14 +52,12 @@ To read more about our auditing and related security processes please refer to t
 However, if you found any potential issue in any of our smart contracts or in any piece of code you consider critical
 for the safety of the protocol, please contact us through <a href="mailto:security@mimic.fi">security@mimic.fi</a>.
 
-## Third-Party Licenses
+## License
+
+Unlicensed
 
 This project includes code from [The Graph Tooling](https://github.com/graphprotocol/graph-tooling), licensed under the MIT License.  
 See the [LICENSE-MIT](https://github.com/graphprotocol/graph-tooling/blob/27659e56adfa3ef395ceaf39053dc4a31e6d86b7/LICENSE-MIT) file for details.
-
-## License
-
-GPL 3.0
 
 ---
 
