@@ -1,12 +1,13 @@
 {
-  "name": "@mimicprotocol/sample-task",
+  "name": "@mimicprotocol/example",
   "version": "0.0.1",
   "license": "Unlicensed",
   "private": true,
   "scripts": {
     "postinstall": "yarn build",
     "build": "mimic compile",
-    "lint": "echo 'no lint for now'"
+    "lint": "echo 'no lint for now'",
+    "test": "echo 'no tests yet'"
   },
   "dependencies": {
     "@mimicprotocol/cli": "0.0.1",

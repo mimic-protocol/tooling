@@ -2,17 +2,17 @@
   <a href="https://mimic.fi"><img src="https://www.mimic.fi/logo.png" alt="Mimic Finance" width="200"></a> 
 </h1>
 
-<h4 align="center">A DeFi automation platform</h4>
+<h4 align="center">Blockchain automation protocol</h4>
 
 <p align="center">
-  <a href="https://github.com/mimic-fi/v3-deployments/actions/workflows/build.yml">
-    <img src="https://github.com/mimic-fi/v3-deployments/actions/workflows/build.yml/badge.svg" alt="Build">
+  <a href="https://github.com/mimic-protocol/tooling/actions/workflows/ci.yml">
+    <img src="https://github.com/mimic-protocol/tooling/actions/workflows/ci.yml/badge.svg" alt="Build">
   </a>
   <a href="https://discord.mimic.fi">
     <img alt="Discord" src="https://img.shields.io/discord/989984112397922325">
   </a>
   <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/license-GLP_3.0-green">
+    <img src="https://img.shields.io/badge/Unlicensed-grey">
   </a>
 </p>
 
@@ -27,7 +27,7 @@
 
 ## Content 
 
-This repo includes all the deployment tasks executed and maintained by the Mimic team
+This repo includes all development tools required to build automated tasks for Mimic Protocol
 
 ## Setup
 
@@ -36,10 +36,10 @@ From your command line:
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/mimic-fi/v3-deployments
+$ git clone https://github.com/mimic-protocol/tooling
 
 # Go into the repository
-$ cd v3-deployments
+$ cd tooling
 
 # Install dependencies
 $ yarn
