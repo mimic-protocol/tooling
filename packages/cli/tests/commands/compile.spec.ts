@@ -1,6 +1,7 @@
 import { runCommand } from '@oclif/test'
 import { expect } from 'chai'
 import * as fs from 'fs'
+import * as path from 'path'
 
 describe('compile', () => {
   const basePath = `${__dirname}/../fixtures`
@@ -128,6 +129,37 @@ describe('compile', () => {
       expect(error?.message).to.be.equal(`Could not find ${inexistentManifestPath}`)
       expect(error?.code).to.be.equal('FileNotFound')
       expect(error?.suggestions?.length).to.be.eq(1)
+    })
+  })
+
+  context('when the output directory already exists', () => {
+    beforeEach('create outputDirectory with files', () => {
+      if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
+      fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify({ a: 2 }, null, 2))
+      fs.writeFileSync(path.join(outputDir, 'randomFile.txt'), JSON.stringify({ a: 2 }, null, 2))
+    })
+
+    it('creates the files correctly', async () => {
+      const { stdout, error } = await runCommand([
+        'compile',
+        `--task ${taskPath}`,
+        `--manifest ${manifestPath}`,
+        `--output ${outputDir}`,
+      ])
+
+      expect(error).to.be.undefined
+      expect(stdout).to.include('Build complete!')
+
+      expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
+      expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
+      expect(fs.existsSync(`${outputDir}/inputs.json`)).to.be.true
+      expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
+
+      const inputs = JSON.parse(fs.readFileSync(`${outputDir}/inputs.json`, 'utf-8'))
+      const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
+
+      expect(inputs).to.be.deep.equal(['getValue', 'createIntent'])
+      expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 2, secondStaticNumber: 3 })
     })
   })
 })

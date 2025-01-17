@@ -13,19 +13,41 @@ describe('ManifestValidator', () => {
 
   describe('validateManifest', () => {
     context('when the manifest is valid', () => {
-      it('returns the parsed manifest', () => {
-        const parsedManifest = validateManifest(manifest)
+      context('when everything is present', () => {
+        it('returns the parsed manifest', () => {
+          const parsedManifest = validateManifest(manifest)
 
-        expect(parsedManifest).to.not.be.undefined
-        expect(Array.isArray(parsedManifest.inputs)).to.be.false
-        expect(Array.isArray(parsedManifest.abis)).to.be.false
+          expect(parsedManifest).to.not.be.undefined
+          expect(Array.isArray(parsedManifest.inputs)).to.be.false
+          expect(Array.isArray(parsedManifest.abis)).to.be.false
+        })
+      })
+
+      context('when inputs is missing', () => {
+        it('returns the parsed manifest', () => {
+          const parsedManifest = validateManifest({ ...manifest, inputs: undefined })
+
+          expect(parsedManifest).to.not.be.undefined
+          expect(Array.isArray(parsedManifest.inputs)).to.be.false
+          expect(Array.isArray(parsedManifest.abis)).to.be.false
+        })
+      })
+
+      context('when abis is missing', () => {
+        it('returns the parsed manifest', () => {
+          const parsedManifest = validateManifest({ ...manifest, abis: undefined })
+
+          expect(parsedManifest).to.not.be.undefined
+          expect(Array.isArray(parsedManifest.inputs)).to.be.false
+          expect(Array.isArray(parsedManifest.abis)).to.be.false
+        })
       })
     })
 
     context('when the manifest is not valid', () => {
-      const itReturnsAnError = (m, error) => {
+      const itReturnsAnError = (m, ...errors) => {
         it('returns an error', () => {
-          expect(() => validateManifest(m)).to.throw(error)
+          for (const error of errors) expect(() => validateManifest(m)).to.throw(error)
         })
       }
 
@@ -69,6 +91,14 @@ describe('ManifestValidator', () => {
             itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, delta: '2' } }, 'Invalid Delta')
           })
         })
+      })
+
+      context('when the name is empty', () => {
+        itReturnsAnError({ ...manifest, name: '' }, 'String must contain at least 1 character(s)')
+      })
+
+      context('when the name is missing', () => {
+        itReturnsAnError({ ...manifest, name: undefined }, 'Required', 'name')
       })
     })
   })

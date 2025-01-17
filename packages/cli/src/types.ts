@@ -13,7 +13,7 @@ const CronTrigger = z.object({
 
 export const ManifestValidator = z.object({
   version: Version,
-  name: z.string(),
+  name: z.string().min(1),
   trigger: CronTrigger,
   inputs: z.record(z.string(), z.string().or(z.number())),
   abis: z.record(z.string(), z.string()),
