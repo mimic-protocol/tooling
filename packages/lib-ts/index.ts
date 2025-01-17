@@ -1,4 +1,4 @@
 export declare namespace environment {
-  function getNumber(): i32
-  function create(output: i32): void
+  function getValue(): i32
+  function createIntent(intent: i32): void
 }
