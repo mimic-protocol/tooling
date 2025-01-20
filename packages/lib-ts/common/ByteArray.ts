@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
-
+import { BigInt } from './BigInt'
 import { Bytes } from './Bytes'
 import { typeConversion } from './conversion'
 
@@ -88,6 +88,10 @@ export class ByteArray extends Uint8Array {
   static fromUTF8(str: string): ByteArray {
     const utf8 = String.UTF8.encode(str)
     return changetype<ByteArray>(ByteArray.wrap(utf8))
+  }
+
+  static fromBigInt(bigInt: BigInt): ByteArray {
+    return changetype<ByteArray>(bigInt)
   }
 
   toHex(): string {
