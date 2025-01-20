@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "postinstall": "yarn build",
-    "build": "mimic build --task src/task.ts --output build",
-    "lint": "echo 'no lint yet'",
+    "build": "mimic compile",
+    "lint": "echo 'no lint for now'",
     "test": "echo 'no tests yet'"
   },
   "dependencies": {

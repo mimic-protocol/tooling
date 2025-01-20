@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/bin/relayer.js --dir ../example/build/",
+    "start": "yarn build && node ./dist/bin/relayer.js --dir ../example/build/",
     "lint": "eslint .",
     "test": "yarn build && yarn start | grep -q 'Task executed successfully' && echo 'test passed'"
   },

@@ -6,11 +6,14 @@ import Environment from './environment'
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
   const inputsPath = path.join(opts.dir, 'inputs.json')
+  const manifestPath = path.join(opts.dir, 'manifest.json')
   const outputPath = path.join('output.json')
+
   const requestedCalls = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
 
   const environment = generateEnvironment(requestedCalls)
-  const imports = generateEnvironmentImports(environment, requestedCalls)
+  const imports = generateEnvironmentImports(environment, requestedCalls, manifest.inputs)
 
   try {
     const wasmBuffer = fs.readFileSync(wasmPath)
@@ -36,13 +39,19 @@ function generateEnvironment(requestedCalls: string[]): Environment {
   return environment
 }
 
-function generateEnvironmentImports(environment: Environment, requestedCalls: string[]): WebAssembly.Imports {
-  const imports: { [key: string]: (...args: never) => unknown } = {}
+function generateEnvironmentImports(
+  environment: Environment,
+  requestedCalls: string[],
+  inputs: WebAssembly.ModuleImports
+): WebAssembly.Imports {
+  const imports: WebAssembly.ModuleImports = {}
   requestedCalls.forEach((requestedCall) => {
     const prop = environment[requestedCall as keyof Environment]
     if (prop === undefined || typeof prop !== 'function') throw new Error(`Invalid requested call "${requestedCall}"`)
     imports[`environment.${requestedCall}`] = prop.bind(environment)
   })
+
+  for (const [key, value] of Object.entries(inputs)) imports[`input.${key}`] = value
 
   return { index: imports }
 }

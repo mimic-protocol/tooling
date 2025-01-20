@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { environment } from '@mimicprotocol/lib-ts'
-import { input } from './types'
 
+declare namespace input {
+  const firstStaticNumber: i32
+  const secondStaticNumber: i32
+}
 export default function main(): void {
   const firstNumber = environment.getValue()
   const firstIntent = firstNumber * input.firstStaticNumber
