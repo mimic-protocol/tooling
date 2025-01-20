@@ -3,15 +3,17 @@
   "version": "0.0.1",
   "license": "Unlicensed",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "asc index.ts -b build/lib.wasm --disableWarning 235",
-    "asbuild:debug": "asc assembly/index.ts --target debug",
-    "asbuild:release": "asc assembly/index.ts --target release",
-    "asbuild": "yarn asbuild:debug && yarn asbuild:release",
-    "lint": "echo 'no lint yet'",
-    "test": "echo 'no tests yet'"
+    "test": "asp",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@as-pect/cli": "^8.1.0",
     "assemblyscript": "^0.27.31"
+  },
+  "dependencies": {
+    "eslint-config-mimic": "^0.0.3"
   }
 }
