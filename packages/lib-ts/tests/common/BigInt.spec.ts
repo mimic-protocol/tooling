@@ -6,7 +6,7 @@ import { randomHex } from '../helpers'
 describe('BigInt', () => {
   describe('zero', () => {
     describe('when calling the zero function', () => {
-      it('returns a 4-byte BigInt where all bytes are zero', (): void => {
+      it('returns a 4-byte BigInt where all bytes are zero', () => {
         const zeroBigInt = BigInt.zero()
         expect(zeroBigInt.length).toBe(4)
         expect(zeroBigInt[0]).toBe(0)
@@ -19,7 +19,7 @@ describe('BigInt', () => {
 
   describe('fromSignedBytes', () => {
     describe('when creating a BigInt from valid signed bytes', () => {
-      it('creates a BigInt from signed bytes representation', (): void => {
+      it('creates a BigInt from signed bytes representation', () => {
         const bytes = Bytes.fromHexString(randomHex(8))
         const bigInt = BigInt.fromSignedBytes(bytes)
         expect(bigInt.length).toBe(4)
@@ -29,7 +29,7 @@ describe('BigInt', () => {
 
   describe('fromByteArray', () => {
     describe('when creating a BigInt from a valid byte array', () => {
-      it('creates a BigInt from the byte array representation', (): void => {
+      it('creates a BigInt from the byte array representation', () => {
         const byteArray = ByteArray.fromHexString(randomHex(8))
         const bigInt = BigInt.fromByteArray(byteArray)
         expect(bigInt.length).toBe(4)
@@ -37,8 +37,8 @@ describe('BigInt', () => {
     })
 
     describe('when creating a BigInt from an invalid byte array', () => {
-      it('throws an error if the byte array has an invalid length', (): void => {
-        expect((): void => {
+      it('throws an error if the byte array has an invalid length', () => {
+        expect(() => {
           const invalidByteArray = ByteArray.fromHexString(randomHex(3))
           BigInt.fromByteArray(invalidByteArray)
         }).toThrow()
@@ -48,10 +48,135 @@ describe('BigInt', () => {
 
   describe('fromUnsignedBytes', () => {
     describe('when creating a BigInt from valid unsigned bytes', () => {
-      it('creates a BigInt from unsigned bytes representation', (): void => {
+      it('creates a BigInt from unsigned bytes representation', () => {
         const bytes = Bytes.fromHexString(randomHex(8))
         const bigInt = BigInt.fromUnsignedBytes(bytes)
         expect(bigInt.length).toBeGreaterThanOrEqual(4)
+      })
+    })
+  })
+
+  describe('fromString', () => {
+    describe('decimal notation', () => {
+      it('parses a simple positive decimal string', () => {
+        const result = BigInt.fromString('123')
+        expect(result.toI32()).toBe(123)
+      })
+
+      it('parses a negative decimal string', () => {
+        const result = BigInt.fromString('-456')
+        expect(result.toI32()).toBe(-456)
+      })
+
+      it('returns zero for a plain "+" sign', () => {
+        const result = BigInt.fromString('+')
+        expect(result.isZero()).toBe(true)
+      })
+
+      it('ignores a decimal point and treats the input as an integer', () => {
+        const result = BigInt.fromString('12.34')
+        expect(result.toI32()).toBe(1234)
+      })
+
+      it('parses a large 30-digit decimal', () => {
+        const big9 = BigInt.fromString('999999999999999999999999999999')
+        expect(big9.isZero()).toBe(false)
+
+        const big1 = BigInt.fromString('100000000000000000000000000000')
+        expect(big9.gt(big1)).toBe(true)
+      })
+
+      it('parses a large negative decimal', () => {
+        const negBig = BigInt.fromString('-999999999999999999999999999999')
+        expect(negBig.isZero()).toBe(false)
+        expect(negBig.lt(BigInt.zero())).toBe(true)
+      })
+    })
+
+    describe('hex notation', () => {
+      it('parses a positive hex string (0x)', () => {
+        const result = BigInt.fromString('0xFF')
+        expect(result.toI32()).toBe(0xff)
+      })
+
+      it('parses a negative hex string (0x)', () => {
+        const result = BigInt.fromString('-0x1a')
+        expect(result.toI32()).toBe(-0x1a)
+      })
+
+      it('parses a positive hex string (0X)', () => {
+        const result = BigInt.fromString('0XAB')
+        expect(result.toI32()).toBe(0xab)
+      })
+
+      it('returns zero for an invalid hex character', () => {
+        expect(() => {
+          BigInt.fromString('0x1G')
+        }).toThrow()
+      })
+
+      it('returns zero for just "0x" with no digits', () => {
+        const result = BigInt.fromString('0x')
+        expect(result.isZero()).toBe(true)
+      })
+
+      it('parses a large hex string (128-bit)', () => {
+        const bigAllF = BigInt.fromString('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+        expect(bigAllF.isZero()).toBe(false)
+      })
+    })
+
+    describe('scientific notation (decimal)', () => {
+      it('parses a positive exponent', () => {
+        const result = BigInt.fromString('1.23e2')
+        expect(result.toI32()).toBe(12300)
+      })
+
+      it('parses a negative exponent (truncated)', () => {
+        const result = BigInt.fromString('1.23e-2')
+        expect(result.toI32()).toBe(1)
+      })
+
+      it('parses a negative exponent leading to zero', () => {
+        const result = BigInt.fromString('12e-3')
+        expect(result.isZero()).toBe(true)
+      })
+
+      it('handles negative number with exponent', () => {
+        const result = BigInt.fromString('-2.5E1')
+        expect(result.toI32()).toBe(-250)
+      })
+
+      it('handles exponent sign', () => {
+        const result = BigInt.fromString('3e+2')
+        expect(result.toI32()).toBe(300)
+      })
+
+      it('parses scientific notation with a huge positive exponent', () => {
+        const oneE40 = BigInt.fromString('1e40')
+        expect(oneE40.isZero()).toBe(false)
+
+        const all9_40 = BigInt.fromU64((1e40 - 1) as u64)
+        expect(oneE40.gt(all9_40)).toBe(true)
+      })
+    })
+
+    describe('invalid inputs', () => {
+      it('returns zero for an empty string', () => {
+        const result = BigInt.fromString('')
+        expect(result.isZero()).toBe(true)
+      })
+
+      it('throws when invalid characters are passed', () => {
+        expect(() => {
+          BigInt.fromString('abc')
+        }).toThrow()
+      })
+
+      it('throws when used multiple signs', () => {
+        expect(() => {
+          BigInt.fromString('++123')
+        }).toThrow()
       })
     })
   })

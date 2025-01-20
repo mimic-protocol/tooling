@@ -63,10 +63,120 @@ export class BigInt extends Uint8Array {
     return typeConversion.bigIntToString(this)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static fromString(_s: string): BigInt {
-    // TODO: Implement
-    return BigInt.zero()
+  static fromString(str: string): BigInt {
+    if (!str || str.length == 0) {
+      return BigInt.zero()
+    }
+
+    let isNegative = false
+    let index = 0
+
+    // Check leading sign (+ or -)
+    let c = str.charAt(0)
+    if (c == '-') {
+      isNegative = true
+      index = 1
+    } else if (c == '+') {
+      index = 1
+    }
+
+    // Detect if hex by "0x" or "0X"
+    let isHex = false
+    if (
+      str.length >= index + 2 &&
+      str.charAt(index) == '0' &&
+      (str.charAt(index + 1) == 'x' || str.charAt(index + 1) == 'X')
+    ) {
+      isHex = true
+      index += 2
+    }
+
+    let result = BigInt.zero()
+    let exponent: f64 = 0 // For decimal scientific notation
+    let parsingExponent = false
+    let exponentSign: f64 = 1
+    let exponentDigits = ''
+
+    if (isHex) {
+      while (index < str.length) {
+        c = str.charAt(index)
+        let digit: i32
+
+        if ('0' <= c && c <= '9') {
+          digit = c.charCodeAt(0) - '0'.charCodeAt(0)
+        } else if ('A' <= c && c <= 'F') {
+          digit = c.charCodeAt(0) - 'A'.charCodeAt(0) + 10
+        } else if ('a' <= c && c <= 'f') {
+          digit = c.charCodeAt(0) - 'a'.charCodeAt(0) + 10
+        } else {
+          throw new Error("Invalid character in hex string: '" + c + "'")
+        }
+        result = result.times(BigInt.fromI32(16)).plus(BigInt.fromI32(digit))
+        index++
+      }
+    } else {
+      // Decimal parse (possible scientific notation: e/E)
+      while (index < str.length) {
+        c = str.charAt(index)
+
+        if (!parsingExponent) {
+          if (c == '.') {
+            index++
+            continue
+          }
+          if (c == 'e' || c == 'E') {
+            parsingExponent = true
+            index++
+            continue
+          }
+          if (c < '0' || c > '9') {
+            throw new Error("Invalid character in decimal string: '" + c + "'")
+          }
+          let digit = c.charCodeAt(0) - '0'.charCodeAt(0)
+          result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
+        } else {
+          if (exponentDigits.length == 0 && (c == '+' || c == '-')) {
+            if (c == '-') {
+              exponentSign = -1
+            }
+            index++
+            continue
+          }
+          if (c < '0' || c > '9') {
+            throw new Error("Invalid character in exponent string: '" + c + "'")
+          }
+          exponentDigits += c
+        }
+        index++
+      }
+
+      if (exponentDigits.length > 0) {
+        let parsedExp = parseInt(exponentDigits, 10)
+        exponent = exponentSign * parsedExp
+      }
+    }
+
+    // Apply exponent if decimal
+    if (!isHex && exponent != 0) {
+      if (exponent > 0) {
+        // Multiply by 10^exponent
+        for (let i = 0; i < exponent; i++) {
+          result = result.times(BigInt.fromI32(10))
+        }
+      } else {
+        // Negative exponent => integer division => truncate
+        let posExp = -exponent
+        for (let i = 0; i < posExp; i++) {
+          result = result.div(BigInt.fromI32(10))
+        }
+      }
+    }
+
+    if (isNegative && !result.isZero()) {
+      result = result.neg()
+    }
+
+    return result
   }
 
   toI32(): i32 {
