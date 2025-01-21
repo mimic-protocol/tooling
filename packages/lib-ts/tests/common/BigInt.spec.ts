@@ -80,9 +80,13 @@ describe('BigInt', () => {
 
       it('parses a large 30-digit decimal', () => {
         const big9 = BigInt.fromString('999999999999999999999999999999')
-        expect(big9.isZero()).toBe(false)
+        const big9asString = big9.toString()
+        expect(big9asString.length).toBe(30)
+        for (let i = 0; i < big9asString.length; i++) {
+          expect(big9asString.charAt(i)).toBe('9')
+        }
 
-        const big1 = BigInt.fromString('100000000000000000000000000000')
+        const big1 = BigInt.fromString('1e29')
         expect(big9.gt(big1)).toBe(true)
       })
 
@@ -109,7 +113,7 @@ describe('BigInt', () => {
         expect(result.toI32()).toBe(0xab)
       })
 
-      it('returns zero for an invalid hex character', () => {
+      it('throws for an invalid hex character', () => {
         expect(() => {
           BigInt.fromString('0x1G')
         }).toThrow()
@@ -184,17 +188,17 @@ describe('BigInt', () => {
   describe('operators', () => {
     describe('plus', () => {
       it('adds two positive BigInts', () => {
-        const a = BigInt.fromI32(10)
-        const b = BigInt.fromI32(20)
+        const a = BigInt.fromString('1e20')
+        const b = BigInt.fromString('2e20')
         const sum = a.plus(b)
-        expect(sum.toI32()).toBe(30)
+        expect(sum.toString()).toBe('300000000000000000000')
       })
 
       it('adds a positive and a negative BigInt', () => {
-        const a = BigInt.fromI32(10)
+        const a = BigInt.fromU64(10 ** 18)
         const b = BigInt.fromI32(-5)
         const sum = a.plus(b)
-        expect(sum.toI32()).toBe(5)
+        expect(sum.toU64()).toBe(10 ** 18 - 5)
       })
     })
 
@@ -207,10 +211,10 @@ describe('BigInt', () => {
       })
 
       it('subtracts and results in a negative BigInt', () => {
-        const a = BigInt.fromI32(5)
-        const b = BigInt.fromI32(10)
+        const a = BigInt.fromU64(10 ** 15)
+        const b = BigInt.fromString('1e20')
         const diff = a.minus(b)
-        expect(diff.toI32()).toBe(-5)
+        expect(diff.toString()).toBe('-99999000000000000000')
       })
     })
 
@@ -228,6 +232,13 @@ describe('BigInt', () => {
         const prod = a.times(b)
         expect(prod.toI32()).toBe(-12)
       })
+
+      it('multiplies two negative BigInts', () => {
+        const a = BigInt.fromI32(-2)
+        const b = BigInt.fromI32(-6)
+        const prod = a.times(b)
+        expect(prod.toI32()).toBe(12)
+      })
     })
 
     describe('div', () => {
@@ -243,6 +254,13 @@ describe('BigInt', () => {
         const b = BigInt.fromI32(5)
         const quotient = a.div(b)
         expect(quotient.toI32()).toBe(-5)
+      })
+
+      it('divides two negative BigInts', () => {
+        const a = BigInt.fromI32(-25)
+        const b = BigInt.fromI32(-5)
+        const quotient = a.div(b)
+        expect(quotient.toI32()).toBe(5)
       })
 
       it('throws when dividing by zero', () => {
