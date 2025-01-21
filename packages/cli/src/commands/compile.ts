@@ -79,7 +79,7 @@ export default class Compile extends Command {
       suggestions = [`${err.location[1][0]}: ${err.location[1][1]} might be missing a prepended '-' on manifest`]
     } else if (err instanceof DuplicateEntryError) {
       ;[message, code] = [err.message, err.name]
-      suggestions = [`Review manifest for duplicate kye: ${err.duplicateKey}`]
+      suggestions = [`Review manifest for duplicate key: ${err.duplicateKey}`]
     } else if (err instanceof EmptyManifestError) {
       ;[message, code] = [err.message, err.name]
       suggestions = ['Verify if you are using the correct manifest file']
@@ -88,7 +88,9 @@ export default class Compile extends Command {
       suggestions = err.errors.map((e) => `${e.path.join('/')}: ${e.message}`)
     } else {
       ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
-      suggestions = ['Contact the Mimic team for further assistance']
+      suggestions = [
+        'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
+      ]
     }
 
     this.error(message, { code, suggestions })
