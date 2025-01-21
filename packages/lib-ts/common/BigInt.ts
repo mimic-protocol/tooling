@@ -51,6 +51,22 @@ export class BigInt extends Uint8Array {
     return signedBytes
   }
 
+  clone(): BigInt {
+    const clone = new BigInt(this.length)
+    for (let i = 0; i < this.length; i++) {
+      clone[i] = this[i]
+    }
+    return clone
+  }
+
+  subarray(start: i32, end: i32): BigInt {
+    const result = new BigInt(end - start)
+    for (let i = start; i < end; i++) {
+      result[i - start] = this[i]
+    }
+    return result
+  }
+
   toHex(): string {
     return typeConversion.bigIntToHex(this)
   }
@@ -204,7 +220,7 @@ export class BigInt extends Uint8Array {
   }
 
   isZero(): boolean {
-    return this == BigInt.fromI32(0)
+    return BigInt.compare(this, BigInt.zero()) == 0
   }
 
   isI32(): boolean {
