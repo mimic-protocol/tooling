@@ -45,7 +45,9 @@ const generateFunctionWithTuple = (
     outputs.length === 1
       ? mapAbiTypeToAsType(outputs[0].type)
       : outputs.length > 1
-        ? `{ ${outputs.map((output, index) => `${output.name || `output${index}`}: ${mapAbiTypeToAsType(output.type)}`).join('; ')} }`
+        ? `{ ${outputs
+            .map((output, index) => `${output.name || `output${index}`}: ${mapAbiTypeToAsType(output.type)}`)
+            .join('; ')} }`
         : 'void'
 
   const declaration = `export function ${name}(${params}): ${returnType};`
@@ -57,7 +59,7 @@ export const generateAbiInterface = (abi: Record<string, never>[], contractName:
   const tupleDefinitions: string[] = []
 
   abi
-    .filter((item) => item.type === 'function')
+    .filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability))
     .forEach((item) => {
       const { declaration, tupleDefinitions: tuples } = generateFunctionWithTuple(
         item.name,
