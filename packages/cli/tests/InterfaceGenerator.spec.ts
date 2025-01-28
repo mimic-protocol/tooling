@@ -35,27 +35,23 @@ describe('generateAbiInterface', () => {
   })
 
   context('when ABI contains no read-only functions', () => {
-    it('generates an empty namespace', () => {
+    it('returns an empty string', () => {
       const contractName = 'MyContract'
       const result = generateAbiInterface(
         sampleAbi.filter((item) => item.stateMutability !== 'view' && item.stateMutability !== 'pure'),
         contractName
       )
 
-      expect(result).to.equal(`export declare namespace ${contractName} {
-  
-}`)
+      expect(result).to.equal('')
     })
   })
 
   context('when ABI is empty', () => {
-    it('generates an empty namespace', () => {
+    it('returns an empty string', () => {
       const contractName = 'EmptyContract'
       const result = generateAbiInterface([], contractName)
 
-      expect(result).to.equal(`export declare namespace ${contractName} {
-  
-}`)
+      expect(result).to.equal('')
     })
   })
 

@@ -13,6 +13,11 @@ export default class Codegen extends Command {
   static override flags = {
     manifest: Flags.string({ char: 'm', description: 'Specify a custom manifest file path', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'Ouput directory for generated types', default: './types' }),
+    clean: Flags.boolean({
+      char: 'c',
+      description: 'Remove existing generated types before generating new files',
+      default: false,
+    }), // TODO: Implement this
   }
 
   public async run(): Promise<void> {
@@ -25,7 +30,7 @@ export default class Codegen extends Command {
     } catch {
       this.error(`Could not find ${manifestDir}`, {
         code: 'FileNotFound',
-        suggestions: ['Use the --m flag to specify the correct path'],
+        suggestions: ['Use the -m or --manifest flag to specify the correct path'],
       })
     }
     const manifest = validateManifest(loadedManifest)
@@ -38,7 +43,7 @@ export default class Codegen extends Command {
       const [contractName, path] = Object.entries(elem)[0]
       const abi = JSON.parse(fs.readFileSync(path, 'utf-8'))
       const abiInterface = generateAbiInterface(abi, contractName)
-      fs.writeFileSync(`${outputDir}/${contractName}.ts`, abiInterface)
+      if (abiInterface.length > 0) fs.writeFileSync(`${outputDir}/${contractName}.ts`, abiInterface)
     }
   }
 }

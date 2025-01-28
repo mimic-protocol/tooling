@@ -4,14 +4,25 @@ const ABI_TYPECAST_MAP: Record<string, string> = {
   bool: 'boolean',
   string: 'string',
   bytes: 'Bytes',
-  'uint256[]': 'BigInt[]',
-  'address[]': 'Address[]',
-  'bytes32[]': 'Bytes[]',
-  tuple: 'unknown',
-}
+} as const
+
+const LIB_TYPES = ['BigInt', 'Address', 'Bytes']
+
+const usedLibTypes = new Set<string>()
 
 const mapAbiTypeToAsType = (type: string): string => {
-  return ABI_TYPECAST_MAP[type] || 'unknown'
+  if (type.endsWith('[]')) {
+    const baseType = type.slice(0, -2)
+    if (baseType === 'tuple') {
+      return 'Tuple[]' // Placeholder for dynamic tuple array generation
+    }
+    return `${mapAbiTypeToAsType(baseType)}[]`
+  }
+  const mappedType = ABI_TYPECAST_MAP[type] || 'unknown'
+  if (LIB_TYPES.includes(mappedType)) {
+    usedLibTypes.add(mappedType)
+  }
+  return mappedType
 }
 
 const generateTupleType = (name: string, components: Record<string, string>[]): string => {
@@ -37,6 +48,10 @@ const generateFunctionWithTuple = (
         const tupleName = `${name}_${paramName}_Tuple`
         tupleDefinitions.push(generateTupleType(tupleName, input.components))
         return `${paramName}: ${tupleName}`
+      } else if (input.type === 'tuple[]') {
+        const tupleName = `${name}_${paramName}_Tuple`
+        tupleDefinitions.push(generateTupleType(tupleName, input.components))
+        return `${paramName}: ${tupleName}[]`
       }
       return `${paramName}: ${mapAbiTypeToAsType(input.type)}`
     })
@@ -48,6 +63,10 @@ const generateFunctionWithTuple = (
       const tupleName = `${name}_Return_Tuple`
       tupleDefinitions.push(generateTupleType(tupleName, outputs[0].components))
       returnType = tupleName
+    } else if (outputs[0].type === 'tuple[]') {
+      const tupleName = `${name}_Return_Tuple`
+      tupleDefinitions.push(generateTupleType(tupleName, outputs[0].components))
+      returnType = `${tupleName}[]`
     } else {
       returnType = mapAbiTypeToAsType(outputs[0].type)
     }
@@ -58,6 +77,10 @@ const generateFunctionWithTuple = (
           const tupleName = `${name}_Return${index}_Tuple`
           tupleDefinitions.push(generateTupleType(tupleName, output.components))
           return `${output.name || `output${index}`}: ${tupleName}`
+        } else if (output.type === 'tuple[]') {
+          const tupleName = `${name}_Return${index}_Tuple`
+          tupleDefinitions.push(generateTupleType(tupleName, output.components))
+          return `${output.name || `output${index}`}: ${tupleName}[]`
         }
         return `${output.name || `output${index}`}: ${mapAbiTypeToAsType(output.type)}`
       })
@@ -84,10 +107,18 @@ export const generateAbiInterface = (abi: Record<string, never>[], contractName:
       tupleDefinitions.push(...tuples)
     })
 
+  if (functions.length === 0) {
+    return ''
+  }
+
+  const imports =
+    usedLibTypes.size > 0 ? `import { ${[...usedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'` : ''
+
   const tupleDefinitionsOutput = tupleDefinitions.length > 0 ? `\n${tupleDefinitions.join('\n')}\n` : ''
 
   return `
-${tupleDefinitionsOutput}export declare namespace ${contractName} {
+${imports}${tupleDefinitionsOutput}
+export declare namespace ${contractName} {
   ${functions.join('\n  ')}
 }`.trim()
 }
