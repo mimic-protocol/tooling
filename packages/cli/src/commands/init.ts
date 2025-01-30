@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import { highlightText, startAction, stopAction, warnText } from '../helpers'
+
 export default class Init extends Command {
   static override description = 'Initializes a new Mimic-compatible project structure in the specified directory'
 
