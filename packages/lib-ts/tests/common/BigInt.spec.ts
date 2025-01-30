@@ -73,9 +73,9 @@ describe('BigInt', () => {
         expect(result.isZero()).toBe(true)
       })
 
-      it('ignores a decimal point and treats the input as an integer', () => {
+      it('ignores a decimal point and truncates the number', () => {
         const result = BigInt.fromString('12.34')
-        expect(result.toI32()).toBe(1234)
+        expect(result.toI32()).toBe(12)
       })
 
       it('parses a large 30-digit decimal', () => {
@@ -133,12 +133,12 @@ describe('BigInt', () => {
     describe('scientific notation (decimal)', () => {
       it('parses a positive exponent', () => {
         const result = BigInt.fromString('1.23e2')
-        expect(result.toI32()).toBe(12300)
+        expect(result.toI32()).toBe(123)
       })
 
-      it('parses a negative exponent (truncated)', () => {
-        const result = BigInt.fromString('1.23e-2')
-        expect(result.toI32()).toBe(1)
+      it('parses a negative exponent', () => {
+        const result = BigInt.fromString('1000e-2')
+        expect(result.toI32()).toBe(10)
       })
 
       it('parses a negative exponent leading to zero', () => {
@@ -148,7 +148,7 @@ describe('BigInt', () => {
 
       it('handles negative number with exponent', () => {
         const result = BigInt.fromString('-2.5E1')
-        expect(result.toI32()).toBe(-250)
+        expect(result.toI32()).toBe(-25)
       })
 
       it('handles exponent sign', () => {

@@ -80,109 +80,125 @@ export class BigInt extends Uint8Array {
   }
 
   static fromString(str: string): BigInt {
-    if (!str || str.length == 0) {
+    if (!str || str.length === 0) {
       return BigInt.zero()
     }
 
-    let isNegative = false
     let index = 0
+    let isNegative = false
 
-    // Check leading sign (+ or -)
-    let c = str.charAt(0)
-    if (c == '-') {
+    // Optional sign
+    let firstChar = str.charAt(index)
+    if (firstChar === '-') {
       isNegative = true
-      index = 1
-    } else if (c == '+') {
-      index = 1
+      index++
+    } else if (firstChar === '+') {
+      index++
     }
 
-    // Detect if hex by "0x" or "0X"
+    // Hex prefix
     let isHex = false
     if (
       str.length >= index + 2 &&
-      str.charAt(index) == '0' &&
-      (str.charAt(index + 1) == 'x' || str.charAt(index + 1) == 'X')
+      str.charAt(index) === '0' &&
+      (str.charAt(index + 1) === 'x' || str.charAt(index + 1) === 'X')
     ) {
       isHex = true
       index += 2
     }
 
     let result = BigInt.zero()
-    let exponent: f64 = 0 // For decimal scientific notation
+    let exponentStr = ''
+    let exponentNegative = false
     let parsingExponent = false
-    let exponentSign: f64 = 1
-    let exponentDigits = ''
+    let fractionDigits = 0
 
     if (isHex) {
       while (index < str.length) {
-        c = str.charAt(index)
+        let c = str.charAt(index)
         let digit: i32
 
-        if ('0' <= c && c <= '9') {
+        if (c >= '0' && c <= '9') {
           digit = c.charCodeAt(0) - '0'.charCodeAt(0)
-        } else if ('A' <= c && c <= 'F') {
+        } else if (c >= 'A' && c <= 'F') {
           digit = c.charCodeAt(0) - 'A'.charCodeAt(0) + 10
-        } else if ('a' <= c && c <= 'f') {
+        } else if (c >= 'a' && c <= 'f') {
           digit = c.charCodeAt(0) - 'a'.charCodeAt(0) + 10
         } else {
-          throw new Error("Invalid character in hex string: '" + c + "'")
+          throw new Error(`Invalid character in hex string: '${c}'`)
         }
+
         result = result.times(BigInt.fromI32(16)).plus(BigInt.fromI32(digit))
         index++
       }
     } else {
-      // Decimal parse (possible scientific notation: e/E)
       while (index < str.length) {
-        c = str.charAt(index)
+        let c = str.charAt(index)
 
         if (!parsingExponent) {
-          if (c == '.') {
+          if (c === '.') {
             index++
+            while (index < str.length) {
+              let fracChar = str.charAt(index)
+              if (fracChar === 'e' || fracChar === 'E') {
+                parsingExponent = true
+                index++
+                break
+              } else if (fracChar >= '0' && fracChar <= '9') {
+                let digit = fracChar.charCodeAt(0) - '0'.charCodeAt(0)
+                result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
+                fractionDigits++
+                index++
+              } else {
+                throw new Error(`Invalid character in decimal fraction: '${fracChar}'`)
+              }
+            }
             continue
           }
-          if (c == 'e' || c == 'E') {
+          if (c === 'e' || c === 'E') {
             parsingExponent = true
             index++
             continue
           }
           if (c < '0' || c > '9') {
-            throw new Error("Invalid character in decimal string: '" + c + "'")
+            throw new Error(`Invalid character in decimal string: '${c}'`)
           }
           let digit = c.charCodeAt(0) - '0'.charCodeAt(0)
           result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
         } else {
-          if (exponentDigits.length == 0 && (c == '+' || c == '-')) {
-            if (c == '-') {
-              exponentSign = -1
-            }
+          if (exponentStr.length === 0 && (c === '+' || c === '-')) {
+            if (c === '-') exponentNegative = true
             index++
             continue
           }
           if (c < '0' || c > '9') {
-            throw new Error("Invalid character in exponent string: '" + c + "'")
+            throw new Error(`Invalid character in exponent string: '${c}'`)
           }
-          exponentDigits += c
+          exponentStr += c
         }
-        index++
-      }
 
-      if (exponentDigits.length > 0) {
-        let parsedExp = parseInt(exponentDigits, 10)
-        exponent = exponentSign * parsedExp
+        index++
       }
     }
 
-    // Apply exponent if decimal
-    if (!isHex && exponent != 0) {
-      if (exponent > 0) {
-        // Multiply by 10^exponent
-        for (let i = 0; i < exponent; i++) {
-          result = result.times(BigInt.fromI32(10))
+    if (!isHex) {
+      if (exponentStr.length > 0) {
+        let expValue = parseInt(exponentStr, 10)
+        if (exponentNegative) expValue = -expValue
+        expValue -= fractionDigits
+        if (expValue > 0) {
+          for (let i = 0; i < expValue; i++) {
+            result = result.times(BigInt.fromI32(10))
+          }
+        } else if (expValue < 0) {
+          let positiveExp = -expValue
+          for (let i = 0; i < positiveExp; i++) {
+            result = result.div(BigInt.fromI32(10))
+          }
         }
-      } else {
-        // Negative exponent => integer division => truncate
-        let posExp = -exponent
-        for (let i = 0; i < posExp; i++) {
+      } else if (fractionDigits > 0) {
+        // No exponent => truncate fraction
+        for (let i = 0; i < fractionDigits; i++) {
           result = result.div(BigInt.fromI32(10))
         }
       }
