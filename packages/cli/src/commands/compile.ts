@@ -7,6 +7,7 @@ import * as ts from 'typescript'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
+import log from '../logger'
 import { validateManifest } from '../ManifestValidator'
 
 export default class Compile extends Command {
@@ -24,8 +25,10 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
 
-    console.log(`Compiling AssemblyScript from ${taskFile}...`)
+    console.log(`Compiling AssemblyScript from ${taskFile}`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
+
+    log.startAction('Verifying Manifest')
 
     let loadedManifest
     try {
@@ -42,6 +45,7 @@ export default class Compile extends Command {
     } catch (err) {
       this.handleValidationError(err)
     }
+    log.startAction('Compiling')
 
     const ascArgs = [
       taskFile,
@@ -61,11 +65,13 @@ export default class Compile extends Command {
         suggestions: ['Check the AssemblyScript file'],
       })
     }
+    log.startAction('Saving files')
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
     const environmentCalls = extractEnvironmentCalls(fileContents)
     fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 
