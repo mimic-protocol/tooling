@@ -3,7 +3,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { highlightText, startAction, stopAction, warnText } from '../helpers'
+import log from '../logger'
 
 export default class Init extends Command {
   static override description = 'Initializes a new Mimic-compatible project structure in the specified directory'
@@ -23,7 +23,7 @@ export default class Init extends Command {
 
     if (force) {
       const shouldDelete = await confirm({
-        message: `Are you sure you want to ${warnText('delete')} all the contents in ${highlightText(fullDirectory)}. This action is ${warnText('irreversible')}`,
+        message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(fullDirectory)}. This action is ${log.warnText('irreversible')}`,
         default: false,
       })
       if (!shouldDelete) {
@@ -31,19 +31,18 @@ export default class Init extends Command {
         console.log('Stopping initialization...')
         this.exit(0)
       }
-      startAction(`Deleting contents of ${fullDirectory}`)
+      log.startAction(`Deleting contents of ${fullDirectory}`)
       if (fs.existsSync(fullDirectory)) fs.rmSync(fullDirectory, { recursive: true })
-      stopAction()
     }
 
-    startAction('Creating files')
+    log.startAction('Creating files')
 
     if (fs.existsSync(fullDirectory)) {
-      this.error(`Directory ${highlightText(fullDirectory)} is not empty`, {
+      this.error(`Directory ${log.highlightText(fullDirectory)} is not empty`, {
         code: 'DirectoryNotEmpty',
         suggestions: [
           'You can specify the directory with --directory',
-          `You can ${warnText('overwrite')} an existing directory with --force`,
+          `You can ${log.warnText('overwrite')} an existing directory with --force`,
         ],
       })
     }
@@ -53,7 +52,7 @@ export default class Init extends Command {
     fs.mkdirSync(srcPath, { recursive: true })
     fs.copyFileSync(`${templateDirectory}/task.ts`, path.join(srcPath, 'task.ts'))
     fs.copyFileSync(`${templateDirectory}/manifest.yaml`, manifestPath)
-    stopAction()
+    log.stopAction()
     console.log('New project initialized!')
   }
 }
