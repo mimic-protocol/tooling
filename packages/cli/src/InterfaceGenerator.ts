@@ -1,3 +1,10 @@
+import camelCase from 'lodash/camelCase'
+
+function toCamelCase(str: string): string {
+  const camelCaseStr = camelCase(str)
+  return camelCaseStr.charAt(0).toUpperCase() + camelCaseStr.slice(1)
+}
+
 const ABI_TYPECAST_MAP: Record<string, string> = {
   uint256: 'BigInt',
   address: 'Address',
@@ -7,14 +14,13 @@ const ABI_TYPECAST_MAP: Record<string, string> = {
 } as const
 
 const LIB_TYPES = ['BigInt', 'Address', 'Bytes']
-
 const usedLibTypes = new Set<string>()
 
 const mapAbiTypeToAsType = (type: string): string => {
   if (type.endsWith('[]')) {
     const baseType = type.slice(0, -2)
     if (baseType === 'tuple') {
-      return 'Tuple[]' // Placeholder for dynamic tuple array generation
+      return 'Tuple[]' // Placeholder
     }
     return `${mapAbiTypeToAsType(baseType)}[]`
   }
@@ -25,7 +31,7 @@ const mapAbiTypeToAsType = (type: string): string => {
   return mappedType
 }
 
-const generateTupleType = (name: string, components: Record<string, string>[]): string => {
+const generateTupleType = (name: string, components: { name: string; type: string }[]): string => {
   const fields = components.map((component) => `${component.name}: ${mapAbiTypeToAsType(component.type)};`).join('\n  ')
 
   return `
@@ -36,55 +42,55 @@ export class ${name} {
 
 const generateFunctionWithTuple = (
   name: string,
-  inputs: Record<string, never>[],
-  outputs: Record<string, never>[]
+  inputs: { name?: string; type: string; components?: { name: string; type: string }[] }[],
+  outputs: { name?: string; type: string; components?: { name: string; type: string }[] }[]
 ): { declaration: string; tupleDefinitions: string[] } => {
   const tupleDefinitions: string[] = []
+
+  const resolveType = (
+    item: { name?: string; type: string; components?: { name: string; type: string }[] },
+    suffix: string
+  ): string => {
+    if (item.type === 'tuple' || item.type === 'tuple[]') {
+      const isArray = item.type.endsWith('[]')
+      const tupleName = toCamelCase(`${name}_${suffix}_Tuple`)
+      if (item.components) {
+        tupleDefinitions.push(generateTupleType(tupleName, item.components))
+      }
+      return isArray ? `${tupleName}[]` : tupleName
+    }
+    return mapAbiTypeToAsType(item.type)
+  }
 
   const params = inputs
     .map((input, index) => {
       const paramName = input.name || `param${index}`
-      if (input.type === 'tuple') {
-        const tupleName = `${name}_${paramName}_Tuple`
-        tupleDefinitions.push(generateTupleType(tupleName, input.components))
-        return `${paramName}: ${tupleName}`
-      } else if (input.type === 'tuple[]') {
-        const tupleName = `${name}_${paramName}_Tuple`
-        tupleDefinitions.push(generateTupleType(tupleName, input.components))
-        return `${paramName}: ${tupleName}[]`
-      }
-      return `${paramName}: ${mapAbiTypeToAsType(input.type)}`
+      const typeStr = resolveType(input, paramName)
+      return `${paramName}: ${typeStr}`
     })
     .join(', ')
 
   let returnType = 'void'
   if (outputs.length === 1) {
-    if (outputs[0].type === 'tuple') {
-      const tupleName = `${name}_Return_Tuple`
-      tupleDefinitions.push(generateTupleType(tupleName, outputs[0].components))
-      returnType = tupleName
-    } else if (outputs[0].type === 'tuple[]') {
-      const tupleName = `${name}_Return_Tuple`
-      tupleDefinitions.push(generateTupleType(tupleName, outputs[0].components))
-      returnType = `${tupleName}[]`
+    const output = outputs[0]
+    if (output.type === 'tuple' || output.type === 'tuple[]') {
+      const tupleName = toCamelCase(`${name}_Return_Tuple`)
+      if (output.components) {
+        tupleDefinitions.push(generateTupleType(tupleName, output.components))
+      }
+      returnType = output.type === 'tuple[]' ? `${tupleName}[]` : tupleName
     } else {
-      returnType = mapAbiTypeToAsType(outputs[0].type)
+      returnType = mapAbiTypeToAsType(output.type)
     }
   } else if (outputs.length > 1) {
-    returnType = `{ ${outputs
+    const fields = outputs
       .map((output, index) => {
-        if (output.type === 'tuple') {
-          const tupleName = `${name}_Return${index}_Tuple`
-          tupleDefinitions.push(generateTupleType(tupleName, output.components))
-          return `${output.name || `output${index}`}: ${tupleName}`
-        } else if (output.type === 'tuple[]') {
-          const tupleName = `${name}_Return${index}_Tuple`
-          tupleDefinitions.push(generateTupleType(tupleName, output.components))
-          return `${output.name || `output${index}`}: ${tupleName}[]`
-        }
-        return `${output.name || `output${index}`}: ${mapAbiTypeToAsType(output.type)}`
+        const outName = output.name || `output${index}`
+        const typeStr = resolveType(output, `Return${index}`)
+        return `${outName}: ${typeStr}`
       })
-      .join('; ')} }`
+      .join('; ')
+    returnType = `{ ${fields} }`
   }
 
   const declaration = `export function ${name}(${params}): ${returnType};`

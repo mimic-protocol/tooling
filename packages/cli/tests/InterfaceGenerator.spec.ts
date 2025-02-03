@@ -2,46 +2,33 @@ import { expect } from 'chai'
 
 import { generateAbiInterface } from '../src/InterfaceGenerator'
 
-describe('generateAbiInterface', () => {
-  const sampleAbi = [
-    {
-      type: 'function',
-      name: 'getValue',
-      stateMutability: 'view',
-      inputs: [{ name: 'id', type: 'uint256' }],
-      outputs: [{ name: 'value', type: 'string' }],
-    },
-    {
-      type: 'function',
-      name: 'setValue',
-      stateMutability: 'nonpayable',
-      inputs: [
-        { name: 'id', type: 'uint256' },
-        { name: 'value', type: 'string' },
-      ],
-      outputs: [],
-    },
-  ] as unknown as Record<string, never>[]
+import ERC20 from './fixtures/abis/ERC20.json'
 
+const erc20Abi = ERC20 as unknown as Record<string, never>[]
+
+describe('generateAbiInterface', () => {
   context('when ABI contains read-only functions', () => {
     it('generates an interface with only view and pure functions', () => {
-      const contractName = 'MyContract'
-      const result = generateAbiInterface(sampleAbi, contractName)
+      const contractName = 'MyERC20'
+      const result = generateAbiInterface(erc20Abi, contractName)
 
-      expect(result).to.include('export declare namespace MyContract {')
-      expect(result).to.include('export function getValue(id: BigInt): string;')
-      expect(result).to.not.include('export function setValue(id: BigInt, value: string): void;')
+      expect(result).to.include(`export declare namespace ${contractName} {`)
+      expect(result).to.include('export function name(')
+      expect(result).to.include('export function symbol(')
+      expect(result).to.include('export function decimals(')
+      expect(result).to.include('export function totalSupply(')
+      expect(result).to.include('export function balanceOf(')
+      expect(result).to.not.include('export function transfer(')
     })
   })
 
-  context('when ABI contains no read-only functions', () => {
+  context('when ABI contains only non read-only functions', () => {
     it('returns an empty string', () => {
-      const contractName = 'MyContract'
-      const result = generateAbiInterface(
-        sampleAbi.filter((item) => item.stateMutability !== 'view' && item.stateMutability !== 'pure'),
-        contractName
-      )
-
+      const contractName = 'MyERC20'
+      const nonReadOnlyAbi = erc20Abi.filter((item: Record<string, never>) => {
+        return !['view', 'pure'].includes(item.stateMutability)
+      })
+      const result = generateAbiInterface(nonReadOnlyAbi, contractName)
       expect(result).to.equal('')
     })
   })
@@ -50,7 +37,6 @@ describe('generateAbiInterface', () => {
     it('returns an empty string', () => {
       const contractName = 'EmptyContract'
       const result = generateAbiInterface([], contractName)
-
       expect(result).to.equal('')
     })
   })
@@ -79,10 +65,10 @@ describe('generateAbiInterface', () => {
       const contractName = 'TupleContract'
       const result = generateAbiInterface(tupleInputAbi, contractName)
 
-      expect(result).to.include('export class getTuple_data_Tuple {')
+      expect(result).to.include('export class GetTupleDataTuple {')
       expect(result).to.include('a: BigInt;')
       expect(result).to.include('b: string;')
-      expect(result).to.include('export function getTuple(data: getTuple_data_Tuple): boolean;')
+      expect(result).to.include('export function getTuple(data: GetTupleDataTuple): boolean;')
     })
   })
 
@@ -110,10 +96,10 @@ describe('generateAbiInterface', () => {
       const contractName = 'ComplexOutputContract'
       const result = generateAbiInterface(tupleOutputAbi, contractName)
 
-      expect(result).to.include('export class getComplexResult_Return_Tuple {')
+      expect(result).to.include('export class GetComplexResultReturnTuple {')
       expect(result).to.include('value: string;')
       expect(result).to.include('count: BigInt;')
-      expect(result).to.include('export function getComplexResult(id: BigInt): getComplexResult_Return_Tuple;')
+      expect(result).to.include('export function getComplexResult(id: BigInt): GetComplexResultReturnTuple;')
     })
   })
 })
