@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
 
+import log from '../logger'
 import { loadManifest } from '../utils'
 
 export default class Compile extends Command {
@@ -21,10 +22,12 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
 
-    console.log(`Compiling AssemblyScript from ${taskFile}...`)
+    console.log(`Compiling AssemblyScript from ${taskFile}`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
+    log.startAction('Verifying Manifest')
     const manifest = loadManifest(this, manifestDir)
+    log.startAction('Compiling')
 
     const ascArgs = [
       taskFile,
@@ -45,10 +48,13 @@ export default class Compile extends Command {
       })
     }
 
+    log.startAction('Saving files')
+
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
     const environmentCalls = extractEnvironmentCalls(fileContents)
     fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
