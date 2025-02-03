@@ -1,9 +1,8 @@
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
-import { load } from 'js-yaml'
 
 import { generateAbiInterface } from '../InterfaceGenerator'
-import { validateManifest } from '../ManifestValidator'
+import { loadManifest } from '../utils'
 
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'
@@ -17,23 +16,18 @@ export default class Codegen extends Command {
       char: 'c',
       description: 'Remove existing generated types before generating new files',
       default: false,
-    }), // TODO: Implement this
+    }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir } = flags
+    const { manifest: manifestDir, output: outputDir, clean } = flags
 
-    let loadedManifest
-    try {
-      loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
-    } catch {
-      this.error(`Could not find ${manifestDir}`, {
-        code: 'FileNotFound',
-        suggestions: ['Use the -m or --manifest flag to specify the correct path'],
-      })
+    const manifest = loadManifest(this, manifestDir)
+
+    if (clean && fs.existsSync(outputDir)) {
+      fs.rmSync(outputDir, { recursive: true, force: true })
     }
-    const manifest = validateManifest(loadedManifest)
 
     if (Object.keys(manifest.abis).length > 0 && !fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true })

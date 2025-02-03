@@ -1,12 +1,32 @@
 import camelCase from 'lodash/camelCase'
 
+type AbiParameter = {
+  name?: string
+  type: string
+  components?: { name: string; type: string }[]
+}
+
 function toCamelCase(str: string): string {
   const camelCaseStr = camelCase(str)
   return camelCaseStr.charAt(0).toUpperCase() + camelCaseStr.slice(1)
 }
 
 const ABI_TYPECAST_MAP: Record<string, string> = {
+  // Unsigned integers
+  uint8: 'BigInt',
+  uint16: 'BigInt',
+  uint32: 'BigInt',
+  uint64: 'BigInt',
+  uint128: 'BigInt',
   uint256: 'BigInt',
+  // Signed integers
+  int8: 'BigInt',
+  int16: 'BigInt',
+  int32: 'BigInt',
+  int64: 'BigInt',
+  int128: 'BigInt',
+  int256: 'BigInt',
+  // Other existing types
   address: 'Address',
   bool: 'boolean',
   string: 'string',
@@ -42,15 +62,12 @@ export class ${name} {
 
 const generateFunctionWithTuple = (
   name: string,
-  inputs: { name?: string; type: string; components?: { name: string; type: string }[] }[],
-  outputs: { name?: string; type: string; components?: { name: string; type: string }[] }[]
+  inputs: AbiParameter[],
+  outputs: AbiParameter[]
 ): { declaration: string; tupleDefinitions: string[] } => {
   const tupleDefinitions: string[] = []
 
-  const resolveType = (
-    item: { name?: string; type: string; components?: { name: string; type: string }[] },
-    suffix: string
-  ): string => {
+  const resolveType = (item: AbiParameter, suffix: string): string => {
     if (item.type === 'tuple' || item.type === 'tuple[]') {
       const isArray = item.type.endsWith('[]')
       const tupleName = toCamelCase(`${name}_${suffix}_Tuple`)

@@ -1,13 +1,10 @@
 import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
-import { load } from 'js-yaml'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { ZodError } from 'zod'
 
-import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
-import { validateManifest } from '../ManifestValidator'
+import { loadManifest } from '../utils'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -27,21 +24,7 @@ export default class Compile extends Command {
     console.log(`Compiling AssemblyScript from ${taskFile}...`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-    let loadedManifest
-    try {
-      loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
-    } catch {
-      this.error(`Could not find ${manifestDir}`, {
-        code: 'FileNotFound',
-        suggestions: ['Use the --manifest flag to specify the correct path'],
-      })
-    }
-    let manifest
-    try {
-      manifest = validateManifest(loadedManifest)
-    } catch (err) {
-      this.handleValidationError(err)
-    }
+    const manifest = loadManifest(this, manifestDir)
 
     const ascArgs = [
       taskFile,
@@ -67,33 +50,6 @@ export default class Compile extends Command {
     fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     console.log(`Build complete! Artifacts in ${outputDir}/`)
-  }
-
-  private handleValidationError(err: unknown) {
-    let message: string
-    let code: string
-    let suggestions: string[]
-
-    if (err instanceof MoreThanOneEntryError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = [`${err.location[1][0]}: ${err.location[1][1]} might be missing a prepended '-' on manifest`]
-    } else if (err instanceof DuplicateEntryError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = [`Review manifest for duplicate key: ${err.duplicateKey}`]
-    } else if (err instanceof EmptyManifestError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = ['Verify if you are using the correct manifest file']
-    } else if (err instanceof ZodError) {
-      ;[message, code] = ['Missing/Incorrect Fields', 'FieldsError']
-      suggestions = err.errors.map((e) => `${e.path.join('/')}: ${e.message}`)
-    } else {
-      ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
-      suggestions = [
-        'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
-      ]
-    }
-
-    this.error(message, { code, suggestions })
   }
 }
 
