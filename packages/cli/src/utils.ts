@@ -1,0 +1,15 @@
+import { ux } from '@oclif/core'
+import { StandardAnsi } from '@oclif/core/lib/interfaces/theme'
+
+export const utils = {
+  startAction: (text: string, color?: StandardAnsi) => {
+    utils.stopAction()
+    ux.action.start(ux.colorize(color, text))
+  },
+
+  stopAction: (text?: string) => ux.action.stop(ux.colorize('green', `${text ? `${text} ` : ''}✔️`)),
+
+  warnText: (text: string) => ux.colorize('red', text),
+
+  highlightText: (text: string) => ux.colorize('yellow', text),
+}

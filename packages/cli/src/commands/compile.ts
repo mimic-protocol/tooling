@@ -7,8 +7,8 @@ import * as ts from 'typescript'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
-import { startAction, stopAction } from '../helpers'
 import { validateManifest } from '../ManifestValidator'
+import { utils } from '../utils'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -28,7 +28,7 @@ export default class Compile extends Command {
     console.log(`Compiling AssemblyScript from ${taskFile}`)
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-    startAction('Verifying Manifest')
+    utils.startAction('Verifying Manifest')
 
     let loadedManifest
     try {
@@ -45,8 +45,7 @@ export default class Compile extends Command {
     } catch (err) {
       this.handleValidationError(err)
     }
-    stopAction()
-    startAction('Compiling')
+    utils.startAction('Compiling')
 
     const ascArgs = [
       taskFile,
@@ -66,14 +65,13 @@ export default class Compile extends Command {
         suggestions: ['Check the AssemblyScript file'],
       })
     }
-    stopAction()
-    startAction('Saving files')
+    utils.startAction('Saving files')
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
     const environmentCalls = extractEnvironmentCalls(fileContents)
     fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
-    stopAction()
+    utils.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 
