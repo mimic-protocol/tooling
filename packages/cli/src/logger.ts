@@ -1,9 +1,9 @@
 import { ux } from '@oclif/core'
 import { StandardAnsi } from '@oclif/core/lib/interfaces/theme'
 
-export const utils = {
+export const log = {
   startAction: (text: string, color?: StandardAnsi) => {
-    utils.stopAction()
+    log.stopAction()
     ux.action.start(ux.colorize(color, text))
   },
 
