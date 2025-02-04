@@ -4,24 +4,50 @@ import { load } from 'js-yaml'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from './errors'
-import { validateManifest } from './ManifestValidator'
+import { Manifest, ManifestValidator } from './types'
 
-export function loadManifest(command: Command, manifestDir: string) {
-  let loadedManifest
-  try {
-    loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
-  } catch {
-    command.error(`Could not find ${manifestDir}`, {
-      code: 'FileNotFound',
-      suggestions: ['Use the -m or --manifest flag to specify the correct path'],
-    })
-  }
+export default {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validate(manifest: any): Manifest {
+    if (!manifest) throw new EmptyManifestError()
 
-  try {
-    return validateManifest(loadedManifest)
-  } catch (err) {
-    handleValidationError(command, err)
+    const mergedManifest = {
+      ...manifest,
+      inputs: mergeIfUnique(manifest.inputs),
+      abis: mergeIfUnique(manifest.abis),
+    }
+    return ManifestValidator.parse(mergedManifest)
+  },
+
+  load(command: Command, manifestDir: string) {
+    let loadedManifest
+    try {
+      loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
+    } catch {
+      command.error(`Could not find ${manifestDir}`, {
+        code: 'FileNotFound',
+        suggestions: ['Use the -m or --manifest flag to specify the correct path'],
+      })
+    }
+
+    try {
+      return this.validate(loadedManifest)
+    } catch (err) {
+      handleValidationError(command, err)
+    }
+  },
+}
+
+function mergeIfUnique(list: Record<string, unknown>[]) {
+  const merged: Record<string, unknown> = {}
+  for (const obj of list || []) {
+    const entries = Object.entries(obj)
+    if (entries.length !== 1) throw new MoreThanOneEntryError(entries)
+    const [key, val] = entries[0]
+    if (key in merged) throw new DuplicateEntryError(key)
+    merged[key] = val
   }
+  return merged
 }
 
 function handleValidationError(command: Command, err: unknown): never {

@@ -5,8 +5,7 @@ import * as path from 'path'
 import * as ts from 'typescript'
 
 import log from '../logger'
-import { loadManifest } from '../utils'
-
+import ManifestHandler from '../ManifestHandler'
 export default class Compile extends Command {
   static override description = 'Compiles task'
 
@@ -26,7 +25,7 @@ export default class Compile extends Command {
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-    const manifest = loadManifest(this, manifestDir)
+    const manifest = ManifestHandler.load(this, manifestDir)
     log.startAction('Compiling')
 
     const ascArgs = [

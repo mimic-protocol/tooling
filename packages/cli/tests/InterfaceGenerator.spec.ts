@@ -1,16 +1,16 @@
 import { expect } from 'chai'
 
-import { generateAbiInterface } from '../src/InterfaceGenerator'
+import InterfaceGenerator from '../src/InterfaceGenerator'
 
 import ERC20 from './fixtures/abis/ERC20.json'
 
 const erc20Abi = ERC20 as unknown as Record<string, never>[]
 
-describe('generateAbiInterface', () => {
+describe('InterfaceGenerator', () => {
   context('when ABI contains read-only functions', () => {
     it('generates an interface with only view and pure functions', () => {
       const contractName = 'MyERC20'
-      const result = generateAbiInterface(erc20Abi, contractName)
+      const result = InterfaceGenerator.generate(erc20Abi, contractName)
 
       expect(result).to.include(`export declare namespace ${contractName} {`)
       expect(result).to.include('export function name(')
@@ -28,7 +28,7 @@ describe('generateAbiInterface', () => {
       const nonReadOnlyAbi = erc20Abi.filter((item: Record<string, never>) => {
         return !['view', 'pure'].includes(item.stateMutability)
       })
-      const result = generateAbiInterface(nonReadOnlyAbi, contractName)
+      const result = InterfaceGenerator.generate(nonReadOnlyAbi, contractName)
       expect(result).to.equal('')
     })
   })
@@ -36,7 +36,7 @@ describe('generateAbiInterface', () => {
   context('when ABI is empty', () => {
     it('returns an empty string', () => {
       const contractName = 'EmptyContract'
-      const result = generateAbiInterface([], contractName)
+      const result = InterfaceGenerator.generate([], contractName)
       expect(result).to.equal('')
     })
   })
@@ -63,7 +63,7 @@ describe('generateAbiInterface', () => {
 
     it('generates tuple definitions and includes them in the interface', () => {
       const contractName = 'TupleContract'
-      const result = generateAbiInterface(tupleInputAbi, contractName)
+      const result = InterfaceGenerator.generate(tupleInputAbi, contractName)
 
       expect(result).to.include('export class GetTupleDataTuple {')
       expect(result).to.include('a: BigInt;')
@@ -94,7 +94,7 @@ describe('generateAbiInterface', () => {
 
     it('generates tuple definitions and includes them in the interface', () => {
       const contractName = 'ComplexOutputContract'
-      const result = generateAbiInterface(tupleOutputAbi, contractName)
+      const result = InterfaceGenerator.generate(tupleOutputAbi, contractName)
 
       expect(result).to.include('export class GetComplexResultReturnTuple {')
       expect(result).to.include('value: string;')

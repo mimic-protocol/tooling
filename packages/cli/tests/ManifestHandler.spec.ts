@@ -1,8 +1,7 @@
 import { expect } from 'chai'
 
-import { validateManifest } from '../src/ManifestValidator'
-
-describe('ManifestValidator', () => {
+import ManifestHandler from '../src/ManifestHandler'
+describe('ManifestHandler', () => {
   const manifest = {
     version: '1.0.0',
     name: 'sample task',
@@ -11,11 +10,11 @@ describe('ManifestValidator', () => {
     abis: [{ ERC20: './abis/ERC20.json' }],
   }
 
-  describe('validateManifest', () => {
+  describe('validate', () => {
     context('when the manifest is valid', () => {
       context('when everything is present', () => {
         it('returns the parsed manifest', () => {
-          const parsedManifest = validateManifest(manifest)
+          const parsedManifest = ManifestHandler.validate(manifest)
 
           expect(parsedManifest).to.not.be.undefined
           expect(Array.isArray(parsedManifest.inputs)).to.be.false
@@ -25,7 +24,7 @@ describe('ManifestValidator', () => {
 
       context('when inputs is missing', () => {
         it('returns the parsed manifest', () => {
-          const parsedManifest = validateManifest({ ...manifest, inputs: undefined })
+          const parsedManifest = ManifestHandler.validate({ ...manifest, inputs: undefined })
 
           expect(parsedManifest).to.not.be.undefined
           expect(Array.isArray(parsedManifest.inputs)).to.be.false
@@ -35,7 +34,7 @@ describe('ManifestValidator', () => {
 
       context('when abis is missing', () => {
         it('returns the parsed manifest', () => {
-          const parsedManifest = validateManifest({ ...manifest, abis: undefined })
+          const parsedManifest = ManifestHandler.validate({ ...manifest, abis: undefined })
 
           expect(parsedManifest).to.not.be.undefined
           expect(Array.isArray(parsedManifest.inputs)).to.be.false
@@ -47,7 +46,7 @@ describe('ManifestValidator', () => {
     context('when the manifest is not valid', () => {
       const itReturnsAnError = (m, ...errors) => {
         it('returns an error', () => {
-          for (const error of errors) expect(() => validateManifest(m)).to.throw(error)
+          for (const error of errors) expect(() => ManifestHandler.validate(m)).to.throw(error)
         })
       }
 

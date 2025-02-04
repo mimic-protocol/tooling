@@ -1,5 +1,39 @@
 import camelCase from 'lodash/camelCase'
 
+export default {
+  generate(abi: Record<string, never>[], contractName: string): string {
+    const functions: string[] = []
+    const tupleDefinitions: string[] = []
+
+    abi
+      .filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability))
+      .forEach((item) => {
+        const { declaration, tupleDefinitions: tuples } = generateFunctionWithTuple(
+          item.name,
+          item.inputs,
+          item.outputs || []
+        )
+        functions.push(declaration)
+        tupleDefinitions.push(...tuples)
+      })
+
+    if (functions.length === 0) {
+      return ''
+    }
+
+    const imports =
+      usedLibTypes.size > 0 ? `import { ${[...usedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'` : ''
+
+    const tupleDefinitionsOutput = tupleDefinitions.length > 0 ? `\n${tupleDefinitions.join('\n')}\n` : ''
+
+    return `
+  ${imports}${tupleDefinitionsOutput}
+  export declare namespace ${contractName} {
+    ${functions.join('\n  ')}
+  }`.trim()
+  },
+}
+
 type AbiParameter = {
   name?: string
   type: string
@@ -112,36 +146,4 @@ const generateFunctionWithTuple = (
 
   const declaration = `export function ${name}(${params}): ${returnType};`
   return { declaration, tupleDefinitions }
-}
-
-export const generateAbiInterface = (abi: Record<string, never>[], contractName: string): string => {
-  const functions: string[] = []
-  const tupleDefinitions: string[] = []
-
-  abi
-    .filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability))
-    .forEach((item) => {
-      const { declaration, tupleDefinitions: tuples } = generateFunctionWithTuple(
-        item.name,
-        item.inputs,
-        item.outputs || []
-      )
-      functions.push(declaration)
-      tupleDefinitions.push(...tuples)
-    })
-
-  if (functions.length === 0) {
-    return ''
-  }
-
-  const imports =
-    usedLibTypes.size > 0 ? `import { ${[...usedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'` : ''
-
-  const tupleDefinitionsOutput = tupleDefinitions.length > 0 ? `\n${tupleDefinitions.join('\n')}\n` : ''
-
-  return `
-${imports}${tupleDefinitionsOutput}
-export declare namespace ${contractName} {
-  ${functions.join('\n  ')}
-}`.trim()
 }
