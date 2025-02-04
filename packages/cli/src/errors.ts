@@ -27,3 +27,7 @@ export class EmptyManifestError extends Error {
     Object.setPrototypeOf(this, new.target.prototype)
   }
 }
+
+export const GENERIC_SUGGESTION = [
+  'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
+]

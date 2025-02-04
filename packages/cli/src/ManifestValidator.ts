@@ -1,16 +1,18 @@
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from './errors'
 import { Manifest, ManifestValidator } from './types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function validateManifest(manifest: any): Manifest {
-  if (!manifest) throw new EmptyManifestError()
+export default {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  validate(manifest: any): Manifest {
+    if (!manifest) throw new EmptyManifestError()
 
-  const mergedManifest = {
-    ...manifest,
-    inputs: mergeIfUnique(manifest.inputs),
-    abis: mergeIfUnique(manifest.abis),
-  }
-  return ManifestValidator.parse(mergedManifest)
+    const mergedManifest = {
+      ...manifest,
+      inputs: mergeIfUnique(manifest.inputs),
+      abis: mergeIfUnique(manifest.abis),
+    }
+    return ManifestValidator.parse(mergedManifest)
+  },
 }
 
 function mergeIfUnique(list: Record<string, unknown>[]) {

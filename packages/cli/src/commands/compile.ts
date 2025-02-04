@@ -6,9 +6,9 @@ import * as path from 'path'
 import * as ts from 'typescript'
 import { ZodError } from 'zod'
 
-import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
-import log from '../logger'
-import { validateManifest } from '../ManifestValidator'
+import { DuplicateEntryError, EmptyManifestError, GENERIC_SUGGESTION, MoreThanOneEntryError } from '../errors'
+import log from '../log'
+import ManifestValidator from '../ManifestValidator'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -41,7 +41,7 @@ export default class Compile extends Command {
     }
     let manifest
     try {
-      manifest = validateManifest(loadedManifest)
+      manifest = ManifestValidator.validate(loadedManifest)
     } catch (err) {
       this.handleValidationError(err)
     }
@@ -94,9 +94,7 @@ export default class Compile extends Command {
       suggestions = err.errors.map((e) => `${e.path.join('/')}: ${e.message}`)
     } else {
       ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
-      suggestions = [
-        'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
-      ]
+      suggestions = GENERIC_SUGGESTION
     }
 
     this.error(message, { code, suggestions })
