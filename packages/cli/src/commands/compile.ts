@@ -7,7 +7,7 @@ import * as ts from 'typescript'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
-import log from '../logger'
+import log from '../log'
 import { validateManifest } from '../ManifestValidator'
 
 export default class Compile extends Command {
