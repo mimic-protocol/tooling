@@ -11,6 +11,10 @@ export default class Environment {
     return this._value
   }
 
+  calculate(a: number, b: number): number {
+    return a + b
+  }
+
   createIntent(intent: number): void {
     this.intents.push(intent)
   }
