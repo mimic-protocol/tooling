@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import Environment from './environment'
+import Oracle from './oracle'
 
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
@@ -12,13 +13,17 @@ export async function executeTask(opts: { dir: string }) {
   const requestedCalls = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
 
-  const environment = generateEnvironment(requestedCalls)
-  const imports = generateEnvironmentImports(environment, requestedCalls, manifest.inputs)
+  const environmentCalls = requestedCalls.environment
+  const environment = generateEnvironment(environmentCalls)
+  const environmentImports = generateEnvironmentImports(environment, environmentCalls, manifest.inputs)
+
+  const oracleCalls = requestedCalls.oracle
+  const oracleImports = await generateOracleImports(oracleCalls)
 
   try {
     const wasmBuffer = fs.readFileSync(wasmPath)
     const wasmModule = new WebAssembly.Module(wasmBuffer)
-    const instance = new WebAssembly.Instance(wasmModule, imports)
+    const instance = new WebAssembly.Instance(wasmModule, { index: { ...environmentImports, ...oracleImports } })
 
     if (typeof instance.exports.main === 'function') {
       instance.exports.main()
@@ -43,7 +48,7 @@ function generateEnvironmentImports(
   environment: Environment,
   requestedCalls: string[],
   inputs: WebAssembly.ModuleImports
-): WebAssembly.Imports {
+): WebAssembly.ModuleImports {
   const imports: WebAssembly.ModuleImports = {}
   requestedCalls.forEach((requestedCall) => {
     const prop = environment[requestedCall as keyof Environment]
@@ -53,5 +58,20 @@ function generateEnvironmentImports(
 
   for (const [key, value] of Object.entries(inputs)) imports[`input.${key}`] = value
 
-  return { index: imports }
+  return imports
+}
+
+async function generateOracleImports(requestedCalls: string[]): Promise<WebAssembly.ModuleImports> {
+  const oracle = new Oracle()
+  const imports: WebAssembly.ModuleImports = {}
+
+  for (const requestedCall of requestedCalls) {
+    const prop = oracle[requestedCall as keyof Oracle]
+    if (prop === undefined || typeof prop !== 'function') throw new Error(`Invalid requested call "${requestedCall}"`)
+
+    const value = await prop()
+    imports[`oracle.${requestedCall}`] = () => value
+  }
+
+  return imports
 }

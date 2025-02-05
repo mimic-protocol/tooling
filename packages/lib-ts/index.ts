@@ -49,3 +49,7 @@ export namespace environment {
     _transfer(JSON.stringify<TransferParams>(new TransferParams(settler, chainId, token, amount, recipient, feeAmount)))
   }
 }
+
+export declare namespace oracle {
+  function getETHPrice(): i32
+}
