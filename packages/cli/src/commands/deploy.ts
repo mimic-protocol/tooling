@@ -67,7 +67,6 @@ export default class Deploy extends Command {
       })
       return data.CID
     } catch (err) {
-      console.log(err)
       if (err instanceof AxiosError) this.handleError(err, 'Failed to upload to IPFS')
       this.error(err as Error)
     }
