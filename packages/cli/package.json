@@ -9,12 +9,13 @@
   },
   "scripts": {
     "postinstall": "yarn build",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && yarn copyfiles -u 1 src/templates/** dist",
     "start": "yarn build && node ./bin/run.js",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@inquirer/prompts": "^7.2.4",
     "@oclif/core": "^4.2.2",
     "@oclif/plugin-not-found": "^3.2.38",
     "assemblyscript": "^0.27.1",
@@ -29,6 +30,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.10.5",
     "chai": "^4.3.7",
+    "copyfiles": "^2.4.1",
     "eslint-config-mimic": "^0.0.3",
     "mocha": "^10.2.0",
     "sinon": "^18.0.0",
