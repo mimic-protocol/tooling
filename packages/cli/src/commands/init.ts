@@ -1,4 +1,9 @@
+import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
+import * as fs from 'fs'
+import * as path from 'path'
+
+import log from '../log'
 
 export default class Init extends Command {
   static override description = 'Initializes a new Mimic-compatible project structure in the specified directory'
@@ -13,7 +18,41 @@ export default class Init extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(Init)
     const { directory, force } = flags
+    const fullDirectory = path.resolve(directory)
+    const templateDirectory = path.join(__dirname, '../templates')
 
-    console.log(directory, force)
+    if (force) {
+      const shouldDelete = await confirm({
+        message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(fullDirectory)}. This action is ${log.warnText('irreversible')}`,
+        default: false,
+      })
+      if (!shouldDelete) {
+        console.log('You can remove the --force flag from your command')
+        console.log('Stopping initialization...')
+        this.exit(0)
+      }
+      log.startAction(`Deleting contents of ${fullDirectory}`)
+      if (fs.existsSync(fullDirectory)) fs.rmSync(fullDirectory, { recursive: true })
+    }
+
+    log.startAction('Creating files')
+
+    if (fs.existsSync(fullDirectory)) {
+      this.error(`Directory ${log.highlightText(fullDirectory)} is not empty`, {
+        code: 'DirectoryNotEmpty',
+        suggestions: [
+          'You can specify the directory with --directory',
+          `You can ${log.warnText('overwrite')} an existing directory with --force`,
+        ],
+      })
+    }
+
+    const srcPath = path.join(fullDirectory, 'src/')
+    const manifestPath = path.join(fullDirectory, 'manifest.yaml')
+    fs.mkdirSync(srcPath, { recursive: true })
+    fs.copyFileSync(`${templateDirectory}/task.ts`, path.join(srcPath, 'task.ts'))
+    fs.copyFileSync(`${templateDirectory}/manifest.yaml`, manifestPath)
+    log.stopAction()
+    console.log('New project initialized!')
   }
 }
