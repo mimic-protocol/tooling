@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as ts from 'typescript'
 
-import log from '../logger'
+import log from '../log'
 import ManifestHandler from '../ManifestHandler'
 export default class Compile extends Command {
   static override description = 'Compiles task'
