@@ -50,28 +50,32 @@ export default class Compile extends Command {
     log.startAction('Saving files')
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
-    const environmentCalls = extractEnvironmentCalls(fileContents)
-    fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(environmentCalls, null, 2))
+    const environmentCalls = extractCalls(fileContents, 'environment')
+    const oracleCalls = extractCalls(fileContents, 'oracle')
+    fs.writeFileSync(
+      path.join(outputDir, 'inputs.json'),
+      JSON.stringify({ ...environmentCalls, ...oracleCalls }, null, 2)
+    )
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
 
-function extractEnvironmentCalls(source: string): string[] {
-  const environmentCalls = new Set<string>()
+function extractCalls(source: string, callIdentifier: string): { [key: string]: string[] } {
+  const calls = new Set<string>()
   const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
 
   function visit(node: ts.Node) {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const { expression, name } = node.expression
-      if (ts.isIdentifier(expression) && expression.escapedText === 'environment') {
-        environmentCalls.add(name.escapedText.toString())
+      if (ts.isIdentifier(expression) && expression.escapedText === callIdentifier) {
+        calls.add(name.escapedText.toString())
       }
     }
     ts.forEachChild(node, visit)
   }
 
   visit(sourceFile)
-  return Array.from(environmentCalls)
+  return { [callIdentifier]: Array.from(calls) }
 }

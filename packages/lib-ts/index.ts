@@ -39,3 +39,7 @@ export declare namespace environment {
     feeAmount: BigInt
   ): void
 }
+
+export declare namespace oracle {
+  function getETHPrice(): i32
+}
