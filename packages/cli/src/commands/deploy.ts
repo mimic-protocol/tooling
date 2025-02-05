@@ -58,7 +58,7 @@ export default class Deploy extends Command {
 
   private async uploadToIPFS(files: string[], key: string): Promise<string> {
     try {
-      const form = filesToFrom(files)
+      const form = filesToForm(files)
       const { data } = await axios.post(`${MIMIC_REGISTRY}/submit`, form, {
         headers: {
           'x-auth-token': key,
@@ -100,7 +100,7 @@ export default class Deploy extends Command {
   }
 }
 
-const filesToFrom = (files: string[]): FormData => {
+const filesToForm = (files: string[]): FormData => {
   const form = new FormData()
   for (const file of files) {
     const fileStream = fs.createReadStream(file)
