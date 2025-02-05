@@ -1,23 +1,12 @@
 import camelCase from 'lodash/camelCase'
 
-type AbiParameter = {
-  name?: string
-  type: string
-  components?: Array<{ name: string; type: string }>
-}
-
-type GenerateResult = {
-  declaration: string
-  tupleDefinitions: string[]
-}
-
-type LibTypesSet = Set<string>
+import { AbiParameter, GenerateResult } from './types'
 
 const LIB_TYPES = ['BigInt', 'Address', 'Bytes']
 
 export default {
   generate(abi: Record<string, never>[], contractName: string): string {
-    const importedLibTypes: LibTypesSet = new Set()
+    const importedLibTypes = new Set<string>()
     const functionDeclarations: string[] = []
     const tupleDefinitions: string[] = []
 
@@ -71,7 +60,7 @@ const ABI_TYPECAST_MAP: Record<string, string> = {
   bytes: 'Bytes',
 } as const
 
-const mapAbiType = (abiType: string, libTypes: LibTypesSet): string => {
+const mapAbiType = (abiType: string, libTypes: Set<string>): string => {
   if (abiType.endsWith('[]')) {
     const baseType = abiType.slice(0, -2)
     return baseType === 'tuple' ? 'Tuple[]' : `${mapAbiType(baseType, libTypes)}[]`
@@ -84,7 +73,7 @@ const mapAbiType = (abiType: string, libTypes: LibTypesSet): string => {
 const createTupleDefinition = (
   name: string,
   components: Array<{ name: string; type: string }>,
-  libTypes: LibTypesSet
+  libTypes: Set<string>
 ): string => {
   const fields = components
     .map((component) => `${component.name}: ${mapAbiType(component.type, libTypes)};`)
@@ -99,7 +88,7 @@ const generateFunctionWithTuple = (
   functionName: string,
   inputs: AbiParameter[],
   outputs: AbiParameter[],
-  libTypes: LibTypesSet
+  libTypes: Set<string>
 ): GenerateResult => {
   const tupleDefs: string[] = []
 

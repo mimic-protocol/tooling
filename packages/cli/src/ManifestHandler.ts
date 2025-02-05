@@ -4,7 +4,8 @@ import { load } from 'js-yaml'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from './errors'
-import { Manifest, ManifestValidator } from './types'
+import { Manifest } from './types'
+import { ManifestValidator } from './validators'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
