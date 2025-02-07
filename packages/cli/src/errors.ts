@@ -29,5 +29,5 @@ export class EmptyManifestError extends Error {
 }
 
 export const GENERIC_SUGGESTION = [
-  'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
+  'Contact the Mimic team for further assistance at our website https://www.mimic.fi or discord https://discord.mimic.fi',
 ]

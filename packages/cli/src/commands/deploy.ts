@@ -67,8 +67,7 @@ export default class Deploy extends Command {
       })
       return data.CID
     } catch (err) {
-      if (err instanceof AxiosError) this.handleError(err, 'Failed to upload to IPFS')
-      this.error(err as Error)
+      this.handleError(err, 'Failed to upload to IPFS')
     }
   }
 
@@ -84,12 +83,12 @@ export default class Deploy extends Command {
         }
       )
     } catch (err) {
-      if (err instanceof AxiosError) this.handleError(err, 'Failed to upload to registry')
-      this.error(err as Error)
+      this.handleError(err, 'Failed to upload to registry')
     }
   }
 
-  private handleError(err: AxiosError, message: string) {
+  private handleError(err: unknown, message: string): never {
+    if (!(err instanceof AxiosError)) this.error(err as Error)
     const statusCode = err.response?.status
     if (statusCode === 401) this.error(`${message}`, { code: 'Unauthorized', suggestions: ['Review your key'] })
     else
@@ -101,11 +100,10 @@ export default class Deploy extends Command {
 }
 
 const filesToForm = (files: string[]): FormData => {
-  const form = new FormData()
-  for (const file of files) {
+  return files.reduce((form, file) => {
     const fileStream = fs.createReadStream(file)
     const filename = file.split('/').pop()
     form.append('file', fileStream, { filename })
-  }
-  return form
+    return form
+  }, new FormData())
 }
