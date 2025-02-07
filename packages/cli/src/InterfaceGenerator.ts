@@ -2,7 +2,26 @@ import camelCase from 'lodash/camelCase'
 
 import { AbiParameter, GenerateResult } from './types'
 
-const LIB_TYPES = ['BigInt', 'Address', 'Bytes']
+const LIB_TYPES = ['BigInt', 'Address', 'Bytes'] as const
+
+const ABI_TYPECAST_MAP: Record<string, string> = {
+  uint8: 'u8',
+  uint16: 'u16',
+  uint32: 'u32',
+  uint64: 'u64',
+  uint128: 'BigInt',
+  uint256: 'BigInt',
+  int8: 'i8',
+  int16: 'i16',
+  int32: 'i32',
+  int64: 'i64',
+  int128: 'BigInt',
+  int256: 'BigInt',
+  address: 'Address',
+  bool: 'boolean',
+  string: 'string',
+  bytes: 'Bytes',
+} as const
 
 export default {
   generate(abi: Record<string, never>[], contractName: string): string {
@@ -44,32 +63,13 @@ export declare class ${contractName} {
 
 const toPascalCase = (str: string): string => camelCase(str).replace(/^(.)/, (_, c) => c.toUpperCase())
 
-const ABI_TYPECAST_MAP: Record<string, string> = {
-  uint8: 'BigInt',
-  uint16: 'BigInt',
-  uint32: 'BigInt',
-  uint64: 'BigInt',
-  uint128: 'BigInt',
-  uint256: 'BigInt',
-  int8: 'BigInt',
-  int16: 'BigInt',
-  int32: 'BigInt',
-  int64: 'BigInt',
-  int128: 'BigInt',
-  int256: 'BigInt',
-  address: 'Address',
-  bool: 'boolean',
-  string: 'string',
-  bytes: 'Bytes',
-} as const
-
 const mapAbiType = (abiType: string, libTypes: Set<string>): string => {
   if (abiType.endsWith('[]')) {
     const baseType = abiType.slice(0, -2)
     return baseType === 'tuple' ? 'Tuple[]' : `${mapAbiType(baseType, libTypes)}[]`
   }
   const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
-  if (LIB_TYPES.includes(mapped)) libTypes.add(mapped)
+  if (LIB_TYPES.includes(mapped as (typeof LIB_TYPES)[number])) libTypes.add(mapped)
   return mapped
 }
 
