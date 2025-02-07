@@ -25,6 +25,9 @@ export default {
 
     if (functionDeclarations.length === 0) return ''
 
+    importedLibTypes.add('Address')
+    functionDeclarations.unshift(`static load(address: Address, chainId: u64): ${contractName};`)
+
     const importLine =
       importedLibTypes.size > 0
         ? `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
@@ -33,7 +36,7 @@ export default {
     const tuplesOutput = tupleDefinitions.length > 0 ? `\n${tupleDefinitions.join('\n')}\n` : ''
 
     return `${importLine}${tuplesOutput}
-export declare namespace ${contractName} {
+export declare class ${contractName} {
   ${functionDeclarations.join('\n  ')}
 }`.trim()
   },
@@ -133,6 +136,6 @@ const generateFunctionWithTuple = (
     returnType = `{ ${fields} }`
   }
 
-  const declaration = `export function ${functionName}(${parameters}): ${returnType};`
+  const declaration = `${functionName}(${parameters}): ${returnType};`
   return { declaration, tupleDefinitions: tupleDefs }
 }
