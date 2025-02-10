@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
-import * as FormData from 'form-data'
+import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 

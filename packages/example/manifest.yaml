@@ -8,4 +8,4 @@ inputs:
   - firstStaticNumber: 2
   - secondStaticNumber: 3
 abis:
-  - ERC20: './abis/ERC20.json'
+  - ERC20: './ERC20.json'

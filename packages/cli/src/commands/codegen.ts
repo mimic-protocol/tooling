@@ -1,5 +1,8 @@
 import { Command, Flags } from '@oclif/core'
+import * as fs from 'fs'
 
+import InterfaceGenerator from '../InterfaceGenerator'
+import ManifestHandler from '../ManifestHandler'
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'
 
@@ -19,6 +22,20 @@ export default class Codegen extends Command {
     const { flags } = await this.parse(Codegen)
     const { manifest: manifestDir, output: outputDir, clean } = flags
 
-    console.log(manifestDir, outputDir, clean)
+    const manifest = ManifestHandler.load(this, manifestDir)
+
+    if (clean && fs.existsSync(outputDir)) {
+      fs.rmSync(outputDir, { recursive: true, force: true })
+    }
+
+    if (Object.keys(manifest.abis).length > 0 && !fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true })
+    }
+
+    for (const [contractName, path] of Object.entries(manifest.abis)) {
+      const abi = JSON.parse(fs.readFileSync(path, 'utf-8'))
+      const abiInterface = InterfaceGenerator.generate(abi, contractName)
+      if (abiInterface.length > 0) fs.writeFileSync(`${outputDir}/${contractName}.ts`, abiInterface)
+    }
   }
 }

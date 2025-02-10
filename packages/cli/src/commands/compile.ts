@@ -1,15 +1,11 @@
 import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
-import { load } from 'js-yaml'
 import * as path from 'path'
 import * as ts from 'typescript'
-import { ZodError } from 'zod'
 
-import { DuplicateEntryError, EmptyManifestError, GENERIC_SUGGESTION, MoreThanOneEntryError } from '../errors'
 import log from '../log'
-import ManifestValidator from '../ManifestValidator'
-
+import ManifestHandler from '../ManifestHandler'
 export default class Compile extends Command {
   static override description = 'Compiles task'
 
@@ -29,22 +25,7 @@ export default class Compile extends Command {
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-
-    let loadedManifest
-    try {
-      loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
-    } catch {
-      this.error(`Could not find ${manifestDir}`, {
-        code: 'FileNotFound',
-        suggestions: ['Use the --manifest flag to specify the correct path'],
-      })
-    }
-    let manifest
-    try {
-      manifest = ManifestValidator.validate(loadedManifest)
-    } catch (err) {
-      this.handleValidationError(err)
-    }
+    const manifest = ManifestHandler.load(this, manifestDir)
     log.startAction('Compiling')
 
     const ascArgs = [
@@ -65,6 +46,7 @@ export default class Compile extends Command {
         suggestions: ['Check the AssemblyScript file'],
       })
     }
+
     log.startAction('Saving files')
 
     const fileContents = fs.readFileSync(taskFile, 'utf-8')
@@ -73,31 +55,6 @@ export default class Compile extends Command {
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
-  }
-
-  private handleValidationError(err: unknown) {
-    let message: string
-    let code: string
-    let suggestions: string[]
-
-    if (err instanceof MoreThanOneEntryError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = [`${err.location[1][0]}: ${err.location[1][1]} might be missing a prepended '-' on manifest`]
-    } else if (err instanceof DuplicateEntryError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = [`Review manifest for duplicate key: ${err.duplicateKey}`]
-    } else if (err instanceof EmptyManifestError) {
-      ;[message, code] = [err.message, err.name]
-      suggestions = ['Verify if you are using the correct manifest file']
-    } else if (err instanceof ZodError) {
-      ;[message, code] = ['Missing/Incorrect Fields', 'FieldsError']
-      suggestions = err.errors.map((e) => `${e.path.join('/')}: ${e.message}`)
-    } else {
-      ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
-      suggestions = GENERIC_SUGGESTION
-    }
-
-    this.error(message, { code, suggestions })
   }
 }
 
