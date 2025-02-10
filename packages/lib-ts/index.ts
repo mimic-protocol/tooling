@@ -1,8 +1,9 @@
 import { Address, BigInt, Bytes } from './common'
 
 export * from './common'
-
 export declare namespace environment {
+  function getValue(): i32
+  function createIntent(intent: i32): void
   function createCallIntent(
     settler: Address,
     chainId: u64,
