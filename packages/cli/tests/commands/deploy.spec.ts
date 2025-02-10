@@ -8,7 +8,7 @@ import { join } from 'path'
 import { itThrowsACliError } from '../helpers'
 
 describe('deploy', () => {
-  const inputDir = join(__dirname, 'deploly-directory')
+  const inputDir = join(__dirname, 'deploy-directory')
   let outputDir = inputDir
 
   context('when passing a deployment key', () => {
