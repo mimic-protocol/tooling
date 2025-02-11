@@ -67,7 +67,7 @@ function handleValidationError(command: Command, err: unknown): never {
     suggestions = ['Verify if you are using the correct manifest file']
   } else if (err instanceof ZodError) {
     ;[message, code] = ['Missing/Incorrect Fields', 'FieldsError']
-    suggestions = err.errors.map((e) => `${e.path.join('/')}: ${e.message}`)
+    suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
   } else {
     ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
     suggestions = [

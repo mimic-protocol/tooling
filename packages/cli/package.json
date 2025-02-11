@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^7.2.4",
+    "@mimic-fi/helpers": "^1.0.2",
     "@oclif/core": "^4.2.2",
     "@oclif/plugin-not-found": "^3.2.38",
     "assemblyscript": "^0.27.1",
