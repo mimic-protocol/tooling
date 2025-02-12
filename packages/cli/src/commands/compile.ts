@@ -2,10 +2,15 @@ import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as ts from 'typescript'
 
 import log from '../log'
 import ManifestHandler from '../ManifestHandler'
+
+interface FunctionsMap {
+  [namespace: string]: {
+    [subNamespace: string]: string[]
+  }
+}
 export default class Compile extends Command {
   static override description = 'Compiles task'
 
@@ -28,16 +33,10 @@ export default class Compile extends Command {
     const manifest = ManifestHandler.load(this, manifestDir)
     log.startAction('Compiling')
 
-    const ascArgs = [
-      taskFile,
-      '--target',
-      'release',
-      '--outFile',
-      path.join(outputDir, 'task.wasm'),
-      '--textFile',
-      path.join(outputDir, 'task.wat'),
-      '--optimize',
-    ]
+    const wasmPath = path.join(outputDir, 'task.wasm')
+    const watPath = path.join(outputDir, 'task.wat')
+
+    const ascArgs = [taskFile, '--target', 'release', '--outFile', wasmPath, '--textFile', watPath, '--optimize']
 
     const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })
     if (result.status !== 0) {
@@ -49,33 +48,61 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    const fileContents = fs.readFileSync(taskFile, 'utf-8')
-    const environmentCalls = extractCalls(fileContents, 'environment')
-    const oracleCalls = extractCalls(fileContents, 'oracle')
-    fs.writeFileSync(
-      path.join(outputDir, 'inputs.json'),
-      JSON.stringify({ ...environmentCalls, ...oracleCalls }, null, 2)
-    )
+    const functionCalls = extractCalls(watPath)
+    fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(functionCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
 
-function extractCalls(source: string, callIdentifier: string): { [key: string]: string[] } {
-  const calls = new Set<string>()
-  const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
+function extractCalls(watPath: string): FunctionsMap {
+  const fileContent = fs.readFileSync(watPath, 'utf8')
+  const lines = fileContent.split('\n')
 
-  function visit(node: ts.Node) {
-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-      const { expression, name } = node.expression
-      if (ts.isIdentifier(expression) && expression.escapedText === callIdentifier) {
-        calls.add(name.escapedText.toString())
-      }
+  const result: FunctionsMap = {}
+
+  const importRegex = /\(import\s+"([^"]+)"\s+"([^"]+)"\s+\(func\s+\$[^\s)]+/
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed.startsWith('(import')) continue
+
+    const match = trimmed.match(importRegex)
+    if (!match) continue
+
+    const namespace = match[1]
+    const funcFullName = match[2]
+
+    if (namespace === 'env') {
+      continue
     }
-    ts.forEachChild(node, visit)
+
+    const parts = funcFullName.split('.')
+    if (parts.length < 2) continue
+    const subNamespace = parts[0]
+    const funcName = parts.slice(1).join('.')
+
+    if (!result[namespace]) {
+      result[namespace] = {}
+    }
+    if (!result[namespace][subNamespace]) {
+      result[namespace][subNamespace] = []
+    }
+    result[namespace][subNamespace].push(funcName)
   }
 
-  visit(sourceFile)
-  return { [callIdentifier]: Array.from(calls) }
+  const sortedResult: FunctionsMap = {}
+  Object.keys(result)
+    .sort()
+    .forEach((ns) => {
+      sortedResult[ns] = {}
+      Object.keys(result[ns])
+        .sort()
+        .forEach((subNs) => {
+          sortedResult[ns][subNs] = result[ns][subNs].sort()
+        })
+    })
+
+  return sortedResult
 }
