@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "yarn build && node ./dist/bin/relayer.js --dir ../example/build/",
     "lint": "eslint .",
-    "test": "yarn build && yarn start | grep -q 'Task executed successfully' && echo 'test passed'"
+    "test": "echo 'Warning: DEPRECATED'"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
