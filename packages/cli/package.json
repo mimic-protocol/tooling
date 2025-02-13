@@ -20,6 +20,8 @@
     "@oclif/core": "^4.2.2",
     "@oclif/plugin-not-found": "^3.2.38",
     "assemblyscript": "^0.27.1",
+    "axios": "^1.7.9",
+    "form-data": "^4.0.1",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
     "zod": "^3.24.1"
@@ -32,6 +34,7 @@
     "@types/lodash": "^4.17.15",
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.10.5",
+    "axios-mock-adapter": "^2.1.0",
     "chai": "^4.3.7",
     "copyfiles": "^2.4.1",
     "eslint-config-mimic": "^0.0.3",
