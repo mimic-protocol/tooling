@@ -1,3 +1,6 @@
+import { JSON } from 'json-as/assembly'
+
+import { BridgeParams, CallParams, SwapParams, TransferParams } from './interfaces/environment'
 import { Address, BigInt, Bytes } from './common'
 
 export * from './common'
@@ -6,32 +9,11 @@ declare namespace environment {
   function getValue(): i32
   function calculate(a: i32, b: i32): i32
   function createIntent(intent: i32): void
-  function call(settler: string, chainId: u64, target: string, data: string, feeToken: string, feeAmount: string): void
-  function swap(
-    settler: string,
-    chainId: u64,
-    tokenIn: string,
-    tokenOut: string,
-    amountIn: string,
-    minAmountOut: string
-  ): void
-  function bridge(
-    settler: string,
-    sourceChainId: u64,
-    tokenIn: string,
-    amountIn: string,
-    destinationChainId: u64,
-    tokenOut: string,
-    minAmountOut: string
-  ): void
-  function transfer(
-    settler: string,
-    chainId: u64,
-    token: string,
-    amount: string,
-    recipient: string,
-    feeAmount: string
-  ): void
+
+  function call(params: string): void
+  function swap(params: string): void
+  function bridge(params: string): void
+  function transfer(params: string): void
 }
 
 export class Environment {
@@ -51,13 +33,7 @@ export class Environment {
     feeToken: Address,
     feeAmount: BigInt
   ): void {
-    const _settler = settler.toHexString()
-    const _chainId = chainId
-    const _target = target.toHexString()
-    const _data = data.toHexString()
-    const _feeToken = feeToken.toHexString()
-    const _feeAmount = feeAmount.toString()
-    environment.call(_settler, _chainId, _target, _data, _feeToken, _feeAmount)
+    environment.call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, data, feeToken, feeAmount)))
   }
   static swap(
     settler: Address,
@@ -67,13 +43,9 @@ export class Environment {
     amountIn: BigInt,
     minAmountOut: BigInt
   ): void {
-    const _settler = settler.toHexString()
-    const _chainId = chainId
-    const _tokenIn = tokenIn.toHexString()
-    const _tokenOut = tokenOut.toHexString()
-    const _amountIn = amountIn.toString()
-    const _minAmountOut = minAmountOut.toString()
-    environment.swap(_settler, _chainId, _tokenIn, _tokenOut, _amountIn, _minAmountOut)
+    environment.swap(
+      JSON.stringify<SwapParams>(new SwapParams(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut))
+    )
   }
   static bridge(
     settler: Address,
@@ -84,15 +56,11 @@ export class Environment {
     tokenOut: Address,
     minAmountOut: BigInt
   ): void {
-    const _settler = settler.toHexString()
-    const _sourceChainId = sourceChainId
-    const _tokenIn = tokenIn.toHexString()
-    const _amountIn = amountIn.toString()
-    const _destinationChainId = destinationChainId
-    const _tokenOut = tokenOut.toHexString()
-    const _minAmountOut = minAmountOut.toString()
-
-    environment.bridge(_settler, _sourceChainId, _tokenIn, _amountIn, _destinationChainId, _tokenOut, _minAmountOut)
+    environment.bridge(
+      JSON.stringify<BridgeParams>(
+        new BridgeParams(settler, sourceChainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+      )
+    )
   }
   static transfer(
     settler: Address,
@@ -102,17 +70,8 @@ export class Environment {
     recipient: Address,
     feeAmount: BigInt
   ): void {
-    const _settler = settler.toHexString()
-    const _chainId = chainId
-    const _token = token.toHexString()
-    const _amount = amount.toString()
-    const _recipient = recipient.toHexString()
-    const _feeAmount = feeAmount.toString()
-
-    environment.transfer(_settler, _chainId, _token, _amount, _recipient, _feeAmount)
+    environment.transfer(
+      JSON.stringify<TransferParams>(new TransferParams(settler, chainId, token, amount, recipient, feeAmount))
+    )
   }
-}
-
-export declare namespace oracle {
-  function getETHPrice(): i32
 }
