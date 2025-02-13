@@ -117,6 +117,10 @@ describe('ManifestHandler', () => {
             )
           })
 
+          context('when contract is missing', () => {
+            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, contract: undefined } }, 'Required')
+          })
+
           context('when contract is invalid', () => {
             itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, contract: '0x0' } }, 'Must be a valid address')
           })

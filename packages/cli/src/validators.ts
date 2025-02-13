@@ -22,7 +22,7 @@ const EventTrigger = z
   .object({
     type: z.literal('event'),
     chainId: z.number(),
-    contract: Address.optional(),
+    contract: Address,
     event: String.regex(eventRegex, 'Must be a valid event'),
     delta: String.regex(deltaRegex, 'Invalid Delta'),
   })
