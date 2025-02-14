@@ -5,17 +5,24 @@ export class CallParams {
   settler: string
   chain_id: u64
   target: string
-  data: string
+  data: string | null
   fee_token: string
   fee_amount: string
 
-  constructor(settler: Address, chainId: u64, target: Address, data: Bytes, feeToken: Address, feeAmount: BigInt) {
+  constructor(
+    settler: Address,
+    chainId: u64,
+    target: Address,
+    feeToken: Address,
+    feeAmount: BigInt,
+    data: Bytes | null
+  ) {
     this.settler = settler.toHexString()
     this.chain_id = chainId
     this.target = target.toHexString()
-    this.data = data.toHexString()
     this.fee_token = feeToken.toHexString()
     this.fee_amount = feeAmount.toString()
+    this.data = data ? data.toHexString() : null
   }
 }
 

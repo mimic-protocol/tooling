@@ -29,11 +29,11 @@ export class Environment {
     settler: Address,
     chainId: u64,
     target: Address,
-    data: Bytes,
     feeToken: Address,
-    feeAmount: BigInt
+    feeAmount: BigInt,
+    data: Bytes | null = null
   ): void {
-    environment.call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, data, feeToken, feeAmount)))
+    environment.call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, feeToken, feeAmount, data)))
   }
   static swap(
     settler: Address,

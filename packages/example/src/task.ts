@@ -10,9 +10,9 @@ export default function main(): void {
   byteArray[1] = 2
   byteArray[2] = 3
   byteArray[3] = 4
-  const data = Bytes.fromByteArray(byteArray)
   const feeToken = Address.fromString(NULL_ADDRESS)
   const feeAmount = BigInt.fromString('1.2e18')
+  const data = Bytes.fromByteArray(byteArray)
 
   const tokenIn = Address.fromString(NULL_ADDRESS)
   const tokenOut = Address.fromString(NULL_ADDRESS)
@@ -21,7 +21,8 @@ export default function main(): void {
   const destinationChainId = 137
   const recipient = Address.fromString(NULL_ADDRESS)
 
-  Environment.call(settler, chainId, target, data, feeToken, feeAmount)
+  Environment.call(settler, chainId, target, feeToken, feeAmount, data)
+  Environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
   Environment.swap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
   Environment.bridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
   Environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
