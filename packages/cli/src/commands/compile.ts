@@ -6,11 +6,12 @@ import * as path from 'path'
 import log from '../log'
 import ManifestHandler from '../ManifestHandler'
 
-interface FunctionsMap {
+type FunctionsMap = {
   [namespace: string]: {
     [subNamespace: string]: string[]
   }
 }
+
 export default class Compile extends Command {
   static override description = 'Compiles task'
 
@@ -85,9 +86,7 @@ function extractCalls(watPath: string): FunctionsMap {
     const namespace = match[1]
     const funcFullName = match[2]
 
-    if (namespace === 'env') {
-      continue
-    }
+    if (namespace === 'env') continue
 
     const parts = funcFullName.split('.')
     if (parts.length < 2) continue
@@ -103,17 +102,20 @@ function extractCalls(watPath: string): FunctionsMap {
     result[namespace][subNamespace].push(funcName)
   }
 
-  const sortedResult: FunctionsMap = {}
-  Object.keys(result)
+  return sortInputs(result)
+}
+
+function sortInputs(inputs: FunctionsMap): FunctionsMap {
+  const sortedInputs: FunctionsMap = {}
+  Object.keys(inputs)
     .sort()
     .forEach((ns) => {
-      sortedResult[ns] = {}
-      Object.keys(result[ns])
+      sortedInputs[ns] = {}
+      Object.keys(inputs[ns])
         .sort()
         .forEach((subNs) => {
-          sortedResult[ns][subNs] = result[ns][subNs].sort()
+          sortedInputs[ns][subNs] = inputs[ns][subNs].sort()
         })
     })
-
-  return sortedResult
+  return sortedInputs
 }
