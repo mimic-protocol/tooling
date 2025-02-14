@@ -1,6 +1,5 @@
-import { Address, BigInt, Bytes, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
 
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -18,8 +17,8 @@ export default function main(): void {
   const destinationChainId = 137
   const recipient = Address.fromString(NULL_ADDRESS)
 
-  environment.createCallIntent(settler, chainId, target, data, feeToken, feeAmount)
-  environment.createSwapIntent(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
-  environment.createBridgeIntent(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
-  environment.createTransferIntent(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
+  environment.createCall(settler, chainId, target, data, feeToken, feeAmount)
+  environment.createSwap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
+  environment.createBridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+  environment.createTransfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 }
