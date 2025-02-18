@@ -1,6 +1,41 @@
+import { Address, BigInt, Bytes } from './common'
+
 export * from './common'
 
+export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export declare namespace environment {
-  function getValue(): i32
-  function createIntent(intent: i32): void
+  function call(
+    settler: Address,
+    chainId: u64,
+    target: Address,
+    data: Bytes,
+    feeToken: Address,
+    feeAmount: BigInt
+  ): void
+  function swap(
+    settler: Address,
+    chainId: u64,
+    tokenIn: Address,
+    tokenOut: Address,
+    amountIn: BigInt,
+    minAmountOut: BigInt
+  ): void
+  function bridge(
+    settler: Address,
+    sourceChainId: u64,
+    tokenIn: Address,
+    amountIn: BigInt,
+    destinationChainId: u64,
+    tokenOut: Address,
+    minAmountOut: BigInt
+  ): void
+  function transfer(
+    settler: Address,
+    sourceChainId: u64,
+    token: Address,
+    amount: BigInt,
+    recipient: Address,
+    feeAmount: BigInt
+  ): void
 }

@@ -37,7 +37,7 @@ describe('compile', () => {
           const inputs = JSON.parse(fs.readFileSync(`${outputDir}/inputs.json`, 'utf-8'))
           const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-          expect(inputs).to.be.deep.equal(['getValue', 'createIntent'])
+          expect(inputs).to.be.deep.equal(['call'])
           expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 2, secondStaticNumber: 3 })
         })
       })
@@ -134,7 +134,7 @@ describe('compile', () => {
       const inputs = JSON.parse(fs.readFileSync(`${outputDir}/inputs.json`, 'utf-8'))
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-      expect(inputs).to.be.deep.equal(['getValue', 'createIntent'])
+      expect(inputs).to.be.deep.equal(['call'])
       expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 2, secondStaticNumber: 3 })
     })
   })

@@ -1,12 +1,24 @@
-import { environment } from '@mimicprotocol/lib-ts'
-import { input } from './types'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+
 
 export default function main(): void {
-  const firstNumber = environment.getValue()
-  const firstIntent = firstNumber * input.firstStaticNumber
-  environment.createIntent(firstIntent)
+  const settler = Address.fromString(NULL_ADDRESS)
+  const chainId = 1
 
-  const secondNumber = environment.getValue()
-  const secondIntent = secondNumber * input.secondStaticNumber
-  environment.createIntent(secondIntent)
+  const target = Address.fromString(NULL_ADDRESS)
+  const data = Bytes.empty()
+  const feeToken = Address.fromString(NULL_ADDRESS)
+  const feeAmount = BigInt.zero()
+
+  const tokenIn = Address.fromString(NULL_ADDRESS)
+  const tokenOut = Address.fromString(NULL_ADDRESS)
+  const amountIn = BigInt.zero()
+  const minAmountOut = BigInt.zero()
+  const destinationChainId = 137
+  const recipient = Address.fromString(NULL_ADDRESS)
+
+  environment.call(settler, chainId, target, data, feeToken, feeAmount)
+  environment.swap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
+  environment.bridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+  environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 }
