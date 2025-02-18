@@ -7,7 +7,7 @@ const Address = String.and(z.custom<string>(isValidAddress, 'Must be a valid add
 
 const cronRegex = /((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/g
 const deltaRegex = /\d+(s|m|h)/g
-const eventRegex = /[A-Z][a-z]*\([a-z]+[0-9]*(?:,[a-z]+[0-9]*)*\)/gm
+const eventRegex = /^[A-Za-z_][A-Za-z0-9_]*\((?:(?:[A-Za-z0-9_]+(?:\[\])*)(?:,(?:[A-Za-z0-9_]+(?:\[\])*))*?)?\)$/gm
 const versionRegex = /\d+.\d+.\d+/gm
 
 const CronTrigger = z
