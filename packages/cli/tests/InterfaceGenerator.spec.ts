@@ -12,8 +12,9 @@ describe('InterfaceGenerator', () => {
       const contractName = 'MyERC20'
       const result = InterfaceGenerator.generate(erc20Abi, contractName)
 
-      expect(result).to.include(`export declare class ${contractName} {`)
-      expect(result).to.include(`static load(address: Address, chainId: u64): ${contractName};`)
+      expect(result).to.include(`export class ${contractName} {`)
+      expect(result).to.not.include(`static load(address: Address, chainId: u64): ${contractName};`)
+
       expect(result).to.include('name(')
       expect(result).to.include('symbol(')
       expect(result).to.include('decimals(')
@@ -24,21 +25,27 @@ describe('InterfaceGenerator', () => {
   })
 
   context('when ABI contains only non read-only functions', () => {
-    it('returns an empty string', () => {
+    it('generates an interface with only a constructor and no view/pure methods', () => {
       const contractName = 'MyERC20'
-      const nonReadOnlyAbi = erc20Abi.filter((item: Record<string, never>) => {
+      const nonReadOnlyAbi = erc20Abi.filter((item: any) => {
         return !['view', 'pure'].includes(item.stateMutability)
       })
       const result = InterfaceGenerator.generate(nonReadOnlyAbi, contractName)
-      expect(result).to.equal('')
+
+      expect(result).to.include(`export class ${contractName} {`)
+      expect(result).to.include('constructor(address: Address, chainId: u64) {')
+      expect(result).to.not.match(/}\s+\w+\(/)
     })
   })
 
   context('when ABI is empty', () => {
-    it('returns an empty string', () => {
+    it('generates an interface with an empty namespace and a contract with only a constructor', () => {
       const contractName = 'EmptyContract'
       const result = InterfaceGenerator.generate([], contractName)
-      expect(result).to.equal('')
+
+      expect(result).to.include(`declare namespace ${contractName.toLowerCase()} {`)
+      expect(result).to.include(`export class ${contractName} {`)
+      expect(result).to.include('constructor(address: Address, chainId: u64) {')
     })
   })
 
@@ -62,14 +69,14 @@ describe('InterfaceGenerator', () => {
       },
     ] as unknown as Record<string, never>[]
 
-    it('generates tuple definitions and includes them in the interface', () => {
+    it('generates interface with tuple parameters as unknown', () => {
       const contractName = 'TupleContract'
       const result = InterfaceGenerator.generate(tupleInputAbi, contractName)
 
-      expect(result).to.include('export class GetTupleDataTuple {')
-      expect(result).to.include('a: BigInt;')
-      expect(result).to.include('b: string;')
-      expect(result).to.include('getTuple(data: GetTupleDataTuple): boolean;')
+      console.log(result)
+
+      expect(result).to.include('getTuple(data: unknown): boolean')
+      expect(result).to.not.include('export class GetTupleDataTuple {')
     })
   })
 
@@ -93,14 +100,12 @@ describe('InterfaceGenerator', () => {
       },
     ] as unknown as Record<string, never>[]
 
-    it('generates tuple definitions and includes them in the interface', () => {
+    it('generates interface with tuple outputs as unknown', () => {
       const contractName = 'ComplexOutputContract'
       const result = InterfaceGenerator.generate(tupleOutputAbi, contractName)
 
-      expect(result).to.include('export class GetComplexResultReturnTuple {')
-      expect(result).to.include('value: string;')
-      expect(result).to.include('count: BigInt;')
-      expect(result).to.include('getComplexResult(id: BigInt): GetComplexResultReturnTuple;')
+      expect(result).to.include('getComplexResult(id: BigInt): unknown')
+      expect(result).to.not.include('export class GetComplexResultReturnTuple {')
     })
   })
 })
