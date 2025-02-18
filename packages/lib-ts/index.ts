@@ -5,6 +5,7 @@ import { Address, BigInt, Bytes } from './common'
 
 export * from './common'
 export * from './constants'
+export { JSON } from 'json-as/assembly'
 
 export namespace environment {
   declare function _call(params: string): void
