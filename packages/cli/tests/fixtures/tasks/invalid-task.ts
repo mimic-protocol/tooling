@@ -11,5 +11,5 @@ export default function main(): void {
   feeAmount = feeAmount.plus(BigInt.fromI32(undeclaredVariable))
 
   // Replace this with your task code
-  environment.createCall(settler, chainId, target, data, feeToken, feeAmount)
+  environment.call(settler, chainId, target, data, feeToken, feeAmount)
 }

@@ -17,8 +17,8 @@ export default function main(): void {
   const destinationChainId = 137
   const recipient = Address.fromString(NULL_ADDRESS)
 
-  environment.createCall(settler, chainId, target, data, feeToken, feeAmount)
-  environment.createSwap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
-  environment.createBridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
-  environment.createTransfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
+  environment.call(settler, chainId, target, data, feeToken, feeAmount)
+  environment.swap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
+  environment.bridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+  environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 }

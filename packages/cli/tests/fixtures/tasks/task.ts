@@ -18,6 +18,6 @@ export default function main(): void {
   const fee2 = feeAmount.times(BigInt.fromI32(input.secondStaticNumber))
 
   // Replace this with your task code
-  environment.createCall(settler, chainId, target, data, feeToken, fee1)
-  environment.createCall(settler, chainId, target, data, feeToken, fee2)
+  environment.call(settler, chainId, target, data, feeToken, fee1)
+  environment.call(settler, chainId, target, data, feeToken, fee2)
 }

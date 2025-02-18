@@ -5,7 +5,7 @@ export * from './common'
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export declare namespace environment {
-  function createCall(
+  function call(
     settler: Address,
     chainId: u64,
     target: Address,
@@ -13,15 +13,15 @@ export declare namespace environment {
     feeToken: Address,
     feeAmount: BigInt
   ): void
-  function createSwap(
+  function swap(
     settler: Address,
-    sourceChainId: u64,
+    chainId: u64,
     tokenIn: Address,
     tokenOut: Address,
     amountIn: BigInt,
     minAmountOut: BigInt
   ): void
-  function createBridge(
+  function bridge(
     settler: Address,
     sourceChainId: u64,
     tokenIn: Address,
@@ -30,7 +30,7 @@ export declare namespace environment {
     tokenOut: Address,
     minAmountOut: BigInt
   ): void
-  function createTransfer(
+  function transfer(
     settler: Address,
     sourceChainId: u64,
     token: Address,
