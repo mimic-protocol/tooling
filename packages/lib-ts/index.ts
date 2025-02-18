@@ -6,10 +6,6 @@ import { Address, BigInt, Bytes } from './common'
 export * from './common'
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 declare namespace environment {
-  function getValue(): i32
-  function calculate(a: i32, b: i32): i32
-  function createIntent(intent: i32): void
-
   function call(params: string): void
   function swap(params: string): void
   function bridge(params: string): void
@@ -17,14 +13,6 @@ declare namespace environment {
 }
 
 export class Environment {
-  static getValue(): i32 {
-    return environment.getValue()
-  }
-
-  static createIntent(intent: i32): void {
-    environment.createIntent(intent)
-  }
-
   static call(
     settler: Address,
     chainId: u64,
