@@ -18,12 +18,11 @@ export default function main(): void {
   const tokenOut = Address.fromString(NULL_ADDRESS)
   const amountIn = BigInt.zero()
   const minAmountOut = BigInt.zero()
-  const destinationChainId = 137
+  const destinationChainId = 1
   const recipient = Address.fromString(NULL_ADDRESS)
 
   Environment.call(settler, chainId, target, feeToken, feeAmount, data)
   Environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
-  Environment.swap(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut)
-  Environment.bridge(settler, chainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+  Environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
   Environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 }

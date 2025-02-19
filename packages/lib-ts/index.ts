@@ -1,14 +1,14 @@
 import { JSON } from 'json-as/assembly'
 
-import { BridgeParams, CallParams, SwapParams, TransferParams } from './interfaces/environment'
+import { CallParams, SwapParams, TransferParams } from './interfaces/environment'
 import { Address, BigInt, Bytes } from './common'
 
 export * from './common'
-export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+export * from './constants'
+
 declare namespace environment {
   function call(params: string): void
   function swap(params: string): void
-  function bridge(params: string): void
   function transfer(params: string): void
 }
 
@@ -23,33 +23,23 @@ export class Environment {
   ): void {
     environment.call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, feeToken, feeAmount, data)))
   }
+
   static swap(
     settler: Address,
     chainId: u64,
     tokenIn: Address,
-    tokenOut: Address,
     amountIn: BigInt,
-    minAmountOut: BigInt
+    tokenOut: Address,
+    minAmountOut: BigInt,
+    destinationChainId: u64 | null = null
   ): void {
     environment.swap(
-      JSON.stringify<SwapParams>(new SwapParams(settler, chainId, tokenIn, tokenOut, amountIn, minAmountOut))
-    )
-  }
-  static bridge(
-    settler: Address,
-    sourceChainId: u64,
-    tokenIn: Address,
-    amountIn: BigInt,
-    destinationChainId: u64,
-    tokenOut: Address,
-    minAmountOut: BigInt
-  ): void {
-    environment.bridge(
-      JSON.stringify<BridgeParams>(
-        new BridgeParams(settler, sourceChainId, tokenIn, amountIn, destinationChainId, tokenOut, minAmountOut)
+      JSON.stringify<SwapParams>(
+        new SwapParams(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
       )
     )
   }
+
   static transfer(
     settler: Address,
     chainId: u64,

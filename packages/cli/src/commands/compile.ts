@@ -88,7 +88,10 @@ function extractCalls(watPath: string): FunctionsMap {
 
     if (namespace === 'env') continue
 
-    const parts = funcFullName.split('.')
+    let parts = funcFullName.split('.')
+    if (parts.length < 2) {
+      parts = funcFullName.split('#')
+    }
     if (parts.length < 2) continue
     const subNamespace = parts[0]
     const funcName = parts.slice(1).join('.')
