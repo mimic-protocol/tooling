@@ -43,45 +43,27 @@ export default class Deploy extends Command {
         })
     }
 
-    log.startAction('Uploading to IPFS')
-    const CID = await this.uploadToIPFS(neededFiles, key)
+    log.startAction('Uploading to Mimic Registry')
+    const CID = await this.uploadToRegistry(neededFiles, key)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
+    log.stopAction()
+
     if (!fs.existsSync(fullOutputDir)) fs.mkdirSync(fullOutputDir, { recursive: true })
     fs.writeFileSync(join(fullOutputDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
     console.log(`CID saved at ${log.highlightText(fullOutputDir)}`)
-
-    log.startAction('Uploading to Mimic Registry')
-    await this.uploadToRegistry(CID, key)
-    log.stopAction()
     console.log(`Task deployed!`)
   }
 
-  private async uploadToIPFS(files: string[], key: string): Promise<string> {
+  private async uploadToRegistry(files: string[], key: string): Promise<string> {
     try {
       const form = filesToForm(files)
-      const { data } = await axios.post(`${MIMIC_REGISTRY}/submit`, form, {
+      const { data } = await axios.post(`${MIMIC_REGISTRY}/register`, form, {
         headers: {
           'x-auth-token': key,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
       return data.CID
-    } catch (err) {
-      this.handleError(err, 'Failed to upload to IPFS')
-    }
-  }
-
-  private async uploadToRegistry(CID: string, key: string) {
-    try {
-      await axios.post(
-        `${MIMIC_REGISTRY}/register/${CID}`,
-        {},
-        {
-          headers: {
-            'x-auth-token': key,
-          },
-        }
-      )
     } catch (err) {
       this.handleError(err, 'Failed to upload to registry')
     }

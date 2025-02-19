@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "postinstall": "yarn build",
-    "build": "mimic compile",
+    "build": "mimic compile && mimic codegen -o src/types",
     "lint": "echo 'no lint for now'",
     "test": "echo 'no tests yet'"
   },
