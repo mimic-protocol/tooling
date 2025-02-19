@@ -8,6 +8,7 @@ export async function executeTask(opts: { dir: string }) {
   const inputsPath = path.join(opts.dir, 'inputs.json')
   const manifestPath = path.join(opts.dir, 'manifest.json')
   const outputPath = path.join('output.json')
+
   const requestedCalls = JSON.parse(fs.readFileSync(inputsPath, 'utf8'))
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'))
 
@@ -31,11 +32,13 @@ export async function executeTask(opts: { dir: string }) {
     console.error('WASM Instantiation Error:', error)
   }
 }
+
 function generateEnvironment(requestedCalls: string[]): Environment {
   const environment = new Environment()
   if (requestedCalls.includes('getValue')) environment.setValue(Math.floor(Math.random() * 10))
   return environment
 }
+
 function generateEnvironmentImports(
   environment: Environment,
   requestedCalls: string[],
