@@ -24,12 +24,41 @@ const ABI_TYPECAST_MAP: Record<string, string> = {
   bytes: 'Bytes',
 } as const
 
+export default {
+  generate(abi: Record<string, never>[], contractName: string): string {
+    const viewFunctions = abi.filter(
+      (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
+    )
+
+    if (viewFunctions.length === 0) {
+      return ''
+    }
+
+    const importedLibTypes = new Set<string>()
+    importedLibTypes.add('JSON')
+
+    const namespacePart = generateNamespace(viewFunctions, contractName)
+    const contractClassPart = generateContractClass(viewFunctions, contractName, importedLibTypes)
+    const paramsClassesPart = generateParamsClasses(viewFunctions, contractName, importedLibTypes)
+
+    const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+
+    return `${importLine}
+
+${namespacePart}
+
+${contractClassPart}
+
+${paramsClassesPart}`.trim()
+  },
+}
+
 const toPascalCase = (str: string): string => camelCase(str).replace(/^(.)/, (_, c) => c.toUpperCase())
 
 /**
  * Maps an ABI type to a TypeScript type using ABI_TYPECAST_MAP.
  * If it's an array ([] suffix), it processes recursively.
- * Tuple support is removed; in that case it returns 'unknown'.
+ * Tuple support is removed for now; in that case it returns 'unknown'.
  * Additionally, if the mapped type is in LIB_TYPES it's added to libTypes.
  */
 const mapInputType = (
@@ -70,7 +99,6 @@ const generateNamespace = (viewFunctions: Record<string, never>[], contractName:
  * and methods for each view/pure function. Each method creates an instance of its
  * corresponding Params class and calls the namespace function.
  */
-
 const generateContractClass = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   viewFunctions: Record<string, any>[],
@@ -206,36 +234,4 @@ const generateParamsClasses = (
     lines.push(``)
   })
   return lines.join('\n')
-}
-
-/**
- * Main function that integrates all parts of the generator.
- */
-export default {
-  generate(abi: Record<string, never>[], contractName: string): string {
-    const viewFunctions = abi.filter(
-      (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
-    )
-
-    if (viewFunctions.length === 0) {
-      return ''
-    }
-
-    const importedLibTypes = new Set<string>()
-    importedLibTypes.add('JSON')
-
-    const namespacePart = generateNamespace(viewFunctions, contractName)
-    const contractClassPart = generateContractClass(viewFunctions, contractName, importedLibTypes)
-    const paramsClassesPart = generateParamsClasses(viewFunctions, contractName, importedLibTypes)
-
-    const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
-
-    return `${importLine}
-
-${namespacePart}
-
-${contractClassPart}
-
-${paramsClassesPart}`.trim()
-  },
 }
