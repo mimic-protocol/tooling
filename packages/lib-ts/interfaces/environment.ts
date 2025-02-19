@@ -34,7 +34,7 @@ export class SwapParams {
   token_out: string
   amount_in: string
   min_amount_out: string
-  destination_chain_id: u64 | null
+  destination_chain_id: u64
 
   constructor(
     settler: Address,
@@ -43,7 +43,7 @@ export class SwapParams {
     amountIn: BigInt,
     tokenOut: Address,
     minAmountOut: BigInt,
-    destinationChainId: u64 | null = null
+    destinationChainId: u64 = sourceChainId
   ) {
     this.settler = settler.toHexString()
     this.source_chain_id = sourceChainId

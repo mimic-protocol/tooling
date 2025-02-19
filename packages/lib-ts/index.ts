@@ -31,7 +31,7 @@ export class Environment {
     amountIn: BigInt,
     tokenOut: Address,
     minAmountOut: BigInt,
-    destinationChainId: u64 | null = null
+    destinationChainId: u64 = chainId
   ): void {
     environment.swap(
       JSON.stringify<SwapParams>(
