@@ -149,8 +149,7 @@ const generateContractClass = (abi: Record<string, any>[], contractName: string,
 }
 
 /**
- * Generates parameter classes for each function, which extend
- * from a base class (that converts address to string using toHexString()).
+ * Generates parameter classes for each function, which extend from a base class.
  */
 const generateParamsClasses = (abi: Record<string, never>[], contractName: string, libTypes: Set<string>): string => {
   const viewFunctions = abi.filter(
@@ -196,12 +195,12 @@ const generateParamsClasses = (abi: Record<string, never>[], contractName: strin
       const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
       const fieldType = mapInputType(input.type, input, fn.name, libTypes)
       const isPrimitive = PRIMITIVE_TYPES.includes(fieldType as never)
-      if (!isPrimitive) {
+      if (isPrimitive) {
+        lines.push(`    this.${fieldName} = ${fieldName};`)
+      } else {
         lines.push(
           `    this.${fieldName} = ${fieldType === 'BigInt' ? `${fieldName}.toString()` : `${fieldName}.toHexString()`};`
         )
-      } else {
-        lines.push(`    this.${fieldName} = ${fieldName};`)
       }
     })
     lines.push(`  }`)
@@ -225,14 +224,12 @@ export default {
 
     const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 
-    const declaration = `${importLine}
+    return `${importLine}
 
 ${namespacePart}
 
 ${contractClassPart}
 
 ${paramsClassesPart}`.trim()
-
-    return declaration
   },
 }
