@@ -25,27 +25,21 @@ describe('InterfaceGenerator', () => {
   })
 
   context('when ABI contains only non read-only functions', () => {
-    it('generates an interface with only a constructor and no view/pure methods', () => {
+    it('returns an empty string', () => {
       const contractName = 'MyERC20'
-      const nonReadOnlyAbi = erc20Abi.filter((item: any) => {
+      const nonReadOnlyAbi = erc20Abi.filter((item: Record<string, never>) => {
         return !['view', 'pure'].includes(item.stateMutability)
       })
       const result = InterfaceGenerator.generate(nonReadOnlyAbi, contractName)
-
-      expect(result).to.include(`export class ${contractName} {`)
-      expect(result).to.include('constructor(address: Address, chainId: u64) {')
-      expect(result).to.not.match(/}\s+\w+\(/)
+      expect(result).to.equal('')
     })
   })
 
   context('when ABI is empty', () => {
-    it('generates an interface with an empty namespace and a contract with only a constructor', () => {
+    it('returns an empty string', () => {
       const contractName = 'EmptyContract'
       const result = InterfaceGenerator.generate([], contractName)
-
-      expect(result).to.include(`declare namespace ${contractName.toLowerCase()} {`)
-      expect(result).to.include(`export class ${contractName} {`)
-      expect(result).to.include('constructor(address: Address, chainId: u64) {')
+      expect(result).to.equal('')
     })
   })
 

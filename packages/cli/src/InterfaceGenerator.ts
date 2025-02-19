@@ -55,10 +55,7 @@ const mapInputType = (
  * Generates a namespace whose name is the lowercase contract name,
  * where functions that receive a JSON parameter are declared.
  */
-const generateNamespace = (abi: Record<string, never>[], contractName: string): string => {
-  const viewFunctions = abi.filter(
-    (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
-  )
+const generateNamespace = (viewFunctions: Record<string, never>[], contractName: string): string => {
   const nsName = contractName.toLowerCase()
   const lines = [`declare namespace ${nsName} {`]
   viewFunctions.forEach((fn) => {
@@ -74,12 +71,12 @@ const generateNamespace = (abi: Record<string, never>[], contractName: string): 
  * corresponding Params class and calls the namespace function.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const generateContractClass = (abi: Record<string, any>[], contractName: string, libTypes: Set<string>): string => {
-  const viewFunctions = abi.filter(
-    (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
-  )
-  const nsName = contractName.toLowerCase()
+const generateContractClass = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  viewFunctions: Record<string, any>[],
+  contractName: string,
+  libTypes: Set<string>
+): string => {
   const lines: string[] = []
   lines.push(`export class ${contractName} {`)
   lines.push(`  address: Address;`)
@@ -111,7 +108,7 @@ const generateContractClass = (abi: Record<string, any>[], contractName: string,
     const constructorArgs = ['this.address', 'this.chainId']
       .concat(inputs.map((input, index) => (input.name && input.name.length > 0 ? input.name : `param${index}`)))
       .join(', ')
-    const nsCall = `${nsName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
+    const nsCall = `${contractName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
     lines.push(`    const result = ${nsCall};`)
 
     let returnLine: string
@@ -151,10 +148,11 @@ const generateContractClass = (abi: Record<string, any>[], contractName: string,
 /**
  * Generates parameter classes for each function, which extend from a base class.
  */
-const generateParamsClasses = (abi: Record<string, never>[], contractName: string, libTypes: Set<string>): string => {
-  const viewFunctions = abi.filter(
-    (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
-  )
+const generateParamsClasses = (
+  viewFunctions: Record<string, never>[],
+  contractName: string,
+  libTypes: Set<string>
+): string => {
   const lines: string[] = []
   if (viewFunctions.length > 0) {
     lines.push(`@json`)
@@ -215,12 +213,20 @@ const generateParamsClasses = (abi: Record<string, never>[], contractName: strin
  */
 export default {
   generate(abi: Record<string, never>[], contractName: string): string {
+    const viewFunctions = abi.filter(
+      (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
+    )
+
+    if (viewFunctions.length === 0) {
+      return ''
+    }
+
     const importedLibTypes = new Set<string>()
     importedLibTypes.add('JSON')
 
-    const namespacePart = generateNamespace(abi, contractName)
-    const contractClassPart = generateContractClass(abi, contractName, importedLibTypes)
-    const paramsClassesPart = generateParamsClasses(abi, contractName, importedLibTypes)
+    const namespacePart = generateNamespace(viewFunctions, contractName)
+    const contractClassPart = generateContractClass(viewFunctions, contractName, importedLibTypes)
+    const paramsClassesPart = generateParamsClasses(viewFunctions, contractName, importedLibTypes)
 
     const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 
