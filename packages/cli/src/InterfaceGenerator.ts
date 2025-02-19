@@ -67,16 +67,14 @@ const mapInputType = (
   fnName: string | undefined,
   libTypes: Set<string>
 ): string => {
-  if (abiType.endsWith('[]')) {
-    return mapInputType(abiType.slice(0, -2), input, fnName, libTypes) + '[]'
-  }
-  if (abiType === 'tuple') {
-    return 'unknown'
-  }
+  if (abiType.endsWith('[]')) mapInputType(abiType.slice(0, -2), input, fnName, libTypes) + '[]'
+  if (abiType === 'tuple') return 'unknown'
+
   const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
   if (LIB_TYPES.includes(mapped as (typeof LIB_TYPES)[number])) {
     libTypes.add(mapped)
   }
+
   return mapped
 }
 
@@ -87,9 +85,11 @@ const mapInputType = (
 const generateNamespace = (viewFunctions: Record<string, never>[], contractName: string): string => {
   const nsName = contractName.toLowerCase()
   const lines = [`declare namespace ${nsName} {`]
+
   viewFunctions.forEach((fn) => {
     lines.push(`  export function ${fn.name}(params: string): string;`)
   })
+
   lines.push(`}`)
   return lines.join('\n')
 }
@@ -105,7 +105,9 @@ const generateContractClass = (
   contractName: string,
   libTypes: Set<string>
 ): string => {
+  const nsName = contractName.toLowerCase()
   const lines: string[] = []
+
   lines.push(`export class ${contractName} {`)
   lines.push(`  address: Address;`)
   lines.push(`  chainId: u64;`)
@@ -115,8 +117,10 @@ const generateContractClass = (
   lines.push(`    this.chainId = chainId;`)
   lines.push(`  }`)
   lines.push(``)
+
   viewFunctions.forEach((fn) => {
     const inputs: AbiParameter[] = fn.inputs || []
+
     const methodParams = inputs
       .map((input, index) => {
         const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
@@ -124,19 +128,22 @@ const generateContractClass = (
         return `${paramName}: ${type}`
       })
       .join(', ')
+
     let retType = 'void'
     if (fn.outputs && fn.outputs.length === 1) {
       const outType = fn.outputs[0].type
       const mappedOut = mapInputType(outType, fn.outputs[0], fn.name, libTypes)
       retType = mappedOut === 'string' ? 'string' : mappedOut
     } else if (fn.outputs && fn.outputs.length > 1) {
+      retType = 'unknown' // TODO: handle multiple outputs
     }
+
     lines.push(`  ${fn.name}(${methodParams}): ${retType} {`)
     const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
     const constructorArgs = ['this.address', 'this.chainId']
       .concat(inputs.map((input, index) => (input.name && input.name.length > 0 ? input.name : `param${index}`)))
       .join(', ')
-    const nsCall = `${contractName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
+    const nsCall = `${nsName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
     lines.push(`    const result = ${nsCall};`)
 
     let returnLine: string
@@ -169,6 +176,7 @@ const generateContractClass = (
     lines.push(`  }`)
     lines.push(``)
   })
+
   lines.push(`}`)
   return lines.join('\n')
 }
@@ -182,6 +190,7 @@ const generateParamsClasses = (
   libTypes: Set<string>
 ): string => {
   const lines: string[] = []
+
   if (viewFunctions.length > 0) {
     lines.push(`@json`)
     lines.push(`class ${contractName}BaseParams {`)
@@ -195,11 +204,13 @@ const generateParamsClasses = (
     lines.push(`}`)
     lines.push(``)
   }
+
   viewFunctions.forEach((fn) => {
     const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
     const inputs: AbiParameter[] = fn.inputs || []
     lines.push(`@json`)
     lines.push(`class ${paramsClassName} extends ${contractName}BaseParams {`)
+
     inputs.forEach((input) => {
       const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
       const fieldType = mapInputType(input.type, input, fn.name, libTypes)
@@ -207,6 +218,7 @@ const generateParamsClasses = (
       lines.push(`  ${fieldName}: ${isPrimitive ? fieldType : 'string'};`)
     })
     lines.push(``)
+
     const constructorParams = ['address: Address', 'chainId: u64']
       .concat(
         inputs.map((input, index) => {
@@ -215,8 +227,10 @@ const generateParamsClasses = (
         })
       )
       .join(', ')
+
     lines.push(`  constructor(${constructorParams}) {`)
     lines.push(`    super(address, chainId);`)
+
     inputs.forEach((input) => {
       const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
       const fieldType = mapInputType(input.type, input, fn.name, libTypes)
@@ -229,6 +243,7 @@ const generateParamsClasses = (
         )
       }
     })
+
     lines.push(`  }`)
     lines.push(`}`)
     lines.push(``)
