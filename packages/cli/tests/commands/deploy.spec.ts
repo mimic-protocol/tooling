@@ -45,6 +45,7 @@ describe('deploy', () => {
 
         context('when uploading to registry is successful', () => {
           const CID = '123'
+
           beforeEach('mock register response', () => {
             axiosMock.onPost(/.*\/register/gm).reply(200, { CID })
           })
@@ -66,6 +67,18 @@ describe('deploy', () => {
               const json = JSON.parse(fs.readFileSync(`${noOutDir}/CID.json`, 'utf-8'))
               expect(json.CID).to.be.equal(CID)
             })
+          })
+        })
+
+        context('when uploading to registry is partially successful', () => {
+          context('when there is a partial error', () => {
+            const CID = '123'
+
+            beforeEach('mock response', () => {
+              axiosMock.onPost(/.*\/register/gm).reply(200, { CID, errorMessage: `Failed to register task: ${CID}` })
+            })
+
+            itThrowsACliError(command, `Failed to upload to registry`, 'RegistrationError', 1)
           })
         })
 

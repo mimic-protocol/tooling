@@ -4,7 +4,7 @@ import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 
-import { GENERIC_SUGGESTION } from '../errors'
+import { GENERIC_SUGGESTION, RegistryPartialError } from '../errors'
 import log from '../log'
 
 const MIMIC_REGISTRY = 'http://localhost:4001'
@@ -63,6 +63,7 @@ export default class Deploy extends Command {
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
+      if (data.errorMessage) throw new RegistryPartialError(data.errorMessage)
       return data.CID
     } catch (err) {
       this.handleError(err, 'Failed to upload to registry')
@@ -70,6 +71,8 @@ export default class Deploy extends Command {
   }
 
   private handleError(err: unknown, message: string): never {
+    if (err instanceof RegistryPartialError)
+      this.error(message, { code: 'RegistrationError', suggestions: GENERIC_SUGGESTION })
     if (!(err instanceof AxiosError)) this.error(err as Error)
     const statusCode = err.response?.status
     if (statusCode === 401) this.error(`${message}`, { code: 'Unauthorized', suggestions: ['Review your key'] })
