@@ -1,4 +1,4 @@
-import { Address, BigInt, ByteArray, Bytes, Environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, ByteArray, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -21,8 +21,8 @@ export default function main(): void {
   const destinationChainId = 1
   const recipient = Address.fromString(NULL_ADDRESS)
 
-  Environment.call(settler, chainId, target, feeToken, feeAmount, data)
-  Environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
-  Environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
-  Environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
+  environment.call(settler, chainId, target, feeToken, feeAmount, data)
+  environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
+  environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
+  environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 }

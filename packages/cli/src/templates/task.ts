@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, Environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -9,5 +9,5 @@ export default function main(): void {
   const feeAmount = BigInt.zero()
 
   // Replace this with your task code
-  Environment.call(settler, chainId, target, feeToken, feeAmount, data)
+  environment.call(settler, chainId, target, feeToken, feeAmount, data)
 }

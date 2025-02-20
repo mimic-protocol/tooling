@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, Environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare namespace input {
@@ -18,6 +18,6 @@ export default function main(): void {
   const fee2 = feeAmount.times(BigInt.fromI32(input.secondStaticNumber))
 
   // Replace this with your task code
-  Environment.call(settler, chainId, target, feeToken, fee1, data)
-  Environment.call(settler, chainId, target, feeToken, fee2, data)
+  environment.call(settler, chainId, target, feeToken, fee1, data)
+  environment.call(settler, chainId, target, feeToken, fee2, data)
 }
