@@ -76,11 +76,10 @@ export default class Deploy extends Command {
     if (!(err instanceof AxiosError)) this.error(err as Error)
     const statusCode = err.response?.status
     if (statusCode === 401) this.error(`${message}`, { code: 'Unauthorized', suggestions: ['Review your key'] })
-    else
-      this.error(`${message} - ${err.message}`, {
-        code: `${err.response?.status}Error`,
-        suggestions: GENERIC_SUGGESTION,
-      })
+    this.error(`${message} - ${err.message}`, {
+      code: `${err.response?.status}Error`,
+      suggestions: GENERIC_SUGGESTION,
+    })
   }
 }
 
