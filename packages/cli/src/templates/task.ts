@@ -9,5 +9,5 @@ export default function main(): void {
   const feeAmount = BigInt.zero()
 
   // Replace this with your task code
-  environment.call(settler, chainId, target, data, feeToken, feeAmount)
+  environment.call(settler, chainId, target, feeToken, feeAmount, data)
 }
