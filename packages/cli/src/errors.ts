@@ -28,6 +28,13 @@ export class EmptyManifestError extends Error {
   }
 }
 
+export class RegistryPartialError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = this.constructor.name
+  }
+}
+
 export const GENERIC_SUGGESTION = [
   'Contact the Mimic team for further assistance at our website https://www.mimic.fi or discord https://discord.mimic.fi',
 ]
