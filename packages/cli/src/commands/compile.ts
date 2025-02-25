@@ -48,6 +48,7 @@ export default class Compile extends Command {
       '--optimize',
       '--transform',
       'json-as/transform',
+      '--exportRuntime',
     ]
 
     const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })

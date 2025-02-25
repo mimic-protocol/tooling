@@ -9,8 +9,3 @@ export type AbiParameter = {
   type: string
   components?: Array<{ name: string; type: string }>
 }
-
-export type GenerateResult = {
-  declaration: string
-  tupleDefinitions: string[]
-}

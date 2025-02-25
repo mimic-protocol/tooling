@@ -1,4 +1,5 @@
 import { Address, BigInt, ByteArray, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+import { ERC20 } from './types/ERC20'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -25,4 +26,12 @@ export default function main(): void {
   environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
   environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
   environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
+
+  const usdcAddress = Address.fromString("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+  const USDC = new ERC20(usdcAddress, 1)
+  const name = USDC.name()
+  const number = USDC.balanceOf(usdcAddress)
+
+  console.log("contract name: " + name)
+  console.log("contract balance: " + number.toString())
 }
