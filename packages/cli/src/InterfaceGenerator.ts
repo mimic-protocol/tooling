@@ -1,8 +1,9 @@
 import camelCase from 'lodash/camelCase'
 
-import { AbiParameter, GenerateResult } from './types'
+import { AbiParameter } from './types'
 
-const LIB_TYPES = ['BigInt', 'Address', 'Bytes'] as const
+const LIB_TYPES = ['BigInt', 'Address', 'Bytes', 'JSON'] as const
+const PRIMITIVE_TYPES = ['u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64', 'boolean', 'string'] as const
 
 const ABI_TYPECAST_MAP: Record<string, string> = {
   uint8: 'u8',
@@ -25,117 +26,227 @@ const ABI_TYPECAST_MAP: Record<string, string> = {
 
 export default {
   generate(abi: Record<string, never>[], contractName: string): string {
+    const viewFunctions = abi.filter(
+      (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
+    )
+
+    if (viewFunctions.length === 0) {
+      return ''
+    }
+
     const importedLibTypes = new Set<string>()
-    const functionDeclarations: string[] = []
-    const tupleDefinitions: string[] = []
+    importedLibTypes.add('JSON')
 
-    abi
-      .filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability))
-      .forEach((item) => {
-        const { declaration, tupleDefinitions: tuples } = generateFunctionWithTuple(
-          item.name,
-          item.inputs,
-          item.outputs || [],
-          importedLibTypes
-        )
-        functionDeclarations.push(declaration)
-        tupleDefinitions.push(...tuples)
-      })
+    const namespacePart = generateNamespace(viewFunctions, contractName)
+    const contractClassPart = generateContractClass(viewFunctions, contractName, importedLibTypes)
+    const paramsClassesPart = generateParamsClasses(viewFunctions, contractName, importedLibTypes)
 
-    if (functionDeclarations.length === 0) return ''
+    const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 
-    importedLibTypes.add('Address')
-    functionDeclarations.unshift(`static load(address: Address, chainId: u64): ${contractName};`)
+    return `${importLine}
 
-    const importLine =
-      importedLibTypes.size > 0
-        ? `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
-        : ''
+${namespacePart}
 
-    const tuplesOutput = tupleDefinitions.length > 0 ? `\n${tupleDefinitions.join('\n')}\n` : ''
+${contractClassPart}
 
-    return `${importLine}${tuplesOutput}
-export declare class ${contractName} {
-  ${functionDeclarations.join('\n  ')}
-}`.trim()
+${paramsClassesPart}`.trim()
   },
 }
 
 const toPascalCase = (str: string): string => camelCase(str).replace(/^(.)/, (_, c) => c.toUpperCase())
 
-const mapAbiType = (abiType: string, libTypes: Set<string>): string => {
-  if (abiType.endsWith('[]')) {
-    const baseType = abiType.slice(0, -2)
-    return baseType === 'tuple' ? 'Tuple[]' : `${mapAbiType(baseType, libTypes)}[]`
-  }
+/**
+ * Maps an ABI type to a TypeScript type using ABI_TYPECAST_MAP.
+ * If it's an array ([] suffix), it processes recursively.
+ * Tuple support is removed for now; in that case it returns 'unknown'.
+ * Additionally, if the mapped type is in LIB_TYPES it's added to libTypes.
+ */
+const mapInputType = (
+  abiType: string,
+  input: AbiParameter | undefined,
+  fnName: string | undefined,
+  libTypes: Set<string>
+): string => {
+  if (abiType.endsWith('[]')) mapInputType(abiType.slice(0, -2), input, fnName, libTypes) + '[]'
+  if (abiType === 'tuple') return 'unknown'
+
   const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
-  if (LIB_TYPES.includes(mapped as (typeof LIB_TYPES)[number])) libTypes.add(mapped)
+  if (LIB_TYPES.includes(mapped as (typeof LIB_TYPES)[number])) {
+    libTypes.add(mapped)
+  }
+
   return mapped
 }
 
-const createTupleDefinition = (
-  name: string,
-  components: Array<{ name: string; type: string }>,
-  libTypes: Set<string>
-): string => {
-  const fields = components
-    .map((component) => `${component.name}: ${mapAbiType(component.type, libTypes)};`)
-    .join('\n  ')
-  return `
-export class ${name} {
-  ${fields}
-}`
+/**
+ * Generates a namespace whose name is the lowercase contract name,
+ * where functions that receive a JSON parameter are declared.
+ */
+const generateNamespace = (viewFunctions: Record<string, never>[], contractName: string): string => {
+  const nsName = contractName.toLowerCase()
+  const lines = [`declare namespace ${nsName} {`]
+
+  viewFunctions.forEach((fn) => {
+    lines.push(`  export function ${fn.name}(params: string): string;`)
+  })
+
+  lines.push(`}`)
+  return lines.join('\n')
 }
 
-const generateFunctionWithTuple = (
-  functionName: string,
-  inputs: AbiParameter[],
-  outputs: AbiParameter[],
+/**
+ * Generates the contract class, which includes properties (address and chainId)
+ * and methods for each view/pure function. Each method creates an instance of its
+ * corresponding Params class and calls the namespace function.
+ */
+const generateContractClass = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  viewFunctions: Record<string, any>[],
+  contractName: string,
   libTypes: Set<string>
-): GenerateResult => {
-  const tupleDefs: string[] = []
+): string => {
+  const nsName = contractName.toLowerCase()
+  const lines: string[] = []
 
-  const resolveParamType = (param: AbiParameter, suffix: string): string => {
-    if (param.type === 'tuple' || param.type === 'tuple[]') {
-      const isArray = param.type.endsWith('[]')
-      const tupleName = toPascalCase(`${functionName}_${suffix}_Tuple`)
-      if (param.components) {
-        tupleDefs.push(createTupleDefinition(tupleName, param.components, libTypes))
-      }
-      return isArray ? `${tupleName}[]` : tupleName
-    }
-    return mapAbiType(param.type, libTypes)
-  }
+  lines.push(`export class ${contractName} {`)
+  lines.push(`  address: Address;`)
+  lines.push(`  chainId: u64;`)
+  lines.push(``)
+  lines.push(`  constructor(address: Address, chainId: u64) {`)
+  lines.push(`    this.address = address;`)
+  lines.push(`    this.chainId = chainId;`)
+  lines.push(`  }`)
+  lines.push(``)
 
-  const parameters = inputs
-    .map((input, index) => {
-      const paramName = input.name || `param${index}`
-      return `${paramName}: ${resolveParamType(input, paramName)}`
-    })
-    .join(', ')
+  viewFunctions.forEach((fn) => {
+    const inputs: AbiParameter[] = fn.inputs || []
 
-  let returnType = 'void'
-  if (outputs.length === 1) {
-    const output = outputs[0]
-    if (output.type === 'tuple' || output.type === 'tuple[]') {
-      const tupleName = toPascalCase(`${functionName}_Return_Tuple`)
-      if (output.components) {
-        tupleDefs.push(createTupleDefinition(tupleName, output.components, libTypes))
-      }
-      returnType = output.type === 'tuple[]' ? `${tupleName}[]` : tupleName
-    } else {
-      returnType = mapAbiType(output.type, libTypes)
-    }
-  } else if (outputs.length > 1) {
-    const fields = outputs
-      .map((output, index) => {
-        const outputName = output.name || `output${index}`
-        return `${outputName}: ${resolveParamType(output, `Return${index}`)}`
+    const methodParams = inputs
+      .map((input, index) => {
+        const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+        const type = mapInputType(input.type, input, fn.name, libTypes)
+        return `${paramName}: ${type}`
       })
-      .join('; ')
-    returnType = `{ ${fields} }`
+      .join(', ')
+
+    let retType = 'void'
+    if (fn.outputs && fn.outputs.length === 1) {
+      const outType = fn.outputs[0].type
+      const mappedOut = mapInputType(outType, fn.outputs[0], fn.name, libTypes)
+      retType = mappedOut === 'string' ? 'string' : mappedOut
+    } else if (fn.outputs && fn.outputs.length > 1) {
+      retType = 'unknown' // TODO: handle multiple outputs
+    }
+
+    lines.push(`  ${fn.name}(${methodParams}): ${retType} {`)
+    const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
+    const constructorArgs = ['this.address', 'this.chainId']
+      .concat(inputs.map((input, index) => (input.name && input.name.length > 0 ? input.name : `param${index}`)))
+      .join(', ')
+    const nsCall = `${nsName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
+    lines.push(`    const result = ${nsCall};`)
+
+    let returnLine: string
+    switch (retType) {
+      case 'BigInt':
+        returnLine = `return BigInt.fromString(result);`
+        break
+      case 'Address':
+        returnLine = `return Address.fromString(result);`
+        break
+      case 'Bytes':
+        returnLine = `return Bytes.fromHexString(result);`
+        break
+      case 'u8':
+      case 'u16':
+      case 'u32':
+      case 'u64':
+      case 'i8':
+      case 'i16':
+      case 'i32':
+      case 'i64':
+      case 'boolean':
+        returnLine = `return JSON.parse<${retType}>(result);`
+        break
+      default:
+        returnLine = `return result;`
+        break
+    }
+    lines.push(`    ${returnLine}`)
+    lines.push(`  }`)
+    lines.push(``)
+  })
+
+  lines.push(`}`)
+  return lines.join('\n')
+}
+
+/**
+ * Generates parameter classes for each function, which extend from a base class.
+ */
+const generateParamsClasses = (
+  viewFunctions: Record<string, never>[],
+  contractName: string,
+  libTypes: Set<string>
+): string => {
+  const lines: string[] = []
+
+  if (viewFunctions.length > 0) {
+    lines.push(`@json`)
+    lines.push(`class ${contractName}BaseParams {`)
+    lines.push(`  address: string;`)
+    lines.push(`  chain_id: u64;`)
+    lines.push(``)
+    lines.push(`  constructor(address: Address, chainId: u64) {`)
+    lines.push(`    this.address = address.toHexString();`)
+    lines.push(`    this.chain_id = chainId;`)
+    lines.push(`  }`)
+    lines.push(`}`)
+    lines.push(``)
   }
 
-  const declaration = `${functionName}(${parameters}): ${returnType};`
-  return { declaration, tupleDefinitions: tupleDefs }
+  viewFunctions.forEach((fn) => {
+    const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
+    const inputs: AbiParameter[] = fn.inputs || []
+    lines.push(`@json`)
+    lines.push(`class ${paramsClassName} extends ${contractName}BaseParams {`)
+
+    inputs.forEach((input) => {
+      const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
+      const fieldType = mapInputType(input.type, input, fn.name, libTypes)
+      const isPrimitive = PRIMITIVE_TYPES.includes(fieldType as never)
+      lines.push(`  ${fieldName}: ${isPrimitive ? fieldType : 'string'};`)
+    })
+    lines.push(``)
+
+    const constructorParams = ['address: Address', 'chainId: u64']
+      .concat(
+        inputs.map((input, index) => {
+          const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+          return `${paramName}: ${mapInputType(input.type, input, fn.name, libTypes)}`
+        })
+      )
+      .join(', ')
+
+    lines.push(`  constructor(${constructorParams}) {`)
+    lines.push(`    super(address, chainId);`)
+
+    inputs.forEach((input) => {
+      const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
+      const fieldType = mapInputType(input.type, input, fn.name, libTypes)
+      const isPrimitive = PRIMITIVE_TYPES.includes(fieldType as never)
+      if (isPrimitive) {
+        lines.push(`    this.${fieldName} = ${fieldName};`)
+      } else {
+        lines.push(
+          `    this.${fieldName} = ${fieldType === 'BigInt' ? `${fieldName}.toString()` : `${fieldName}.toHexString()`};`
+        )
+      }
+    })
+
+    lines.push(`  }`)
+    lines.push(`}`)
+    lines.push(``)
+  })
+  return lines.join('\n')
 }

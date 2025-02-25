@@ -1,41 +1,52 @@
+import { JSON } from 'json-as/assembly'
+
+import { CallParams, SwapParams, TransferParams } from './interfaces/environment'
 import { Address, BigInt, Bytes } from './common'
 
 export * from './common'
+export * from './constants'
+export { JSON } from 'json-as/assembly'
 
-export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+export namespace environment {
+  declare function _call(params: string): void
+  declare function _swap(params: string): void
+  declare function _transfer(params: string): void
 
-export declare namespace environment {
-  function call(
+  export function call(
     settler: Address,
     chainId: u64,
     target: Address,
-    data: Bytes,
     feeToken: Address,
-    feeAmount: BigInt
-  ): void
-  function swap(
+    feeAmount: BigInt,
+    data: Bytes | null = null
+  ): void {
+    _call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, feeToken, feeAmount, data)))
+  }
+
+  export function swap(
     settler: Address,
     chainId: u64,
     tokenIn: Address,
-    tokenOut: Address,
     amountIn: BigInt,
-    minAmountOut: BigInt
-  ): void
-  function bridge(
-    settler: Address,
-    sourceChainId: u64,
-    tokenIn: Address,
-    amountIn: BigInt,
-    destinationChainId: u64,
     tokenOut: Address,
-    minAmountOut: BigInt
-  ): void
-  function transfer(
+    minAmountOut: BigInt,
+    destinationChainId: u64 = chainId
+  ): void {
+    _swap(
+      JSON.stringify<SwapParams>(
+        new SwapParams(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
+      )
+    )
+  }
+
+  export function transfer(
     settler: Address,
-    sourceChainId: u64,
+    chainId: u64,
     token: Address,
     amount: BigInt,
     recipient: Address,
     feeAmount: BigInt
-  ): void
+  ): void {
+    _transfer(JSON.stringify<TransferParams>(new TransferParams(settler, chainId, token, amount, recipient, feeAmount)))
+  }
 }
