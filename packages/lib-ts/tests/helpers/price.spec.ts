@@ -61,6 +61,7 @@ describe('convertUsdToTokenAmount', () => {
 
       const result = convertUsdToTokenAmount(mockToken, usdAmount)
       expect(result.toString()).toBe('0') // 0 tokens due to precision loss
+      expect(result.length).toBe(mockToken.getDecimals())
     })
   })
 })

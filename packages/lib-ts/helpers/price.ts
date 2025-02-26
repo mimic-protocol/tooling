@@ -22,7 +22,11 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt
 
   const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(tokenDecimals))
 
-  return scaledUsdAmount.div(tokenPrice)
+  const result = scaledUsdAmount.div(tokenPrice)
+
+  if (result.isZero()) return new BigInt(tokenDecimals)
+
+  return result
 }
 
 /**
