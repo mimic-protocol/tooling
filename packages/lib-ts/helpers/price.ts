@@ -19,9 +19,7 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt
   if (usdAmount.isZero()) return new BigInt(tokenDecimals)
 
   const tokenPrice = environment.getPrice(token)
-
   const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(tokenDecimals))
-
   const result = scaledUsdAmount.div(tokenPrice)
 
   if (result.isZero()) return new BigInt(tokenDecimals)
