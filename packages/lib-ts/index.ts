@@ -1,16 +1,18 @@
 import { JSON } from 'json-as/assembly'
 
-import { CallParams, SwapParams, TransferParams } from './interfaces/environment'
-import { Address, BigInt, Bytes } from './common'
+import { CallParams, GetPriceParams, SwapParams, TransferParams } from './interfaces/environment'
+import { Address, BigInt, Bytes, Token } from './common'
 
 export * from './common'
 export * from './constants'
+export * from './helpers'
 export { JSON } from 'json-as/assembly'
 
 export namespace environment {
   declare function _call(params: string): void
   declare function _swap(params: string): void
   declare function _transfer(params: string): void
+  declare function _getPrice(params: string): string
 
   export function call(
     settler: Address,
@@ -48,5 +50,12 @@ export namespace environment {
     feeAmount: BigInt
   ): void {
     _transfer(JSON.stringify<TransferParams>(new TransferParams(settler, chainId, token, amount, recipient, feeAmount)))
+  }
+
+  // Returns the price of a token in USD expressed in 18 decimal places
+  export function getPrice(token: Token): BigInt {
+    return BigInt.fromString(
+      _getPrice(JSON.stringify<GetPriceParams>(new GetPriceParams(token.getAddress(), token.getChainId())))
+    )
   }
 }

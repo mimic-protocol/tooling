@@ -80,3 +80,14 @@ export class TransferParams {
     this.fee_amount = feeAmount.toString()
   }
 }
+
+@json
+export class GetPriceParams {
+  token_in: string
+  chain_id: u64
+
+  constructor(tokenIn: Address, chainId: u64) {
+    this.token_in = tokenIn.toHexString()
+    this.chain_id = chainId
+  }
+}
