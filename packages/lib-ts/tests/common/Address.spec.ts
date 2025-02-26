@@ -1,6 +1,6 @@
-import { Address } from '../../common/Address'
-import { Bytes } from '../../common/Bytes'
-import { NULL_ADDRESS, randomAddress, randomHex } from '../helpers'
+import { Address, Bytes } from '../../common'
+import { NULL_ADDRESS } from '../../constants'
+import { randomAddress, randomHex } from '../helpers'
 
 describe('Address', () => {
   describe('fromString', () => {
@@ -73,6 +73,28 @@ describe('Address', () => {
       for (let i = 0; i < zeroAddress.length; i++) {
         expect(zeroAddress[i]).toBe(0)
       }
+    })
+  })
+
+  describe('clone', () => {
+    describe('when cloning an address', () => {
+      it('returns a new address with the same bytes', () => {
+        const originalAddress = Address.fromString(randomAddress())
+        const clonedAddress = originalAddress.clone()
+
+        expect(clonedAddress.length).toBe(originalAddress.length)
+        expect(clonedAddress.toHex()).toBe(originalAddress.toHex())
+      })
+
+      it('creates an independent copy', () => {
+        const originalAddress = Address.fromString(randomAddress())
+        const clonedAddress = originalAddress.clone()
+
+        originalAddress[0] = 255
+
+        expect(clonedAddress[0]).not.toBe(originalAddress[0])
+        expect(clonedAddress.toHex()).not.toBe(originalAddress.toHex())
+      })
     })
   })
 })

@@ -25,4 +25,10 @@ export class Address extends Bytes {
 
     return changetype<Address>(self)
   }
+
+  clone(): Address {
+    const copy = new ByteArray(this.length)
+    copy.set(this)
+    return changetype<Address>(copy)
+  }
 }
