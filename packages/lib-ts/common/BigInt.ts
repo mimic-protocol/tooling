@@ -568,15 +568,24 @@ export class BigInt extends Uint8Array {
     if (BigInt.compare(a, b) < 0) {
       return BigInt.zero()
     }
-    let remainder = new BigInt(a.length)
-    for (let i = 0; i < a.length; i++) {
-      remainder[i] = a[i]
-    }
+
     let quotient = BigInt.zero()
-    while (BigInt.compare(remainder, b) >= 0) {
-      remainder = BigInt.subUnsigned(remainder, b)
-      quotient = BigInt.addUnsigned(quotient, BigInt.fromI32(1))
+    let remainder = BigInt.zero()
+
+    for (let i = a.length - 1; i >= 0; i--) {
+      remainder = remainder.leftShift(8)
+      remainder = BigInt.addUnsigned(remainder, BigInt.fromI32(a[i]))
+
+      let digit = BigInt.zero()
+      while (BigInt.compare(remainder, b) >= 0) {
+        remainder = BigInt.subUnsigned(remainder, b)
+        digit = BigInt.addUnsigned(digit, BigInt.fromI32(1))
+      }
+
+      quotient = quotient.leftShift(8)
+      quotient = BigInt.addUnsigned(quotient, digit)
     }
+
     return quotient
   }
 }
