@@ -29,7 +29,7 @@ export default function main(): void {
   const usdcToken = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
   const ethToken = new Token('ETH', Address.fromString('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 1, 18)
 
-  const usdcAmount = BigInt.fromString('100').times(BigInt.fromI32(10).pow(6))
+  const usdcAmount = BigInt.fromString('100').times(BigInt.fromI32(10).pow(usdcToken.getDecimals()))
   const usdcAmountInUsd = convertTokenAmountToUsd(usdcToken, usdcAmount)
   console.log('usdcAmountInUsd: ' + usdcAmountInUsd.toString())
 
