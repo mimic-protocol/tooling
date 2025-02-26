@@ -1,5 +1,4 @@
-import { Address, BigInt, ByteArray, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
-import { ERC20 } from './types/ERC20'
+import { Address, BigInt, ByteArray, Bytes, convertAmountBetweenTokens, convertTokenAmountToUsd, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -27,11 +26,13 @@ export default function main(): void {
   environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
   environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
 
-  const usdcAddress = Address.fromString("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
-  const USDC = new ERC20(usdcAddress, 1)
-  const name = USDC.name()
-  const number = USDC.balanceOf(usdcAddress)
+  const usdcToken = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
+  const ethToken = new Token('ETH', Address.fromString('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 1, 18)
 
-  console.log("contract name: " + name)
-  console.log("contract balance: " + number.toString())
+  const usdcAmount = BigInt.fromString('100').times(BigInt.fromI32(10).pow(6))
+  const usdcAmountInUsd = convertTokenAmountToUsd(usdcToken, usdcAmount)
+  console.log('usdcAmountInUsd: ' + usdcAmountInUsd.toString())
+
+  const ethAmountFromUsdc = convertAmountBetweenTokens(usdcAmount, usdcToken, ethToken)
+  console.log('ethAmountFromUsdc: ' + ethAmountFromUsdc.toString())
 }
