@@ -10,7 +10,7 @@ describe('convertUsdToTokenAmount', () => {
       const result = convertUsdToTokenAmount(mockToken, usdAmount)
 
       expect(result.toString()).toBe('0')
-      expect(result.length).toBe(mockToken.getDecimals())
+      expect(result.length).toBe(mockToken.decimals)
     })
   })
 
@@ -61,7 +61,7 @@ describe('convertUsdToTokenAmount', () => {
 
       const result = convertUsdToTokenAmount(mockToken, usdAmount)
       expect(result.toString()).toBe('0') // 0 tokens due to precision loss
-      expect(result.length).toBe(mockToken.getDecimals())
+      expect(result.length).toBe(mockToken.decimals)
     })
   })
 })
@@ -139,7 +139,7 @@ describe('convertAmountBetweenTokens', () => {
 
       const result = convertAmountBetweenTokens(amountFrom, mockTokenFrom, mockTokenTo)
       expect(result.toString()).toBe('0')
-      expect(result.length).toBe(mockTokenTo.getDecimals())
+      expect(result.length).toBe(mockTokenTo.decimals)
     })
   })
 

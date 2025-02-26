@@ -55,7 +55,7 @@ export namespace environment {
   // Returns the price of a token in USD expressed in 18 decimal places
   export function getPrice(token: Token): BigInt {
     return BigInt.fromString(
-      _getPrice(JSON.stringify<GetPriceParams>(new GetPriceParams(token.getAddress(), token.getChainId())))
+      _getPrice(JSON.stringify<GetPriceParams>(new GetPriceParams(token.address, token.chainId)))
     )
   }
 }

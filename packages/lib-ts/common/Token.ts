@@ -1,31 +1,31 @@
 import { Address } from './Address'
 
 export class Token {
-  private symbol: string
-  private address: Address
-  private chainId: u64
-  private decimals: u8
+  private _symbol: string
+  private _address: Address
+  private _chainId: u64
+  private _decimals: u8
 
   constructor(symbol: string, address: Address, chainId: u64, decimals: u8) {
-    this.symbol = symbol
-    this.address = address.clone()
-    this.chainId = chainId
-    this.decimals = decimals
+    this._symbol = symbol
+    this._address = address.clone()
+    this._chainId = chainId
+    this._decimals = decimals
   }
 
-  getSymbol(): string {
-    return this.symbol
+  get symbol(): string {
+    return this._symbol
   }
 
-  getAddress(): Address {
-    return this.address.clone()
+  get address(): Address {
+    return this._address.clone()
   }
 
-  getChainId(): u64 {
-    return this.chainId
+  get chainId(): u64 {
+    return this._chainId
   }
 
-  getDecimals(): u8 {
-    return this.decimals
+  get decimals(): u8 {
+    return this._decimals
   }
 }

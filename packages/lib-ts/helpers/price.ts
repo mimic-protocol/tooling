@@ -14,15 +14,13 @@ import { BigInt, environment, Token } from '../index'
  * // returns 100000000 (100 USDC in 6 decimals)
  */
 export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt {
-  const tokenDecimals = token.getDecimals()
-
-  if (usdAmount.isZero()) return new BigInt(tokenDecimals)
+  if (usdAmount.isZero()) return new BigInt(token.decimals)
 
   const tokenPrice = environment.getPrice(token)
-  const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(tokenDecimals))
+  const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(token.decimals))
   const result = scaledUsdAmount.div(tokenPrice)
 
-  if (result.isZero()) return new BigInt(tokenDecimals)
+  if (result.isZero()) return new BigInt(token.decimals)
 
   return result
 }
@@ -44,10 +42,9 @@ export function convertTokenAmountToUsd(token: Token, tokenAmount: BigInt): BigI
   if (tokenAmount.isZero()) return new BigInt(18)
 
   const tokenPrice = environment.getPrice(token)
-  const tokenDecimals = token.getDecimals()
 
   let adjustedAmount = tokenAmount
-  const decimalAdjustment: u8 = 18 - tokenDecimals
+  const decimalAdjustment: u8 = 18 - token.decimals
   if (decimalAdjustment > 0) {
     adjustedAmount = tokenAmount.times(BigInt.fromI32(10).pow(decimalAdjustment))
   }
