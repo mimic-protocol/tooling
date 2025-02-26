@@ -1,3 +1,7 @@
+import { Address, Token } from '../common'
+
+const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
+
 /* eslint-disable no-secrets/no-secrets */
 export function randomHex(length: i32): string {
   const hexChars: string = '0123456789abcdef'
@@ -13,4 +17,7 @@ export function randomAddress(): string {
   return randomHex(40)
 }
 
-export const NULL_ADDRESS: string = '0x0000000000000000000000000000000000000000'
+export function randomToken(decimals: u8 = 18): Token {
+  const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+  return new Token('TEST', Address.fromString(randomAddress()), chainId, decimals)
+}

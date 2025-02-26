@@ -15,20 +15,27 @@ export default {
    * Add your required AssemblyScript imports here.
    */
   async instantiate(memory, createImports, instantiate, binary) {
-    let instance // Imports can reference this
+    let exports // Imports can reference this
     const myImports = {
       env: {
         memory,
         'console.log': (ptr) => {
-          instance.then((i) => {
-            const string = i.exports.__getString(ptr)
-            console.log(string)
-          })
+          const string = exports.__getString(ptr)
+          console.log(string)
+        },
+      },
+      index: {
+        'environment._getPrice': () => {
+          // Mock price of $1 in 18 decimal places
+          return exports.__newString((1 * 10 ** 18).toString())
         },
       },
     }
 
-    instance = instantiate(binary, createImports(myImports))
+    let instance = instantiate(binary, createImports(myImports))
+    instance.then((i) => {
+      exports = i.exports
+    })
     return instance
   },
   /**

@@ -20,9 +20,9 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt
 
   const tokenPrice = environment.getPrice(token)
 
-  const rawTokenAmount = usdAmount.div(tokenPrice)
+  const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(tokenDecimals))
 
-  return rawTokenAmount.times(BigInt.fromI32(10).pow(tokenDecimals))
+  return scaledUsdAmount.div(tokenPrice)
 }
 
 /**
