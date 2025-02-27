@@ -1,6 +1,6 @@
-import { Address, BigInt, Bytes } from "../../common"
-import { join, serialize } from "../../helpers"
-import { NULL_ADDRESS } from "../helpers"
+import { Address, BigInt, Bytes } from '../../common'
+import { join, serialize } from '../../helpers'
+import { NULL_ADDRESS } from '../helpers'
 
 describe('serialize', () => {
   describe('serialize', () => {
@@ -16,7 +16,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bytes = Bytes.fromI32(5)
         const serialized = serialize(bytes)
-        expect(serialized).toBe("0x05000000")
+        expect(serialized).toBe('0x05000000')
       })
     })
 
@@ -24,15 +24,15 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bigInt = BigInt.fromI32(5)
         const serialized = serialize(bigInt)
-        expect(serialized).toBe("BigInt(5)")
+        expect(serialized).toBe('BigInt(5)')
       })
     })
 
     describe('when passing a number', () => {
       it('converts it to string correctly', () => {
         const num = 5
-        const serialized = serialize(5)
-        expect(serialized).toBe("5")
+        const serialized = serialize(num)
+        expect(serialized).toBe('5')
       })
     })
   })
@@ -40,22 +40,22 @@ describe('serialize', () => {
   describe('join', () => {
     describe('when passing a list of strings', () => {
       it('returns them joined', () => {
-        const joint = join(["one", "two", "three"])
-        expect(joint).toBe("one,two,three")
+        const joint = join(['one', 'two', 'three'])
+        expect(joint).toBe('one,two,three')
       })
     })
 
     describe('when passing a list of nulls', () => {
       it('returns them joined', () => {
         const joint = join([null, null, null])
-        expect(joint).toBe(",,")
+        expect(joint).toBe(',,')
       })
     })
 
     describe('when passing a mixed list', () => {
       it('returns them joined', () => {
-        const joint = join(["one", null, "three"])
-        expect(joint).toBe("one,,three")
+        const joint = join(['one', null, 'three'])
+        expect(joint).toBe('one,,three')
       })
     })
   })
