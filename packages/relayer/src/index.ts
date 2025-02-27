@@ -5,7 +5,7 @@ import Environment from './environment'
 
 export async function executeTask(opts: { dir: string }) {
   const wasmPath = path.join(opts.dir, 'task.wasm')
-  const inputsPath = path.join(opts.dir, 'inputs.json')
+  const inputsPath = path.join(opts.dir, 'environment.json')
   const manifestPath = path.join(opts.dir, 'manifest.json')
   const outputPath = path.join('output.json')
 
