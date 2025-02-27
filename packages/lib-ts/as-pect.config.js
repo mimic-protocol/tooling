@@ -17,7 +17,6 @@ export default {
   async instantiate(memory, createImports, instantiate, binary) {
     let exports // Imports can reference this
 
-    // Token price mapping
     const tokenPrices = new Map()
 
     const myImports = {
@@ -34,6 +33,7 @@ export default {
           const params = JSON.parse(paramsStr)
           const key = `${params.token_in}:${params.chain_id}`
 
+          // Check if the price is set, if not, return default price
           const price = tokenPrices.has(key) ? tokenPrices.get(key) : (1 * 10 ** 18).toString()
 
           return exports.__newString(price)
