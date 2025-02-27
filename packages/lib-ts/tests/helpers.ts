@@ -21,3 +21,15 @@ export function randomToken(decimals: u8 = 18): Token {
   const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
   return new Token('TEST', Address.fromString(randomAddress()), chainId, decimals)
 }
+
+export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
+  const token = randomToken(decimals)
+  setTokenPrice(token, priceUsd)
+  return token
+}
+
+declare function _setTokenPrice(address: string, chainId: u64, price: string): void
+export function setTokenPrice(token: Token, priceUsd: number): void {
+  const priceStr = (priceUsd * 10 ** 18).toString()
+  _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
+}

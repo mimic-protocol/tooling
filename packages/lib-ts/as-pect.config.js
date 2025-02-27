@@ -16,6 +16,10 @@ export default {
    */
   async instantiate(memory, createImports, instantiate, binary) {
     let exports // Imports can reference this
+
+    // Token price mapping
+    const tokenPrices = new Map()
+
     const myImports = {
       env: {
         memory,
@@ -25,9 +29,22 @@ export default {
         },
       },
       index: {
-        'environment._getPrice': () => {
-          // Mock price of $1 in 18 decimal places
-          return exports.__newString((1 * 10 ** 18).toString())
+        'environment._getPrice': (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = JSON.parse(paramsStr)
+          const key = `${params.token_in}:${params.chain_id}`
+
+          const price = tokenPrices.has(key) ? tokenPrices.get(key) : (1 * 10 ** 18).toString()
+
+          return exports.__newString(price)
+        },
+      },
+      helpers: {
+        _setTokenPrice: (addressPtr, chainId, pricePtr) => {
+          const address = exports.__getString(addressPtr)
+          const price = exports.__getString(pricePtr)
+          const key = `${address}:${chainId}`
+          tokenPrices.set(key, price)
         },
       },
     }

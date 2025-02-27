@@ -1,6 +1,6 @@
 import { BigInt } from '../../common'
 import { convertAmountBetweenTokens, convertTokenAmountToUsd, convertUsdToTokenAmount } from '../../helpers'
-import { randomToken } from '../helpers'
+import { randomToken, randomTokenWithPrice } from '../helpers'
 
 describe('convertUsdToTokenAmount', () => {
   describe('when usdAmount is zero', () => {
@@ -64,6 +64,24 @@ describe('convertUsdToTokenAmount', () => {
       expect(result.length).toBe(mockToken.decimals)
     })
   })
+
+  describe('when token has different prices', () => {
+    it('converts correctly for a token value greater than $1', () => {
+      const tokenWith2Dollar = randomTokenWithPrice(6, 2) // 6 decimals, $2 price
+      const usdAmount = BigInt.fromString('1e20') // $100 in 18 decimals
+
+      const result = convertUsdToTokenAmount(tokenWith2Dollar, usdAmount)
+      expect(result.toString()).toBe('50000000') // 50 tokens (because price is $2 per token)
+    })
+
+    it('converts correctly for a token value less than $1', () => {
+      const tokenWithHalfDollar = randomTokenWithPrice(18, 0.5) // 18 decimals, $0.5 price
+      const usdAmount = BigInt.fromString('1e18') // $1 in 18 decimals
+
+      const result = convertUsdToTokenAmount(tokenWithHalfDollar, usdAmount)
+      expect(result.toString()).toBe('2000000000000000000') // 2 tokens (because price is $0.5 per token)
+    })
+  })
 })
 
 describe('convertTokenAmountToUsd', () => {
@@ -115,6 +133,24 @@ describe('convertTokenAmountToUsd', () => {
 
       const result = convertTokenAmountToUsd(mockToken, tokenAmount)
       expect(result.toString()).toBe('1') // $0.000000000000000001 in 18 decimals
+    })
+  })
+
+  describe('when token has different prices', () => {
+    it('converts correctly for a token value greater than $1', () => {
+      const tokenWith2Dollar = randomTokenWithPrice(6, 2) // 6 decimals, $2 price
+      const tokenAmount = BigInt.fromString('50000000') // 50 tokens in 6 decimals
+
+      const result = convertTokenAmountToUsd(tokenWith2Dollar, tokenAmount)
+      expect(result.toString()).toBe('100000000000000000000') // $100 in 18 decimals
+    })
+
+    it('converts correctly for a token value less than $1', () => {
+      const tokenWithHalfDollar = randomTokenWithPrice(18, 0.5) // 18 decimals, $0.5 price
+      const tokenAmount = BigInt.fromString('2000000000000000000') // 2 tokens in 18 decimals
+
+      const result = convertTokenAmountToUsd(tokenWithHalfDollar, tokenAmount)
+      expect(result.toString()).toBe('1000000000000000000') // $1 in 18 decimals
     })
   })
 })
@@ -204,6 +240,18 @@ describe('convertAmountBetweenTokens', () => {
 
       const result = convertAmountBetweenTokens(amountFrom, mockTokenFrom, mockTokenTo)
       expect(result.toString()).toBe('1000000000000000') // 0.001 tokens in 18 decimals
+    })
+  })
+
+  describe('convertAmountBetweenTokens with different prices', () => {
+    it('converts correctly when tokens have different prices', () => {
+      const tokenA = randomTokenWithPrice(6, 2) // 6 decimals, $2
+      const tokenB = randomTokenWithPrice(18, 0.5) // 18 decimals, $0.5
+
+      const amountA = BigInt.fromString('100000000') // 100 tokens with 6 decimals
+      const result = convertAmountBetweenTokens(amountA, tokenA, tokenB)
+
+      expect(result.toString()).toBe('400000000000000000000') // 400 tokens with 18 decimals
     })
   })
 })
