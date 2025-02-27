@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --transform json-as/transform",
+    "build": "asc index.ts -b build/lib.wasm --disableWarning 235",
     "test": "asp",
     "lint": "eslint ."
   },
@@ -14,8 +14,6 @@
     "assemblyscript": "^0.27.31"
   },
   "dependencies": {
-    "eslint-config-mimic": "^0.0.3",
-    "json-as": "^0.9.29",
-    "visitor-as": "^0.11.4"
+    "eslint-config-mimic": "^0.0.3"
   }
 }

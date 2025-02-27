@@ -1,4 +1,5 @@
 export declare namespace input {
-  const firstStaticNumber: i32
-  const secondStaticNumber: i32
+  const chainId: i32
+  const amount: i32
+  const slippage: i32
 }
