@@ -198,6 +198,13 @@ describe('BigInt', () => {
         const sum = a.plus(b)
         expect(sum.toU64()).toBe(10 ** 18 - 5)
       })
+
+      it('adds two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e38')
+        const sum = a.plus(b)
+        expect(sum.toString()).toBe('200000000000000000000000000000000000000') // 2e38
+      })
     })
 
     describe('minus', () => {
@@ -213,6 +220,13 @@ describe('BigInt', () => {
         const b = BigInt.fromString('1e20')
         const diff = a.minus(b)
         expect(diff.toString()).toBe('-99999000000000000000')
+      })
+
+      it('subtracts two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e37')
+        const diff = a.minus(b)
+        expect(diff.toString()).toBe('90000000000000000000000000000000000000') // 9e37
       })
     })
 
@@ -236,6 +250,13 @@ describe('BigInt', () => {
         const b = BigInt.fromI32(-6)
         const prod = a.times(b)
         expect(prod.toI32()).toBe(12)
+      })
+
+      it('multiplies two large BigInts', () => {
+        const a = BigInt.fromString('1e19')
+        const b = BigInt.fromString('1e19')
+        const prod = a.times(b)
+        expect(prod.toString()).toBe('100000000000000000000000000000000000000') // 1e38
       })
     })
 
@@ -267,6 +288,13 @@ describe('BigInt', () => {
           const b = BigInt.zero()
           a.div(b)
         }).toThrow()
+      })
+
+      it('divides two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e18')
+        const quotient = a.div(b)
+        expect(quotient.toString()).toBe('100000000000000000000') // 1e20
       })
     })
 
@@ -367,6 +395,12 @@ describe('BigInt', () => {
         const a = BigInt.fromI32(7)
         const result = a.pow(0)
         expect(result.toI32()).toBe(1)
+      })
+
+      it('handles large numbers with exponentiation', () => {
+        const a = BigInt.fromI32(10)
+        const result = a.pow(30)
+        expect(result.toString()).toBe('1000000000000000000000000000000') // 10^30
       })
     })
 
