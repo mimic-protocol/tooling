@@ -2,15 +2,10 @@ import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as ts from 'typescript'
 
 import log from '../log'
 import ManifestHandler from '../ManifestHandler'
-
-type FunctionsMap = {
-  [namespace: string]: {
-    [subNamespace: string]: string[]
-  }
-}
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -49,65 +44,27 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    const functionCalls = extractCalls(watPath)
-    fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify(functionCalls, null, 2))
+    const environmentCalls = extractEnvironmentCalls(fs.readFileSync(taskFile, 'utf-8'))
+    fs.writeFileSync(path.join(outputDir, 'environment.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
 }
 
-function extractCalls(watPath: string): FunctionsMap {
-  const fileContent = fs.readFileSync(watPath, 'utf8')
-  const lines = fileContent.split('\n')
+function extractEnvironmentCalls(source: string): string[] {
+  const environmentCalls = new Set<string>()
+  const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
+  const queue: ts.Node[] = [sourceFile]
 
-  const result: FunctionsMap = {}
-
-  const importRegex = /\(import\s+"([^"]+)"\s+"([^"]+)"\s+\(func\s+\$[^\s)]+/
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed.startsWith('(import')) continue
-
-    const match = trimmed.match(importRegex)
-    if (!match) continue
-
-    const namespace = match[1]
-    const funcFullName = match[2]
-
-    if (namespace === 'env') continue
-
-    let parts = funcFullName.split('.')
-    if (parts.length < 2) {
-      parts = funcFullName.split('#')
+  while (queue.length > 0) {
+    const node = queue.pop()!
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const { expression, name } = node.expression
+      if (ts.isIdentifier(expression) && expression.escapedText === 'environment')
+        environmentCalls.add(`_${name.escapedText.toString()}`)
     }
-    if (parts.length < 2) continue
-    const subNamespace = parts[0]
-    const funcName = parts.slice(1).join('.')
-
-    if (!result[namespace]) {
-      result[namespace] = {}
-    }
-    if (!result[namespace][subNamespace]) {
-      result[namespace][subNamespace] = []
-    }
-    result[namespace][subNamespace].push(funcName)
+    queue.push(...node.getChildren())
   }
-
-  return sortInputs(result)
-}
-
-function sortInputs(inputs: FunctionsMap): FunctionsMap {
-  const sortedInputs: FunctionsMap = {}
-  Object.keys(inputs)
-    .sort()
-    .forEach((ns) => {
-      sortedInputs[ns] = {}
-      Object.keys(inputs[ns])
-        .sort()
-        .forEach((subNs) => {
-          sortedInputs[ns][subNs] = inputs[ns][subNs].sort()
-        })
-    })
-  return sortedInputs
+  return Array.from(environmentCalls)
 }

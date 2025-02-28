@@ -31,13 +31,13 @@ describe('compile', () => {
 
           expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
           expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/inputs.json`)).to.be.true
+          expect(fs.existsSync(`${outputDir}/environment.json`)).to.be.true
           expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
 
-          const inputs = JSON.parse(fs.readFileSync(`${outputDir}/inputs.json`, 'utf-8'))
+          const environment = JSON.parse(fs.readFileSync(`${outputDir}/environment.json`, 'utf-8'))
           const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-          expect(inputs).to.be.deep.equal({ index: { environment: ['_call'] } })
+          expect(environment).to.be.deep.equal(['_call'])
           expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 2, secondStaticNumber: 3 })
         })
       })
@@ -111,7 +111,7 @@ describe('compile', () => {
   context('when the output directory already exists', () => {
     beforeEach('create outputDirectory with files', () => {
       if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
-      fs.writeFileSync(path.join(outputDir, 'inputs.json'), JSON.stringify({ a: 2 }, null, 2))
+      fs.writeFileSync(path.join(outputDir, 'environment.json'), JSON.stringify({ a: 2 }, null, 2))
       fs.writeFileSync(path.join(outputDir, 'randomFile.txt'), JSON.stringify({ a: 2 }, null, 2))
     })
 
@@ -128,13 +128,13 @@ describe('compile', () => {
 
       expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
       expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
-      expect(fs.existsSync(`${outputDir}/inputs.json`)).to.be.true
+      expect(fs.existsSync(`${outputDir}/environment.json`)).to.be.true
       expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
 
-      const inputs = JSON.parse(fs.readFileSync(`${outputDir}/inputs.json`, 'utf-8'))
+      const environment = JSON.parse(fs.readFileSync(`${outputDir}/environment.json`, 'utf-8'))
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-      expect(inputs).to.be.deep.equal({ index: { environment: ['_call'] } })
+      expect(environment).to.be.deep.equal(['_call'])
       expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 2, secondStaticNumber: 3 })
     })
   })
