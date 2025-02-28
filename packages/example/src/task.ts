@@ -1,38 +1,37 @@
-import { Address, BigInt, ByteArray, Bytes, convertAmountBetweenTokens, convertTokenAmountToUsd, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, convertAmountBetweenTokens, convertTokenAmountToUsd, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
+import { input } from './types'
 
 export default function main(): void {
+  // Token definitions
+  const USDC = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
+  const ETH = new Token('ETH', Address.fromString('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 1, 18)
+  const WBTC = new Token('WBTC', Address.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'), 1, 8)
+
+  // Call withouth bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)
-  const chainId = 137
+  const target = Address.fromString("0x0000000000000000000000000000000000000001")
+  const chainId = input.chainId
+  const amount = BigInt.fromI32(input.amount)
+  environment.call(settler, chainId, target, USDC.address, amount)
 
-  const target = Address.fromString(NULL_ADDRESS)
-  const byteArray = new ByteArray(4)
-  byteArray[0] = 1
-  byteArray[1] = 2
-  byteArray[2] = 3
-  byteArray[3] = 4
-  const feeToken = Address.fromString(NULL_ADDRESS)
-  const feeAmount = BigInt.fromString('1.2e18')
-  const data = Bytes.fromByteArray(byteArray)
+  // Call with bytes
+  const bytes = Bytes.fromI32(123)
+  environment.call(settler, chainId, target, USDC.address, amount, bytes)
 
-  const tokenIn = Address.fromString(NULL_ADDRESS)
-  const tokenOut = Address.fromString(NULL_ADDRESS)
-  const amountIn = BigInt.zero()
-  const minAmountOut = BigInt.zero()
-  const destinationChainId = 1
-  const recipient = Address.fromString(NULL_ADDRESS)
+  // Cross-chain swap
+  const minAmountOut = amount.times(BigInt.fromI32(input.slippage)).div(BigInt.fromI32(100))
+  const destChain = 10
+  environment.swap(settler, chainId, USDC.address, amount, WBTC.address, minAmountOut, destChain)
 
-  environment.call(settler, chainId, target, feeToken, feeAmount, data)
-  environment.call(settler, chainId, target, feeToken, feeAmount) // createCall with optional data
-  environment.swap(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
-  environment.transfer(settler, chainId, tokenIn, amountIn, recipient, feeAmount)
+  // Normal Transfer
+  environment.transfer(settler, chainId, USDC.address, amount, target, amount)
 
-  const usdcToken = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
-  const ethToken = new Token('ETH', Address.fromString('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 1, 18)
-
-  const usdcAmount = BigInt.fromI32(100).times(BigInt.fromI32(10).pow(usdcToken.decimals))
-  const usdcAmountInUsd = convertTokenAmountToUsd(usdcToken, usdcAmount)
+  // Convert USDC to USD
+  const usdcAmount = BigInt.fromI32(100).times(BigInt.fromI32(10).pow(USDC.decimals))
+  const usdcAmountInUsd = convertTokenAmountToUsd(USDC, usdcAmount)
   console.log('usdcAmountInUsd: ' + usdcAmountInUsd.toString())
 
-  const ethAmountFromUsdc = convertAmountBetweenTokens(usdcAmount, usdcToken, ethToken)
+  // Convert USDC to ETH
+  const ethAmountFromUsdc = convertAmountBetweenTokens(usdcAmount, USDC, ETH)
   console.log('ethAmountFromUsdc: ' + ethAmountFromUsdc.toString())
 }

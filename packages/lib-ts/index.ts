@@ -1,12 +1,9 @@
-import { JSON } from 'json-as/assembly'
-
-import { CallParams, GetPriceParams, SwapParams, TransferParams } from './interfaces/environment'
 import { Address, BigInt, Bytes, Token } from './common'
+import { join, serialize } from './helpers'
 
 export * from './common'
 export * from './constants'
-export * from './helpers'
-export { JSON } from 'json-as/assembly'
+export * from './helpers/price'
 
 export namespace environment {
   declare function _call(params: string): void
@@ -22,7 +19,16 @@ export namespace environment {
     feeAmount: BigInt,
     data: Bytes | null = null
   ): void {
-    _call(JSON.stringify<CallParams>(new CallParams(settler, chainId, target, feeToken, feeAmount, data)))
+    _call(
+      join([
+        serialize(settler),
+        serialize(chainId),
+        serialize(target),
+        serialize(feeToken),
+        serialize(feeAmount),
+        data ? serialize(data as Bytes) : null,
+      ])
+    )
   }
 
   export function swap(
@@ -35,9 +41,15 @@ export namespace environment {
     destinationChainId: u64 = chainId
   ): void {
     _swap(
-      JSON.stringify<SwapParams>(
-        new SwapParams(settler, chainId, tokenIn, amountIn, tokenOut, minAmountOut, destinationChainId)
-      )
+      join([
+        serialize(settler),
+        serialize(chainId),
+        serialize(tokenIn),
+        serialize(amountIn),
+        serialize(tokenOut),
+        serialize(minAmountOut),
+        serialize(destinationChainId),
+      ])
     )
   }
 
@@ -49,13 +61,20 @@ export namespace environment {
     recipient: Address,
     feeAmount: BigInt
   ): void {
-    _transfer(JSON.stringify<TransferParams>(new TransferParams(settler, chainId, token, amount, recipient, feeAmount)))
+    _transfer(
+      join([
+        serialize(settler),
+        serialize(chainId),
+        serialize(token),
+        serialize(amount),
+        serialize(recipient),
+        serialize(feeAmount),
+      ])
+    )
   }
 
   // Returns the price of a token in USD expressed in 18 decimal places
   export function getPrice(token: Token): BigInt {
-    return BigInt.fromString(
-      _getPrice(JSON.stringify<GetPriceParams>(new GetPriceParams(token.address, token.chainId)))
-    )
+    return BigInt.fromString(_getPrice(join([serialize(token.address), serialize(token.chainId)])))
   }
 }

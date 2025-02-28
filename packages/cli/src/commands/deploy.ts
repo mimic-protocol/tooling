@@ -34,7 +34,7 @@ export default class Deploy extends Command {
         suggestions: ['Use the --input flag to specify the correct path'],
       })
 
-    const neededFiles = ['inputs.json', 'manifest.json', 'task.wasm'].map((file) => join(fullInputDir, file))
+    const neededFiles = ['environment.json', 'manifest.json', 'task.wasm'].map((file) => join(fullInputDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
         this.error(`Could not find ${file}`, {

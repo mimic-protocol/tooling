@@ -5,7 +5,8 @@ trigger:
   schedule: "0 0 * * *"
   delta: "1h"
 inputs:
-  - firstStaticNumber: 2
-  - secondStaticNumber: 3
+  - chainId: 1
+  - amount: 10000
+  - slippage: 95
 abis:
   - ERC20: './ERC20.json'

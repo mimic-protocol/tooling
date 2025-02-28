@@ -30,8 +30,10 @@ export default {
       index: {
         'environment._getPrice': (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
-          const params = JSON.parse(paramsStr)
-          const key = `${params.token_in}:${params.chain_id}`
+          const params = paramsStr.split(',')
+          const address = params[0]
+          const chainId = params[1]
+          const key = `${address}:${chainId}`
 
           // Check if the price is set, if not, return default price
           const price = tokenPrices.has(key) ? tokenPrices.get(key) : (1 * 10 ** 18).toString()
