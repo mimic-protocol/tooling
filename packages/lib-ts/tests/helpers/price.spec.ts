@@ -82,6 +82,24 @@ describe('convertUsdToTokenAmount', () => {
       expect(result.toString()).toBe('2000000000000000000') // 2 tokens (because price is $0.5 per token)
     })
   })
+
+  describe('when token has more than 18 decimals', () => {
+    it('converts correctly to a non-standard token', () => {
+      const nonStandardToken = randomToken(24)
+      const usdAmount = BigInt.fromString('1e18') // $1 in 18 decimals
+
+      const result = convertUsdToTokenAmount(nonStandardToken, usdAmount)
+      expect(result.toString()).toBe('1000000000000000000000000') // 1 token in 24 decimals
+    })
+
+    it('handles fractional amounts with non-standard tokens', () => {
+      const nonStandardToken = randomToken(24)
+      const usdAmount = BigInt.fromString('5e17') // $0.5 in 18 decimals
+
+      const result = convertUsdToTokenAmount(nonStandardToken, usdAmount)
+      expect(result.toString()).toBe('500000000000000000000000') // 0.5 tokens in 24 decimals
+    })
+  })
 })
 
 describe('convertTokenAmountToUsd', () => {
@@ -151,6 +169,24 @@ describe('convertTokenAmountToUsd', () => {
 
       const result = convertTokenAmountToUsd(tokenWithHalfDollar, tokenAmount)
       expect(result.toString()).toBe('1000000000000000000') // $1 in 18 decimals
+    })
+  })
+
+  describe('when token has more than 18 decimals', () => {
+    it('converts correctly from a non-standard token to USD', () => {
+      const nonStandardToken = randomToken(24)
+      const tokenAmount = BigInt.fromString('1000000000000000000000000') // 1 token in 24 decimals
+
+      const result = convertTokenAmountToUsd(nonStandardToken, tokenAmount)
+      expect(result.toString()).toBe('1000000000000000000') // $1 in 18 decimals
+    })
+
+    it('handles small amounts from non-standard tokens', () => {
+      const nonStandardToken = randomToken(24)
+      const tokenAmount = BigInt.fromString('500000000000000000000000') // 0.5 tokens in 24 decimals
+
+      const result = convertTokenAmountToUsd(nonStandardToken, tokenAmount)
+      expect(result.toString()).toBe('500000000000000000') // $0.5 in 18 decimals
     })
   })
 })
@@ -252,6 +288,62 @@ describe('convertAmountBetweenTokens', () => {
       const result = convertAmountBetweenTokens(amountA, tokenA, tokenB)
 
       expect(result.toString()).toBe('400000000000000000000') // 400 tokens with 18 decimals
+    })
+  })
+
+  describe('when tokens have more than 18 decimals', () => {
+    it('converts from a non-standard token to a standard token', () => {
+      const nonStandardToken = randomToken(24)
+      const standardToken = randomToken(18)
+      const amountFrom = BigInt.fromString('1000000000000000000000000') // 1 token in 24 decimals
+
+      const result = convertAmountBetweenTokens(amountFrom, nonStandardToken, standardToken)
+      expect(result.toString()).toBe('1000000000000000000') // 1 token in 18 decimals
+    })
+
+    it('converts from a standard token to a non-standard token', () => {
+      const standardToken = randomToken(18)
+      const nonStandardToken = randomToken(24)
+      const amountFrom = BigInt.fromString('1000000000000000000') // 1 token in 18 decimals
+
+      const result = convertAmountBetweenTokens(amountFrom, standardToken, nonStandardToken)
+      expect(result.toString()).toBe('1000000000000000000000000') // 1 token in 24 decimals
+    })
+
+    it('converts between two non-standard tokens with different decimals', () => {
+      const token24Decimals = randomToken(24)
+      const token36Decimals = randomToken(36)
+      const amountFrom = BigInt.fromString('1000000000000000000000000') // 1 token in 24 decimals
+
+      const result = convertAmountBetweenTokens(amountFrom, token24Decimals, token36Decimals)
+      expect(result.toString()).toBe('1000000000000000000000000000000000000') // 1 token in 36 decimals
+    })
+
+    it('converts from a non-standard expensive token to a standard token', () => {
+      const nonStandardExpensiveToken = randomTokenWithPrice(24, 5) // 24 decimals, $5 price
+      const amountFrom = BigInt.fromString('1000000000000000000000000') // 1 token in 24 decimals
+      const standardToken = randomTokenWithPrice(18, 1) // 18 decimals, $1 price
+
+      const result = convertAmountBetweenTokens(amountFrom, nonStandardExpensiveToken, standardToken)
+      expect(result.toString()).toBe('5000000000000000000') // 5 tokens in 18 decimals
+    })
+
+    it('converts from a standard token to a non-standard cheap token', () => {
+      const standardToken = randomTokenWithPrice(18, 1) // 18 decimals, $1 price
+      const amountFrom = BigInt.fromString('1000000000000000000') // 1 token in 18 decimals
+      const nonStandardCheapToken = randomTokenWithPrice(24, 0.2) // 24 decimals, $0.2 price
+
+      const result = convertAmountBetweenTokens(amountFrom, standardToken, nonStandardCheapToken)
+      expect(result.toString()).toBe('5000000000000000000000000') // 5 tokens in 24 decimals
+    })
+
+    it('converts between two high-precision tokens with different decimals and prices', () => {
+      const token24Decimals = randomTokenWithPrice(24, 2) // 24 decimals, $2 price
+      const amountFrom = BigInt.fromString('1000000000000000000000000') // 1 token in 24 decimals
+      const token36Decimals = randomTokenWithPrice(36, 0.5) // 36 decimals, $0.5 price
+
+      const result = convertAmountBetweenTokens(amountFrom, token24Decimals, token36Decimals)
+      expect(result.toString()).toBe('4000000000000000000000000000000000000') // 4 tokens in 36 decimals (1 token at $2 = 4 tokens at $0.5)
     })
   })
 })
