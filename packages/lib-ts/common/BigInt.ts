@@ -53,17 +53,14 @@ export class BigInt extends Uint8Array {
 
   clone(): BigInt {
     const clone = new BigInt(this.length)
-    for (let i = 0; i < this.length; i++) {
-      clone[i] = this[i]
-    }
+    memory.copy(clone.dataStart, this.dataStart, this.length)
     return clone
   }
 
   subarray(start: i32, end: i32): BigInt {
-    const result = new BigInt(end - start)
-    for (let i = start; i < end; i++) {
-      result[i - start] = this[i]
-    }
+    const length = end - start
+    const result = new BigInt(length)
+    memory.copy(result.dataStart, this.dataStart + start, length)
     return result
   }
 
@@ -111,69 +108,66 @@ export class BigInt extends Uint8Array {
     let exponentStr = ''
     let exponentNegative = false
     let parsingExponent = false
+    let parsingFraction = false
     let fractionDigits = 0
 
     if (isHex) {
-      while (index < str.length) {
-        let c = str.charAt(index)
-        let digit: i32
+      let hexPart = str.substring(index)
+      if (hexPart.length === 0) return BigInt.zero()
 
-        if (c >= '0' && c <= '9') {
-          digit = c.charCodeAt(0) - '0'.charCodeAt(0)
-        } else if (c >= 'A' && c <= 'F') {
-          digit = c.charCodeAt(0) - 'A'.charCodeAt(0) + 10
-        } else if (c >= 'a' && c <= 'f') {
-          digit = c.charCodeAt(0) - 'a'.charCodeAt(0) + 10
-        } else {
+      for (let i = 0; i < hexPart.length; i++) {
+        const c = hexPart.charAt(i)
+        if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) {
           throw new Error(`Invalid character in hex string: '${c}'`)
         }
-
-        result = result.times(BigInt.fromI32(16)).plus(BigInt.fromI32(digit))
-        index++
       }
+
+      if (hexPart.length % 2 === 1) hexPart = '0' + hexPart
+
+      const byteCount = hexPart.length >>> 1
+      const bytes = new ByteArray(byteCount)
+
+      for (let i = 0; i < byteCount; i++) {
+        const start = hexPart.length - 2 * (i + 1)
+        const hexByte = hexPart.substr(start, 2)
+        bytes[i] = <u8>parseInt(hexByte, 16)
+      }
+
+      result = BigInt.fromUnsignedBytes(bytes)
+      if (isNegative && !result.isZero()) result = result.neg()
+
+      return result
     } else {
       while (index < str.length) {
         let c = str.charAt(index)
 
         if (!parsingExponent) {
           if (c === '.') {
+            fractionDigits = 0
+            parsingFraction = true
             index++
-            while (index < str.length) {
-              let fracChar = str.charAt(index)
-              if (fracChar === 'e' || fracChar === 'E') {
-                parsingExponent = true
-                index++
-                break
-              } else if (fracChar >= '0' && fracChar <= '9') {
-                let digit = fracChar.charCodeAt(0) - '0'.charCodeAt(0)
-                result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
-                fractionDigits++
-                index++
-              } else {
-                throw new Error(`Invalid character in decimal fraction: '${fracChar}'`)
-              }
-            }
             continue
           }
+
           if (c === 'e' || c === 'E') {
             parsingExponent = true
             index++
+
+            if (index < str.length && (str.charAt(index) === '+' || str.charAt(index) === '-')) {
+              if (str.charAt(index) === '-') exponentNegative = true
+              index++
+            }
+
             continue
           }
-          if (c < '0' || c > '9') {
-            throw new Error(`Invalid character in decimal string: '${c}'`)
-          }
+
+          if (c < '0' || c > '9') throw new Error(`Invalid character in decimal string: '${c}'`)
           let digit = c.charCodeAt(0) - '0'.charCodeAt(0)
           result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
+
+          if (parsingFraction) fractionDigits++
         } else {
-          if (exponentStr.length === 0 && (c === '+' || c === '-')) {
-            if (c === '-') exponentNegative = true
-            index++
-            continue
-          }
-          if (c < '0' || c > '9') {
-            throw new Error(`Invalid character in exponent string: '${c}'`)
-          }
+          if (c < '0' || c > '9') throw new Error(`Invalid character in exponent string: '${c}'`)
           exponentStr += c
         }
 
@@ -186,18 +180,19 @@ export class BigInt extends Uint8Array {
         let expValue = parseInt(exponentStr, 10)
         if (exponentNegative) expValue = -expValue
         expValue -= fractionDigits
+
         if (expValue > 0) {
           for (let i = 0; i < expValue; i++) {
             result = result.times(BigInt.fromI32(10))
           }
         } else if (expValue < 0) {
           let positiveExp = -expValue
+
           for (let i = 0; i < positiveExp; i++) {
             result = result.div(BigInt.fromI32(10))
           }
         }
       } else if (fractionDigits > 0) {
-        // No exponent => truncate fraction
         for (let i = 0; i < fractionDigits; i++) {
           result = result.div(BigInt.fromI32(10))
         }
@@ -236,7 +231,12 @@ export class BigInt extends Uint8Array {
   }
 
   isZero(): boolean {
-    return BigInt.compare(this, BigInt.zero()) == 0
+    if (this.length == 0) return true
+
+    for (let i = 0; i < this.length; i++) {
+      if (this[i] !== 0) return false
+    }
+    return true
   }
 
   isI32(): boolean {
@@ -286,6 +286,15 @@ export class BigInt extends Uint8Array {
 
   @operator('*')
   times(other: BigInt): BigInt {
+    if (other.isZero() || this.isZero()) return BigInt.zero()
+
+    if (other.length == 1) {
+      if (other[0] == 1) return this.clone()
+      if (other[0] == 2) return this.leftShift(1)
+      if (other[0] == 4) return this.leftShift(2)
+      if (other[0] == 8) return this.leftShift(3)
+    }
+
     const aIsNeg = this.isNegative()
     const bIsNeg = other.isNegative()
     const signIsNeg = (aIsNeg && !bIsNeg) || (!aIsNeg && bIsNeg)
@@ -403,9 +412,7 @@ export class BigInt extends Uint8Array {
 
   @operator('>>')
   rightShift(bits: u8): BigInt {
-    if (bits == 0) {
-      return this
-    }
+    if (bits == 0) return this
 
     const byteShift = (bits >> 3) as i32
     const bitShift = bits & 0b111
@@ -435,33 +442,33 @@ export class BigInt extends Uint8Array {
       if (pos >= 0) {
         result[pos] = <u8>(cur & 0xff)
       }
-      if (i == 0) {
-        break
-      }
+      if (i == 0) break
     }
 
     for (let i = this.length - 1; i >= this.length - byteShift; i--) {
       if (i >= 0 && i < result.length) {
         result[i] = negative ? 0xff : 0x00
       }
-      if (i == 0) {
-        break
-      }
+      if (i == 0) break
     }
 
     return result
   }
 
   pow(exp: u8): BigInt {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    let base = this
+    if (exp === 0) return BigInt.fromI32(1)
+    if (exp === 1) return this.clone()
+    if (exp === 2) return this.times(this)
+
+    let base = this.clone()
     let e = exp
     let result = BigInt.fromI32(1)
+
     while (e > 0) {
       if ((e & 1) == 1) {
         result = result.times(base)
       }
-      base = base.times(base) as this
+      base = base.times(base)
       e >>= 1
     }
     return result
@@ -470,12 +477,9 @@ export class BigInt extends Uint8Array {
   static compare(a: BigInt, b: BigInt): i32 {
     const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
     const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
-    if (!aIsNeg && bIsNeg) {
-      return 1
-    }
-    if (aIsNeg && !bIsNeg) {
-      return -1
-    }
+    if (!aIsNeg && bIsNeg) return 1
+    if (aIsNeg && !bIsNeg) return -1
+
     let aRelevantBytes = a.length
     while (
       aRelevantBytes > 0 &&
@@ -483,6 +487,7 @@ export class BigInt extends Uint8Array {
     ) {
       aRelevantBytes -= 1
     }
+
     let bRelevantBytes = b.length
     while (
       bRelevantBytes > 0 &&
@@ -490,21 +495,16 @@ export class BigInt extends Uint8Array {
     ) {
       bRelevantBytes -= 1
     }
-    if (aRelevantBytes > bRelevantBytes) {
-      return aIsNeg ? -1 : 1
-    }
-    if (bRelevantBytes > aRelevantBytes) {
-      return aIsNeg ? 1 : -1
-    }
+
+    if (aRelevantBytes > bRelevantBytes) return aIsNeg ? -1 : 1
+    if (bRelevantBytes > aRelevantBytes) return aIsNeg ? 1 : -1
+
     const relevantBytes = aRelevantBytes
     for (let i = 1; i <= relevantBytes; i++) {
-      if (a[relevantBytes - i] < b[relevantBytes - i]) {
-        return -1
-      }
-      if (a[relevantBytes - i] > b[relevantBytes - i]) {
-        return 1
-      }
+      if (a[relevantBytes - i] < b[relevantBytes - i]) return -1
+      if (a[relevantBytes - i] > b[relevantBytes - i]) return 1
     }
+
     return 0
   }
 
@@ -513,6 +513,9 @@ export class BigInt extends Uint8Array {
   }
 
   static addUnsigned(a: BigInt, b: BigInt): BigInt {
+    if (a.isZero()) return b.clone()
+    if (b.isZero()) return a.clone()
+
     const maxLen = max(a.length, b.length)
     const result = new BigInt(maxLen + 1)
     let carry: u32 = 0
@@ -523,9 +526,7 @@ export class BigInt extends Uint8Array {
       result[i] = <u8>(sum & 0xff)
       carry = sum >> 8
     }
-    if (carry != 0) {
-      result[maxLen] = <u8>carry
-    }
+    if (carry != 0) result[maxLen] = <u8>carry
     return result
   }
 
@@ -547,6 +548,9 @@ export class BigInt extends Uint8Array {
   }
 
   static mulUnsigned(a: BigInt, b: BigInt): BigInt {
+    if (a.length < b.length) return BigInt.mulUnsigned(b, a)
+    if (b.length === 1 && b[0] === 2) return a.leftShift(1)
+
     const result = new BigInt(a.length + b.length)
     for (let i = 0; i < a.length; i++) {
       let carry: u32 = 0
@@ -565,17 +569,23 @@ export class BigInt extends Uint8Array {
       assert(false, '')
       return BigInt.zero()
     }
-    if (BigInt.compare(a, b) < 0) {
-      return BigInt.zero()
-    }
-    let remainder = new BigInt(a.length)
-    for (let i = 0; i < a.length; i++) {
-      remainder[i] = a[i]
-    }
+    if (BigInt.compare(a, b) < 0) return BigInt.zero()
+
     let quotient = BigInt.zero()
-    while (BigInt.compare(remainder, b) >= 0) {
-      remainder = BigInt.subUnsigned(remainder, b)
-      quotient = BigInt.addUnsigned(quotient, BigInt.fromI32(1))
+    let remainder = BigInt.zero()
+
+    for (let i = a.length - 1; i >= 0; i--) {
+      remainder = remainder.leftShift(8)
+      remainder = BigInt.addUnsigned(remainder, BigInt.fromI32(a[i]))
+
+      let digit = BigInt.zero()
+      while (BigInt.compare(remainder, b) >= 0) {
+        remainder = BigInt.subUnsigned(remainder, b)
+        digit = BigInt.addUnsigned(digit, BigInt.fromI32(1))
+      }
+
+      quotient = quotient.leftShift(8)
+      quotient = BigInt.addUnsigned(quotient, digit)
     }
     return quotient
   }
