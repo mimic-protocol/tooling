@@ -37,19 +37,7 @@ export default class Compile extends Command {
     const wasmPath = path.join(outputDir, 'task.wasm')
     const watPath = path.join(outputDir, 'task.wat')
 
-    const ascArgs = [
-      taskFile,
-      '--target',
-      'release',
-      '--outFile',
-      wasmPath,
-      '--textFile',
-      watPath,
-      '--optimize',
-      '--transform',
-      'json-as/transform',
-      '--exportRuntime',
-    ]
+    const ascArgs = [taskFile, '--target', 'release', '--outFile', wasmPath, '--textFile', watPath, '--optimize']
 
     const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })
     if (result.status !== 0) {
