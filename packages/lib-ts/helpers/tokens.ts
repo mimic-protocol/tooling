@@ -1,4 +1,4 @@
-import { BigInt, environment, Token } from '../index'
+import { BigInt, environment, STANDARD_DECIMALS, Token } from '../index'
 
 /**
  * Converts a USD amount into the equivalent amount of tokens
@@ -40,16 +40,18 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt
  * // returns 100000000000000000000 ($100 in 18 decimals)
  */
 export function convertTokenAmountToUsd(token: Token, tokenAmount: BigInt): BigInt {
-  if (tokenAmount.isZero()) return new BigInt(18)
+  if (tokenAmount.isZero()) return BigInt.zero()
 
   const tokenPrice = environment.getPrice(token)
 
-  const isStandardToken = token.decimals <= 18
-  const decimalAdjustment: u8 = isStandardToken ? 18 - token.decimals : token.decimals - 18
+  const isStandardToken = token.decimals <= STANDARD_DECIMALS
+  const decimalAdjustment: u8 = isStandardToken
+    ? STANDARD_DECIMALS - token.decimals
+    : token.decimals - STANDARD_DECIMALS
   const adjustmentFactor = BigInt.fromI32(10).pow(decimalAdjustment)
   const adjustedAmount = isStandardToken ? tokenAmount.times(adjustmentFactor) : tokenAmount.div(adjustmentFactor)
 
-  return adjustedAmount.times(tokenPrice).div(BigInt.fromI32(10).pow(18))
+  return adjustedAmount.times(tokenPrice).div(BigInt.fromI32(10).pow(STANDARD_DECIMALS))
 }
 
 /**
@@ -70,4 +72,36 @@ export function convertAmountBetweenTokens(amountFrom: BigInt, tokenFrom: Token,
   const usdAmount = convertTokenAmountToUsd(tokenFrom, amountFrom)
 
   return convertUsdToTokenAmount(tokenTo, usdAmount)
+}
+
+/**
+ * Converts a regular number to a token amount with the appropriate decimals
+ * @param token - The token to create an amount for
+ * @param amount - The amount as a string (can be decimal)
+ * @returns The amount as a BigInt with the token's decimal places
+ *
+ * @example
+ * // Convert 100.5 to a token amount for USDC
+ * // USDC has 6 decimals
+ * const amount = toTokenAmount(usdcToken, '100.5')
+ * // returns 100500000 (100.5 USDC in 6 decimals)
+ */
+export function toTokenAmount(token: Token, amount: string): BigInt {
+  if (amount === '0') {
+    return BigInt.fromI32(0)
+  }
+
+  const parts = amount.split('.')
+  if (parts.length > 2) throw new Error('Invalid amount. Received: ' + amount)
+
+  let result = BigInt.fromString(parts[0])
+
+  result = result.times(BigInt.fromI32(10).pow(token.decimals))
+
+  if (parts.length > 1 && parts[1].length > 0) {
+    const decimalPart = parts[1].padEnd(token.decimals, '0').substring(0, token.decimals)
+    result = result.plus(BigInt.fromString(decimalPart))
+  }
+
+  return result
 }
