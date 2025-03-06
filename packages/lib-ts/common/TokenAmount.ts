@@ -12,6 +12,25 @@ export class TokenAmount {
     return new TokenAmount(token, scaledAmount)
   }
 
+  static product(amounts: TokenAmount[]): TokenAmount {
+    if (amounts.length === 0) {
+      throw new Error('Cannot multiply an empty array of token amounts')
+    }
+
+    return amounts.reduce(
+      (product, amount) => product.times(amount),
+      new TokenAmount(amounts[0].token, BigInt.fromI32(1))
+    )
+  }
+
+  static summation(amounts: TokenAmount[]): TokenAmount {
+    if (amounts.length === 0) {
+      throw new Error('Cannot sum an empty array of token amounts')
+    }
+
+    return amounts.reduce((sum, amount) => sum.plus(amount), new TokenAmount(amounts[0].token, BigInt.zero()))
+  }
+
   private compare(other: TokenAmount): i32 {
     if (!Token.equals(this.token, other.token)) {
       this.error('compare')
