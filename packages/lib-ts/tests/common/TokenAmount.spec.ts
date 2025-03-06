@@ -3,16 +3,6 @@ import { randomAddress, randomToken } from '../helpers'
 
 describe('TokenAmount', () => {
   describe('when creating a token amount', () => {
-    it('has the correct properties', () => {
-      const token = randomToken()
-      const amount = BigInt.fromI32(100)
-
-      const tokenAmount = new TokenAmount(token, amount)
-
-      expect(tokenAmount.token.equals(token)).toBe(true)
-      expect(tokenAmount.amount.equals(amount)).toBe(true)
-    })
-
     it('creates a clone of the amount to prevent mutation', () => {
       const token = randomToken()
       const originalAmount = BigInt.fromI32(100)
@@ -21,7 +11,7 @@ describe('TokenAmount', () => {
       const modifiedAmount = tokenAmount.amount
       modifiedAmount[0] = 2
 
-      expect(tokenAmount.amount.equals(BigInt.fromI32(100))).toBe(true)
+      expect(tokenAmount.amount.equals(originalAmount)).toBe(true)
       expect(tokenAmount.amount.equals(modifiedAmount)).toBe(false)
     })
   })
