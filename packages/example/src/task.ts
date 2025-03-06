@@ -1,10 +1,10 @@
-import { Address, BigInt, Bytes, convertAmountBetweenTokens, convertTokenAmountToUsd, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 import { input } from './types'
 
 export default function main(): void {
   // Token definitions
   const USDC = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
-  const ETH = new Token('ETH', Address.fromString('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'), 1, 18)
+  const ETH = Token.native(1)
   const WBTC = new Token('WBTC', Address.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'), 1, 8)
 
   // Call withouth bytes (optional field)
@@ -26,12 +26,19 @@ export default function main(): void {
   // Normal Transfer
   environment.transfer(settler, chainId, USDC.address, amount, target, amount)
 
-  // Convert USDC to USD
-  const usdcAmount = BigInt.fromI32(100).times(BigInt.fromI32(10).pow(USDC.decimals))
-  const usdcAmountInUsd = convertTokenAmountToUsd(USDC, usdcAmount)
-  console.log('usdcAmountInUsd: ' + usdcAmountInUsd.toString())
+  // Convert USD to WBTC
+  const decimalUsdAmount = '1200' // $1.200,00
+  const wbtcAmount = WBTC.fromUsd(decimalUsdAmount)
+  console.log('$1200 of WBTC is ' + wbtcAmount.toString())
+
+  // Convert X amount of USDC to USD
+  const decimalUsdcAmount = '100' // 100 USDC
+  const usdcAmount = TokenAmount.fromDecimal(USDC, decimalUsdcAmount)
+  const usdAmount = usdcAmount.toStandardUsd()
+  console.log('100 USDC is ' + usdAmount.toString())
 
   // Convert USDC to ETH
-  const ethAmountFromUsdc = convertAmountBetweenTokens(usdcAmount, USDC, ETH)
-  console.log('ethAmountFromUsdc: ' + ethAmountFromUsdc.toString())
+  const ethAmount = usdcAmount.toToken(ETH)
+  console.log('100 USDC is ' + ethAmount.toString())
+
 }

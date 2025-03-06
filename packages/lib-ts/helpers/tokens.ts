@@ -75,18 +75,17 @@ export function convertAmountBetweenTokens(amountFrom: BigInt, tokenFrom: Token,
 }
 
 /**
- * Converts a regular number to a token amount with the appropriate decimals
- * @param token - The token to create an amount for
- * @param amount - The amount as a string (can be decimal)
- * @returns The amount as a BigInt with the token's decimal places
+ * Converts a decimal string to a BigInt with the specified number of decimal places
+ * @param amount - The amount as a decimal string (e.g., "123.45")
+ * @param decimals - The number of decimal places to scale to
+ * @returns The amount as a BigInt with the appropriate decimal scaling
  *
  * @example
- * // Convert 100.5 to a token amount for USDC
- * // USDC has 6 decimals
- * const amount = toTokenAmount(usdcToken, '100.5')
- * // returns 100500000 (100.5 USDC in 6 decimals)
+ * // Convert "123.45" to a BigInt with 6 decimal places
+ * const scaledAmount = scaleDecimal("123.45", 6)
+ * // returns 123450000 (123.45 × 10^6)
  */
-export function toTokenAmount(token: Token, amount: string): BigInt {
+export function scaleDecimal(amount: string, decimals: u8): BigInt {
   if (amount === '0') {
     return BigInt.fromI32(0)
   }
@@ -96,10 +95,10 @@ export function toTokenAmount(token: Token, amount: string): BigInt {
 
   let result = BigInt.fromString(parts[0])
 
-  result = result.times(BigInt.fromI32(10).pow(token.decimals))
+  result = result.times(BigInt.fromI32(10).pow(decimals))
 
   if (parts.length > 1 && parts[1].length > 0) {
-    const decimalPart = parts[1].padEnd(token.decimals, '0').substring(0, token.decimals)
+    const decimalPart = parts[1].padEnd(decimals, '0').substring(0, decimals)
     result = result.plus(BigInt.fromString(decimalPart))
   }
 

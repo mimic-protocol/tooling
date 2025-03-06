@@ -1,6 +1,8 @@
-import { Address, BigInt, STANDARD_DECIMALS, Token } from '../index'
+import { Address, STANDARD_DECIMALS, Token } from '../index'
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
+export const LOWER_THAN_STANDARD_DECIMALS: u8 = STANDARD_DECIMALS - 12
+export const HIGHER_THAN_STANDARD_DECIMALS: u8 = STANDARD_DECIMALS + 12
 
 /* eslint-disable no-secrets/no-secrets */
 export function randomHex(length: i32): string {
@@ -34,22 +36,6 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }
 
-export function scaleAmount(amount: string, decimals: u8): BigInt {
-  if (amount === '0') {
-    return BigInt.fromI32(0)
-  }
-
-  const parts = amount.split('.')
-  if (parts.length > 2) throw new Error('Invalid amount. Received: ' + amount)
-
-  let result = BigInt.fromString(parts[0])
-
-  result = result.times(BigInt.fromI32(10).pow(decimals))
-
-  if (parts.length > 1 && parts[1].length > 0) {
-    const decimalPart = parts[1].padEnd(decimals, '0').substring(0, decimals)
-    result = result.plus(BigInt.fromString(decimalPart))
-  }
-
-  return result
+export function buildZeroPadding(length: u8): string {
+  return '0'.repeat(length)
 }
