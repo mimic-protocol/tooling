@@ -64,6 +64,12 @@ export class ByteArray extends Uint8Array {
     return self
   }
 
+  static fromBool(x: bool): ByteArray {
+    const self = new ByteArray(1)
+    self[0] = (x ? 1 : 0) as u8
+    return self
+  }
+
   static empty(): ByteArray {
     return ByteArray.fromI32(0)
   }

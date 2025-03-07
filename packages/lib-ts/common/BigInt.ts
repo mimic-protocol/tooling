@@ -206,27 +206,27 @@ export class BigInt extends Uint8Array {
     return result
   }
 
+  toBytes(): Bytes {
+    return Bytes.fromUint8Array(changetype<Uint8Array>(this))
+  }
+
   toI32(): i32 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
+    const byteArray = this.toBytes()
     return byteArray.toI32()
   }
 
   toU32(): u32 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
+    const byteArray = this.toBytes()
     return byteArray.toU32()
   }
 
   toI64(): i64 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
+    const byteArray = this.toBytes()
     return byteArray.toI64()
   }
 
   toU64(): u64 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
+    const byteArray = this.toBytes()
     return byteArray.toU64()
   }
 

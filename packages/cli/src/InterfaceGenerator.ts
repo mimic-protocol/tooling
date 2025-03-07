@@ -1,252 +1,211 @@
-import camelCase from 'lodash/camelCase'
+import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from './types'
 
-import { AbiParameter } from './types'
+type ImportedTypes = LibTypes | 'environment'
 
-const LIB_TYPES = ['BigInt', 'Address', 'Bytes', 'JSON'] as const
-const PRIMITIVE_TYPES = ['u8', 'u16', 'u32', 'u64', 'i8', 'i16', 'i32', 'i64', 'boolean', 'string'] as const
-
-const ABI_TYPECAST_MAP: Record<string, string> = {
-  uint8: 'u8',
-  uint16: 'u16',
-  uint32: 'u32',
-  uint64: 'u64',
-  uint128: 'BigInt',
-  uint256: 'BigInt',
-  int8: 'i8',
-  int16: 'i16',
-  int32: 'i32',
-  int64: 'i64',
-  int128: 'BigInt',
-  int256: 'BigInt',
-  address: 'Address',
-  bool: 'boolean',
-  string: 'string',
-  bytes: 'Bytes',
+const ABI_TYPECAST_MAP: Record<string, InputType> = {
+  ...generateIntegerTypeMappings(),
+  ...generateBytesTypeMappings(),
+  address: LibTypes.Address,
+  bool: AssemblyTypes.bool,
+  string: AssemblyTypes.string,
 } as const
 
 export default {
-  generate(abi: Record<string, never>[], contractName: string): string {
-    const viewFunctions = abi.filter(
-      (item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability)
-    )
+  generate(abi: AbiFunctionItem[], contractName: string): string {
+    const viewFunctions = filterViewFunctions(abi)
 
-    if (viewFunctions.length === 0) {
-      return ''
-    }
+    if (viewFunctions.length === 0) return ''
 
-    const importedLibTypes = new Set<string>()
-    importedLibTypes.add('JSON')
+    const importedTypes = new Set<ImportedTypes>()
+    importedTypes.add('environment')
 
-    const namespacePart = generateNamespace(viewFunctions, contractName)
-    const contractClassPart = generateContractClass(viewFunctions, contractName, importedLibTypes)
-    const paramsClassesPart = generateParamsClasses(viewFunctions, contractName, importedLibTypes)
+    const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
+    const importsCode = generateImports(importedTypes)
 
-    const importLine = `import { ${[...importedLibTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+    return `${importsCode}
 
-    return `${importLine}
-
-${namespacePart}
-
-${contractClassPart}
-
-${paramsClassesPart}`.trim()
+${contractClassCode}`.trim()
   },
 }
 
-const toPascalCase = (str: string): string => camelCase(str).replace(/^(.)/, (_, c) => c.toUpperCase())
-
-/**
- * Maps an ABI type to a TypeScript type using ABI_TYPECAST_MAP.
- * If it's an array ([] suffix), it processes recursively.
- * Tuple support is removed for now; in that case it returns 'unknown'.
- * Additionally, if the mapped type is in LIB_TYPES it's added to libTypes.
- */
-const mapInputType = (
-  abiType: string,
-  input: AbiParameter | undefined,
-  fnName: string | undefined,
-  libTypes: Set<string>
-): string => {
-  if (abiType.endsWith('[]')) mapInputType(abiType.slice(0, -2), input, fnName, libTypes) + '[]'
-  if (abiType === 'tuple') return 'unknown'
-
-  const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
-  if (LIB_TYPES.includes(mapped as (typeof LIB_TYPES)[number])) {
-    libTypes.add(mapped)
-  }
-
-  return mapped
+function filterViewFunctions(abi: AbiFunctionItem[]): AbiFunctionItem[] {
+  return abi.filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability || ''))
 }
 
-/**
- * Generates a namespace whose name is the lowercase contract name,
- * where functions that receive a JSON parameter are declared.
- */
-const generateNamespace = (viewFunctions: Record<string, never>[], contractName: string): string => {
-  const nsName = contractName.toLowerCase()
-  const lines = [`declare namespace ${nsName} {`]
+function generateImports(importedTypes: Set<ImportedTypes>): string {
+  return `import { ${[...importedTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+}
 
-  viewFunctions.forEach((fn) => {
-    lines.push(`  export function ${fn.name}(params: string): string;`)
-  })
+function generateContractClass(
+  viewFunctions: AbiFunctionItem[],
+  contractName: string,
+  importedTypes: Set<ImportedTypes>
+): string {
+  const lines: string[] = []
 
-  lines.push(`}`)
+  appendClassDefinition(lines, contractName)
+  viewFunctions.forEach((fn) => appendMethod(lines, fn, importedTypes))
+
+  lines.push('}')
   return lines.join('\n')
 }
 
-/**
- * Generates the contract class, which includes properties (address and chainId)
- * and methods for each view/pure function. Each method creates an instance of its
- * corresponding Params class and calls the namespace function.
- */
-const generateContractClass = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  viewFunctions: Record<string, any>[],
-  contractName: string,
-  libTypes: Set<string>
-): string => {
-  const nsName = contractName.toLowerCase()
-  const lines: string[] = []
-
+function appendClassDefinition(lines: string[], contractName: string): void {
   lines.push(`export class ${contractName} {`)
-  lines.push(`  address: Address;`)
-  lines.push(`  chainId: u64;`)
+  lines.push(`  private address: Address;`)
+  lines.push(`  private chainId: u64;`)
   lines.push(``)
   lines.push(`  constructor(address: Address, chainId: u64) {`)
   lines.push(`    this.address = address;`)
   lines.push(`    this.chainId = chainId;`)
   lines.push(`  }`)
   lines.push(``)
-
-  viewFunctions.forEach((fn) => {
-    const inputs: AbiParameter[] = fn.inputs || []
-
-    const methodParams = inputs
-      .map((input, index) => {
-        const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
-        const type = mapInputType(input.type, input, fn.name, libTypes)
-        return `${paramName}: ${type}`
-      })
-      .join(', ')
-
-    let retType = 'void'
-    if (fn.outputs && fn.outputs.length === 1) {
-      const outType = fn.outputs[0].type
-      const mappedOut = mapInputType(outType, fn.outputs[0], fn.name, libTypes)
-      retType = mappedOut === 'string' ? 'string' : mappedOut
-    } else if (fn.outputs && fn.outputs.length > 1) {
-      retType = 'unknown' // TODO: handle multiple outputs
-    }
-
-    lines.push(`  ${fn.name}(${methodParams}): ${retType} {`)
-    const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
-    const constructorArgs = ['this.address', 'this.chainId']
-      .concat(inputs.map((input, index) => (input.name && input.name.length > 0 ? input.name : `param${index}`)))
-      .join(', ')
-    const nsCall = `${nsName}.${fn.name}(JSON.stringify(new ${paramsClassName}(${constructorArgs})))`
-    lines.push(`    const result = ${nsCall};`)
-
-    let returnLine: string
-    switch (retType) {
-      case 'BigInt':
-        returnLine = `return BigInt.fromString(result);`
-        break
-      case 'Address':
-        returnLine = `return Address.fromString(result);`
-        break
-      case 'Bytes':
-        returnLine = `return Bytes.fromHexString(result);`
-        break
-      case 'u8':
-      case 'u16':
-      case 'u32':
-      case 'u64':
-      case 'i8':
-      case 'i16':
-      case 'i32':
-      case 'i64':
-      case 'boolean':
-        returnLine = `return JSON.parse<${retType}>(result);`
-        break
-      default:
-        returnLine = `return result;`
-        break
-    }
-    lines.push(`    ${returnLine}`)
-    lines.push(`  }`)
-    lines.push(``)
-  })
-
-  lines.push(`}`)
-  return lines.join('\n')
 }
 
-/**
- * Generates parameter classes for each function, which extend from a base class.
- */
-const generateParamsClasses = (
-  viewFunctions: Record<string, never>[],
-  contractName: string,
-  libTypes: Set<string>
-): string => {
-  const lines: string[] = []
+function appendMethod(lines: string[], fn: AbiFunctionItem, importedTypes: Set<ImportedTypes>): void {
+  const inputs: AbiParameter[] = fn.inputs || []
+  const methodParams = generateMethodParams(inputs, importedTypes)
+  const returnType = determineReturnType(fn, importedTypes)
 
-  if (viewFunctions.length > 0) {
-    lines.push(`@json`)
-    lines.push(`class ${contractName}BaseParams {`)
-    lines.push(`  address: string;`)
-    lines.push(`  chain_id: u64;`)
-    lines.push(``)
-    lines.push(`  constructor(address: Address, chainId: u64) {`)
-    lines.push(`    this.address = address.toHexString();`)
-    lines.push(`    this.chain_id = chainId;`)
-    lines.push(`  }`)
-    lines.push(`}`)
-    lines.push(``)
-  }
+  lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
 
-  viewFunctions.forEach((fn) => {
-    const paramsClassName = `${contractName}${toPascalCase(fn.name)}Params`
-    const inputs: AbiParameter[] = fn.inputs || []
-    lines.push(`@json`)
-    lines.push(`class ${paramsClassName} extends ${contractName}BaseParams {`)
+  const callArgs = generateCallArguments(inputs, importedTypes)
+  appendFunctionBody(lines, fn, returnType, callArgs)
 
-    inputs.forEach((input) => {
-      const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
-      const fieldType = mapInputType(input.type, input, fn.name, libTypes)
-      const isPrimitive = PRIMITIVE_TYPES.includes(fieldType as never)
-      lines.push(`  ${fieldName}: ${isPrimitive ? fieldType : 'string'};`)
+  lines.push(`  }`)
+  lines.push(``)
+}
+
+function generateMethodParams(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
+  return inputs
+    .map((input, index) => {
+      const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+      const type = mapAbiType(input.type, importedTypes)
+      return `${paramName}: ${type}`
     })
-    lines.push(``)
+    .join(', ')
+}
 
-    const constructorParams = ['address: Address', 'chainId: u64']
-      .concat(
-        inputs.map((input, index) => {
-          const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
-          return `${paramName}: ${mapInputType(input.type, input, fn.name, libTypes)}`
-        })
-      )
-      .join(', ')
+function determineReturnType(
+  fn: AbiFunctionItem,
+  importedTypes: Set<ImportedTypes>
+): InputType | InputTypeArray | 'void' {
+  if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
-    lines.push(`  constructor(${constructorParams}) {`)
-    lines.push(`    super(address, chainId);`)
+  if (fn.outputs.length === 1) return mapAbiType(fn.outputs[0].type, importedTypes)
 
-    inputs.forEach((input) => {
-      const fieldName = input.name && input.name.length > 0 ? input.name : 'param'
-      const fieldType = mapInputType(input.type, input, fn.name, libTypes)
-      const isPrimitive = PRIMITIVE_TYPES.includes(fieldType as never)
-      if (isPrimitive) {
-        lines.push(`    this.${fieldName} = ${fieldName};`)
-      } else {
-        lines.push(
-          `    this.${fieldName} = ${fieldType === 'BigInt' ? `${fieldName}.toString()` : `${fieldName}.toHexString()`};`
-        )
+  // Multiple outputs of the same type
+  const firstOutputType = mapAbiType(fn.outputs[0].type, importedTypes)
+  const areAllSameType = fn.outputs.every((output) => mapAbiType(output.type, importedTypes) === firstOutputType)
+
+  return areAllSameType ? (`${firstOutputType}[]` as InputTypeArray) : 'unknown[]'
+}
+
+function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
+  return inputs
+    .map((input, index) => {
+      const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+      const paramType = mapAbiType(input.type, importedTypes)
+
+      switch (paramType) {
+        case LibTypes.BigInt:
+          return `${paramName}.toBytes()`
+        case AssemblyTypes.bool:
+          importedTypes.add(LibTypes.Bytes)
+          return `Bytes.fromBool(${paramName})`
+        default:
+          return paramName
       }
     })
+    .join(', ')
+}
 
-    lines.push(`  }`)
-    lines.push(`}`)
-    lines.push(``)
-  })
-  return lines.join('\n')
+function appendFunctionBody(
+  lines: string[],
+  fn: AbiFunctionItem,
+  returnType: InputType | InputTypeArray | 'void',
+  callArgs: string
+): void {
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, '${fn.name}', [${callArgs}])`
+
+  if (returnType === 'void') {
+    lines.push(`    ${contractCallCode};`)
+    return
+  }
+
+  lines.push(`    const result = ${contractCallCode};`)
+
+  if (typeof returnType === 'string' && returnType.endsWith('[]')) {
+    const baseType = returnType.slice(0, -2) as InputType
+    const mapFunction = generateTypeConversion(baseType, 'value', true)
+    lines.push(`    return result === '' ? [] : result.split(',').map(${mapFunction});`)
+  } else {
+    const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
+    lines.push(`    ${returnLine}`)
+  }
+}
+
+function mapAbiType(abiType: string, importedTypes: Set<ImportedTypes>): InputType | InputTypeArray {
+  if (abiType.endsWith('[]')) {
+    const baseType = mapAbiType(abiType.slice(0, -2), importedTypes)
+    return `${baseType}[]` as InputTypeArray
+  }
+
+  const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
+
+  if (Object.values(LibTypes).includes(mapped as LibTypes)) {
+    importedTypes.add(mapped as LibTypes)
+  }
+
+  return mapped
+}
+
+function generateTypeConversion(type: InputType, valueVarName: string, isMapFunction: boolean): string {
+  let conversion: string
+
+  switch (type) {
+    case LibTypes.BigInt:
+      conversion = `BigInt.fromString(${valueVarName})`
+      break
+    case LibTypes.Address:
+      conversion = `Address.fromString(${valueVarName})`
+      break
+    case LibTypes.Bytes:
+      conversion = `Bytes.fromHexString(${valueVarName})`
+      break
+    case AssemblyTypes.bool:
+      conversion = `${type}.parse(${valueVarName})`
+      break
+    default:
+      conversion = valueVarName
+      break
+  }
+
+  return isMapFunction ? `${valueVarName} => ${conversion}` : `return ${conversion};`
+}
+
+function generateIntegerTypeMappings(): Record<string, InputType> {
+  const mappings: Record<string, InputType> = {
+    int: LibTypes.BigInt,
+    uint: LibTypes.BigInt,
+  }
+
+  for (let bits = 8; bits <= 256; bits += 8) {
+    mappings[`uint${bits}`] = LibTypes.BigInt
+    mappings[`int${bits}`] = LibTypes.BigInt
+  }
+
+  return mappings
+}
+
+function generateBytesTypeMappings(): Record<string, InputType> {
+  const mappings: Record<string, InputType> = {
+    bytes: LibTypes.Bytes,
+  }
+
+  for (let size = 1; size <= 32; size++) {
+    mappings[`bytes${size}`] = LibTypes.Bytes
+  }
+
+  return mappings
 }

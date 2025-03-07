@@ -7,6 +7,7 @@ export namespace environment {
   declare function _call(params: string): void
   declare function _swap(params: string): void
   declare function _transfer(params: string): void
+  declare function _contractCall(params: string): string
 
   export function call(
     settler: Address,
@@ -67,6 +68,12 @@ export namespace environment {
         serialize(recipient),
         serialize(feeAmount),
       ])
+    )
+  }
+
+  export function contractCall(target: Address, chainId: u64, functionName: string, params: Bytes[]): string {
+    return _contractCall(
+      join([serialize(target), serialize(chainId), serialize(functionName), join(params.map(serialize))])
     )
   }
 }
