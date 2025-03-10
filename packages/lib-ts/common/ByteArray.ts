@@ -8,66 +8,69 @@ import { Bytes } from './Bytes'
 import { typeConversion } from './conversion'
 
 export class ByteArray extends Uint8Array {
+  private static fromInteger<T extends number>(value: T, length: u8): ByteArray {
+    const self = new ByteArray(length)
+    for (let i: u8 = 0; i < length; i++) {
+      self[i] = (value >> (i * 8)) as u8
+    }
+    return self
+  }
+
+  /**
+   * Returns bytes in little-endian order.
+   */
+  static fromI8(x: i8): ByteArray {
+    return ByteArray.fromInteger(x, 1)
+  }
+
+  /**
+   * Returns bytes in little-endian order.
+   */
+  static fromU8(x: u8): ByteArray {
+    return ByteArray.fromInteger(x, 1)
+  }
+
+  /**
+   * Returns bytes in little-endian order.
+   */
+  static fromI16(x: i16): ByteArray {
+    return ByteArray.fromInteger(x, 2)
+  }
+
+  static fromU16(x: u16): ByteArray {
+    return ByteArray.fromInteger(x, 2)
+  }
+
   /**
    * Returns bytes in little-endian order.
    */
   static fromI32(x: i32): ByteArray {
-    const self = new ByteArray(4)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    return self
+    return ByteArray.fromInteger(x, 4)
   }
 
   /**
    * Returns bytes in little-endian order.
    */
   static fromU32(x: u32): ByteArray {
-    const self = new ByteArray(4)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    return self
+    return ByteArray.fromInteger(x, 4)
   }
 
   /**
    * Returns bytes in little-endian order.
    */
   static fromI64(x: i64): ByteArray {
-    const self = new ByteArray(8)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    self[4] = (x >> 32) as u8
-    self[5] = (x >> 40) as u8
-    self[6] = (x >> 48) as u8
-    self[7] = (x >> 56) as u8
-    return self
+    return ByteArray.fromInteger(x, 8)
   }
 
   /**
    * Returns bytes in little-endian order.
    */
   static fromU64(x: u64): ByteArray {
-    const self = new ByteArray(8)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    self[4] = (x >> 32) as u8
-    self[5] = (x >> 40) as u8
-    self[6] = (x >> 48) as u8
-    self[7] = (x >> 56) as u8
-    return self
+    return ByteArray.fromInteger(x, 8)
   }
 
   static fromBool(x: bool): ByteArray {
-    const self = new ByteArray(1)
-    self[0] = (x ? 1 : 0) as u8
-    return self
+    return ByteArray.fromInteger((x ? 1 : 0) as u8, 1)
   }
 
   static empty(): ByteArray {

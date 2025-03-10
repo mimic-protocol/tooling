@@ -19,9 +19,9 @@ export class ERC20 {
     return BigInt.fromString(result);
   }
 
-  decimals(): BigInt {
+  decimals(): u8 {
     const result = environment.contractCall(this.address, this.chainId, 'decimals', []);
-    return BigInt.fromString(result);
+    return u8.parse(result);
   }
 
   balanceOf(_owner: Address): BigInt {

@@ -112,7 +112,13 @@ function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<Import
           return `${paramName}.toBytes()`
         case AssemblyTypes.bool:
           importedTypes.add(LibTypes.Bytes)
-          return `Bytes.fromBool(${paramName})`
+          return `${LibTypes.Bytes}.fromBool(${paramName})`
+        case AssemblyTypes.i8:
+          importedTypes.add(LibTypes.Bytes)
+          return `${LibTypes.Bytes}.fromI8(${paramName})`
+        case AssemblyTypes.u8:
+          importedTypes.add(LibTypes.Bytes)
+          return `${LibTypes.Bytes}.fromU8(${paramName})`
         default:
           return paramName
       }
@@ -165,14 +171,14 @@ function generateTypeConversion(type: InputType, valueVarName: string, isMapFunc
 
   switch (type) {
     case LibTypes.BigInt:
-      conversion = `BigInt.fromString(${valueVarName})`
-      break
     case LibTypes.Address:
-      conversion = `Address.fromString(${valueVarName})`
+      conversion = `${type}.fromString(${valueVarName})`
       break
     case LibTypes.Bytes:
-      conversion = `Bytes.fromHexString(${valueVarName})`
+      conversion = `${type}.fromHexString(${valueVarName})`
       break
+    case AssemblyTypes.i8:
+    case AssemblyTypes.u8:
     case AssemblyTypes.bool:
       conversion = `${type}.parse(${valueVarName})`
       break
@@ -186,11 +192,17 @@ function generateTypeConversion(type: InputType, valueVarName: string, isMapFunc
 
 function generateIntegerTypeMappings(): Record<string, InputType> {
   const mappings: Record<string, InputType> = {
+    int8: AssemblyTypes.i8,
+    uint8: AssemblyTypes.u8,
     int: LibTypes.BigInt,
     uint: LibTypes.BigInt,
   }
 
-  for (let bits = 8; bits <= 256; bits += 8) {
+  const START_BITS = 16
+  const END_BITS = 256
+  const STEP = 8
+
+  for (let bits = START_BITS; bits <= END_BITS; bits += STEP) {
     mappings[`uint${bits}`] = LibTypes.BigInt
     mappings[`int${bits}`] = LibTypes.BigInt
   }
@@ -203,7 +215,9 @@ function generateBytesTypeMappings(): Record<string, InputType> {
     bytes: LibTypes.Bytes,
   }
 
-  for (let size = 1; size <= 32; size++) {
+  const MAX_SIZE = 32
+
+  for (let size = 1; size <= MAX_SIZE; size++) {
     mappings[`bytes${size}`] = LibTypes.Bytes
   }
 
