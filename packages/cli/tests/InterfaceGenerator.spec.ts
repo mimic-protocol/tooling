@@ -1,176 +1,261 @@
-/* eslint-disable no-secrets/no-secrets */
 import { expect } from 'chai'
 
 import InterfaceGenerator from '../src/InterfaceGenerator'
+import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../src/types'
 
-import ERC20 from './fixtures/abis/ERC20.json'
+import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'
 
-const erc20Abi = ERC20 as unknown as Record<string, never>[]
+const CONTRACT_NAME = 'TestContract'
 
 describe('InterfaceGenerator', () => {
-  context('when ABI contains read-only functions', () => {
-    it('generates an interface with only view and pure functions', () => {
-      const result = InterfaceGenerator.generate(erc20Abi, 'MyERC20')
+  describe('when generating a class', () => {
+    it('should generate a class with the exact contract name', () => {
+      const abi = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.include(`
-export class MyERC20 {
-  address: Address;
-  chainId: u64;
+      expect(result).to.contain(`export class ${CONTRACT_NAME}`)
+    })
 
-  constructor(address: Address, chainId: u64) {
-    this.address = address;
-    this.chainId = chainId;
-  }`)
+    it('should respect contract names with special characters', () => {
+      const specialName = 'Test_Contract$123'
+      const abi = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
+      const result = InterfaceGenerator.generate(abi, specialName)
 
-      expect(result).to.include(`
-  name(): string {
-    const result = myerc20.name(JSON.stringify(new MyERC20NameParams(this.address, this.chainId)));
-    return result;
-  }`)
-
-      expect(result).to.include(`
-  balanceOf(_owner: Address): BigInt {
-    const result = myerc20.balanceOf(JSON.stringify(new MyERC20BalanceOfParams(this.address, this.chainId, _owner)));
-    return BigInt.fromString(result);
-  }`)
-
-      expect(result).to.not.include('transfer')
-      expect(result).to.not.include('approve')
+      expect(result).to.contain(`export class ${specialName}`)
     })
   })
 
-  context('when ABI contains only non read-only functions', () => {
-    it('returns an empty string', () => {
-      const nonReadOnlyAbi = erc20Abi.filter((item) => !['view', 'pure'].includes(item.stateMutability))
-      const result = InterfaceGenerator.generate(nonReadOnlyAbi, 'MyERC20')
+  describe('when initializing private properties and constructor', () => {
+    it('should correctly initialize private properties in the constructor', () => {
+      const abi = [createViewFunction('getValue', [], [{ type: 'uint256' }])]
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`private address: ${LibTypes.Address}`)
+      expect(result).to.contain(`private chainId: ${AssemblyTypes.u64}`)
+
+      expect(result).to.contain(`constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}) {`)
+      expect(result).to.contain('this.address = address')
+      expect(result).to.contain('this.chainId = chainId')
+    })
+  })
+
+  describe('when generating method names', () => {
+    it('should generate methods with exact names from the ABI', () => {
+      const functionNames = ['getBalance', 'getName', 'getUserDetails']
+      const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
+    })
+
+    it('should respect method names with special characters', () => {
+      const functionNames = ['get_balance', 'getName123', 'get$Info']
+      const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
+    })
+  })
+
+  describe('when filtering functions', () => {
+    it('should include only view and pure functions', () => {
+      const viewFunctionNames = ['getBalance', 'getName']
+      const pureFunctionNames = ['calculateTotal', 'formatAddress']
+      const nonViewFunctionNames = ['transfer', 'mint', 'burn']
+
+      const abi = [
+        ...viewFunctionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }])),
+        ...pureFunctionNames.map((name) => createPureFunction(name, [], [{ type: 'uint256' }])),
+        ...nonViewFunctionNames.map((name) => createNonViewFunction(name, [], [])),
+      ]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      viewFunctionNames.concat(pureFunctionNames).forEach((name) => {
+        expect(result).to.contain(`${name}()`)
+      })
+
+      nonViewFunctionNames.forEach((name) => {
+        expect(result).not.to.contain(`${name}()`)
+      })
+    })
+
+    it('should return an empty string if there are no view/pure functions', () => {
+      const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
       expect(result).to.equal('')
     })
   })
 
-  context('when ABI is empty', () => {
-    it('returns an empty string', () => {
-      const result = InterfaceGenerator.generate([], 'EmptyContract')
-      expect(result).to.equal('')
+  describe('when mapping parameters to types', () => {
+    it('should correctly map basic types', () => {
+      const abi = [
+        createViewFunction(
+          'getValues',
+          [
+            { name: 'addressParam', type: 'address' },
+            { name: 'boolParam', type: 'bool' },
+            { name: 'stringParam', type: 'string' },
+            { name: 'uint8Param', type: 'uint8' },
+            { name: 'uint256Param', type: 'uint256' },
+            { name: 'int8Param', type: 'int8' },
+            { name: 'bytesParam', type: 'bytes' },
+            { name: 'bytes32Param', type: 'bytes32' },
+          ],
+          []
+        ),
+      ]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`addressParam: ${LibTypes.Address}`)
+      expect(result).to.contain(`boolParam: ${AssemblyTypes.bool}`)
+      expect(result).to.contain(`stringParam: ${AssemblyTypes.string}`)
+      expect(result).to.contain(`uint8Param: ${AssemblyTypes.u8}`)
+      expect(result).to.contain(`uint256Param: ${LibTypes.BigInt}`)
+      expect(result).to.contain(`int8Param: ${AssemblyTypes.i8}`)
+      expect(result).to.contain(`bytesParam: ${LibTypes.Bytes}`)
+      expect(result).to.contain(`bytes32Param: ${LibTypes.Bytes}`)
+    })
+
+    it('should correctly map array types', () => {
+      const abi = [
+        createViewFunction(
+          'getArrays',
+          [
+            { name: 'addressesArray', type: 'address[]' },
+            { name: 'uint256Array', type: 'uint256[]' },
+            { name: 'boolArray', type: 'bool[]' },
+          ],
+          []
+        ),
+      ]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`addressesArray: ${LibTypes.Address}[]`)
+      expect(result).to.contain(`uint256Array: ${LibTypes.BigInt}[]`)
+      expect(result).to.contain(`boolArray: ${AssemblyTypes.bool}[]`)
+    })
+
+    it('should handle parameters without names', () => {
+      const abi = [createViewFunction('getValueWithUnnamedParams', [{ type: 'address' }, { type: 'uint256' }], [])]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`param0: ${LibTypes.Address}`)
+      expect(result).to.contain(`param1: ${LibTypes.BigInt}`)
     })
   })
 
-  context('when ABI has tuples in inputs', () => {
-    const tupleInputAbi = [
-      {
-        type: 'function',
-        name: 'getTuple',
-        stateMutability: 'view',
-        inputs: [
-          {
-            name: 'data',
-            type: 'tuple',
-            components: [
-              { name: 'a', type: 'uint256' },
-              { name: 'b', type: 'string' },
-            ],
-          },
-        ],
-        outputs: [{ name: 'result', type: 'bool' }],
-      },
-    ] as unknown as Record<string, never>[]
+  describe('when generating contract call code', () => {
+    it('should generate a call to environment.contractCall with the correct parameters', () => {
+      const functionName = 'getBalance'
+      const abi = [
+        createViewFunction(functionName, [{ name: 'owner', type: 'address' }], [{ name: 'balance', type: 'uint256' }]),
+      ]
 
-    it('generates interface with tuple parameters as unknown', () => {
-      const contractName = 'TupleContract'
-      const result = InterfaceGenerator.generate(tupleInputAbi, contractName)
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.include('getTuple(data: unknown): boolean')
-      expect(result).to.not.include('export class GetTupleDataTuple {')
+      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, '${functionName}', [owner])`)
+    })
+
+    it('should apply the correct conversions to parameters', () => {
+      const abi = [
+        createViewFunction(
+          'getValues',
+          [
+            { name: 'bigIntParam', type: 'uint256' },
+            { name: 'boolParam', type: 'bool' },
+            { name: 'u8Param', type: 'uint8' },
+          ],
+          []
+        ),
+      ]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('bigIntParam.toBytes()')
+      expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
+      expect(result).to.contain(`${LibTypes.Bytes}.fromU8(u8Param)`)
     })
   })
 
-  context('when ABI has tuples in outputs', () => {
-    const tupleOutputAbi = [
-      {
-        type: 'function',
-        name: 'getComplexResult',
-        stateMutability: 'view',
-        inputs: [{ name: 'id', type: 'uint256' }],
-        outputs: [
-          {
-            name: '',
-            type: 'tuple',
-            components: [
-              { name: 'value', type: 'string' },
-              { name: 'count', type: 'uint256' },
-            ],
-          },
-        ],
-      },
-    ] as unknown as Record<string, never>[]
+  describe('when handling return values', () => {
+    it('should correctly map individual return types', () => {
+      const returnTypes = [
+        { type: 'address', expected: `return ${LibTypes.Address}.fromString(result)` },
+        { type: 'uint256', expected: `return ${LibTypes.BigInt}.fromString(result)` },
+        { type: 'bytes', expected: `return ${LibTypes.Bytes}.fromHexString(result)` },
+        { type: 'bool', expected: `return ${AssemblyTypes.bool}.parse(result)` },
+        { type: 'uint8', expected: `return ${AssemblyTypes.u8}.parse(result)` },
+        { type: 'string', expected: `return result` },
+      ]
 
-    it('generates interface with tuple outputs as unknown', () => {
-      const contractName = 'ComplexOutputContract'
-      const result = InterfaceGenerator.generate(tupleOutputAbi, contractName)
+      for (const { type, expected } of returnTypes) {
+        const abi = [createViewFunction(`get${type}`, [], [{ type }])]
+        const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.include('getComplexResult(id: BigInt): unknown')
-      expect(result).to.not.include('export class GetComplexResultReturnTuple {')
+        expect(result).to.contain(expected)
+      }
+    })
+
+    it('should correctly map array return types', () => {
+      const abi = [createViewFunction('getAddressArray', [], [{ name: 'addresses', type: 'address[]' }])]
+
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `return result === '' ? [] : result.split(',').map(value => ${LibTypes.Address}.fromString(value))`
+      )
+    })
+
+    it('should handle functions without return values', () => {
+      const functionName = 'noReturn'
+      const abi = [createViewFunction(functionName, [], [])]
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`${functionName}(): void {`)
+      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, '${functionName}', [])`)
+      expect(result).not.to.contain('return')
     })
   })
 
-  context('when generating parameter classes', () => {
-    it('generates correct parameter classes structure', () => {
-      const result = InterfaceGenerator.generate(erc20Abi, 'MyERC20')
+  describe('when importing dependencies', () => {
+    it('should correctly import the used dependencies', () => {
+      const abi = [
+        createViewFunction(
+          'getAllTypes',
+          [{ type: 'address' }, { type: 'uint256' }, { type: 'bytes' }],
+          [{ type: 'bool' }]
+        ),
+      ]
 
-      expect(result).to.include(`
-@json
-class MyERC20BaseParams {
-  address: string;
-  chain_id: u64;
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
 
-  constructor(address: Address, chainId: u64) {
-    this.address = address.toHexString();
-    this.chain_id = chainId;
-  }
-}`)
-
-      expect(result).to.include(`
-@json
-class MyERC20BalanceOfParams extends MyERC20BaseParams {
-  _owner: string;
-
-  constructor(address: Address, chainId: u64, _owner: Address) {
-    super(address, chainId);
-    this._owner = _owner.toHexString();
-  }
-}`)
-
-      expect(result).to.include(`
-@json
-class MyERC20TotalSupplyParams extends MyERC20BaseParams {
-
-  constructor(address: Address, chainId: u64) {
-    super(address, chainId);
-  }
-}`)
+      expect(importMatch).not.to.be.undefined
+      expect(importMatch).to.contain(`${LibTypes.Address}`)
+      expect(importMatch).to.contain(`${LibTypes.BigInt}`)
+      expect(importMatch).to.contain(`${LibTypes.Bytes}`)
     })
-  })
 
-  context('when generating namespace', () => {
-    it('generates correct namespace structure', () => {
-      const result = InterfaceGenerator.generate(erc20Abi, 'MyERC20')
+    it('should import only the necessary dependencies', () => {
+      const abiWithAddressOnly = [createViewFunction('getOwner', [], [{ name: 'owner', type: 'address' }])]
+      const resultWithAddressOnly = InterfaceGenerator.generate(abiWithAddressOnly, CONTRACT_NAME)
 
-      expect(result).to.include(`
-declare namespace myerc20 {
-  export function name(params: string): string;
-  export function totalSupply(params: string): string;
-  export function decimals(params: string): string;
-  export function balanceOf(params: string): string;
-  export function symbol(params: string): string;
-  export function allowance(params: string): string;
-}`)
-    })
-  })
+      expect(resultWithAddressOnly).to.contain(`${LibTypes.Address}`)
+      expect(resultWithAddressOnly).not.to.contain(`${LibTypes.BigInt}`)
+      expect(resultWithAddressOnly).not.to.contain(`${LibTypes.Bytes}`)
 
-  context('when generating imports', () => {
-    it('includes required imports', () => {
-      const result = InterfaceGenerator.generate(erc20Abi, 'MyERC20')
+      const abiWithBigIntOnly = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
+      const resultWithBigIntOnly = InterfaceGenerator.generate(abiWithBigIntOnly, CONTRACT_NAME)
 
-      expect(result).to.include(`import { Address, BigInt, JSON } from '@mimicprotocol/lib-ts'`)
+      expect(resultWithBigIntOnly).to.contain(`${LibTypes.BigInt}`)
+      expect(resultWithBigIntOnly).not.to.contain(`${LibTypes.Bytes}`)
     })
   })
 })
