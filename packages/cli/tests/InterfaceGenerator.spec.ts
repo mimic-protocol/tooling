@@ -186,21 +186,20 @@ describe('InterfaceGenerator', () => {
 
   describe('when handling return values', () => {
     it('should correctly map individual return types', () => {
-      const returnTypes = [
-        { type: 'address', expected: `return ${LibTypes.Address}.fromString(result)` },
-        { type: 'uint256', expected: `return ${LibTypes.BigInt}.fromString(result)` },
-        { type: 'bytes', expected: `return ${LibTypes.Bytes}.fromHexString(result)` },
-        { type: 'bool', expected: `return ${AssemblyTypes.bool}.parse(result)` },
-        { type: 'uint8', expected: `return ${AssemblyTypes.u8}.parse(result)` },
-        { type: 'string', expected: `return result` },
-      ]
+      const returnTypes = ['address', 'uint256', 'bytes', 'bool', 'uint8', 'string']
+      const abi: AbiFunctionItem[] = []
 
-      for (const { type, expected } of returnTypes) {
-        const abi = [createViewFunction(`get${type}`, [], [{ type }])]
-        const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
-
-        expect(result).to.contain(expected)
+      for (const type of returnTypes) {
+        abi.push(createViewFunction(`get${type}`, [], [{ type }]))
       }
+      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
+      expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
+      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(result)`)
+      expect(result).to.contain(`return ${AssemblyTypes.bool}.parse(result)`)
+      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result)`)
+      expect(result).to.contain(`return result`)
     })
 
     it('should correctly map array return types', () => {
