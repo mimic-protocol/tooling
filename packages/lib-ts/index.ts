@@ -72,8 +72,10 @@ export namespace environment {
   }
 
   export function contractCall(target: Address, chainId: u64, functionName: string, params: Bytes[]): string {
-    return _contractCall(
-      join([serialize(target), serialize(chainId), serialize(functionName), join(params.map(serialize))])
-    )
+    const serializedParams: (string | null)[] = []
+    for (let i = 0; i < params.length; i++) {
+      serializedParams.push(serialize(params[i]))
+    }
+    return _contractCall(join([serialize(target), serialize(chainId), serialize(functionName), join(serializedParams)]))
   }
 }
