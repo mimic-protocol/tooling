@@ -32,7 +32,7 @@ export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
 
 declare function _setTokenPrice(address: string, chainId: u64, price: string): void
 export function setTokenPrice(token: Token, priceUsd: number): void {
-  const priceStr = (priceUsd * 10 ** 18).toString()
+  const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }
 

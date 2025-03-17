@@ -1,46 +1,16 @@
-import { convertTokenAmountToUsd, convertUsdToTokenAmount, scaleDecimal } from '../helpers'
+import { convertTokenAmountToUsd, convertUsdToTokenAmount, scale } from '../helpers'
 
 import { BigInt } from './BigInt'
 import { Token } from './Token'
+import { USD } from './USD'
 
 export class TokenAmount {
   private _token: Token
   private _amount: BigInt
 
   static fromDecimal(token: Token, amount: string): TokenAmount {
-    const scaledAmount = scaleDecimal(amount, token.decimals)
+    const scaledAmount = scale(amount, token.decimals)
     return new TokenAmount(token, scaledAmount)
-  }
-
-  static product(amounts: TokenAmount[]): TokenAmount {
-    if (amounts.length === 0) {
-      throw new Error('Cannot multiply an empty array of token amounts')
-    }
-
-    return amounts.reduce(
-      (product, amount) => product.times(amount),
-      new TokenAmount(amounts[0].token, BigInt.fromI32(1))
-    )
-  }
-
-  static summation(amounts: TokenAmount[]): TokenAmount {
-    if (amounts.length === 0) {
-      throw new Error('Cannot sum an empty array of token amounts')
-    }
-
-    return amounts.reduce((sum, amount) => sum.plus(amount), new TokenAmount(amounts[0].token, BigInt.zero()))
-  }
-
-  private checkToken(other: Token, action: string): void {
-    if (!this.token.equals(other)) {
-      throw new Error(`Cannot ${action} tokens of different types`)
-    }
-  }
-
-  private compare(other: TokenAmount): i32 {
-    this.checkToken(other.token, 'compare')
-
-    return BigInt.compare(this._amount, other.amount)
   }
 
   constructor(token: Token, amount: BigInt) {
@@ -104,17 +74,28 @@ export class TokenAmount {
     return this._amount.isZero()
   }
 
-  toStandardUsd(): BigInt {
+  toUsd(): USD {
     return convertTokenAmountToUsd(this.token, this.amount)
   }
 
   toToken(other: Token): TokenAmount {
-    const usdAmount = this.toStandardUsd()
-    const otherAmount = convertUsdToTokenAmount(other, usdAmount)
+    const otherAmount = convertUsdToTokenAmount(other, this.toUsd())
     return new TokenAmount(other, otherAmount)
   }
 
   toString(): string {
-    return `TokenAmount(${this.token.symbol}, ${this._amount.toString()})`
+    return `${this._amount.toString()} ${this.token.symbol}`
+  }
+
+  private checkToken(other: Token, action: string): void {
+    if (!this.token.equals(other)) {
+      throw new Error(`Cannot ${action} tokens of different types`)
+    }
+  }
+
+  private compare(other: TokenAmount): i32 {
+    this.checkToken(other.token, 'compare')
+
+    return BigInt.compare(this._amount, other.amount)
   }
 }

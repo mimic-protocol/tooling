@@ -1,24 +1,26 @@
+/* eslint-disable no-secrets/no-secrets */
+import { USD } from '../common/USD'
 import { BigInt, environment, STANDARD_DECIMALS, Token } from '../index'
 
 /**
  * Converts a USD amount into the equivalent amount of tokens
  * @param token - The token to convert USD into
- * @param usdAmount - The amount in USD (expressed in 18 decimal places)
+ * @param usdAmount - The amount in USD
  * @returns The amount of tokens that can be bought (expressed in the token's decimal places)
  *
  * @example
  * // Get how many USDC tokens you can buy with $100
  * // USDC has 6 decimals, price is $1
- * const usdAmount = BigInt.fromString("100000000000000000000") // $100 in 18 decimals
+ * const usdAmount = USD.fromDecimal("100") // $100
  * const usdcAmount = convertUsdToTokenAmount(usdcToken, usdAmount)
  * // returns 100000000 (100 USDC in 6 decimals)
  */
-export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt {
+export function convertUsdToTokenAmount(token: Token, usdAmount: USD): BigInt {
   const zeroAmount = new BigInt(token.decimals)
   if (usdAmount.isZero()) return zeroAmount
 
   const tokenPrice = environment.getPrice(token)
-  const scaledUsdAmount = usdAmount.times(BigInt.fromI32(10).pow(token.decimals))
+  const scaledUsdAmount = scale(usdAmount.amount.toString(), token.decimals)
   const result = scaledUsdAmount.div(tokenPrice)
 
   if (result.isZero()) return zeroAmount
@@ -30,48 +32,23 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: BigInt): BigInt
  * Converts a token amount into its USD value
  * @param token - The token to convert to USD
  * @param tokenAmount - The amount of tokens (expressed in token's decimal places)
- * @returns The USD value of the tokens (expressed in 18 decimal places)
+ * @returns The USD value of the tokens
  *
  * @example
  * // Get USD value of 100 USDC
  * // USDC has 6 decimals, price is $1
  * const tokenAmount = BigInt.fromString("100000000") // 100 USDC in 6 decimals
  * const usdAmount = convertTokenAmountToUsd(usdcToken, tokenAmount)
- * // returns 100000000000000000000 ($100 in 18 decimals)
+ * // returns USD("100")
  */
-export function convertTokenAmountToUsd(token: Token, tokenAmount: BigInt): BigInt {
-  if (tokenAmount.isZero()) return BigInt.zero()
+export function convertTokenAmountToUsd(token: Token, tokenAmount: BigInt): USD {
+  if (tokenAmount.isZero()) return new USD(BigInt.zero())
 
   const tokenPrice = environment.getPrice(token)
+  const unscaledAmount = unscale(tokenAmount, token.decimals)
+  const scaledAmount = scale(unscaledAmount, STANDARD_DECIMALS)
 
-  const isStandardToken = token.decimals <= STANDARD_DECIMALS
-  const decimalAdjustment: u8 = isStandardToken
-    ? STANDARD_DECIMALS - token.decimals
-    : token.decimals - STANDARD_DECIMALS
-  const adjustmentFactor = BigInt.fromI32(10).pow(decimalAdjustment)
-  const adjustedAmount = isStandardToken ? tokenAmount.times(adjustmentFactor) : tokenAmount.div(adjustmentFactor)
-
-  return adjustedAmount.times(tokenPrice).div(BigInt.fromI32(10).pow(STANDARD_DECIMALS))
-}
-
-/**
- * Converts an amount from one token to another using their USD prices
- * @param amountFrom - The amount of source tokens (expressed in source token's decimal places)
- * @param tokenFrom - The source token
- * @param tokenTo - The target token
- * @returns The equivalent amount in target tokens (expressed in target token's decimal places)
- *
- * @example
- * // Convert 100 USDC to DAI
- * // USDC has 6 decimals, DAI has 18 decimals, both price $1
- * const usdcAmount = BigInt.fromString("100000000") // 100 USDC in 6 decimals
- * const daiAmount = convertAmountBetweenTokens(usdcAmount, usdcToken, daiToken)
- * // returns 100000000000000000000 (100 DAI in 18 decimals)
- */
-export function convertAmountBetweenTokens(amountFrom: BigInt, tokenFrom: Token, tokenTo: Token): BigInt {
-  const usdAmount = convertTokenAmountToUsd(tokenFrom, amountFrom)
-
-  return convertUsdToTokenAmount(tokenTo, usdAmount)
+  return new USD(scaledAmount.times(tokenPrice).div(BigInt.fromI32(10).pow(STANDARD_DECIMALS)))
 }
 
 /**
@@ -82,10 +59,10 @@ export function convertAmountBetweenTokens(amountFrom: BigInt, tokenFrom: Token,
  *
  * @example
  * // Convert "123.45" to a BigInt with 6 decimal places
- * const scaledAmount = scaleDecimal("123.45", 6)
+ * const scaledAmount = scale("123.45", 6)
  * // returns 123450000 (123.45 × 10^6)
  */
-export function scaleDecimal(amount: string, decimals: u8): BigInt {
+export function scale(amount: string, decimals: u8): BigInt {
   if (amount === '0') {
     return BigInt.fromI32(0)
   }
@@ -103,4 +80,28 @@ export function scaleDecimal(amount: string, decimals: u8): BigInt {
   }
 
   return result
+}
+
+/**
+ * Converts a BigInt amount back to a decimal string
+ * @param amount - The amount as a BigInt
+ * @param decimals - The number of decimal places to consider
+ * @returns The amount as a decimal string (e.g., "123.45")
+ *
+ * @example
+ * // Convert a BigInt with 18 decimals to a decimal string
+ * const amount = BigInt.fromString("123456789012345678")
+ * const decimalStr = unscale(amount, 18)
+ * // returns "1.23456789012345678"
+ */
+export function unscale(amount: BigInt, decimals: u8): string {
+  if (amount.isZero()) return '0'
+
+  const str = amount.toString()
+  if (str.length <= (decimals as i32)) {
+    return '0.' + str.padStart(decimals, '0')
+  }
+  const wholePart = str.slice(0, str.length - decimals)
+  const decimalPart = str.slice(str.length - decimals)
+  return wholePart + '.' + decimalPart
 }

@@ -1,9 +1,9 @@
 import { NATIVE_ADDRESS, STANDARD_DECIMALS } from '../constants'
-import { convertUsdToTokenAmount, scaleDecimal } from '../helpers'
+import { convertUsdToTokenAmount } from '../helpers'
 
 import { Address } from './Address'
-import { BigInt } from './BigInt'
 import { TokenAmount } from './TokenAmount'
+import { USD } from './USD'
 
 export class Token {
   private _symbol: string
@@ -47,17 +47,12 @@ export class Token {
     return isSameChain && isSameAddress
   }
 
-  fromUsd(decimalUsdAmount: string): TokenAmount {
-    const standardUsdAmount = scaleDecimal(decimalUsdAmount, STANDARD_DECIMALS)
-    return this.fromStandardUsd(standardUsdAmount)
-  }
-
-  fromStandardUsd(usdAmount: BigInt): TokenAmount {
-    const tokenAmount = convertUsdToTokenAmount(this, usdAmount)
+  fromUsd(usd: USD): TokenAmount {
+    const tokenAmount = convertUsdToTokenAmount(this, usd)
     return new TokenAmount(this, tokenAmount)
   }
 
   toString(): string {
-    return `Token(${this.symbol}, ${this.address.toHex()}, ${this.chainId}, ${this.decimals})`
+    return this.symbol
   }
 }

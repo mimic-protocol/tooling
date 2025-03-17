@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token, TokenAmount, USD } from '@mimicprotocol/lib-ts'
 import { input } from './types'
 
 export default function main(): void {
@@ -27,15 +27,14 @@ export default function main(): void {
   environment.transfer(settler, chainId, USDC.address, amount, target, amount)
 
   // Convert USD to WBTC
-  const decimalUsdAmount = '1200' // $1.200,00
-  const wbtcAmount = WBTC.fromUsd(decimalUsdAmount)
-  console.log('$1200 of WBTC is ' + wbtcAmount.toString())
+  const usdAmount = USD.fromDecimal('1200.5') // $1.200,50
+  const wbtcAmount = WBTC.fromUsd(usdAmount)
+  console.log('$1200.50 worth of WBTC is ' + wbtcAmount.toString())
 
   // Convert X amount of USDC to USD
   const decimalUsdcAmount = '100' // 100 USDC
   const usdcAmount = TokenAmount.fromDecimal(USDC, decimalUsdcAmount)
-  const usdAmount = usdcAmount.toStandardUsd()
-  console.log('100 USDC is ' + usdAmount.toString())
+  console.log('100 USDC is worth $' + usdcAmount.toUsd().toDecimal(2))
 
   // Convert USDC to ETH
   const ethAmount = usdcAmount.toToken(ETH)
