@@ -3,9 +3,9 @@ import { input } from './types'
 
 export default function main(): void {
   // Token definitions
-  const USDC = new Token('USDC', Address.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'), 1, 6)
+  const USDC = new Token('USDC', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1, 6)
   const ETH = Token.native(1)
-  const WBTC = new Token('WBTC', Address.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599'), 1, 8)
+  const WBTC = new Token('WBTC', '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', 1, 8)
 
   // Call withouth bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)

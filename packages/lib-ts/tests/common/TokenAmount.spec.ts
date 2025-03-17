@@ -1,4 +1,4 @@
-import { Address, BigInt, Token, TokenAmount } from '../../common'
+import { BigInt, Token, TokenAmount } from '../../common'
 import { randomAddress, randomToken } from '../helpers'
 
 describe('TokenAmount', () => {
@@ -34,7 +34,7 @@ describe('TokenAmount', () => {
     it('throws an error when adding tokens of different types', () => {
       expect(() => {
         const token1 = randomToken()
-        const token2 = new Token('OTHER', Address.fromString(randomAddress()), 1, 18)
+        const token2 = new Token('OTHER', randomAddress(), 1, 18)
         const amount1 = BigInt.fromI32(100)
         const amount2 = BigInt.fromI32(50)
 
@@ -62,7 +62,7 @@ describe('TokenAmount', () => {
     it('throws an error when subtracting tokens of different types', () => {
       expect(() => {
         const token1 = randomToken()
-        const token2 = new Token('OTHER', Address.fromString(randomAddress()), 1, 18)
+        const token2 = new Token('OTHER', randomAddress(), 1, 18)
         const amount1 = BigInt.fromI32(100)
         const amount2 = BigInt.fromI32(50)
 
@@ -90,7 +90,7 @@ describe('TokenAmount', () => {
     it('throws an error when multiplying tokens of different types', () => {
       expect(() => {
         const token1 = randomToken()
-        const token2 = new Token('OTHER', Address.fromString(randomAddress()), 1, 18)
+        const token2 = new Token('OTHER', randomAddress(), 1, 18)
         const amount1 = BigInt.fromI32(10)
         const amount2 = BigInt.fromI32(5)
 
@@ -118,7 +118,7 @@ describe('TokenAmount', () => {
     it('throws an error when dividing tokens of different types', () => {
       expect(() => {
         const token1 = randomToken()
-        const token2 = new Token('OTHER', Address.fromString(randomAddress()), 1, 18)
+        const token2 = new Token('OTHER', randomAddress(), 1, 18)
         const amount1 = BigInt.fromI32(100)
         const amount2 = BigInt.fromI32(4)
 
@@ -157,7 +157,7 @@ describe('TokenAmount', () => {
     it('throws an error when comparing tokens of different types', () => {
       expect(() => {
         const token1 = randomToken()
-        const token2 = new Token('OTHER', Address.fromString(randomAddress()), 1, 18)
+        const token2 = new Token('OTHER', randomAddress(), 1, 18)
         const amount = BigInt.fromI32(100)
 
         const tokenAmount1 = new TokenAmount(token1, amount)

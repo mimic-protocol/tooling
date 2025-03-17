@@ -12,14 +12,14 @@ export class Token {
   private _decimals: u8
 
   static native(chainId: u64): Token {
-    if (chainId === 1) return new Token('ETH', Address.fromString(NATIVE_ADDRESS), chainId, STANDARD_DECIMALS)
+    if (chainId === 1) return new Token('ETH', NATIVE_ADDRESS, chainId, STANDARD_DECIMALS)
 
     throw new Error(`Unsupported chainId: ${chainId}`)
   }
 
-  constructor(symbol: string, address: Address, chainId: u64, decimals: u8) {
+  constructor(symbol: string, address: string, chainId: u64, decimals: u8) {
     this._symbol = symbol
-    this._address = address.clone()
+    this._address = Address.fromString(address)
     this._chainId = chainId
     this._decimals = decimals
   }

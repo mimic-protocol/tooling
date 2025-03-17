@@ -1,4 +1,4 @@
-import { Address, STANDARD_DECIMALS, Token } from '../index'
+import { STANDARD_DECIMALS, Token } from '../index'
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
 export const LOWER_THAN_STANDARD_DECIMALS: u8 = STANDARD_DECIMALS - 12
@@ -21,7 +21,7 @@ export function randomAddress(): string {
 
 export function randomToken(decimals: u8 = STANDARD_DECIMALS): Token {
   const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
-  return new Token('TEST', Address.fromString(randomAddress()), chainId, decimals)
+  return new Token('TEST', randomAddress(), chainId, decimals)
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
