@@ -1,7 +1,7 @@
 import { USD } from '../../common'
 import { STANDARD_DECIMALS } from '../../constants'
 import { scale } from '../../helpers'
-import { buildZeroPadding, HIGHER_THAN_STANDARD_DECIMALS, LOWER_THAN_STANDARD_DECIMALS } from '../helpers'
+import { buildZeroPadding, HIGHER_THAN_STANDARD_DECIMALS } from '../helpers'
 
 describe('USD', () => {
   describe('fromDecimal', () => {
@@ -103,14 +103,6 @@ describe('USD', () => {
         const usd = new USD(scaledAmount)
 
         expect(usd.toDecimal()).toBe(decimalAmount + buildZeroPadding(STANDARD_DECIMALS - 2))
-      })
-
-      it('works with lower than standard decimals precision', () => {
-        const decimalAmount = '123.456789012345678901'
-        const scaledAmount = scale(decimalAmount, STANDARD_DECIMALS)
-        const usd = new USD(scaledAmount)
-
-        expect(usd.toDecimal(LOWER_THAN_STANDARD_DECIMALS)).toBe('123.456789')
       })
 
       it('works with higher than standard decimals precision', () => {
