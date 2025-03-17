@@ -12,17 +12,9 @@ export class Token {
   private _decimals: u8
 
   static native(chainId: u64): Token {
-    if (chainId === 1) {
-      return new Token('ETH', Address.fromString(NATIVE_ADDRESS), chainId, 18)
-    }
+    if (chainId === 1) return new Token('ETH', Address.fromString(NATIVE_ADDRESS), chainId, STANDARD_DECIMALS)
+
     throw new Error(`Unsupported chainId: ${chainId}`)
-  }
-
-  static equals(token1: Token, token2: Token): boolean {
-    const isSameChain = token1.chainId === token2.chainId
-    const isSameAddress = token1.address.equals(token2.address)
-
-    return isSameChain && isSameAddress
   }
 
   constructor(symbol: string, address: Address, chainId: u64, decimals: u8) {
@@ -49,7 +41,10 @@ export class Token {
   }
 
   equals(other: Token): boolean {
-    return Token.equals(this, other)
+    const isSameChain = this.chainId === other.chainId
+    const isSameAddress = this.address.equals(other.address)
+
+    return isSameChain && isSameAddress
   }
 
   fromUsd(decimalUsdAmount: string): TokenAmount {

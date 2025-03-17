@@ -22,7 +22,6 @@ describe('Token', () => {
         const token1 = new Token('TOKEN1', address, chainId, 18)
         const token2 = new Token('TOKEN2', address, chainId, 6)
 
-        expect(Token.equals(token1, token2)).toBe(true)
         expect(token1.equals(token2)).toBe(true)
       })
 
@@ -31,7 +30,6 @@ describe('Token', () => {
         const token1 = new Token('TOKEN', Address.fromString(randomAddress()), chainId, 18)
         const token2 = new Token('TOKEN', Address.fromString(randomAddress()), chainId, 18)
 
-        expect(Token.equals(token1, token2)).toBe(false)
         expect(token1.equals(token2)).toBe(false)
       })
 
@@ -40,7 +38,6 @@ describe('Token', () => {
         const token1 = new Token('TOKEN', address, 1, 18)
         const token2 = new Token('TOKEN', address, 137, 18)
 
-        expect(Token.equals(token1, token2)).toBe(false)
         expect(token1.equals(token2)).toBe(false)
       })
     })

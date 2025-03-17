@@ -31,16 +31,16 @@ export class TokenAmount {
     return amounts.reduce((sum, amount) => sum.plus(amount), new TokenAmount(amounts[0].token, BigInt.zero()))
   }
 
-  private compare(other: TokenAmount): i32 {
-    if (!Token.equals(this.token, other.token)) {
-      this.error('compare')
+  private checkToken(other: Token, action: string): void {
+    if (!this.token.equals(other)) {
+      throw new Error(`Cannot ${action} tokens of different types`)
     }
-
-    return BigInt.compare(this.amount, other.amount)
   }
 
-  private error(action: string): void {
-    throw new Error(`Cannot ${action} tokens of different types`)
+  private compare(other: TokenAmount): i32 {
+    this.checkToken(other.token, 'compare')
+
+    return BigInt.compare(this._amount, other.amount)
   }
 
   constructor(token: Token, amount: BigInt) {
@@ -57,35 +57,27 @@ export class TokenAmount {
   }
 
   plus(other: TokenAmount): TokenAmount {
-    if (!Token.equals(this.token, other.token)) {
-      this.error('sum')
-    }
+    this.checkToken(other.token, 'sum')
 
-    return new TokenAmount(this.token, this.amount.plus(other.amount))
+    return new TokenAmount(this.token, this._amount.plus(other.amount))
   }
 
   minus(other: TokenAmount): TokenAmount {
-    if (!Token.equals(this.token, other.token)) {
-      this.error('subtract')
-    }
+    this.checkToken(other.token, 'subtract')
 
-    return new TokenAmount(this.token, this.amount.minus(other.amount))
+    return new TokenAmount(this.token, this._amount.minus(other.amount))
   }
 
   times(other: TokenAmount): TokenAmount {
-    if (!Token.equals(this.token, other.token)) {
-      this.error('multiply')
-    }
+    this.checkToken(other.token, 'multiply')
 
-    return new TokenAmount(this.token, this.amount.times(other.amount))
+    return new TokenAmount(this.token, this._amount.times(other.amount))
   }
 
   div(other: TokenAmount): TokenAmount {
-    if (!Token.equals(this.token, other.token)) {
-      this.error('divide')
-    }
+    this.checkToken(other.token, 'divide')
 
-    return new TokenAmount(this.token, this.amount.div(other.amount))
+    return new TokenAmount(this.token, this._amount.div(other.amount))
   }
 
   equals(other: TokenAmount): boolean {
@@ -109,7 +101,7 @@ export class TokenAmount {
   }
 
   isZero(): boolean {
-    return this.amount.isZero()
+    return this._amount.isZero()
   }
 
   toStandardUsd(): BigInt {
@@ -123,6 +115,6 @@ export class TokenAmount {
   }
 
   toString(): string {
-    return `TokenAmount(${this.token.symbol}, ${this.amount.toString()})`
+    return `TokenAmount(${this.token.symbol}, ${this._amount.toString()})`
   }
 }
