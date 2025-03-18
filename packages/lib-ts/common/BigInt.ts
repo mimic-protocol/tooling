@@ -4,11 +4,15 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { STANDARD_DECIMALS } from '../constants'
+
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 import { typeConversion } from './conversion'
 
-/** An arbitrary size integer represented as an array of bytes. */
+/**
+ * Represents an arbitrary-precision integer stored as a byte array.
+ */
 export class BigInt extends Uint8Array {
   static fromI32(x: i32): BigInt {
     const byteArray = ByteArray.fromI32(x)
@@ -74,6 +78,53 @@ export class BigInt extends Uint8Array {
 
   toString(): string {
     return typeConversion.bigIntToString(this)
+  }
+
+  toStringDecimal(precision: u8): string {
+    if (this.isZero()) return '0'
+
+    const isNegative = this.isNegative()
+    const absAmount = isNegative ? this.neg() : this
+
+    const str = absAmount.toString()
+    if (str.length <= (precision as i32)) {
+      return (isNegative ? '-' : '') + '0.' + str.padStart(precision, '0')
+    }
+    const wholePart = str.slice(0, str.length - precision)
+    const decimalPart = str.slice(str.length - precision)
+
+    const unscaledAmount = (isNegative ? '-' : '') + wholePart + '.' + decimalPart
+    if (precision === STANDARD_DECIMALS) return unscaledAmount
+
+    const parts = unscaledAmount.split('.')
+    if (parts.length === 1) return unscaledAmount
+
+    const whole = parts[0]
+    const decimal = parts[1]
+    const roundedDecimal = decimal.slice(0, precision)
+    return `${whole}.${roundedDecimal}`
+  }
+
+  static fromStringDecimal(str: string, precision: u8): BigInt {
+    if (str === '0') {
+      return BigInt.fromI32(0)
+    }
+
+    const parts = str.split('.')
+    if (parts.length > 2) throw new Error('Invalid str. Received: ' + str)
+
+    const isNegative = parts[0].startsWith('-')
+    const wholePart = isNegative ? parts[0].substring(1) : parts[0]
+
+    let result = BigInt.fromString(wholePart)
+    result = result.times(BigInt.fromI32(10).pow(precision))
+
+    if (parts.length > 1 && parts[1].length > 0) {
+      const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
+      result = result.plus(BigInt.fromString(decimalPart))
+    }
+
+    return isNegative ? result.neg() : result
   }
 
   static fromString(str: string): BigInt {
@@ -257,6 +308,14 @@ export class BigInt extends Uint8Array {
       z = x.div(z).plus(z).div(BigInt.fromI32(2))
     }
     return y
+  }
+
+  upscale(precision: u8): BigInt {
+    return this.times(BigInt.fromI32(10).pow(precision))
+  }
+
+  downscale(precision: u8): BigInt {
+    return this.div(BigInt.fromI32(10).pow(precision))
   }
 
   @operator('+')

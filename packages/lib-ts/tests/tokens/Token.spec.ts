@@ -1,9 +1,9 @@
-import { Token } from '../../common'
+import { Token } from '../../tokens'
 import { randomAddress, randomToken } from '../helpers'
 
 describe('Token', () => {
   describe('when creating a token', () => {
-    it('has an inmutable address', () => {
+    it('has an immutable address', () => {
       const token = randomToken()
       const originalAddress = token.address.clone()
       const modifiedAddress = token.address

@@ -1,9 +1,11 @@
-import { Address, BigInt, Bytes, Token, USD } from './common'
+import { Address, BigInt, Bytes } from './common'
 import { join, serialize } from './helpers'
+import { Token, USD } from './tokens'
 
 export * from './common'
 export * from './constants'
 export * from './helpers'
+export * from './tokens'
 
 export namespace environment {
   declare function _call(params: string): void
@@ -75,6 +77,6 @@ export namespace environment {
 
   // Returns the price of a token in USD expressed in 18 decimal places
   export function getPrice(token: Token): USD {
-    return new USD(BigInt.fromString(_getPrice(join([serialize(token.address), serialize(token.chainId)]))))
+    return USD.fromBigInt(BigInt.fromString(_getPrice(join([serialize(token.address), serialize(token.chainId)]))))
   }
 }
