@@ -70,8 +70,10 @@ export function scale(amount: string, decimals: u8): BigInt {
   const parts = amount.split('.')
   if (parts.length > 2) throw new Error('Invalid amount. Received: ' + amount)
 
-  let result = BigInt.fromString(parts[0])
+  const isNegative = parts[0].startsWith('-')
+  const wholePart = isNegative ? parts[0].substring(1) : parts[0]
 
+  let result = BigInt.fromString(wholePart)
   result = result.times(BigInt.fromI32(10).pow(decimals))
 
   if (parts.length > 1 && parts[1].length > 0) {
@@ -79,7 +81,7 @@ export function scale(amount: string, decimals: u8): BigInt {
     result = result.plus(BigInt.fromString(decimalPart))
   }
 
-  return result
+  return isNegative ? result.neg() : result
 }
 
 /**
@@ -97,11 +99,15 @@ export function scale(amount: string, decimals: u8): BigInt {
 export function unscale(amount: BigInt, decimals: u8): string {
   if (amount.isZero()) return '0'
 
-  const str = amount.toString()
+  const isNegative = amount.lt(BigInt.zero())
+  const absAmount = isNegative ? amount.neg() : amount
+
+  const str = absAmount.toString()
   if (str.length <= (decimals as i32)) {
-    return '0.' + str.padStart(decimals, '0')
+    return (isNegative ? '-' : '') + '0.' + str.padStart(decimals, '0')
   }
   const wholePart = str.slice(0, str.length - decimals)
   const decimalPart = str.slice(str.length - decimals)
-  return wholePart + '.' + decimalPart
+
+  return (isNegative ? '-' : '') + wholePart + '.' + decimalPart
 }

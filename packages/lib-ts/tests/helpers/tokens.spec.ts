@@ -17,6 +17,22 @@ describe('scale', () => {
     })
   })
 
+  describe('when converting negative numbers', () => {
+    it('converts negative whole numbers correctly', () => {
+      const decimalAmount = '-100'
+      const result = scale(decimalAmount, STANDARD_DECIMALS)
+
+      expect(result.toString()).toBe(decimalAmount + buildZeroPadding(STANDARD_DECIMALS))
+    })
+
+    it('converts negative decimal numbers correctly', () => {
+      const decimalAmount = '-100.5'
+      const result = scale(decimalAmount, STANDARD_DECIMALS)
+
+      expect(result.toString()).toBe(decimalAmount.replace('.', '') + buildZeroPadding(STANDARD_DECIMALS - 1))
+    })
+  })
+
   describe('when converting whole numbers', () => {
     it('converts correctly for token with less than standard decimals', () => {
       const decimalAmount = '100'
@@ -102,6 +118,24 @@ describe('unscale', () => {
       const result = unscale(zeroAmount, mockToken.decimals)
 
       expect(result).toBe('0')
+    })
+  })
+
+  describe('when converting negative numbers', () => {
+    it('handles negative whole numbers correctly', () => {
+      const decimalAmount = '-100'
+      const wholeAmount = scale(decimalAmount, STANDARD_DECIMALS)
+      const result = unscale(wholeAmount, STANDARD_DECIMALS)
+
+      expect(result).toBe(decimalAmount + '.' + buildZeroPadding(STANDARD_DECIMALS))
+    })
+
+    it('handles negative decimal numbers correctly', () => {
+      const decimalAmount = '-100.5'
+      const amount = scale(decimalAmount, STANDARD_DECIMALS)
+      const result = unscale(amount, STANDARD_DECIMALS)
+
+      expect(result).toBe(decimalAmount + buildZeroPadding(STANDARD_DECIMALS - 1))
     })
   })
 
