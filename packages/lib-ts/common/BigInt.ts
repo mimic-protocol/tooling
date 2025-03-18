@@ -508,7 +508,7 @@ export class BigInt extends Uint8Array {
     return 0
   }
 
-  private isNegative(): boolean {
+  isNegative(): boolean {
     return this.length > 0 && (this[this.length - 1] & 0x80) == 0x80
   }
 

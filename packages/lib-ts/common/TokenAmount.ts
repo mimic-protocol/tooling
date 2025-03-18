@@ -14,6 +14,9 @@ export class TokenAmount {
   }
 
   constructor(token: Token, amount: BigInt) {
+    if (amount.isNegative()) {
+      throw new Error('Amount cannot be negative')
+    }
     this._token = token
     this._amount = amount.clone()
   }
@@ -38,16 +41,28 @@ export class TokenAmount {
     return new TokenAmount(this.token, this._amount.minus(other.amount))
   }
 
-  times(other: TokenAmount): TokenAmount {
-    this.checkToken(other.token, 'multiply')
-
-    return new TokenAmount(this.token, this._amount.times(other.amount))
+  times(decimalValue: string): TokenAmount {
+    const scaledAmount = scale(decimalValue, this.token.decimals)
+    return new TokenAmount(this.token, this._amount.times(scaledAmount))
   }
 
-  div(other: TokenAmount): TokenAmount {
-    this.checkToken(other.token, 'divide')
+  div(decimalValue: string): TokenAmount {
+    let result: BigInt
 
-    return new TokenAmount(this.token, this._amount.div(other.amount))
+    if (decimalValue.includes('.')) {
+      const parts = decimalValue.split('.')
+      const decimalPlaces = parts[1].length
+
+      const integerValue = decimalValue.replace('.', '')
+      const divisor = BigInt.fromString(integerValue)
+
+      const scaleFactor = BigInt.fromI32(10).pow(decimalPlaces as u8)
+      result = this._amount.times(scaleFactor).div(divisor)
+    } else {
+      result = this._amount.div(BigInt.fromString(decimalValue))
+    }
+
+    return new TokenAmount(this.token, scale(result.toString(), this.token.decimals))
   }
 
   equals(other: TokenAmount): boolean {
