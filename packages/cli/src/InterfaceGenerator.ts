@@ -18,6 +18,8 @@ export default {
 
     const importedTypes = new Set<ImportedTypes>()
     importedTypes.add('environment')
+    importedTypes.add(LibTypes.BigInt)
+    importedTypes.add(LibTypes.Address)
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -52,12 +54,14 @@ function generateContractClass(
 
 function appendClassDefinition(lines: string[], contractName: string): void {
   lines.push(`export class ${contractName} {`)
-  lines.push(`  private address: Address;`)
+  lines.push(`  private address: ${LibTypes.Address};`)
   lines.push(`  private chainId: u64;`)
+  lines.push(`  private blockNumber: ${LibTypes.BigInt};`)
   lines.push(``)
-  lines.push(`  constructor(address: Address, chainId: u64) {`)
+  lines.push(`  constructor(address: ${LibTypes.Address}, chainId: u64) {`)
   lines.push(`    this.address = address;`)
   lines.push(`    this.chainId = chainId;`)
+  lines.push(`    this.blockNumber = environment.getCurrentBlockNumber(chainId);`)
   lines.push(`  }`)
   lines.push(``)
 }
@@ -132,7 +136,7 @@ function appendFunctionBody(
   returnType: InputType | InputTypeArray | 'void',
   callArgs: string
 ): void {
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, '${fn.name}', [${callArgs}])`
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.blockNumber, '${fn.name}', [${callArgs}])`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode};`)

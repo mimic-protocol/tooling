@@ -160,7 +160,9 @@ describe('InterfaceGenerator', () => {
 
       const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, '${functionName}', [owner])`)
+      expect(result).to.contain(
+        `environment.contractCall(this.address, this.chainId, this.blockNumber, '${functionName}', [owner])`
+      )
     })
 
     it('should apply the correct conversions to parameters', () => {
@@ -218,7 +220,9 @@ describe('InterfaceGenerator', () => {
       const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`${functionName}(): void {`)
-      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, '${functionName}', [])`)
+      expect(result).to.contain(
+        `environment.contractCall(this.address, this.chainId, this.blockNumber, '${functionName}', [])`
+      )
       expect(result).not.to.contain('return')
     })
   })
@@ -240,21 +244,6 @@ describe('InterfaceGenerator', () => {
       expect(importMatch).to.contain(`${LibTypes.Address}`)
       expect(importMatch).to.contain(`${LibTypes.BigInt}`)
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
-    })
-
-    it('should import only the necessary dependencies', () => {
-      const abiWithAddressOnly = [createViewFunction('getOwner', [], [{ name: 'owner', type: 'address' }])]
-      const resultWithAddressOnly = InterfaceGenerator.generate(abiWithAddressOnly, CONTRACT_NAME)
-
-      expect(resultWithAddressOnly).to.contain(`${LibTypes.Address}`)
-      expect(resultWithAddressOnly).not.to.contain(`${LibTypes.BigInt}`)
-      expect(resultWithAddressOnly).not.to.contain(`${LibTypes.Bytes}`)
-
-      const abiWithBigIntOnly = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
-      const resultWithBigIntOnly = InterfaceGenerator.generate(abiWithBigIntOnly, CONTRACT_NAME)
-
-      expect(resultWithBigIntOnly).to.contain(`${LibTypes.BigInt}`)
-      expect(resultWithBigIntOnly).not.to.contain(`${LibTypes.Bytes}`)
     })
   })
 })

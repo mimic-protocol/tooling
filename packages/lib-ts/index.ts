@@ -8,6 +8,7 @@ export namespace environment {
   declare function _swap(params: string): void
   declare function _transfer(params: string): void
   declare function _contractCall(params: string): string
+  declare function _getCurrentBlockNumber(params: string): string
 
   export function call(
     settler: Address,
@@ -71,11 +72,29 @@ export namespace environment {
     )
   }
 
-  export function contractCall(target: Address, chainId: u64, functionName: string, params: Bytes[]): string {
+  export function contractCall(
+    target: Address,
+    chainId: u64,
+    blockNumber: BigInt,
+    functionName: string,
+    params: Bytes[]
+  ): string {
     const serializedParams: (string | null)[] = []
     for (let i = 0; i < params.length; i++) {
       serializedParams.push(serialize(params[i]))
     }
-    return _contractCall(join([serialize(target), serialize(chainId), serialize(functionName), join(serializedParams)]))
+    return _contractCall(
+      join([
+        serialize(target),
+        serialize(chainId),
+        serialize(blockNumber),
+        serialize(functionName),
+        join(serializedParams),
+      ])
+    )
+  }
+
+  export function getCurrentBlockNumber(chainId: u64): BigInt {
+    return BigInt.fromString(_getCurrentBlockNumber(join([serialize(chainId)])))
   }
 }
