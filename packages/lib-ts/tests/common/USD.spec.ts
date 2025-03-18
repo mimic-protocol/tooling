@@ -11,7 +11,7 @@ describe('USD', () => {
         const usd = USD.fromDecimal(decimalAmount)
         const expected = scale(decimalAmount, STANDARD_DECIMALS)
 
-        expect(usd.amount.toString()).toBe(expected.toString())
+        expect(usd.value.toString()).toBe(expected.toString())
       })
 
       it('handles whole numbers correctly', () => {
@@ -19,14 +19,14 @@ describe('USD', () => {
         const usd = USD.fromDecimal(decimalAmount)
         const expected = decimalAmount + buildZeroPadding(STANDARD_DECIMALS)
 
-        expect(usd.amount.toString()).toBe(expected)
+        expect(usd.value.toString()).toBe(expected)
       })
 
       it('handles zero correctly', () => {
         const decimalAmount = '0'
         const usd = USD.fromDecimal(decimalAmount)
 
-        expect(usd.amount.toString()).toBe('0')
+        expect(usd.value.toString()).toBe('0')
         expect(usd.isZero()).toBe(true)
       })
 
@@ -35,7 +35,7 @@ describe('USD', () => {
         const usd = USD.fromDecimal(decimalAmount)
         const expected = scale(decimalAmount, STANDARD_DECIMALS)
 
-        expect(usd.amount.toString()).toBe(expected.toString())
+        expect(usd.value.toString()).toBe(expected.toString())
       })
 
       it('handles small decimal fractions', () => {
@@ -43,7 +43,7 @@ describe('USD', () => {
         const usd = USD.fromDecimal(decimalAmount)
         const expected = scale(decimalAmount, STANDARD_DECIMALS)
 
-        expect(usd.amount.toString()).toBe(expected.toString())
+        expect(usd.value.toString()).toBe(expected.toString())
       })
 
       it('throws an error when amount has multiple decimal points', () => {

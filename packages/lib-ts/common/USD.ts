@@ -4,7 +4,7 @@ import { scale, unscale } from '../helpers'
 import { BigInt } from './BigInt'
 
 export class USD {
-  private _amount: BigInt
+  private _value: BigInt
 
   static fromDecimal(amount: string): USD {
     return new USD(scale(amount, STANDARD_DECIMALS))
@@ -15,35 +15,35 @@ export class USD {
   }
 
   constructor(amount: BigInt) {
-    this._amount = amount.clone()
+    this._value = amount.clone()
   }
 
-  get amount(): BigInt {
-    return this._amount.clone()
+  get value(): BigInt {
+    return this._value.clone()
   }
 
   isZero(): boolean {
-    return this._amount.isZero()
+    return this._value.isZero()
   }
 
   plus(other: USD): USD {
-    return new USD(this._amount.plus(other.amount))
+    return new USD(this._value.plus(other.value))
   }
 
   minus(other: USD): USD {
-    return new USD(this._amount.minus(other.amount))
+    return new USD(this._value.minus(other.value))
   }
 
   times(other: USD): USD {
-    return new USD(this._amount.times(other.amount))
+    return new USD(this._value.times(other.value))
   }
 
   div(other: USD): USD {
-    return new USD(this._amount.div(other.amount))
+    return new USD(this._value.div(other.value))
   }
 
   toDecimal(precision: u8 = STANDARD_DECIMALS): string {
-    const unscaledAmount = unscale(this._amount, STANDARD_DECIMALS)
+    const unscaledAmount = unscale(this._value, STANDARD_DECIMALS)
     if (precision === STANDARD_DECIMALS) return unscaledAmount
 
     const parts = unscaledAmount.split('.')

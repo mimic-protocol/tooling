@@ -20,8 +20,8 @@ export function convertUsdToTokenAmount(token: Token, usdAmount: USD): BigInt {
   if (usdAmount.isZero()) return zeroAmount
 
   const tokenPrice = environment.getPrice(token)
-  const scaledUsdAmount = scale(usdAmount.amount.toString(), token.decimals)
-  const result = scaledUsdAmount.div(tokenPrice)
+  const scaledUsdAmount = scale(usdAmount.value.toString(), token.decimals)
+  const result = scaledUsdAmount.div(tokenPrice.value)
 
   if (result.isZero()) return zeroAmount
 
@@ -48,7 +48,7 @@ export function convertTokenAmountToUsd(token: Token, tokenAmount: BigInt): USD 
   const unscaledAmount = unscale(tokenAmount, token.decimals)
   const scaledAmount = scale(unscaledAmount, STANDARD_DECIMALS)
 
-  return new USD(scaledAmount.times(tokenPrice).div(BigInt.fromI32(10).pow(STANDARD_DECIMALS)))
+  return new USD(scaledAmount.times(tokenPrice.value).div(BigInt.fromI32(10).pow(STANDARD_DECIMALS)))
 }
 
 /**
