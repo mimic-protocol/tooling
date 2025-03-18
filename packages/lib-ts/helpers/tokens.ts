@@ -99,7 +99,7 @@ export function scale(amount: string, decimals: u8): BigInt {
 export function unscale(amount: BigInt, decimals: u8): string {
   if (amount.isZero()) return '0'
 
-  const isNegative = amount.lt(BigInt.zero())
+  const isNegative = amount.isNegative()
   const absAmount = isNegative ? amount.neg() : amount
 
   const str = absAmount.toString()
