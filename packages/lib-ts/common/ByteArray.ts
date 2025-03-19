@@ -3,13 +3,20 @@
 // Licensed under the MIT License.
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
+
+import { bytesToHex, bytesToString } from '../helpers'
+
 import { BigInt } from './BigInt'
 import { Bytes } from './Bytes'
-import { typeConversion } from './conversion'
 
+/**
+ * Represents a byte array (Uint8Array) with utility methods
+ * for conversions between different numeric and string formats.
+ */
 export class ByteArray extends Uint8Array {
   /**
-   * Returns bytes in little-endian order.
+   * Creates a ByteArray from a signed 32-bit integer (i32).
+   * The resulting byte array is in little-endian order.
    */
   static fromI32(x: i32): ByteArray {
     const self = new ByteArray(4)
@@ -21,57 +28,37 @@ export class ByteArray extends Uint8Array {
   }
 
   /**
-   * Returns bytes in little-endian order.
+   * Creates a ByteArray from an unsigned 32-bit integer (u32).
+   * The resulting byte array is in little-endian order.
    */
   static fromU32(x: u32): ByteArray {
-    const self = new ByteArray(4)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    return self
+    return ByteArray.fromI32(x as i32)
   }
 
   /**
-   * Returns bytes in little-endian order.
+   * Creates a ByteArray from a signed 64-bit integer (i64).
+   * The resulting byte array is in little-endian order.
    */
   static fromI64(x: i64): ByteArray {
     const self = new ByteArray(8)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    self[4] = (x >> 32) as u8
-    self[5] = (x >> 40) as u8
-    self[6] = (x >> 48) as u8
-    self[7] = (x >> 56) as u8
+    for (let i = 0; i < 8; i++) {
+      self[i] = (x >> (i * 8)) as u8
+    }
     return self
   }
 
   /**
-   * Returns bytes in little-endian order.
+   * Creates a ByteArray from an unsigned 64-bit integer (u64).
+   * The resulting byte array is in little-endian order.
    */
   static fromU64(x: u64): ByteArray {
-    const self = new ByteArray(8)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    self[4] = (x >> 32) as u8
-    self[5] = (x >> 40) as u8
-    self[6] = (x >> 48) as u8
-    self[7] = (x >> 56) as u8
-    return self
-  }
-
-  static empty(): ByteArray {
-    return ByteArray.fromI32(0)
+    return ByteArray.fromI64(x as i64)
   }
 
   /**
-   * Convert the string `hex` which must consist of an even number of
-   * hexadecimal digits to a `ByteArray`. The string `hex` can optionally
-   * start with '0x'
+   * Converts a hexadecimal string to a ByteArray.
+   * The input must contain an even number of characters.
+   * It may optionally start with '0x'.
    */
   static fromHexString(hex: string): ByteArray {
     assert(hex.length % 2 == 0, 'input ' + hex + ' has odd length')
@@ -85,25 +72,47 @@ export class ByteArray extends Uint8Array {
     return output
   }
 
+  /**
+   * Converts a UTF-8 string to a ByteArray.
+   */
   static fromUTF8(str: string): ByteArray {
     const utf8 = String.UTF8.encode(str)
     return changetype<ByteArray>(ByteArray.wrap(utf8))
   }
 
+  /**
+   * Converts a BigInt to a ByteArray.
+   */
   static fromBigInt(bigInt: BigInt): ByteArray {
     return changetype<ByteArray>(bigInt)
   }
 
+  /**
+   * Returns an empty ByteArray initialized to zero.
+   */
+  static empty(): ByteArray {
+    return ByteArray.fromI32(0)
+  }
+
+  /**
+   * Converts this ByteArray to a hexadecimal string.
+   */
   toHex(): string {
-    return typeConversion.bytesToHex(this)
+    return bytesToHex(this)
   }
 
+  /**
+   * Converts this ByteArray to a hexadecimal string.
+   */
   toHexString(): string {
-    return typeConversion.bytesToHex(this)
+    return bytesToHex(this)
   }
 
+  /**
+   * Converts this ByteArray to a string representation.
+   */
   toString(): string {
-    return typeConversion.bytesToString(this)
+    return bytesToString(this)
   }
 
   /**
@@ -162,6 +171,9 @@ export class ByteArray extends Uint8Array {
     return x
   }
 
+  /**
+   * Concatenates this ByteArray with another ByteArray.
+   */
   concat(other: ByteArray): ByteArray {
     const newArray = new ByteArray(this.length + other.length)
     newArray.set(this, 0)
@@ -169,6 +181,9 @@ export class ByteArray extends Uint8Array {
     return newArray
   }
 
+  /**
+   * Concatenates this ByteArray with a signed 32-bit integer.
+   */
   concatI32(other: i32): ByteArray {
     return this.concat(ByteArray.fromI32(other))
   }
@@ -245,6 +260,9 @@ export class ByteArray extends Uint8Array {
     return x
   }
 
+  /**
+   * Compares this ByteArray to another for equality.
+   */
   @operator('==')
   equals(other: ByteArray): boolean {
     if (this.length != other.length) {
@@ -258,6 +276,9 @@ export class ByteArray extends Uint8Array {
     return true
   }
 
+  /**
+   * Compares this ByteArray to another for inequality.
+   */
   @operator('!=')
   notEqual(other: ByteArray): boolean {
     return !(this == other)
