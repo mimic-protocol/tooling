@@ -1,7 +1,7 @@
 import { STANDARD_DECIMALS } from '../../src/helpers'
-import { Token, TokenAmount, USD } from '../../src/tokens'
+import { USD } from '../../src/tokens'
 import { BigInt } from '../../src/types'
-import { randomAddress, randomToken, randomTokenWithPrice, zeroPadded } from '../helpers'
+import { randomToken, randomTokenWithPrice, zeroPadded } from '../helpers'
 
 describe('USD', () => {
   describe('fromI32', () => {
@@ -336,56 +336,56 @@ describe('USD', () => {
     })
   })
 
-  // describe('toTokenAmount', () => {
-  //   describe('when zero', () => {
-  //     it('returns 0', () => {
-  //       const token = randomToken()
-  //       const usdAmount = USD.zero()
-  //       const tokenAmount = usdAmount.toTokenAmount(token)
-  //
-  //       expect(tokenAmount.toString()).toBe('0')
-  //     })
-  //   })
-  //
-  //   describe('when not zero', () => {
-  //     it('converts correctly for a token with less than standard decimals', () => {
-  //       const price = 2
-  //       const tokenDecimals: u8 = 6
-  //       const token = randomTokenWithPrice(tokenDecimals, price)
-  //
-  //       const decimalAmountUsd = 100
-  //       const usdAmount = USD.fromI32(decimalAmountUsd)
-  //       const result = usdAmount.toTokenAmount(token)
-  //
-  //       const expectedAmount = decimalAmountUsd / price
-  //       expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
-  //     })
-  //
-  //     it('converts correctly for a token with standard decimals', () => {
-  //       const price = 0.5
-  //       const tokenDecimals: u8 = STANDARD_DECIMALS
-  //       const token = randomTokenWithPrice(tokenDecimals, price)
-  //
-  //       const decimalAmountUsd = 100
-  //       const usdAmount = USD.fromI32(decimalAmountUsd)
-  //       const result = usdAmount.toTokenAmount(token)
-  //
-  //       const expectedAmount = decimalAmountUsd / price
-  //       expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
-  //     })
-  //
-  //     it('converts correctly for a token with more than standard decimals', () => {
-  //       const price = 1.5
-  //       const tokenDecimals: u8 = 20
-  //       const token = randomTokenWithPrice(tokenDecimals, price)
-  //
-  //       const decimalAmountUsd = 100
-  //       const usdAmount = USD.fromI32(decimalAmountUsd)
-  //       const result = usdAmount.toTokenAmount(token)
-  //
-  //       const expectedAmount = decimalAmountUsd / price
-  //       expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
-  //     })
-  //   })
-  // })
+  describe('toTokenAmount', () => {
+    describe('when zero', () => {
+      it('returns 0', () => {
+        const token = randomToken()
+        const usdAmount = USD.zero()
+        const tokenAmount = usdAmount.toTokenAmount(token)
+
+        expect(tokenAmount.amount.toString()).toBe('0')
+      })
+    })
+
+    describe('when not zero', () => {
+      it('converts correctly for a token with less than standard decimals', () => {
+        const price = 2
+        const tokenDecimals: u8 = 6
+        const token = randomTokenWithPrice(tokenDecimals, price)
+
+        const decimalAmountUsd = 100
+        const usdAmount = USD.fromI32(decimalAmountUsd)
+        const result = usdAmount.toTokenAmount(token)
+
+        const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
+        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+      })
+
+      it('converts correctly for a token with standard decimals', () => {
+        const price = 5
+        const tokenDecimals: u8 = STANDARD_DECIMALS
+        const token = randomTokenWithPrice(tokenDecimals, price)
+
+        const decimalAmountUsd = 100
+        const usdAmount = USD.fromI32(decimalAmountUsd)
+        const result = usdAmount.toTokenAmount(token)
+
+        const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
+        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+      })
+
+      it('converts correctly for a token with more than standard decimals', () => {
+        const price = 20
+        const tokenDecimals: u8 = 20
+        const token = randomTokenWithPrice(tokenDecimals, price)
+
+        const decimalAmountUsd = 100
+        const usdAmount = USD.fromI32(decimalAmountUsd)
+        const result = usdAmount.toTokenAmount(token)
+
+        const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
+        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+      })
+    })
+  })
 })
