@@ -1,8 +1,6 @@
 import { STANDARD_DECIMALS, Token } from '../index'
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
-export const LOWER_THAN_STANDARD_DECIMALS: u8 = STANDARD_DECIMALS - 12
-export const HIGHER_THAN_STANDARD_DECIMALS: u8 = STANDARD_DECIMALS + 12
 
 /* eslint-disable no-secrets/no-secrets */
 export function randomHex(length: i32): string {

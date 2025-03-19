@@ -1,9 +1,5 @@
+import { Address } from '../common'
 import { NATIVE_ADDRESS, STANDARD_DECIMALS } from '../constants'
-import { convertUsdToTokenAmount } from '../helpers'
-
-import { Address } from './Address'
-import { TokenAmount } from './TokenAmount'
-import { USD } from './USD'
 
 export class Token {
   private _symbol: string
@@ -13,7 +9,6 @@ export class Token {
 
   static native(chainId: u64): Token {
     if (chainId === 1) return new Token('ETH', NATIVE_ADDRESS, chainId, STANDARD_DECIMALS)
-
     throw new Error(`Unsupported chainId: ${chainId}`)
   }
 
@@ -43,13 +38,7 @@ export class Token {
   equals(other: Token): boolean {
     const isSameChain = this.chainId === other.chainId
     const isSameAddress = this.address.equals(other.address)
-
     return isSameChain && isSameAddress
-  }
-
-  fromUsd(usd: USD): TokenAmount {
-    const tokenAmount = convertUsdToTokenAmount(this, usd)
-    return new TokenAmount(this, tokenAmount)
   }
 
   toString(): string {

@@ -9,6 +9,8 @@ import { bigIntToHex, bigIntToString } from '../helpers'
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
+const ASCII_CODE_ZERO = 48
+
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
  */
@@ -201,6 +203,28 @@ export class BigInt extends Uint8Array {
     return result
   }
 
+  static fromStringDecimal(str: string, precision: u8): BigInt {
+    if (str === '0') {
+      return BigInt.fromI32(0)
+    }
+
+    const parts = str.split('.')
+    if (parts.length > 2) throw new Error('Invalid str. Received: ' + str)
+
+    const isNegative = parts[0].startsWith('-')
+    const wholePart = isNegative ? parts[0].substring(1) : parts[0]
+
+    let result = BigInt.fromString(wholePart)
+    result = result.upscale(precision)
+
+    if (parts.length > 1 && parts[1].length > 0) {
+      const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
+      result = result.plus(BigInt.fromString(decimalPart))
+    }
+
+    return isNegative ? result.neg() : result
+  }
+
   /**
    * Returns a BigInt initialized to zero.
    */
@@ -372,6 +396,14 @@ export class BigInt extends Uint8Array {
     return y
   }
 
+  upscale(precision: u8): BigInt {
+    return this.times(BigInt.fromI32(10).pow(precision))
+  }
+
+  downscale(precision: u8): BigInt {
+    return this.div(BigInt.fromI32(10).pow(precision))
+  }
+
   clone(): BigInt {
     const clone = new BigInt(this.length)
     memory.copy(clone.dataStart, this.dataStart, this.length)
@@ -383,42 +415,6 @@ export class BigInt extends Uint8Array {
     const result = new BigInt(length)
     memory.copy(result.dataStart, this.dataStart + start, length)
     return result
-  }
-
-  toI32(): i32 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
-    return byteArray.toI32()
-  }
-
-  toU32(): u32 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
-    return byteArray.toU32()
-  }
-
-  toI64(): i64 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
-    return byteArray.toI64()
-  }
-
-  toU64(): u64 {
-    const uint8Array = changetype<Uint8Array>(this)
-    const byteArray = changetype<ByteArray>(uint8Array)
-    return byteArray.toU64()
-  }
-
-  toHex(): string {
-    return bigIntToHex(this)
-  }
-
-  toHexString(): string {
-    return bigIntToHex(this)
-  }
-
-  toString(): string {
-    return bigIntToString(this)
   }
 
   @operator('+')
@@ -615,5 +611,73 @@ export class BigInt extends Uint8Array {
     }
 
     return result
+  }
+
+  toI32(): i32 {
+    const uint8Array = changetype<Uint8Array>(this)
+    const byteArray = changetype<ByteArray>(uint8Array)
+    return byteArray.toI32()
+  }
+
+  toU32(): u32 {
+    const uint8Array = changetype<Uint8Array>(this)
+    const byteArray = changetype<ByteArray>(uint8Array)
+    return byteArray.toU32()
+  }
+
+  toI64(): i64 {
+    const uint8Array = changetype<Uint8Array>(this)
+    const byteArray = changetype<ByteArray>(uint8Array)
+    return byteArray.toI64()
+  }
+
+  toU64(): u64 {
+    const uint8Array = changetype<Uint8Array>(this)
+    const byteArray = changetype<ByteArray>(uint8Array)
+    return byteArray.toU64()
+  }
+
+  toHex(): string {
+    return bigIntToHex(this)
+  }
+
+  toHexString(): string {
+    return bigIntToHex(this)
+  }
+
+  toString(): string {
+    return bigIntToString(this)
+  }
+
+  toStringDecimal(precision: u8): string {
+    if (this.isZero()) return '0'
+
+    const isNegative = this.isNegative()
+    const absAmount = isNegative ? this.neg() : this
+
+    const str = absAmount.toString()
+    if (str.length <= (precision as i32)) {
+      let decimalPart = str.padStart(precision, '0')
+
+      let lastNonZero = decimalPart.length - 1
+      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+
+      decimalPart = decimalPart.substring(0, lastNonZero + 1)
+      return (isNegative ? '-' : '') + '0' + (decimalPart.length ? '.' + decimalPart : '')
+    }
+
+    const wholePart = str.slice(0, str.length - precision)
+    let decimalPart = str.slice(str.length - precision)
+
+    // Remove trailing zeros manually
+    let lastNonZero = decimalPart.length - 1
+    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+
+    decimalPart = decimalPart.substring(0, lastNonZero + 1)
+
+    // If the decimal part is empty, return only the whole part
+    return decimalPart.length > 0
+      ? `${isNegative ? '-' : ''}${wholePart}.${decimalPart}`
+      : `${isNegative ? '-' : ''}${wholePart}`
   }
 }

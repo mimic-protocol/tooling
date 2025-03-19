@@ -1,5 +1,6 @@
-import { BigInt, Token, TokenAmount } from '../../common'
-import { buildZeroPadding, randomAddress, randomToken } from '../helpers'
+import { BigInt } from '../../common'
+import { Token, TokenAmount } from '../../tokens'
+import { randomAddress, randomToken } from '../helpers'
 
 describe('TokenAmount', () => {
   describe('when creating a token amount', () => {
@@ -84,34 +85,34 @@ describe('TokenAmount', () => {
     it('multiplies a token amount by a decimal value', () => {
       const token = randomToken()
       const amount = BigInt.fromI32(10)
-      const multiplyValue = '5'
+      const multiplyValue = 5
 
       const tokenAmount = new TokenAmount(token, amount)
 
       const result = tokenAmount.times(multiplyValue)
 
       expect(result.token.equals(token)).toBe(true)
-      expect(result.amount.toString()).toBe('50' + buildZeroPadding(token.decimals))
+      expect(result.amount.toString()).toBe('50')
     })
 
     it('multiplies a token amount by a decimal with fractional part', () => {
       const token = randomToken()
       const amount = BigInt.fromI32(10)
-      const multiplyValue = '2.5'
+      const multiplyValue = 2
 
       const tokenAmount = new TokenAmount(token, amount)
 
       const result = tokenAmount.times(multiplyValue)
 
       expect(result.token.equals(token)).toBe(true)
-      expect(result.amount.toString()).toBe('25' + buildZeroPadding(token.decimals))
+      expect(result.amount.toString()).toBe('20')
     })
 
     it('throws an error when multiplying by a negative decimal value', () => {
       expect(() => {
         const token = randomToken()
         const amount = BigInt.fromI32(10)
-        const multiplyValue = '-3'
+        const multiplyValue = -3
 
         const tokenAmount = new TokenAmount(token, amount)
         tokenAmount.times(multiplyValue)
@@ -121,34 +122,21 @@ describe('TokenAmount', () => {
     it('divides a token amount by a decimal value', () => {
       const token = randomToken()
       const amount = BigInt.fromI32(100)
-      const divValue = '4'
+      const divValue = 4
 
       const tokenAmount = new TokenAmount(token, amount)
 
       const result = tokenAmount.div(divValue)
 
       expect(result.token.equals(token)).toBe(true)
-      expect(result.amount.toString()).toBe('25' + buildZeroPadding(token.decimals))
-    })
-
-    it('divides a token amount by a decimal with fractional part', () => {
-      const token = randomToken()
-      const amount = BigInt.fromI32(100)
-      const divValue = '2.5'
-
-      const tokenAmount = new TokenAmount(token, amount)
-
-      const result = tokenAmount.div(divValue)
-
-      expect(result.token.equals(token)).toBe(true)
-      expect(result.amount.toString()).toBe('40' + buildZeroPadding(token.decimals))
+      expect(result.amount.toString()).toBe('25')
     })
 
     it('throws an error when dividing by a negative decimal value', () => {
       expect(() => {
         const token = randomToken()
         const amount = BigInt.fromI32(100)
-        const divValue = '-4'
+        const divValue = -4
 
         const tokenAmount = new TokenAmount(token, amount)
         tokenAmount.div(divValue)
@@ -159,7 +147,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomToken()
         const amount = BigInt.fromI32(100)
-        const divValue = '0'
+        const divValue = 0
 
         const tokenAmount = new TokenAmount(token, amount)
         tokenAmount.div(divValue)
