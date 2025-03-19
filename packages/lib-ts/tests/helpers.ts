@@ -1,9 +1,14 @@
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
+import { BigInt } from '../src/types'
 
 /* eslint-disable no-secrets/no-secrets */
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
+
+export function zeroPadded(val: BigInt, length: u8): string {
+  return val.toString() + '0'.repeat(length)
+}
 
 export function randomHex(length: i32): string {
   const hexChars: string = '0123456789abcdef'

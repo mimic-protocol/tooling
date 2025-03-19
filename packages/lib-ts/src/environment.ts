@@ -3,9 +3,16 @@ import { Token, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
 export namespace environment {
+  @external('environment', '_call')
   declare function _call(params: string): void
+
+  @external('environment', '_swap')
   declare function _swap(params: string): void
+
+  @external('environment', '_transfer')
   declare function _transfer(params: string): void
+
+  @external('environment', '_getPrice')
   declare function _getPrice(params: string): string
 
   export function call(

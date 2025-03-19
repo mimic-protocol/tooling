@@ -21,7 +21,7 @@ export class TokenAmount {
   }
 
   constructor(token: Token, amount: BigInt) {
-    if (amount.isNegative()) throw new Error('Amount cannot be negative')
+    if (amount.isNegative()) throw new Error('Token amount cannot be negative')
     this._token = token
     this._amount = amount.clone()
   }
@@ -32,6 +32,10 @@ export class TokenAmount {
 
   get amount(): BigInt {
     return this._amount.clone()
+  }
+
+  get symbol(): string {
+    return this.token.symbol
   }
 
   get decimals(): u8 {
@@ -55,48 +59,47 @@ export class TokenAmount {
   }
 
   @operator('*')
-  times(other: i32): TokenAmount {
-    return TokenAmount.fromBigInt(this.token, this.amount.times(BigInt.fromI32(other)))
+  times(other: BigInt): TokenAmount {
+    return TokenAmount.fromBigInt(this.token, this.amount.times(other))
   }
 
   @operator('/')
-  div(other: i32): TokenAmount {
-    return TokenAmount.fromBigInt(this.token, this.amount.div(BigInt.fromI32(other)))
-  }
-
-  @operator('==')
-  equals(other: TokenAmount): boolean {
-    return this.compare(other) === 0
-  }
-
-  @operator('!=')
-  notEquals(other: TokenAmount): boolean {
-    return this.compare(other) !== 0
+  div(other: BigInt): TokenAmount {
+    return TokenAmount.fromBigInt(this.token, this.amount.div(other))
   }
 
   @operator('<')
   lt(other: TokenAmount): boolean {
-    return this.compare(other) < 0
+    this.checkToken(other.token, 'lt')
+    return this.amountCompare(other) < 0
   }
 
   @operator('>')
   gt(other: TokenAmount): boolean {
-    return this.compare(other) > 0
+    this.checkToken(other.token, 'gt')
+    return this.amountCompare(other) > 0
   }
 
   @operator('<=')
   le(other: TokenAmount): boolean {
-    return this.compare(other) <= 0
+    this.checkToken(other.token, 'le')
+    return this.amountCompare(other) <= 0
   }
 
   @operator('>=')
   ge(other: TokenAmount): boolean {
-    return this.compare(other) >= 0
+    this.checkToken(other.token, 'ge')
+    return this.amountCompare(other) >= 0
   }
 
-  compare(other: TokenAmount): i32 {
-    this.checkToken(other.token, 'compare')
-    return BigInt.compare(this._amount, other.amount)
+  @operator('==')
+  equals(other: TokenAmount): boolean {
+    return this.token.equals(other.token) && this.amountCompare(other) === 0
+  }
+
+  @operator('!=')
+  notEquals(other: TokenAmount): boolean {
+    return !this.token.equals(other.token) || this.amountCompare(other) !== 0
   }
 
   toString(): string {
@@ -115,7 +118,11 @@ export class TokenAmount {
     return this.toUsd().toTokenAmount(other)
   }
 
+  private amountCompare(other: TokenAmount): i32 {
+    return BigInt.compare(this._amount, other.amount)
+  }
+
   private checkToken(other: Token, action: string): void {
-    if (!this.token.equals(other)) throw new Error(`Cannot ${action} tokens of different types`)
+    if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
   }
 }
