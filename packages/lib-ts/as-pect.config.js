@@ -27,8 +27,8 @@ export default {
           console.log(string)
         },
       },
-      index: {
-        'environment._getPrice': (paramsPtr) => {
+      environment: {
+        _getPrice: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = paramsStr.split(',')
           const address = params[0]
