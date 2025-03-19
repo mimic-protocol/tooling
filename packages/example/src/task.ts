@@ -34,7 +34,7 @@ export default function main(): void {
   // Convert X amount of USDC to USD
   const decimalUsdcAmount = '100' // 100 USDC
   const usdcAmount = TokenAmount.fromStringDecimal(USDC, decimalUsdcAmount)
-  console.log('100 USDC is worth $' + usdcAmount.toUsd().toStringDecimal())
+  console.log('100 USDC is worth $' + usdcAmount.toUsd().toString())
 
   // Convert USDC to ETH
   const ethAmount = usdcAmount.toTokenAmount(ETH)

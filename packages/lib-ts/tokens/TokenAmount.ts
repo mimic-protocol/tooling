@@ -38,6 +38,10 @@ export class TokenAmount {
     return this.token.decimals
   }
 
+  isZero(): boolean {
+    return this.amount.isZero()
+  }
+
   @operator('+')
   plus(other: TokenAmount): TokenAmount {
     this.checkToken(other.token, 'add')
@@ -90,8 +94,13 @@ export class TokenAmount {
     return this.compare(other) >= 0
   }
 
-  isZero(): boolean {
-    return this.amount.isZero()
+  compare(other: TokenAmount): i32 {
+    this.checkToken(other.token, 'compare')
+    return BigInt.compare(this._amount, other.amount)
+  }
+
+  toString(): string {
+    return `${this.amount.toStringDecimal(this.decimals)} ${this.token.symbol}`
   }
 
   toUsd(): USD {
@@ -106,18 +115,7 @@ export class TokenAmount {
     return this.toUsd().toTokenAmount(other)
   }
 
-  toString(): string {
-    return `${this.amount.toStringDecimal(this.decimals)} ${this.token.symbol}`
-  }
-
-  private compare(other: TokenAmount): i32 {
-    this.checkToken(other.token, 'compare')
-    return BigInt.compare(this._amount, other.amount)
-  }
-
   private checkToken(other: Token, action: string): void {
-    if (!this.token.equals(other)) {
-      throw new Error(`Cannot ${action} tokens of different types`)
-    }
+    if (!this.token.equals(other)) throw new Error(`Cannot ${action} tokens of different types`)
   }
 }

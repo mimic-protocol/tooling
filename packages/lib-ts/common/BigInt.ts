@@ -4,11 +4,12 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { STANDARD_DECIMALS } from '../constants'
 import { bigIntToHex, bigIntToString } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
+
+const ASCII_CODE_ZERO = 48
 
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
@@ -214,7 +215,7 @@ export class BigInt extends Uint8Array {
     const wholePart = isNegative ? parts[0].substring(1) : parts[0]
 
     let result = BigInt.fromString(wholePart)
-    result = result.times(BigInt.fromI32(10).pow(precision))
+    result = result.upscale(precision)
 
     if (parts.length > 1 && parts[1].length > 0) {
       const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
@@ -656,20 +657,27 @@ export class BigInt extends Uint8Array {
 
     const str = absAmount.toString()
     if (str.length <= (precision as i32)) {
-      return (isNegative ? '-' : '') + '0.' + str.padStart(precision, '0')
+      let decimalPart = str.padStart(precision, '0')
+
+      let lastNonZero = decimalPart.length - 1
+      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+
+      decimalPart = decimalPart.substring(0, lastNonZero + 1)
+      return (isNegative ? '-' : '') + '0' + (decimalPart.length ? '.' + decimalPart : '')
     }
+
     const wholePart = str.slice(0, str.length - precision)
-    const decimalPart = str.slice(str.length - precision)
+    let decimalPart = str.slice(str.length - precision)
 
-    const unscaledAmount = (isNegative ? '-' : '') + wholePart + '.' + decimalPart
-    if (precision === STANDARD_DECIMALS) return unscaledAmount
+    // Remove trailing zeros manually
+    let lastNonZero = decimalPart.length - 1
+    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
 
-    const parts = unscaledAmount.split('.')
-    if (parts.length === 1) return unscaledAmount
+    decimalPart = decimalPart.substring(0, lastNonZero + 1)
 
-    const whole = parts[0]
-    const decimal = parts[1]
-    const roundedDecimal = decimal.slice(0, precision)
-    return `${whole}.${roundedDecimal}`
+    // If the decimal part is empty, return only the whole part
+    return decimalPart.length > 0
+      ? `${isNegative ? '-' : ''}${wholePart}.${decimalPart}`
+      : `${isNegative ? '-' : ''}${wholePart}`
   }
 }

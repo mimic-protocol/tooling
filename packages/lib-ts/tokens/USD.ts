@@ -6,20 +6,20 @@ import { Token, TokenAmount } from '../tokens'
 export class USD {
   private _value: BigInt
 
-  static fromStringDecimal(amount: string, precision: u8 = STANDARD_DECIMALS): USD {
-    return this.fromBigInt(BigInt.fromStringDecimal(amount, precision))
+  static zero(): USD {
+    return new USD(BigInt.zero())
   }
 
-  static fromI32(amount: i32, precision: u8 = STANDARD_DECIMALS): USD {
-    return this.fromBigInt(BigInt.fromI32(amount).upscale(precision))
+  static fromStringDecimal(amount: string): USD {
+    return USD.fromBigInt(BigInt.fromStringDecimal(amount, STANDARD_DECIMALS))
+  }
+
+  static fromI32(amount: i32): USD {
+    return USD.fromBigInt(BigInt.fromI32(amount).upscale(STANDARD_DECIMALS))
   }
 
   static fromBigInt(amount: BigInt): USD {
     return new USD(amount)
-  }
-
-  static zero(): USD {
-    return new USD(BigInt.zero())
   }
 
   constructor(amount: BigInt) {
@@ -28,6 +28,10 @@ export class USD {
 
   get value(): BigInt {
     return this._value.clone()
+  }
+
+  isZero(): boolean {
+    return this.value.isZero()
   }
 
   @operator('+')
@@ -50,8 +54,42 @@ export class USD {
     return USD.fromBigInt(this.value.div(other))
   }
 
-  isZero(): boolean {
-    return this.value.isZero()
+  @operator('==')
+  equals(other: USD): boolean {
+    return this.compare(other) === 0
+  }
+
+  @operator('!=')
+  notEquals(other: USD): boolean {
+    return this.compare(other) !== 0
+  }
+
+  @operator('<')
+  lt(other: USD): boolean {
+    return this.compare(other) < 0
+  }
+
+  @operator('>')
+  gt(other: USD): boolean {
+    return this.compare(other) > 0
+  }
+
+  @operator('<=')
+  le(other: USD): boolean {
+    return this.compare(other) <= 0
+  }
+
+  @operator('>=')
+  ge(other: USD): boolean {
+    return this.compare(other) >= 0
+  }
+
+  compare(other: USD): i32 {
+    return BigInt.compare(this._value, other.value)
+  }
+
+  toString(): string {
+    return this._value.toStringDecimal(STANDARD_DECIMALS)
   }
 
   toTokenAmount(token: Token): TokenAmount {
@@ -59,13 +97,5 @@ export class USD {
     const tokenPrice = environment.getPrice(token)
     const tokenAmount = this.value.upscale(token.decimals).div(tokenPrice.value)
     return TokenAmount.fromBigInt(token, tokenAmount)
-  }
-
-  toString(): string {
-    return this.toStringDecimal()
-  }
-
-  toStringDecimal(precision: u8 = STANDARD_DECIMALS): string {
-    return this._value.toStringDecimal(precision)
   }
 }
