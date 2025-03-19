@@ -1,4 +1,5 @@
-import { STANDARD_DECIMALS, Token } from '../index'
+import { STANDARD_DECIMALS } from '../constants'
+import { Token } from '../tokens'
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
 
