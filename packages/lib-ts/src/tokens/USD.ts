@@ -19,6 +19,7 @@ export class USD {
   }
 
   static fromBigInt(amount: BigInt): USD {
+    if (amount.isNegative()) throw new Error('USD cannot be negative')
     return new USD(amount)
   }
 

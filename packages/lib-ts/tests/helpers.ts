@@ -5,6 +5,10 @@ import { Token } from '../src/tokens'
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
 
+export function zeroPadded(val: number, length: u8): string {
+  return val.toString() + '0'.repeat(length)
+}
+
 export function randomHex(length: i32): string {
   const hexChars: string = '0123456789abcdef'
   let result: string = '0x'
