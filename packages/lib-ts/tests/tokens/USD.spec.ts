@@ -1,4 +1,4 @@
-import { USD } from '../../tokens'
+import { USD } from '../../src/tokens'
 
 describe('USD', () => {
   describe('fromStringDecimal', () => {

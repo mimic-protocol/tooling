@@ -1,5 +1,5 @@
-import { BigInt, ByteArray, Bytes } from '../../common'
-import { STANDARD_DECIMALS } from '../../constants'
+import { STANDARD_DECIMALS } from '../../src/helpers'
+import { BigInt, ByteArray, Bytes } from '../../src/types'
 import { randomHex } from '../helpers'
 
 describe('BigInt', () => {

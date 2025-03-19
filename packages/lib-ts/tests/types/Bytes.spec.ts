@@ -1,4 +1,4 @@
-import { ByteArray, Bytes } from '../../common'
+import { ByteArray, Bytes } from '../../src/types'
 import { randomHex } from '../helpers'
 
 describe('Bytes', () => {

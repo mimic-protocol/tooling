@@ -1,5 +1,5 @@
-import { Address, Bytes } from '../../common'
-import { NULL_ADDRESS } from '../../constants'
+import { NULL_ADDRESS } from '../../src/helpers'
+import { Address, Bytes } from '../../src/types'
 import { randomAddress, randomHex } from '../helpers'
 
 describe('Address', () => {

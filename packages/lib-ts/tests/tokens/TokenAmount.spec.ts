@@ -1,5 +1,5 @@
-import { BigInt } from '../../common'
-import { Token, TokenAmount } from '../../tokens'
+import { Token, TokenAmount } from '../../src/tokens'
+import { BigInt } from '../../src/types'
 import { randomAddress, randomToken } from '../helpers'
 
 describe('TokenAmount', () => {

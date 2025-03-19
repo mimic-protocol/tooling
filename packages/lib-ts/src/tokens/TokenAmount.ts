@@ -1,5 +1,5 @@
-import { BigInt } from '../common'
-import { environment } from '../index'
+import { environment } from '../environment'
+import { BigInt } from '../types'
 
 import { Token } from './Token'
 import { USD } from './USD'

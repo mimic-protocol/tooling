@@ -1,4 +1,4 @@
-import { BigInt, Bytes } from '../common/'
+import { BigInt, Bytes } from '../types'
 
 export function bytesToString(bytes: Uint8Array): string {
   return String.UTF8.decodeUnsafe(bytes.dataStart, bytes.length)

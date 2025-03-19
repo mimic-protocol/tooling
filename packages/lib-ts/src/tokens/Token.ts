@@ -1,5 +1,5 @@
-import { Address } from '../common'
-import { NATIVE_ADDRESS, STANDARD_DECIMALS } from '../constants'
+import { NATIVE_ADDRESS, STANDARD_DECIMALS } from '../helpers'
+import { Address } from '../types'
 
 export class Token {
   private _symbol: string

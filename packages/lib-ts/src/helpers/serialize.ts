@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from '../common'
+import { Address, BigInt, Bytes } from '../types'
 
 const SEPARATOR = ','
 
