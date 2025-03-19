@@ -1,25 +1,43 @@
-import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token, TokenAmount, USD } from '@mimicprotocol/lib-ts'
 import { input } from './types'
 
 export default function main(): void {
-  // Call withouth bytes (optional field)
+  // Token definitions
+  const ETH = Token.native(1)
+  const USDC = new Token('USDC', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1, 6)
+  const WBTC = new Token('WBTC', '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', 1, 8)
+
+  // Call without bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)
-  const USDC = Address.fromString("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
   const target = Address.fromString("0x0000000000000000000000000000000000000001")
   const chainId = input.chainId
   const amount = BigInt.fromI32(input.amount)
-  environment.call(settler, chainId, target, USDC, amount)
+  environment.call(settler, chainId, target, USDC.address, amount)
 
   // Call with bytes
   const bytes = Bytes.fromI32(123)
-  environment.call(settler, chainId, target, USDC, amount, bytes)
+  environment.call(settler, chainId, target, USDC.address, amount, bytes)
 
   // Cross-chain swap
-  const WBTC = Address.fromString("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599")
   const minAmountOut = amount.times(BigInt.fromI32(input.slippage)).div(BigInt.fromI32(100))
   const destChain = 10
-  environment.swap(settler, chainId, USDC, amount, WBTC, minAmountOut, destChain)
+  environment.swap(settler, chainId, USDC.address, amount, WBTC.address, minAmountOut, destChain)
 
   // Normal Transfer
-  environment.transfer(settler, chainId, USDC, amount, target, amount)
+  environment.transfer(settler, chainId, USDC.address, amount, target, amount)
+
+  // Convert USD to WBTC
+  const usdAmount = USD.fromStringDecimal('1200.5') // $1.200,50
+  const wbtcAmount = usdAmount.toTokenAmount(WBTC)
+  console.log('$1200.50 worth of WBTC is ' + wbtcAmount.toString())
+
+  // Convert X amount of USDC to USD
+  const decimalUsdcAmount = '100' // 100 USDC
+  const usdcAmount = TokenAmount.fromStringDecimal(USDC, decimalUsdcAmount)
+  console.log('100 USDC is worth $' + usdcAmount.toUsd().toString())
+
+  // Convert USDC to ETH
+  const ethAmount = usdcAmount.toTokenAmount(ETH)
+  console.log('100 USDC is ' + ethAmount.toString())
+
 }
