@@ -17,7 +17,7 @@ export function serializeArray<T extends Stringable>(array: T[]): string {
   for (let i = 0; i < array.length; i++) {
     serializedElems.push(serialize(array[i]))
   }
-  return join(serializedElems)
+  return 'Array(' + join(serializedElems) + ')'
 }
 
 export function join(lst: (string | null)[]): string {
