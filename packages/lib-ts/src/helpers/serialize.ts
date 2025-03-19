@@ -13,11 +13,11 @@ export function serialize<T extends Stringable>(elem: T): string {
 }
 
 export function serializeArray<T extends Stringable>(array: T[]): string {
-  const serializedParams: (string | null)[] = []
+  const serializedElems: (string | null)[] = []
   for (let i = 0; i < array.length; i++) {
-    serializedParams.push(serialize(array[i]))
+    serializedElems.push(serialize(array[i]))
   }
-  return join(serializedParams)
+  return join(serializedElems)
 }
 
 export function join(lst: (string | null)[]): string {
