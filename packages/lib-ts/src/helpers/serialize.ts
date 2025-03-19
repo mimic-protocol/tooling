@@ -12,6 +12,14 @@ export function serialize<T extends Stringable>(elem: T): string {
   return elem.toString()
 }
 
+export function serializeArray<T extends Stringable>(array: T[]): string {
+  const serializedParams: (string | null)[] = []
+  for (let i = 0; i < array.length; i++) {
+    serializedParams.push(serialize(array[i]))
+  }
+  return join(serializedParams)
+}
+
 export function join(lst: (string | null)[]): string {
   return lst.join(SEPARATOR)
 }

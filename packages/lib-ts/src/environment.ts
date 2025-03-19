@@ -1,4 +1,4 @@
-import { join, serialize } from './helpers'
+import { join, serialize, serializeArray } from './helpers'
 import { Token, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
@@ -96,17 +96,13 @@ export namespace environment {
     functionName: string,
     params: Bytes[]
   ): string {
-    const serializedParams: (string | null)[] = []
-    for (let i = 0; i < params.length; i++) {
-      serializedParams.push(serialize(params[i]))
-    }
     return _contractCall(
       join([
         serialize(target),
         serialize(chainId),
         serialize(blockNumber),
         serialize(functionName),
-        join(serializedParams),
+        serializeArray(params),
       ])
     )
   }
