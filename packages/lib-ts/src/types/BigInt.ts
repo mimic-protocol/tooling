@@ -4,44 +4,62 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { bigIntToHex, bigIntToString } from '../helpers'
+
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
-import { typeConversion } from './conversion'
 
-/** An arbitrary size integer represented as an array of bytes. */
+const ASCII_CODE_ZERO = 48
+
+/**
+ * Represents an arbitrary-precision integer stored as a byte array.
+ */
 export class BigInt extends Uint8Array {
+  /**
+   * Creates a BigInt from a signed 32-bit integer (i32).
+   */
   static fromI32(x: i32): BigInt {
-    const byteArray = ByteArray.fromI32(x)
-    return BigInt.fromByteArray(byteArray)
+    return BigInt.fromByteArray(ByteArray.fromI32(x))
   }
 
+  /**
+   * Creates a BigInt from an unsigned 32-bit integer (u32).
+   */
   static fromU32(x: u32): BigInt {
-    const byteArray = ByteArray.fromU32(x)
-    return BigInt.fromUnsignedBytes(byteArray)
+    return BigInt.fromUnsignedBytes(ByteArray.fromU32(x))
   }
 
+  /**
+   * Creates a BigInt from a signed 64-bit integer (i64).
+   */
   static fromI64(x: i64): BigInt {
-    const byteArray = ByteArray.fromI64(x)
-    return BigInt.fromByteArray(byteArray)
+    return BigInt.fromByteArray(ByteArray.fromI64(x))
   }
 
+  /**
+   * Creates a BigInt from an unsigned 64-bit integer (u64).
+   */
   static fromU64(x: u64): BigInt {
-    const byteArray = ByteArray.fromU64(x)
-    return BigInt.fromUnsignedBytes(byteArray)
+    return BigInt.fromUnsignedBytes(ByteArray.fromU64(x))
   }
 
-  static zero(): BigInt {
-    return BigInt.fromI32(0)
-  }
-
+  /**
+   * Converts a Bytes instance containing a signed integer to a BigInt.
+   */
   static fromSignedBytes(bytes: Bytes): BigInt {
     return BigInt.fromByteArray(changetype<ByteArray>(bytes))
   }
 
+  /**
+   * Converts a ByteArray to a BigInt.
+   */
   static fromByteArray(byteArray: ByteArray): BigInt {
     return changetype<BigInt>(byteArray)
   }
 
+  /**
+   * Converts an unsigned ByteArray to a BigInt, appending a zero byte for sign extension.
+   */
   static fromUnsignedBytes(bytes: ByteArray): BigInt {
     const signedBytes = new BigInt(bytes.length + 1)
     for (let i = 0; i < bytes.length; i++) {
@@ -51,31 +69,10 @@ export class BigInt extends Uint8Array {
     return signedBytes
   }
 
-  clone(): BigInt {
-    const clone = new BigInt(this.length)
-    memory.copy(clone.dataStart, this.dataStart, this.length)
-    return clone
-  }
-
-  subarray(start: i32, end: i32): BigInt {
-    const length = end - start
-    const result = new BigInt(length)
-    memory.copy(result.dataStart, this.dataStart + start, length)
-    return result
-  }
-
-  toHex(): string {
-    return typeConversion.bigIntToHex(this)
-  }
-
-  toHexString(): string {
-    return typeConversion.bigIntToHex(this)
-  }
-
-  toString(): string {
-    return typeConversion.bigIntToString(this)
-  }
-
+  /**
+   * Parses a string representation of a number and converts it to a BigInt.
+   * Supports decimal and hexadecimal formats.
+   */
   static fromString(str: string): BigInt {
     if (!str || str.length === 0) {
       return BigInt.zero()
@@ -206,28 +203,149 @@ export class BigInt extends Uint8Array {
     return result
   }
 
-  toBytes(): Bytes {
-    return Bytes.fromUint8Array(changetype<Uint8Array>(this))
+  static fromStringDecimal(str: string, precision: u8): BigInt {
+    if (str === '0') {
+      return BigInt.fromI32(0)
+    }
+
+    const parts = str.split('.')
+    if (parts.length > 2) throw new Error('Invalid str. Received: ' + str)
+
+    const isNegative = parts[0].startsWith('-')
+    const wholePart = isNegative ? parts[0].substring(1) : parts[0]
+
+    let result = BigInt.fromString(wholePart)
+    result = result.upscale(precision)
+
+    if (parts.length > 1 && parts[1].length > 0) {
+      const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
+      result = result.plus(BigInt.fromString(decimalPart))
+    }
+
+    return isNegative ? result.neg() : result
   }
 
-  toI32(): i32 {
-    const byteArray = this.toBytes()
-    return byteArray.toI32()
+  /**
+   * Returns a BigInt initialized to zero.
+   */
+  static zero(): BigInt {
+    return BigInt.fromI32(0)
   }
 
-  toU32(): u32 {
-    const byteArray = this.toBytes()
-    return byteArray.toU32()
+  static addUnsigned(a: BigInt, b: BigInt): BigInt {
+    if (a.isZero()) return b.clone()
+    if (b.isZero()) return a.clone()
+
+    const maxLen = max(a.length, b.length)
+    const result = new BigInt(maxLen + 1)
+    let carry: u32 = 0
+    for (let i = 0; i < maxLen; i++) {
+      const ai = i < a.length ? a[i] : 0
+      const bi = i < b.length ? b[i] : 0
+      const sum = <u32>ai + <u32>bi + carry
+      result[i] = <u8>(sum & 0xff)
+      carry = sum >> 8
+    }
+    if (carry != 0) result[maxLen] = <u8>carry
+    return result
   }
 
-  toI64(): i64 {
-    const byteArray = this.toBytes()
-    return byteArray.toI64()
+  static subUnsigned(a: BigInt, b: BigInt): BigInt {
+    const result = new BigInt(a.length)
+    let borrow: i32 = 0
+    for (let i = 0; i < a.length; i++) {
+      const ai = <i32>(i < a.length ? a[i] : 0)
+      const bi = <i32>(i < b.length ? b[i] : 0)
+      let diff = ai - bi - borrow
+      borrow = 0
+      if (diff < 0) {
+        diff += 256
+        borrow = 1
+      }
+      result[i] = <u8>(diff & 0xff)
+    }
+    return result
   }
 
-  toU64(): u64 {
-    const byteArray = this.toBytes()
-    return byteArray.toU64()
+  static mulUnsigned(a: BigInt, b: BigInt): BigInt {
+    if (a.length < b.length) return BigInt.mulUnsigned(b, a)
+    if (b.length === 1 && b[0] === 2) return a.leftShift(1)
+
+    const result = new BigInt(a.length + b.length)
+    for (let i = 0; i < a.length; i++) {
+      let carry: u32 = 0
+      for (let j = 0; j < b.length || carry != 0; j++) {
+        const bj = j < b.length ? b[j] : 0
+        const sum = <u32>result[i + j] + <u32>a[i] * <u32>bj + carry
+        result[i + j] = <u8>(sum & 0xff)
+        carry = sum >> 8
+      }
+    }
+    return result
+  }
+
+  static divUnsigned(a: BigInt, b: BigInt): BigInt {
+    if (b.isZero()) {
+      assert(false, '')
+      return BigInt.zero()
+    }
+    if (BigInt.compare(a, b) < 0) return BigInt.zero()
+
+    let quotient = BigInt.zero()
+    let remainder = BigInt.zero()
+
+    for (let i = a.length - 1; i >= 0; i--) {
+      remainder = remainder.leftShift(8)
+      remainder = BigInt.addUnsigned(remainder, BigInt.fromI32(a[i]))
+
+      let digit = BigInt.zero()
+      while (BigInt.compare(remainder, b) >= 0) {
+        remainder = BigInt.subUnsigned(remainder, b)
+        digit = BigInt.addUnsigned(digit, BigInt.fromI32(1))
+      }
+
+      quotient = quotient.leftShift(8)
+      quotient = BigInt.addUnsigned(quotient, digit)
+    }
+    return quotient
+  }
+
+  static compare(a: BigInt, b: BigInt): i32 {
+    const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
+    const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
+    if (!aIsNeg && bIsNeg) return 1
+    if (aIsNeg && !bIsNeg) return -1
+
+    let aRelevantBytes = a.length
+    while (
+      aRelevantBytes > 0 &&
+      ((!aIsNeg && a[aRelevantBytes - 1] == 0) || (aIsNeg && a[aRelevantBytes - 1] == 255))
+    ) {
+      aRelevantBytes -= 1
+    }
+
+    let bRelevantBytes = b.length
+    while (
+      bRelevantBytes > 0 &&
+      ((!bIsNeg && b[bRelevantBytes - 1] == 0) || (bIsNeg && b[bRelevantBytes - 1] == 255))
+    ) {
+      bRelevantBytes -= 1
+    }
+
+    if (aRelevantBytes > bRelevantBytes) return aIsNeg ? -1 : 1
+    if (bRelevantBytes > aRelevantBytes) return aIsNeg ? 1 : -1
+
+    const relevantBytes = aRelevantBytes
+    for (let i = 1; i <= relevantBytes; i++) {
+      if (a[relevantBytes - i] < b[relevantBytes - i]) return -1
+      if (a[relevantBytes - i] > b[relevantBytes - i]) return 1
+    }
+
+    return 0
+  }
+
+  isNegative(): boolean {
+    return this.length > 0 && (this[this.length - 1] & 0x80) == 0x80
   }
 
   isZero(): boolean {
@@ -247,6 +365,25 @@ export class BigInt extends Uint8Array {
     return this < BigInt.fromI32(0) ? this.neg() : this
   }
 
+  pow(exp: u8): BigInt {
+    if (exp === 0) return BigInt.fromI32(1)
+    if (exp === 1) return this.clone()
+    if (exp === 2) return this.times(this)
+
+    let base = this.clone()
+    let e = exp
+    let result = BigInt.fromI32(1)
+
+    while (e > 0) {
+      if ((e & 1) == 1) {
+        result = result.times(base)
+      }
+      base = base.times(base)
+      e >>= 1
+    }
+    return result
+  }
+
   sqrt(): BigInt {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const x = this
@@ -257,6 +394,27 @@ export class BigInt extends Uint8Array {
       z = x.div(z).plus(z).div(BigInt.fromI32(2))
     }
     return y
+  }
+
+  upscale(precision: u8): BigInt {
+    return this.times(BigInt.fromI32(10).pow(precision))
+  }
+
+  downscale(precision: u8): BigInt {
+    return this.div(BigInt.fromI32(10).pow(precision))
+  }
+
+  clone(): BigInt {
+    const clone = new BigInt(this.length)
+    memory.copy(clone.dataStart, this.dataStart, this.length)
+    return clone
+  }
+
+  subarray(start: i32, end: i32): BigInt {
+    const length = end - start
+    const result = new BigInt(length)
+    memory.copy(result.dataStart, this.dataStart + start, length)
+    return result
   }
 
   @operator('+')
@@ -455,138 +613,71 @@ export class BigInt extends Uint8Array {
     return result
   }
 
-  pow(exp: u8): BigInt {
-    if (exp === 0) return BigInt.fromI32(1)
-    if (exp === 1) return this.clone()
-    if (exp === 2) return this.times(this)
-
-    let base = this.clone()
-    let e = exp
-    let result = BigInt.fromI32(1)
-
-    while (e > 0) {
-      if ((e & 1) == 1) {
-        result = result.times(base)
-      }
-      base = base.times(base)
-      e >>= 1
-    }
-    return result
+  toBytes(): Bytes {
+    return Bytes.fromUint8Array(changetype<Uint8Array>(this))
   }
 
-  static compare(a: BigInt, b: BigInt): i32 {
-    const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
-    const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
-    if (!aIsNeg && bIsNeg) return 1
-    if (aIsNeg && !bIsNeg) return -1
-
-    let aRelevantBytes = a.length
-    while (
-      aRelevantBytes > 0 &&
-      ((!aIsNeg && a[aRelevantBytes - 1] == 0) || (aIsNeg && a[aRelevantBytes - 1] == 255))
-    ) {
-      aRelevantBytes -= 1
-    }
-
-    let bRelevantBytes = b.length
-    while (
-      bRelevantBytes > 0 &&
-      ((!bIsNeg && b[bRelevantBytes - 1] == 0) || (bIsNeg && b[bRelevantBytes - 1] == 255))
-    ) {
-      bRelevantBytes -= 1
-    }
-
-    if (aRelevantBytes > bRelevantBytes) return aIsNeg ? -1 : 1
-    if (bRelevantBytes > aRelevantBytes) return aIsNeg ? 1 : -1
-
-    const relevantBytes = aRelevantBytes
-    for (let i = 1; i <= relevantBytes; i++) {
-      if (a[relevantBytes - i] < b[relevantBytes - i]) return -1
-      if (a[relevantBytes - i] > b[relevantBytes - i]) return 1
-    }
-
-    return 0
+  toI32(): i32 {
+    const byteArray = this.toBytes()
+    return byteArray.toI32()
   }
 
-  private isNegative(): boolean {
-    return this.length > 0 && (this[this.length - 1] & 0x80) == 0x80
+  toU32(): u32 {
+    const byteArray = this.toBytes()
+    return byteArray.toU32()
   }
 
-  static addUnsigned(a: BigInt, b: BigInt): BigInt {
-    if (a.isZero()) return b.clone()
-    if (b.isZero()) return a.clone()
-
-    const maxLen = max(a.length, b.length)
-    const result = new BigInt(maxLen + 1)
-    let carry: u32 = 0
-    for (let i = 0; i < maxLen; i++) {
-      const ai = i < a.length ? a[i] : 0
-      const bi = i < b.length ? b[i] : 0
-      const sum = <u32>ai + <u32>bi + carry
-      result[i] = <u8>(sum & 0xff)
-      carry = sum >> 8
-    }
-    if (carry != 0) result[maxLen] = <u8>carry
-    return result
+  toI64(): i64 {
+    const byteArray = this.toBytes()
+    return byteArray.toI64()
   }
 
-  static subUnsigned(a: BigInt, b: BigInt): BigInt {
-    const result = new BigInt(a.length)
-    let borrow: i32 = 0
-    for (let i = 0; i < a.length; i++) {
-      const ai = <i32>(i < a.length ? a[i] : 0)
-      const bi = <i32>(i < b.length ? b[i] : 0)
-      let diff = ai - bi - borrow
-      borrow = 0
-      if (diff < 0) {
-        diff += 256
-        borrow = 1
-      }
-      result[i] = <u8>(diff & 0xff)
-    }
-    return result
+  toU64(): u64 {
+    const byteArray = this.toBytes()
+    return byteArray.toU64()
   }
 
-  static mulUnsigned(a: BigInt, b: BigInt): BigInt {
-    if (a.length < b.length) return BigInt.mulUnsigned(b, a)
-    if (b.length === 1 && b[0] === 2) return a.leftShift(1)
-
-    const result = new BigInt(a.length + b.length)
-    for (let i = 0; i < a.length; i++) {
-      let carry: u32 = 0
-      for (let j = 0; j < b.length || carry != 0; j++) {
-        const bj = j < b.length ? b[j] : 0
-        const sum = <u32>result[i + j] + <u32>a[i] * <u32>bj + carry
-        result[i + j] = <u8>(sum & 0xff)
-        carry = sum >> 8
-      }
-    }
-    return result
+  toHex(): string {
+    return bigIntToHex(this)
   }
 
-  static divUnsigned(a: BigInt, b: BigInt): BigInt {
-    if (b.isZero()) {
-      assert(false, '')
-      return BigInt.zero()
+  toHexString(): string {
+    return bigIntToHex(this)
+  }
+
+  toString(): string {
+    return bigIntToString(this)
+  }
+
+  toStringDecimal(precision: u8): string {
+    if (this.isZero()) return '0'
+
+    const isNegative = this.isNegative()
+    const absAmount = isNegative ? this.neg() : this
+
+    const str = absAmount.toString()
+    if (str.length <= (precision as i32)) {
+      let decimalPart = str.padStart(precision, '0')
+
+      let lastNonZero = decimalPart.length - 1
+      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+
+      decimalPart = decimalPart.substring(0, lastNonZero + 1)
+      return (isNegative ? '-' : '') + '0' + (decimalPart.length ? '.' + decimalPart : '')
     }
-    if (BigInt.compare(a, b) < 0) return BigInt.zero()
 
-    let quotient = BigInt.zero()
-    let remainder = BigInt.zero()
+    const wholePart = str.slice(0, str.length - precision)
+    let decimalPart = str.slice(str.length - precision)
 
-    for (let i = a.length - 1; i >= 0; i--) {
-      remainder = remainder.leftShift(8)
-      remainder = BigInt.addUnsigned(remainder, BigInt.fromI32(a[i]))
+    // Remove trailing zeros manually
+    let lastNonZero = decimalPart.length - 1
+    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
 
-      let digit = BigInt.zero()
-      while (BigInt.compare(remainder, b) >= 0) {
-        remainder = BigInt.subUnsigned(remainder, b)
-        digit = BigInt.addUnsigned(digit, BigInt.fromI32(1))
-      }
+    decimalPart = decimalPart.substring(0, lastNonZero + 1)
 
-      quotient = quotient.leftShift(8)
-      quotient = BigInt.addUnsigned(quotient, digit)
-    }
-    return quotient
+    // If the decimal part is empty, return only the whole part
+    return decimalPart.length > 0
+      ? `${isNegative ? '-' : ''}${wholePart}.${decimalPart}`
+      : `${isNegative ? '-' : ''}${wholePart}`
   }
 }

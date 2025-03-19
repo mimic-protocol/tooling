@@ -1,6 +1,5 @@
-import { BigInt } from '../../common/BigInt'
-import { ByteArray } from '../../common/ByteArray'
-import { Bytes } from '../../common/Bytes'
+import { STANDARD_DECIMALS } from '../../src/helpers'
+import { BigInt, ByteArray, Bytes } from '../../src/types'
 import { randomHex } from '../helpers'
 
 describe('BigInt', () => {
@@ -185,6 +184,98 @@ describe('BigInt', () => {
     })
   })
 
+  describe('fromStringDecimal', () => {
+    describe('when converting zero', () => {
+      it('returns zero', () => {
+        const zero = BigInt.fromStringDecimal('0', STANDARD_DECIMALS)
+        expect(zero.isZero()).toBe(true)
+      })
+    })
+
+    describe('when converting negative numbers', () => {
+      it('converts negative small numbers correctly', () => {
+        const amount = '-0.00001'
+        const result = BigInt.fromStringDecimal(amount, 5)
+
+        expect(result.toString()).toBe('-1')
+      })
+
+      it('converts negative integer numbers correctly', () => {
+        const amount = '-100'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('-10000')
+      })
+
+      it('converts negative decimal numbers correctly', () => {
+        const amount = '-100.5'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('-10050')
+      })
+
+      // TODO: fix scientific notation for decimals
+      // it('converts negative decimal numbers with scientific notation correctly', () => {
+      //   const amount = '-100.5e2'
+      //   const result = BigInt.fromStringDecimal(amount, 2)
+      //
+      //   expect(result.toString()).toBe('-1005000')
+      // })
+    })
+
+    describe('when converting positive numbers', () => {
+      it('converts positive small numbers correctly', () => {
+        const amount = '0.00001'
+        const result = BigInt.fromStringDecimal(amount, 5)
+
+        expect(result.toString()).toBe('1')
+      })
+
+      it('converts positive integer numbers correctly', () => {
+        const amount = '100'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('10000')
+      })
+
+      it('converts positive decimal numbers correctly', () => {
+        const amount = '100.5'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('10050')
+      })
+
+      // TODO: fix scientific notation for decimals
+      // it('converts positive decimal numbers with scientific notation correctly', () => {
+      //   const amount = '100.5e2'
+      //   const result = BigInt.fromStringDecimal(amount, 2)
+      //
+      //   expect(result.toString()).toBe('1005000')
+      // })
+    })
+
+    describe('when handling invalid inputs', () => {
+      it('throws an error when amount has multiple decimal points', () => {
+        expect(() => {
+          const invalidAmount = '100.45.67'
+          BigInt.fromStringDecimal(invalidAmount, 2)
+        }).toThrow()
+      })
+
+      it('throws an error when amount has non-numeric characters', () => {
+        expect(() => {
+          const invalidAmount = '100a02'
+          BigInt.fromStringDecimal(invalidAmount, 2)
+        }).toThrow()
+
+        expect(() => {
+          const invalidAmount = '10.0a02'
+          BigInt.fromStringDecimal(invalidAmount, 2)
+        }).toThrow()
+      })
+    })
+  })
+
   describe('operators', () => {
     describe('plus', () => {
       it('adds two positive BigInts', () => {
@@ -199,6 +290,13 @@ describe('BigInt', () => {
         const b = BigInt.fromI32(-5)
         const sum = a.plus(b)
         expect(sum.toU64()).toBe(10 ** 18 - 5)
+      })
+
+      it('adds two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e38')
+        const sum = a.plus(b)
+        expect(sum.toString()).toBe('200000000000000000000000000000000000000') // 2e38
       })
     })
 
@@ -215,6 +313,13 @@ describe('BigInt', () => {
         const b = BigInt.fromString('1e20')
         const diff = a.minus(b)
         expect(diff.toString()).toBe('-99999000000000000000')
+      })
+
+      it('subtracts two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e37')
+        const diff = a.minus(b)
+        expect(diff.toString()).toBe('90000000000000000000000000000000000000') // 9e37
       })
     })
 
@@ -238,6 +343,13 @@ describe('BigInt', () => {
         const b = BigInt.fromI32(-6)
         const prod = a.times(b)
         expect(prod.toI32()).toBe(12)
+      })
+
+      it('multiplies two large BigInts', () => {
+        const a = BigInt.fromString('1e19')
+        const b = BigInt.fromString('1e19')
+        const prod = a.times(b)
+        expect(prod.toString()).toBe('100000000000000000000000000000000000000') // 1e38
       })
     })
 
@@ -269,6 +381,13 @@ describe('BigInt', () => {
           const b = BigInt.zero()
           a.div(b)
         }).toThrow()
+      })
+
+      it('divides two large BigInts', () => {
+        const a = BigInt.fromString('1e38')
+        const b = BigInt.fromString('1e18')
+        const quotient = a.div(b)
+        expect(quotient.toString()).toBe('100000000000000000000') // 1e20
       })
     })
 
@@ -370,6 +489,12 @@ describe('BigInt', () => {
         const result = a.pow(0)
         expect(result.toI32()).toBe(1)
       })
+
+      it('handles large numbers with exponentiation', () => {
+        const a = BigInt.fromI32(10)
+        const result = a.pow(30)
+        expect(result.toString()).toBe('1000000000000000000000000000000') // 10^30
+      })
     })
 
     describe('when using comparison operators', () => {
@@ -403,6 +528,49 @@ describe('BigInt', () => {
         const c = BigInt.fromI32(9)
         expect(c <= b).toBe(true)
         expect(b >= c).toBe(true)
+      })
+    })
+  })
+
+  describe('toStringDecimal', () => {
+    describe('when converting zero', () => {
+      it('returns zero', () => {
+        const zero = BigInt.zero()
+        expect(zero.toStringDecimal(STANDARD_DECIMALS)).toBe('0')
+      })
+    })
+
+    describe('when converting negative numbers', () => {
+      it('handles negative integer numbers correctly', () => {
+        const value = BigInt.fromString('-100')
+        expect(value.toStringDecimal(2)).toBe('-1')
+      })
+
+      it('handles negative decimal numbers correctly', () => {
+        const value = BigInt.fromString('-10050')
+        expect(value.toStringDecimal(2)).toBe('-100.5')
+      })
+
+      it('handles large negative decimal numbers correctly', () => {
+        const value = BigInt.fromString('-10050')
+        expect(value.toStringDecimal(18)).toBe('-0.00000000000001005')
+      })
+    })
+
+    describe('when converting positive numbers', () => {
+      it('handles positive integer numbers correctly', () => {
+        const value = BigInt.fromString('100')
+        expect(value.toStringDecimal(2)).toBe('1')
+      })
+
+      it('handles positive decimal numbers correctly', () => {
+        const value = BigInt.fromString('10050')
+        expect(value.toStringDecimal(2)).toBe('100.5')
+      })
+
+      it('handles large positive decimal numbers correctly', () => {
+        const value = BigInt.fromString('10050')
+        expect(value.toStringDecimal(18)).toBe('0.00000000000001005')
       })
     })
   })

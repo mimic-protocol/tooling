@@ -15,20 +15,46 @@ export default {
    * Add your required AssemblyScript imports here.
    */
   async instantiate(memory, createImports, instantiate, binary) {
-    let instance // Imports can reference this
+    let exports // Imports can reference this
+
+    const tokenPrices = new Map()
+
     const myImports = {
       env: {
         memory,
         'console.log': (ptr) => {
-          instance.then((i) => {
-            const string = i.exports.__getString(ptr)
-            console.log(string)
-          })
+          const string = exports.__getString(ptr)
+          console.log(string)
+        },
+      },
+      environment: {
+        _getPrice: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = paramsStr.split(',')
+          const address = params[0]
+          const chainId = params[1]
+          const key = `${address}:${chainId}`
+
+          // Check if the price is set, if not, return default price
+          const price = tokenPrices.has(key) ? tokenPrices.get(key) : (1 * 10 ** 18).toString()
+
+          return exports.__newString(price)
+        },
+      },
+      helpers: {
+        _setTokenPrice: (addressPtr, chainId, pricePtr) => {
+          const address = exports.__getString(addressPtr)
+          const price = exports.__getString(pricePtr)
+          const key = `${address}:${chainId}`
+          tokenPrices.set(key, price)
         },
       },
     }
 
-    instance = instantiate(binary, createImports(myImports))
+    let instance = instantiate(binary, createImports(myImports))
+    instance.then((i) => {
+      exports = i.exports
+    })
     return instance
   },
   /**

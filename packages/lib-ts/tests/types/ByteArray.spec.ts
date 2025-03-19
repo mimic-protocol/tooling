@@ -1,5 +1,4 @@
-import { BigInt } from '../../common/BigInt'
-import { ByteArray } from '../../common/ByteArray'
+import { BigInt, ByteArray } from '../../src/types'
 
 describe('ByteArray', () => {
   describe('empty', () => {
