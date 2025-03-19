@@ -1,6 +1,5 @@
-import { Address, BigInt, Bytes } from '../../common'
-import { NULL_ADDRESS } from '../../constants'
-import { join, serialize } from '../../helpers'
+import { join, NULL_ADDRESS, serialize } from '../../src/helpers'
+import { Address, BigInt, Bytes } from '../../src/types'
 
 describe('serialize', () => {
   describe('serialize', () => {

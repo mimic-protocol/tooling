@@ -1,8 +1,10 @@
-import { STANDARD_DECIMALS, Token } from '../index'
+import { STANDARD_DECIMALS } from '../src/helpers'
+import { Token } from '../src/tokens'
+
+/* eslint-disable no-secrets/no-secrets */
 
 const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
 
-/* eslint-disable no-secrets/no-secrets */
 export function randomHex(length: i32): string {
   const hexChars: string = '0123456789abcdef'
   let result: string = '0x'
@@ -29,11 +31,8 @@ export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
 }
 
 declare function _setTokenPrice(address: string, chainId: u64, price: string): void
+
 export function setTokenPrice(token: Token, priceUsd: number): void {
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
-}
-
-export function buildZeroPadding(length: u8): string {
-  return '0'.repeat(length)
 }

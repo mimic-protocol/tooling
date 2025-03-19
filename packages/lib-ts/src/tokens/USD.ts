@@ -1,7 +1,7 @@
-import { BigInt } from '../common'
-import { STANDARD_DECIMALS } from '../constants'
-import { environment } from '../index'
+import { environment } from '../environment'
+import { STANDARD_DECIMALS } from '../helpers'
 import { Token, TokenAmount } from '../tokens'
+import { BigInt } from '../types'
 
 export class USD {
   private _value: BigInt

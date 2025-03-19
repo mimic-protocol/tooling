@@ -1,4 +1,4 @@
-import { Token } from '../../tokens'
+import { Token } from '../../src/tokens'
 import { randomAddress, randomToken } from '../helpers'
 
 describe('Token', () => {
