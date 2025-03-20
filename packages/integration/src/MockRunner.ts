@@ -1,21 +1,65 @@
-import { spawnSync } from 'child_process'
+import * as fs from 'fs'
 import { join } from 'path'
 
-import { RunnerFailureError, RunnerSpawnError } from './errors'
+let instance: WebAssembly.Instance
 
 export default {
-  run(taskFolder: string): string {
-    const subFolder = process.env.NODE_ENV === 'production' ? 'release' : 'debug'
-    const runnerPath = join(__dirname, `../mock-runner/target/${subFolder}/mock-runner`)
+  run(taskFolder: string): void {
     const taskPath = join(taskFolder, 'task.wasm')
-    const environmentPath = join(taskFolder, 'environment.json')
-    const manifestPath = join(taskFolder, 'manifest.json')
+    const environment = JSON.parse(fs.readFileSync(join(taskFolder, 'environment.json'), 'utf8'))
+    const manifest = JSON.parse(fs.readFileSync(join(taskFolder, 'manifest.json'), 'utf8'))
+    const mock = JSON.parse(fs.readFileSync(join(taskFolder, '../mock.json'), 'utf8'))
+    const imports = generateImports(environment, mock, manifest.inputs)
 
-    const result = spawnSync(runnerPath, [taskPath, environmentPath, manifestPath], { encoding: 'utf-8' })
+    try {
+      const wasmBuffer = fs.readFileSync(taskPath)
+      const wasmModule = new WebAssembly.Module(wasmBuffer)
+      instance = new WebAssembly.Instance(wasmModule, imports)
 
-    if (result.error) throw new RunnerSpawnError(result.error.message)
-    if (result.status !== 0) throw new RunnerFailureError(result.status, result.stderr)
-    console.log('Command succeeded!')
-    return result.stdout
+      if (typeof instance.exports.main === 'function') {
+        instance.exports.main()
+      } else {
+        throw Error('No main found in exports:' + Object.keys(instance.exports))
+      }
+    } catch (error) {
+      console.error('WASM Instantiation Error:', error)
+    }
   },
+}
+
+function logFn(call: string) {
+  return (ptr: number) => {
+    const string = getStringFromMemory(ptr)
+    console.log(call, string)
+  }
+}
+
+function generateImports(
+  requestedCalls: string[],
+  mock: Record<string, unknown>,
+  inputs: WebAssembly.ModuleImports
+): WebAssembly.Imports {
+  const imports: WebAssembly.ModuleImports = {}
+  for (const call of requestedCalls) {
+    if (mock[call] === 'log') imports[call] = logFn(call)
+    else imports[call] = () => mock[call]
+  }
+  for (const [key, value] of Object.entries(inputs)) imports[`input.${key}`] = value
+
+  const envInports = {
+    abort: (msg: string, file: string, line: number, col: number) => {
+      throw Error(`${msg} - ${file} - ${line} - ${col}`)
+    },
+  }
+
+  return { environment: imports, env: envInports }
+}
+
+function getStringFromMemory(ptr: number): string {
+  const memory = instance.exports.memory as WebAssembly.Memory
+  const memoryBuffer = new Uint8Array(memory.buffer)
+  const view = new DataView(memory.buffer)
+  const length = view.getInt32(ptr - 4, true) // `true` means little-endian
+  const bytes = memoryBuffer.subarray(ptr, ptr + length)
+  return new TextDecoder('utf-16le').decode(bytes)
 }

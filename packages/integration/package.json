@@ -5,11 +5,9 @@
   "private": true,
   "scripts": {
     "prepare": "yarn build",
-    "build": "yarn build:runner && rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
-    "lint": "yarn lint:runner && eslint .",
-    "build:runner": "cargo build --manifest-path ./mock-runner/Cargo.toml",
-    "lint:runner": " cargo clippy --manifest-path ./mock-runner/Cargo.toml -- -D warnings"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@mimic-fi/helpers": "^1.0.0",

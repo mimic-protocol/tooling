@@ -1,3 +1,4 @@
+import { expect } from 'chai'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import { join } from 'path'
@@ -28,10 +29,17 @@ async function runTestCase(testCase: string): Promise<void> {
       fs.rmSync(outputPath, { recursive: true })
     })
 
+    before('validate mock.json', () => {
+      const environment = JSON.parse(fs.readFileSync(join(outputPath, 'environment.json'), 'utf8'))
+      const mock = JSON.parse(fs.readFileSync(join(path, 'mock.json'), 'utf8'))
+      const mockKeys = Object.keys(mock)
+      const ok = !environment.some((e) => !mockKeys.includes(e))
+      expect(ok, 'Mock.json does not have all necesary elements').to.be.true
+    })
+
     it('run task', async () => {
       try {
-        const a = MockRunner.run(outputPath)
-        console.log(a)
+        MockRunner.run(outputPath)
       } catch (err) {
         console.log(err)
       }
