@@ -39,7 +39,8 @@ async function runTestCase(testCase: string): Promise<void> {
 
     it('run task', async () => {
       try {
-        MockRunner.run(outputPath)
+        const mr = new MockRunner(outputPath)
+        mr.run()
       } catch (err) {
         console.log(err)
       }
