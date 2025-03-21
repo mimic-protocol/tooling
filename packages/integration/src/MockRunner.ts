@@ -43,12 +43,13 @@ export default class MockRunner {
     mock: Record<string, unknown>,
     inputs: WebAssembly.ModuleImports
   ): WebAssembly.Imports {
-    const imports: WebAssembly.ModuleImports = {}
+    const environmentImports: WebAssembly.ModuleImports = {}
+    const variableImports: WebAssembly.ModuleImports = {}
     for (const call of requestedCalls) {
-      if (mock[call] === 'log') imports[call] = this.createLogFn(call)
-      else imports[call] = () => mock[call]
+      if (mock[call] === 'log') environmentImports[call] = this.createLogFn(call)
+      else environmentImports[call] = () => mock[call]
     }
-    for (const [key, value] of Object.entries(inputs)) imports[`input.${key}`] = value
+    for (const [key, value] of Object.entries(inputs)) variableImports[`input.${key}`] = value
 
     const envInports = {
       abort: (msg: string, file: string, line: number, col: number) => {
@@ -56,7 +57,7 @@ export default class MockRunner {
       },
     }
 
-    return { environment: imports, env: envInports }
+    return { environment: environmentImports, env: envInports, index: variableImports }
   }
 
   private getStringFromMemory(ptr: number): string {

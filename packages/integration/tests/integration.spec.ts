@@ -33,8 +33,8 @@ async function runTestCase(testCase: string): Promise<void> {
       const environment = JSON.parse(fs.readFileSync(join(outputPath, 'environment.json'), 'utf8'))
       const mock = JSON.parse(fs.readFileSync(join(path, 'mock.json'), 'utf8'))
       const mockKeys = Object.keys(mock)
-      const ok = !environment.some((e) => !mockKeys.includes(e))
-      expect(ok, 'Mock.json does not have all necesary elements').to.be.true
+      const missing = environment.filter((e) => !mockKeys.includes(e))
+      expect(missing.length == 0, `Mock.json does not have all necesary elements, missing ${missing}`).to.be.true
     })
 
     it('run task', async () => {
@@ -48,5 +48,8 @@ async function runTestCase(testCase: string): Promise<void> {
 }
 
 function loadLogs(path: string): string[] {
-  return fs.readFileSync(path, { encoding: 'utf-8'}).split("\n").filter(line => line !== "")
+  return fs
+    .readFileSync(path, { encoding: 'utf-8' })
+    .split('\n')
+    .filter((line) => line !== '')
 }
