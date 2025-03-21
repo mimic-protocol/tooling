@@ -34,7 +34,8 @@ export default class MockRunner {
   }
 
   private logToFile(call: string, params: string) {
-    console.log(`${this.taskFolder} - ${call} - ${params}`)
+    const logFile = join(this.taskFolder, 'test.log')
+    fs.appendFileSync(logFile, `${call}: ${params}\n`)
   }
 
   private generateImports(

@@ -38,12 +38,15 @@ async function runTestCase(testCase: string): Promise<void> {
     })
 
     it('run task', async () => {
-      try {
-        const mr = new MockRunner(outputPath)
-        mr.run()
-      } catch (err) {
-        console.log(err)
-      }
+      const mockRunner = new MockRunner(outputPath)
+      mockRunner.run()
+      const expectedLogs = loadLogs(join(path, 'expected.log'))
+      const testLogs = loadLogs(join(outputPath, 'test.log'))
+      expect(expectedLogs).to.be.deep.equal(testLogs)
     })
   })
+}
+
+function loadLogs(path: string): string[] {
+  return fs.readFileSync(path, { encoding: 'utf-8'}).split("\n").filter(line => line !== "")
 }
