@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "asc index.ts -b build/lib.wasm --disableWarning 235",
+    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit",
     "test": "asp",
     "lint": "eslint . --ignore-pattern 'src/environment.ts'"
   },
