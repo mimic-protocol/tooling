@@ -16,10 +16,7 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>()
-    importedTypes.add('environment')
-    importedTypes.add(LibTypes.BigInt)
-    importedTypes.add(LibTypes.Address)
+    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)

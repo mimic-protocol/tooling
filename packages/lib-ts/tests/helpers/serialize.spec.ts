@@ -1,11 +1,11 @@
-import { join, NULL_ADDRESS, serialize } from '../../src/helpers'
+import { join, NULL_ADDRESS, serialize, serializeArray } from '../../src/helpers'
 import { Address, BigInt, Bytes } from '../../src/types'
 
 describe('serialize', () => {
   describe('serialize', () => {
     describe('when passing an Address', () => {
       it('converts it to string correctly', () => {
-        const address = Address.fromString(NULL_ADDRESS)
+        const address = Address.zero()
         const serialized = serialize(address)
         expect(serialized).toBe(NULL_ADDRESS)
       })
@@ -55,6 +55,48 @@ describe('serialize', () => {
       it('returns them joined', () => {
         const joint = join(['one', null, 'three'])
         expect(joint).toBe('one,,three')
+      })
+    })
+  })
+
+  describe('serializeArray', () => {
+    describe('when passing an array of Addresses', () => {
+      it('converts it to string correctly', () => {
+        const addresses = [Address.zero(), Address.zero()]
+        const serialized = serializeArray(addresses)
+        expect(serialized).toBe(`Array(${NULL_ADDRESS};${NULL_ADDRESS})`)
+      })
+    })
+
+    describe('when passing an array of Bytes', () => {
+      it('converts it to string correctly', () => {
+        const bytesArray = [Bytes.fromI32(5), Bytes.fromI32(10)]
+        const serialized = serializeArray(bytesArray)
+        expect(serialized).toBe('Array(0x05000000;0x0a000000)')
+      })
+    })
+
+    describe('when passing an array of BigInts', () => {
+      it('converts it to string correctly', () => {
+        const bigInts = [BigInt.fromI32(5), BigInt.fromI32(10)]
+        const serialized = serializeArray(bigInts)
+        expect(serialized).toBe('Array(BigInt(5);BigInt(10))')
+      })
+    })
+
+    describe('when passing an array of numbers', () => {
+      it('converts it to string correctly', () => {
+        const numbers = [5, 10, 15]
+        const serialized = serializeArray(numbers)
+        expect(serialized).toBe('Array(5;10;15)')
+      })
+    })
+
+    describe('when passing an empty array', () => {
+      it('returns Array()', () => {
+        const empty: number[] = []
+        const serialized = serializeArray(empty)
+        expect(serialized).toBe('Array()')
       })
     })
   })
