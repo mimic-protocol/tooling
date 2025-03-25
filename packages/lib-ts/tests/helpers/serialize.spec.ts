@@ -64,7 +64,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const addresses = [Address.zero(), Address.zero()]
         const serialized = serializeArray(addresses)
-        expect(serialized).toBe(`Array(${NULL_ADDRESS};${NULL_ADDRESS})`)
+        expect(serialized).toBe(`Array(${NULL_ADDRESS},${NULL_ADDRESS})`)
       })
     })
 
@@ -72,7 +72,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bytesArray = [Bytes.fromI32(5), Bytes.fromI32(10)]
         const serialized = serializeArray(bytesArray)
-        expect(serialized).toBe('Array(0x05000000;0x0a000000)')
+        expect(serialized).toBe('Array(0x05000000,0x0a000000)')
       })
     })
 
@@ -80,7 +80,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bigInts = [BigInt.fromI32(5), BigInt.fromI32(10)]
         const serialized = serializeArray(bigInts)
-        expect(serialized).toBe('Array(BigInt(5);BigInt(10))')
+        expect(serialized).toBe('Array(BigInt(5),BigInt(10))')
       })
     })
 
@@ -88,7 +88,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const numbers = [5, 10, 15]
         const serialized = serializeArray(numbers)
-        expect(serialized).toBe('Array(5;10;15)')
+        expect(serialized).toBe('Array(5,10,15)')
       })
     })
 

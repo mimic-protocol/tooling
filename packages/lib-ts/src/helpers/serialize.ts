@@ -1,7 +1,6 @@
 import { Address, BigInt, Bytes } from '../types'
 
 const SEPARATOR = ','
-const ARRAY_SEPARATOR = ';'
 
 interface Stringable {
   toString(): string
@@ -18,7 +17,7 @@ export function serializeArray<T extends Stringable>(array: T[]): string {
   for (let i = 0; i < array.length; i++) {
     serializedElems.push(serialize(array[i]))
   }
-  return 'Array(' + serializedElems.join(ARRAY_SEPARATOR) + ')'
+  return 'Array(' + join(serializedElems) + ')'
 }
 
 export function join(lst: (string | null)[]): string {
