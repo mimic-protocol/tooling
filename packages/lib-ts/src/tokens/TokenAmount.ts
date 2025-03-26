@@ -1,10 +1,11 @@
 import { environment } from '../environment'
+import { join, SEPARATOR, Serializable, serialize } from '../helpers/serialize'
 import { BigInt } from '../types'
 
 import { Token } from './Token'
 import { USD } from './USD'
 
-export class TokenAmount {
+export class TokenAmount implements Serializable {
   private _token: Token
   private _amount: BigInt
 
@@ -17,6 +18,16 @@ export class TokenAmount {
   }
 
   static fromBigInt(token: Token, amount: BigInt): TokenAmount {
+    return new TokenAmount(token, amount)
+  }
+
+  static deserialize(serialized: string): TokenAmount {
+    if (serialized.length === 0) throw new Error('Invalid serialized token amount')
+
+    const elements = serialized.split(SEPARATOR)
+    const amount = BigInt.deserialize(elements[0])
+    const token = Token.deserialize(elements.slice(1).join(SEPARATOR))
+
     return new TokenAmount(token, amount)
   }
 
@@ -116,6 +127,10 @@ export class TokenAmount {
   toTokenAmount(other: Token): TokenAmount {
     if (this.isZero()) return TokenAmount.fromI32(other, 0)
     return this.toUsd().toTokenAmount(other)
+  }
+
+  serialize(): string {
+    return join([serialize(this.amount), this.token.serialize()])
   }
 
   private amountCompare(other: TokenAmount): i32 {

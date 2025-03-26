@@ -1,14 +1,17 @@
-import { Address, BigInt, Bytes } from '../types'
-
-const SEPARATOR = ','
+export const SEPARATOR = ','
 
 interface Stringable {
   toString(): string
 }
 
+export interface Serializable {
+  serialize(): string
+}
+
 export function serialize<T extends Stringable>(elem: T): string {
-  if (elem instanceof Address || elem instanceof Bytes) return elem.toHexString()
-  if (elem instanceof BigInt) return 'BigInt(' + elem.toString() + ')'
+  // eslint-disable-next-line
+  // @ts-ignore
+  if (elem instanceof Serializable) return elem.serialize()
   return elem.toString()
 }
 

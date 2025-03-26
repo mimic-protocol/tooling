@@ -4,13 +4,15 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { Serializable } from '../helpers'
+
 import { ByteArray } from './ByteArray'
 
 /**
  * A dynamically-sized byte array with utility methods
  * for conversions between different formats.
  */
-export class Bytes extends ByteArray {
+export class Bytes extends ByteArray implements Serializable {
   /**
    * Creates a Bytes instance from a ByteArray.
    */
@@ -70,5 +72,9 @@ export class Bytes extends ByteArray {
    */
   concatI32(other: i32): Bytes {
     return changetype<Bytes>(super.concat(ByteArray.fromI32(other)))
+  }
+
+  serialize(): string {
+    return this.toHexString()
   }
 }
