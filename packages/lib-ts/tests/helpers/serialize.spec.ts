@@ -52,7 +52,7 @@ describe('serialize', () => {
         const address = token.address.toHexString()
         const chainId = token.chainId
         const decimals = token.decimals
-        expect(serialized).toBe(`${symbol},${address},${chainId},${decimals}`)
+        expect(serialized).toBe(`Token(${symbol},${address},${chainId},${decimals})`)
       })
     })
 
@@ -64,7 +64,7 @@ describe('serialize', () => {
         const serialized = serialize(tokenAmount)
 
         const serializedToken = serialize(token)
-        expect(serialized).toBe(`${amount.serialize()},${serializedToken}`)
+        expect(serialized).toBe(`TokenAmount(${serializedToken},${amount.serialize()})`)
       })
     })
   })

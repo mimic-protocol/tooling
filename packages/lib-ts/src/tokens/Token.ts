@@ -3,6 +3,7 @@ import { join, SEPARATOR, Serializable, serialize } from '../helpers/serialize'
 import { Address } from '../types'
 
 export class Token implements Serializable {
+  private static readonly SERIALIZED_PREFIX: string = 'Token'
   private _symbol: string
   private _address: Address
   private _chainId: u64
@@ -14,9 +15,10 @@ export class Token implements Serializable {
   }
 
   static deserialize(serialized: string): Token {
-    if (serialized.length === 0) throw new Error('Invalid serialized token')
+    const isToken = serialized.startsWith(`${Token.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
+    if (!isToken) throw new Error('Invalid serialized token')
 
-    const elements = serialized.split(SEPARATOR)
+    const elements = serialized.slice(Token.SERIALIZED_PREFIX.length + 1, -1).split(SEPARATOR)
 
     const symbol = elements[0]
     const address = elements[1]
@@ -60,6 +62,6 @@ export class Token implements Serializable {
   }
 
   serialize(): string {
-    return join([serialize(this.symbol), serialize(this.address), serialize(this.chainId), serialize(this.decimals)])
+    return `${Token.SERIALIZED_PREFIX}(${join([serialize(this.symbol), serialize(this.address), serialize(this.chainId), serialize(this.decimals)])})`
   }
 }

@@ -6,6 +6,7 @@ import { Token } from './Token'
 import { USD } from './USD'
 
 export class TokenAmount implements Serializable {
+  private static readonly SERIALIZED_PREFIX: string = 'TokenAmount'
   private _token: Token
   private _amount: BigInt
 
@@ -22,11 +23,15 @@ export class TokenAmount implements Serializable {
   }
 
   static deserialize(serialized: string): TokenAmount {
-    if (serialized.length === 0) throw new Error('Invalid serialized token amount')
+    const isTokenAmount = serialized.startsWith(`${TokenAmount.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
+    if (!isTokenAmount) throw new Error('Invalid serialized token amount')
 
-    const elements = serialized.split(SEPARATOR)
-    const amount = BigInt.deserialize(elements[0])
-    const token = Token.deserialize(elements.slice(1).join(SEPARATOR))
+    const sliced = serialized.slice(TokenAmount.SERIALIZED_PREFIX.length + 1, -1)
+    const lastSeparatorIndex = sliced.lastIndexOf(SEPARATOR)
+    const elements = [sliced.slice(0, lastSeparatorIndex), sliced.slice(lastSeparatorIndex + 1)]
+
+    const token = Token.deserialize(elements[0])
+    const amount = BigInt.deserialize(elements[1])
 
     return new TokenAmount(token, amount)
   }
@@ -130,7 +135,7 @@ export class TokenAmount implements Serializable {
   }
 
   serialize(): string {
-    return join([serialize(this.amount), this.token.serialize()])
+    return `${TokenAmount.SERIALIZED_PREFIX}(${join([this.token.serialize(), serialize(this.amount)])})`
   }
 
   private amountCompare(other: TokenAmount): i32 {

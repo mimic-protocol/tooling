@@ -15,6 +15,7 @@ const ASCII_CODE_ZERO = 48
  * Represents an arbitrary-precision integer stored as a byte array.
  */
 export class BigInt extends Uint8Array implements Serializable {
+  private static readonly SERIALIZED_PREFIX: string = 'BigInt'
   /**
    * Creates a BigInt from a signed 32-bit integer (i32).
    */
@@ -73,10 +74,10 @@ export class BigInt extends Uint8Array implements Serializable {
    * Parses a serialized representation of a BigInt and converts it to a BigInt.
    */
   static deserialize(serialized: string): BigInt {
-    const isBigInt = serialized.startsWith('BigInt(') && serialized.endsWith(')')
+    const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isBigInt) throw new Error('Invalid serialized BigInt')
 
-    return BigInt.fromString(serialized.slice(7, -1))
+    return BigInt.fromString(serialized.slice(BigInt.SERIALIZED_PREFIX.length + 1, -1))
   }
 
   /**
@@ -692,6 +693,6 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   serialize(): string {
-    return `BigInt(${this.toString()})`
+    return `${BigInt.SERIALIZED_PREFIX}(${this.toString()})`
   }
 }
