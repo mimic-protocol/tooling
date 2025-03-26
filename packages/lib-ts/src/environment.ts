@@ -86,8 +86,15 @@ export namespace environment {
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
-  export function getRelevantTokens(address: Address, chainId: u64): TokenAmount[] {
-    const response = _getRelevantTokens(join([serialize(address), serialize(chainId)]))
+  // TODO: Implement missing filters (chaindId list, allowList/denyList)
+  export function getRelevantTokens(
+    address: Address,
+    chainId: u64,
+    usdMinAmount: USD = USD.zero()
+  ): TokenAmount[] {
+    const response = _getRelevantTokens(
+      join([serialize(address), serialize(chainId), serialize(usdMinAmount.value)])
+    )
     const rows = response.split('\n')
     const tokenAmounts: TokenAmount[] = []
 
