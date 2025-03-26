@@ -1,4 +1,4 @@
-import { join, serialize } from './helpers'
+import { join, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
@@ -17,6 +17,12 @@ export namespace environment {
 
   @external('environment', '_getRelevantTokens')
   declare function _getRelevantTokens(params: string): string
+
+  @external('environment', '_contractCall')
+  declare function _contractCall(params: string): string
+
+  @external('environment', '_getCurrentBlockNumber')
+  declare function _getCurrentBlockNumber(params: string): string
 
   export function call(
     settler: Address,
@@ -105,5 +111,27 @@ export namespace environment {
     }
 
     return tokenAmounts
+  }
+
+  export function contractCall(
+    target: Address,
+    chainId: u64,
+    blockNumber: BigInt,
+    functionName: string,
+    params: Bytes[]
+  ): string {
+    return _contractCall(
+      join([
+        serialize(target),
+        serialize(chainId),
+        serialize(blockNumber),
+        serialize(functionName),
+        serializeArray(params),
+      ])
+    )
+  }
+
+  export function getCurrentBlockNumber(chainId: u64): BigInt {
+    return BigInt.fromString(_getCurrentBlockNumber(join([serialize(chainId)])))
   }
 }

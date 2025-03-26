@@ -79,6 +79,52 @@ describe('ByteArray', () => {
     })
   })
 
+  describe('fromI8', () => {
+    describe('when creating a ByteArray from a valid i8', () => {
+      it('creates a 1-byte ByteArray in little-endian order', (): void => {
+        const value: i8 = 0x01
+        const result = ByteArray.fromI8(value)
+        expect(result.length).toBe(1)
+        expect(result[0]).toBe(0x01)
+      })
+    })
+  })
+
+  describe('fromU8', () => {
+    describe('when creating a ByteArray from a valid u8', () => {
+      it('creates a 1-byte ByteArray in little-endian order', (): void => {
+        const value: u8 = 0x01
+        const result = ByteArray.fromU8(value)
+        expect(result.length).toBe(1)
+        expect(result[0]).toBe(0x01)
+      })
+    })
+  })
+
+  describe('fromI16', () => {
+    describe('when creating a ByteArray from a valid i16', () => {
+      it('creates a 2-byte ByteArray in little-endian order', (): void => {
+        const value: i16 = 0x0102
+        const result = ByteArray.fromI16(value)
+        expect(result.length).toBe(2)
+        expect(result[0]).toBe(0x02)
+        expect(result[1]).toBe(0x01)
+      })
+    })
+  })
+
+  describe('fromU16', () => {
+    describe('when creating a ByteArray from a valid u16', () => {
+      it('creates a 2-byte ByteArray in little-endian order', (): void => {
+        const value: u16 = 0x0102
+        const result = ByteArray.fromU16(value)
+        expect(result.length).toBe(2)
+        expect(result[0]).toBe(0x02)
+        expect(result[1]).toBe(0x01)
+      })
+    })
+  })
+
   describe('fromI32', () => {
     describe('when creating a ByteArray from a valid i32', () => {
       it('creates a 4-byte ByteArray in little-endian order', (): void => {
