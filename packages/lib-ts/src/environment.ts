@@ -1,5 +1,5 @@
 import { join, serialize } from './helpers'
-import { Token, USD } from './tokens'
+import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
 export namespace environment {
@@ -14,6 +14,9 @@ export namespace environment {
 
   @external('environment', '_getPrice')
   declare function _getPrice(params: string): string
+
+  @external('environment', '_getRelevantTokens')
+  declare function _getRelevantTokens(params: string): string
 
   export function call(
     settler: Address,
@@ -81,5 +84,19 @@ export namespace environment {
   export function getPrice(token: Token): USD {
     const price = _getPrice(join([serialize(token.address), serialize(token.chainId)]))
     return USD.fromBigInt(BigInt.fromString(price))
+  }
+
+  export function getRelevantTokens(address: Address, chainId: u64): TokenAmount[] {
+    const response = _getRelevantTokens(join([serialize(address), serialize(chainId)]))
+    const rows = response.split('\n')
+    const tokenAmounts: TokenAmount[] = []
+
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].length === 0) continue
+
+      tokenAmounts.push(TokenAmount.deserialize(rows[i]))
+    }
+
+    return tokenAmounts
   }
 }
