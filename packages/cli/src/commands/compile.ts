@@ -2,7 +2,6 @@ import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as ts from 'typescript'
 
 import log from '../log'
 import ManifestHandler from '../ManifestHandler'
@@ -54,27 +53,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    const environmentCalls = extractEnvironmentCalls(fs.readFileSync(taskFile, 'utf-8'))
-    fs.writeFileSync(path.join(outputDir, 'environment.json'), JSON.stringify(environmentCalls, null, 2))
     fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${outputDir}/`)
   }
-}
-
-function extractEnvironmentCalls(source: string): string[] {
-  const environmentCalls = new Set<string>()
-  const sourceFile = ts.createSourceFile('task.ts', source, ts.ScriptTarget.ES2020, true, ts.ScriptKind.TS)
-  const queue: ts.Node[] = [sourceFile]
-
-  while (queue.length > 0) {
-    const node = queue.pop()!
-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
-      const { expression, name } = node.expression
-      if (ts.isIdentifier(expression) && expression.escapedText === 'environment')
-        environmentCalls.add(`_${name.escapedText.toString()}`)
-    }
-    queue.push(...node.getChildren())
-  }
-  return Array.from(environmentCalls)
 }

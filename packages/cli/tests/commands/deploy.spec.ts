@@ -32,7 +32,7 @@ describe('deploy', () => {
         let axiosMock: MockAdapter
 
         beforeEach('create files', () => {
-          ;['environment.json', 'manifest.json', 'task.wasm'].map(createFile)
+          ;['manifest.json', 'task.wasm'].map(createFile)
         })
 
         beforeEach('create axios mock', () => {
@@ -108,15 +108,15 @@ describe('deploy', () => {
 
       context('when the directory does not contain the necessary files', () => {
         context('when the directory contains no files', () => {
-          itThrowsACliError(command, `Could not find ${inputDir}/environment.json`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'FileNotFound', 1)
         })
 
         context('when the directory contains only one file', () => {
           beforeEach('create file', () => {
-            createFile('environment.json')
+            createFile('manifest.json')
           })
 
-          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'FileNotFound', 1)
         })
       })
     })
