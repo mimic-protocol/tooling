@@ -1,5 +1,5 @@
 import { NATIVE_ADDRESS, STANDARD_DECIMALS } from '../helpers'
-import { join, SEPARATOR, Serializable, serialize } from '../helpers/serialize'
+import { join, parseCSV, Serializable, serialize } from '../helpers/serialize'
 import { Address } from '../types'
 
 export class Token implements Serializable {
@@ -18,12 +18,14 @@ export class Token implements Serializable {
     const isToken = serialized.startsWith(`${Token.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isToken) throw new Error('Invalid serialized token')
 
-    const elements = serialized.slice(Token.SERIALIZED_PREFIX.length + 1, -1).split(SEPARATOR)
+    const elements = parseCSV(serialized.slice(Token.SERIALIZED_PREFIX.length + 1, -1))
+    const areNull = elements.some((element) => element === null)
+    if (areNull) throw new Error('Invalid serialized token')
 
-    const symbol = elements[0]
-    const address = elements[1]
-    const chainId = u64.parse(elements[2])
-    const decimals = u8.parse(elements[3])
+    const symbol = elements[0]!
+    const address = elements[1]!
+    const chainId = u64.parse(elements[2]!)
+    const decimals = u8.parse(elements[3]!)
 
     return new Token(symbol, address, chainId, decimals)
   }

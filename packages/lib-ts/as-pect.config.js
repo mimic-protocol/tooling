@@ -43,11 +43,16 @@ export default {
         },
         _getRelevantTokens: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
-          const params = paramsStr.split(',')
+          const params = parseCSV(paramsStr)
           const address = params[0]
-          const chainId = params[1]
-          const response = relevantTokens.get(`${address}:${chainId}`) ?? []
-          const responseStr = response.join('\n')
+          const chainIds = parseCSV(params[1].split('Array(')[1].split(')')[0])
+
+          let responseStr = ''
+          for (const chainId of chainIds) {
+            const response = relevantTokens.get(`${address}:${chainId}`) ?? []
+            responseStr += response.join('\n')
+          }
+
           return exports.__newString(responseStr)
         },
       },
@@ -79,4 +84,46 @@ export default {
    * Specify if the binary wasm file should be written to the file system.
    */
   outputBinary: false,
+}
+
+export function parseCSV(csvString) {
+  const SEPARATOR = ','
+  const tokens = []
+  const currentTokenChars = []
+  let parenthesisDepth = 0
+  let isEmpty = true
+
+  for (let i = 0; i < csvString.length; i++) {
+    const char = csvString.charAt(i)
+
+    if (char === '(') {
+      parenthesisDepth++
+      currentTokenChars.push(char)
+      isEmpty = false
+    } else if (char === ')') {
+      parenthesisDepth--
+      if (parenthesisDepth < 0) {
+        throw new Error(`Unbalanced brackets at position ${i}`)
+      }
+      currentTokenChars.push(char)
+      isEmpty = false
+    } else if (char === SEPARATOR && parenthesisDepth === 0) {
+      isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
+      currentTokenChars.length = 0
+      isEmpty = true
+    } else {
+      currentTokenChars.push(char)
+      isEmpty = false
+    }
+  }
+
+  if (parenthesisDepth !== 0) {
+    throw new Error('Unbalanced brackets at the end of the string')
+  }
+
+  if (csvString.length > 0) {
+    isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
+  }
+
+  return tokens
 }

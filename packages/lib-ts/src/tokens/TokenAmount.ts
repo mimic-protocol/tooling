@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { join, SEPARATOR, Serializable, serialize } from '../helpers/serialize'
+import { join, parseCSV, Serializable, serialize } from '../helpers/serialize'
 import { BigInt } from '../types'
 
 import { Token } from './Token'
@@ -26,12 +26,12 @@ export class TokenAmount implements Serializable {
     const isTokenAmount = serialized.startsWith(`${TokenAmount.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isTokenAmount) throw new Error('Invalid serialized token amount')
 
-    const sliced = serialized.slice(TokenAmount.SERIALIZED_PREFIX.length + 1, -1)
-    const lastSeparatorIndex = sliced.lastIndexOf(SEPARATOR)
-    const elements = [sliced.slice(0, lastSeparatorIndex), sliced.slice(lastSeparatorIndex + 1)]
+    const elements = parseCSV(serialized.slice(TokenAmount.SERIALIZED_PREFIX.length + 1, -1))
+    const areNull = elements.some((element) => element === null)
+    if (areNull) throw new Error('Invalid serialized token amount')
 
-    const token = Token.deserialize(elements[0])
-    const amount = BigInt.deserialize(elements[1])
+    const token = Token.deserialize(elements[0]!)
+    const amount = BigInt.deserialize(elements[1]!)
 
     return new TokenAmount(token, amount)
   }
