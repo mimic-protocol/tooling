@@ -1,5 +1,6 @@
 import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token, TokenAmount, USD } from '@mimicprotocol/lib-ts'
 import { input } from './types'
+import { ERC20 } from './types/ERC20'
 
 export default function main(): void {
   // Token definitions
@@ -25,6 +26,14 @@ export default function main(): void {
 
   // Normal Transfer
   environment.transfer(settler, chainId, USDC.address, amount, target, amount)
+
+  // Contract Call
+  const usdcContract = new ERC20(USDC.address, USDC.chainId)
+  const usdcDecimals = usdcContract.decimals()
+  const usdcTotalSupply = usdcContract.totalSupply()
+  const usdcTargetBalance = usdcContract.balanceOf(target)
+
+  console.log(`Decimals: ${usdcDecimals} - Total Supply: ${usdcTotalSupply.toString()} - Target Balance: ${usdcTargetBalance.toString()}`)
 
   // Convert USD to WBTC
   const usdAmount = USD.fromStringDecimal('1200.5') // $1.200,50
