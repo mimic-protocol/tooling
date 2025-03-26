@@ -1,6 +1,6 @@
 import { environment } from '../src/environment'
-import { STANDARD_DECIMALS } from '../src/helpers'
-import { TokenAmount } from '../src/tokens'
+import { ListType, STANDARD_DECIMALS } from '../src/helpers'
+import { TokenAmount, USD } from '../src/tokens'
 import { Address, BigInt } from '../src/types'
 
 import { randomAddress, randomToken, randomTokenWithPrice, setRelevantTokens } from './helpers'
@@ -28,7 +28,13 @@ describe('environment', () => {
       ]
       setRelevantTokens(userAddress, chainId, tokenAmounts)
 
-      const result = environment.getRelevantTokens(userAddress, chainId)
+      const result = environment.getRelevantTokens(
+        userAddress,
+        [chainId, 2],
+        USD.zero(),
+        [randomToken(), randomToken()],
+        ListType.AllowList
+      )
 
       expect(result.length).toBe(tokenAmounts.length)
       for (let i = 0; i < result.length; i++) {

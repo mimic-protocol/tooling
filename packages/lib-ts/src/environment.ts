@@ -1,4 +1,4 @@
-import { join, serialize, serializeArray } from './helpers'
+import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
@@ -95,11 +95,13 @@ export namespace environment {
   // TODO: Implement missing filters (chaindId list, allowList/denyList)
   export function getRelevantTokens(
     address: Address,
-    chainId: u64,
-    usdMinAmount: USD = USD.zero()
+    chainIds: u64[],
+    usdMinAmount: USD = USD.zero(),
+    tokensList: Token[] = [],
+    listType: ListType = ListType.AllowList
   ): TokenAmount[] {
     const response = _getRelevantTokens(
-      join([serialize(address), serialize(chainId), serialize(usdMinAmount.value)])
+      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType)])
     )
     const rows = response.split('\n')
     const tokenAmounts: TokenAmount[] = []
