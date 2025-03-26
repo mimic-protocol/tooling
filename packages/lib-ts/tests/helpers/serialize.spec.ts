@@ -1,5 +1,7 @@
 import { join, NULL_ADDRESS, serialize } from '../../src/helpers'
+import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
+import { randomToken } from '../helpers'
 
 describe('serialize', () => {
   describe('serialize', () => {
@@ -25,6 +27,12 @@ describe('serialize', () => {
         const serialized = serialize(bigInt)
         expect(serialized).toBe('BigInt(5)')
       })
+
+      it('converts a negative BigInt to string correctly', () => {
+        const bigInt = BigInt.fromI32(-5)
+        const serialized = serialize(bigInt)
+        expect(serialized).toBe('BigInt(-5)')
+      })
     })
 
     describe('when passing a number', () => {
@@ -32,6 +40,31 @@ describe('serialize', () => {
         const num = 5
         const serialized = serialize(num)
         expect(serialized).toBe('5')
+      })
+    })
+
+    describe('when passing a Token', () => {
+      it('converts it to string correctly', () => {
+        const token = randomToken()
+        const serialized = serialize(token)
+
+        const symbol = token.symbol
+        const address = token.address.toHexString()
+        const chainId = token.chainId
+        const decimals = token.decimals
+        expect(serialized).toBe(`${symbol},${address},${chainId},${decimals}`)
+      })
+    })
+
+    describe('when passing a TokenAmount', () => {
+      it('converts it to string correctly', () => {
+        const token = randomToken()
+        const amount = BigInt.fromI32(5)
+        const tokenAmount = new TokenAmount(token, amount)
+        const serialized = serialize(tokenAmount)
+
+        const serializedToken = serialize(token)
+        expect(serialized).toBe(`${amount.serialize()},${serializedToken}`)
       })
     })
   })

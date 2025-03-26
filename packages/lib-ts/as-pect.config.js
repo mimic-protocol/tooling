@@ -18,6 +18,7 @@ export default {
     let exports // Imports can reference this
 
     const tokenPrices = new Map()
+    const relevantTokens = new Map()
 
     const myImports = {
       env: {
@@ -40,6 +41,15 @@ export default {
 
           return exports.__newString(price)
         },
+        _getRelevantTokens: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = paramsStr.split(',')
+          const address = params[0]
+          const chainId = params[1]
+          const response = relevantTokens.get(`${address}:${chainId}`) ?? []
+          const responseStr = response.join('\n')
+          return exports.__newString(responseStr)
+        },
       },
       helpers: {
         _setTokenPrice: (addressPtr, chainId, pricePtr) => {
@@ -47,6 +57,14 @@ export default {
           const price = exports.__getString(pricePtr)
           const key = `${address}:${chainId}`
           tokenPrices.set(key, price)
+        },
+        _setRelevantToken: (addressPtr, chainId, tokenAmountPtr) => {
+          const address = exports.__getString(addressPtr)
+          const tokenAmount = exports.__getString(tokenAmountPtr)
+          const key = `${address}:${chainId}`
+          const userTokens = relevantTokens.get(key) ?? []
+          userTokens.push(tokenAmount)
+          relevantTokens.set(key, userTokens)
         },
       },
     }
