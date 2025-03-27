@@ -62,13 +62,13 @@ describe('TokenAmount', () => {
     })
   })
 
-  describe('deserialize', () => {
-    it('deserializes a token amount', () => {
+  describe('parse', () => {
+    it('parses a token amount', () => {
       const tokenAmount = TokenAmount.fromI32(randomToken(), 100)
       const serialized = tokenAmount.serialize()
-      const deserialized = TokenAmount.deserialize(serialized)
+      const parsed = TokenAmount.parse(serialized)
 
-      expect(deserialized.equals(tokenAmount)).toBe(true)
+      expect(parsed.equals(tokenAmount)).toBe(true)
     })
   })
 

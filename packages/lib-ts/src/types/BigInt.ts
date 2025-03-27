@@ -73,7 +73,7 @@ export class BigInt extends Uint8Array implements Serializable {
   /**
    * Parses a serialized representation of a BigInt and converts it to a BigInt.
    */
-  static deserialize(serialized: string): BigInt {
+  static parse(serialized: string): BigInt {
     const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isBigInt) throw new Error('Invalid serialized BigInt')
 

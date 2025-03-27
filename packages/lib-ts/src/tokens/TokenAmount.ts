@@ -22,7 +22,7 @@ export class TokenAmount implements Serializable {
     return new TokenAmount(token, amount)
   }
 
-  static deserialize(serialized: string): TokenAmount {
+  static parse(serialized: string): TokenAmount {
     const isTokenAmount = serialized.startsWith(`${TokenAmount.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isTokenAmount) throw new Error('Invalid serialized token amount')
 
@@ -30,8 +30,8 @@ export class TokenAmount implements Serializable {
     const areNull = elements.some((element) => element === null)
     if (areNull) throw new Error('Invalid serialized token amount')
 
-    const token = Token.deserialize(elements[0]!)
-    const amount = BigInt.deserialize(elements[1]!)
+    const token = Token.parse(elements[0]!)
+    const amount = BigInt.parse(elements[1]!)
 
     return new TokenAmount(token, amount)
   }

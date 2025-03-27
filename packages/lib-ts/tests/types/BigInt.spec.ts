@@ -575,13 +575,13 @@ describe('BigInt', () => {
     })
   })
 
-  describe('deserialize', () => {
-    it('deserializes a BigInt', () => {
+  describe('parse', () => {
+    it('parses a BigInt', () => {
       const bigInt = BigInt.fromStringDecimal('-100.5', STANDARD_DECIMALS)
       const serialized = bigInt.serialize()
-      const deserialized = BigInt.deserialize(serialized)
+      const parsed = BigInt.parse(serialized)
 
-      expect(deserialized.equals(bigInt)).toBe(true)
+      expect(parsed.equals(bigInt)).toBe(true)
     })
   })
 })

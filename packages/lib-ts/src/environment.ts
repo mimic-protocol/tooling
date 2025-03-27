@@ -109,7 +109,7 @@ export namespace environment {
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].length === 0) continue
 
-      tokenAmounts.push(TokenAmount.deserialize(rows[i]))
+      tokenAmounts.push(TokenAmount.parse(rows[i]))
     }
 
     return tokenAmounts

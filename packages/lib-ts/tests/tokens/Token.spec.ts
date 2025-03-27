@@ -14,13 +14,13 @@ describe('Token', () => {
     })
   })
 
-  describe('deserialize', () => {
-    it('deserializes a token', () => {
+  describe('parse', () => {
+    it('parses a token', () => {
       const token = randomToken()
       const serialized = token.serialize()
-      const deserialized = Token.deserialize(serialized)
+      const parsed = Token.parse(serialized)
 
-      expect(deserialized.equals(token)).toBe(true)
+      expect(parsed.equals(token)).toBe(true)
     })
   })
 

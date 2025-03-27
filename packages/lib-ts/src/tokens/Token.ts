@@ -14,7 +14,7 @@ export class Token implements Serializable {
     throw new Error(`Unsupported chainId: ${chainId}`)
   }
 
-  static deserialize(serialized: string): Token {
+  static parse(serialized: string): Token {
     const isToken = serialized.startsWith(`${Token.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isToken) throw new Error('Invalid serialized token')
 

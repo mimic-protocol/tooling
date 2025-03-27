@@ -30,30 +30,42 @@ export function join(lst: (string | null)[]): string {
 export function parseCSV(csvString: string): (string | null)[] {
   const tokens: (string | null)[] = []
   const currentTokenChars: string[] = []
-  let parenthesisDepth: number = 0
+  let parenthesisDepth: i32 = 0
   let isEmpty: boolean = true
 
   for (let i = 0; i < csvString.length; i++) {
     const char = csvString.charAt(i)
+    const charCode = char.charCodeAt(0)
 
-    if (char === '(') {
-      parenthesisDepth++
-      currentTokenChars.push(char)
-      isEmpty = false
-    } else if (char === ')') {
-      parenthesisDepth--
-      if (parenthesisDepth < 0) {
-        throw new Error(`Unbalanced brackets at position ${i}`)
-      }
-      currentTokenChars.push(char)
-      isEmpty = false
-    } else if (char === SEPARATOR && parenthesisDepth === 0) {
-      isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
-      currentTokenChars.length = 0
-      isEmpty = true
-    } else {
-      currentTokenChars.push(char)
-      isEmpty = false
+    switch (charCode) {
+      case '('.charCodeAt(0):
+        parenthesisDepth++
+        currentTokenChars.push(char)
+        isEmpty = false
+        break
+
+      case ')'.charCodeAt(0):
+        parenthesisDepth--
+        if (parenthesisDepth < 0) throw new Error(`Unbalanced brackets at position ${i}`)
+        currentTokenChars.push(char)
+        isEmpty = false
+        break
+
+      case SEPARATOR.charCodeAt(0):
+        if (parenthesisDepth === 0) {
+          isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
+          currentTokenChars.length = 0
+          isEmpty = true
+        } else {
+          currentTokenChars.push(char)
+          isEmpty = false
+        }
+        break
+
+      default:
+        currentTokenChars.push(char)
+        isEmpty = false
+        break
     }
   }
 
