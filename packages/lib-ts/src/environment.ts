@@ -92,7 +92,6 @@ export namespace environment {
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
-  // TODO: Implement missing filters (chaindId list, allowList/denyList)
   export function getRelevantTokens(
     address: Address,
     chainIds: u64[],
