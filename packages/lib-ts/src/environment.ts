@@ -97,7 +97,7 @@ export namespace environment {
     chainIds: u64[],
     usdMinAmount: USD = USD.zero(),
     tokensList: Token[] = [],
-    listType: ListType = ListType.AllowList
+    listType: ListType = ListType.DenyList
   ): TokenAmount[] {
     const response = _getRelevantTokens(
       join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType)])
