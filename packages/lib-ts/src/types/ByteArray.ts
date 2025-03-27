@@ -15,16 +15,43 @@ import { Bytes } from './Bytes'
  */
 export class ByteArray extends Uint8Array {
   /**
+   * Creates a ByteArray from a signed 8-bit integer (i8).
+   * The resulting byte array is in little-endian order.
+   */
+  static fromI8(x: i8): ByteArray {
+    return ByteArray.fromInteger(x, 1)
+  }
+
+  /**
+   * Creates a ByteArray from an unsigned 8-bit integer (u8).
+   * The resulting byte array is in little-endian order.
+   */
+  static fromU8(x: u8): ByteArray {
+    return ByteArray.fromInteger(x, 1)
+  }
+
+  /**
+   * Creates a ByteArray from a signed 16-bit integer (i16).
+   * The resulting byte array is in little-endian order.
+   */
+  static fromI16(x: i16): ByteArray {
+    return ByteArray.fromInteger(x, 2)
+  }
+
+  /**
+   * Creates a ByteArray from an unsigned 16-bit integer (u16).
+   * The resulting byte array is in little-endian order.
+   */
+  static fromU16(x: u16): ByteArray {
+    return ByteArray.fromInteger(x, 2)
+  }
+
+  /**
    * Creates a ByteArray from a signed 32-bit integer (i32).
    * The resulting byte array is in little-endian order.
    */
   static fromI32(x: i32): ByteArray {
-    const self = new ByteArray(4)
-    self[0] = x as u8
-    self[1] = (x >> 8) as u8
-    self[2] = (x >> 16) as u8
-    self[3] = (x >> 24) as u8
-    return self
+    return ByteArray.fromInteger(x, 4)
   }
 
   /**
@@ -32,7 +59,7 @@ export class ByteArray extends Uint8Array {
    * The resulting byte array is in little-endian order.
    */
   static fromU32(x: u32): ByteArray {
-    return ByteArray.fromI32(x as i32)
+    return ByteArray.fromInteger(x, 4)
   }
 
   /**
@@ -40,11 +67,7 @@ export class ByteArray extends Uint8Array {
    * The resulting byte array is in little-endian order.
    */
   static fromI64(x: i64): ByteArray {
-    const self = new ByteArray(8)
-    for (let i = 0; i < 8; i++) {
-      self[i] = (x >> (i * 8)) as u8
-    }
-    return self
+    return ByteArray.fromInteger(x, 8)
   }
 
   /**
@@ -52,7 +75,23 @@ export class ByteArray extends Uint8Array {
    * The resulting byte array is in little-endian order.
    */
   static fromU64(x: u64): ByteArray {
-    return ByteArray.fromI64(x as i64)
+    return ByteArray.fromInteger(x, 8)
+  }
+
+  static fromBool(x: bool): ByteArray {
+    return ByteArray.fromInteger((x ? 1 : 0) as u8, 1)
+  }
+
+  static empty(): ByteArray {
+    return ByteArray.fromI32(0)
+  }
+
+  private static fromInteger<T extends number>(value: T, length: u8): ByteArray {
+    const self = new ByteArray(length)
+    for (let i: u8 = 0; i < length; i++) {
+      self[i] = (value >> (i * 8)) as u8
+    }
+    return self
   }
 
   /**
@@ -85,13 +124,6 @@ export class ByteArray extends Uint8Array {
    */
   static fromBigInt(bigInt: BigInt): ByteArray {
     return changetype<ByteArray>(bigInt)
-  }
-
-  /**
-   * Returns an empty ByteArray initialized to zero.
-   */
-  static empty(): ByteArray {
-    return ByteArray.fromI32(0)
   }
 
   /**

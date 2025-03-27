@@ -1,6 +1,7 @@
 import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
 
 import { input } from './types'
+import { ERC20 } from './types/ERC20'
 
 export default function main(): void {
   // Token definitions
