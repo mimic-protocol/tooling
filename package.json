@@ -13,7 +13,7 @@
     "packages": [
       "packages/lib-ts",
       "packages/cli",
-      "packages/example"
+      "packages/integration"
     ]
   }
 }
