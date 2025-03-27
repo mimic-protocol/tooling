@@ -1,0 +1,5 @@
+{
+  "_call": "log",
+  "_transfer": "log",
+  "_swap": "log"
+}

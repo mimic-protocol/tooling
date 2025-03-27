@@ -1,4 +1,4 @@
-export const SEPARATOR = ','
+const SEPARATOR = ','
 
 interface Stringable {
   toString(): string
