@@ -27,6 +27,17 @@ export function join(lst: (string | null)[]): string {
   return lst.join(SEPARATOR)
 }
 
+/**
+ * Parses a CSV string into an array of tokens, handling nested structures and null values.
+ *
+ * @param csvString - String containing comma-separated values, nested structures (e.g., "Array(1,2)"), and nulls
+ * @returns Array of strings and nulls, preserving nested structures as single strings
+ * @throws {Error} If parentheses are unbalanced
+ *
+ * @example
+ * parseCSV("one,,three")     // ["one", null, "three"]
+ * parseCSV("Array(1,2),3")   // ["Array(1,2)", "3"]
+ */
 export function parseCSV(csvString: string): (string | null)[] {
   const tokens: (string | null)[] = []
   const currentTokenChars: string[] = []

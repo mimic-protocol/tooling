@@ -135,7 +135,7 @@ export class TokenAmount implements Serializable {
   }
 
   serialize(): string {
-    return `${TokenAmount.SERIALIZED_PREFIX}(${join([this.token.serialize(), serialize(this.amount)])})`
+    return `${TokenAmount.SERIALIZED_PREFIX}(${join([serialize(this.token), serialize(this.amount)])})`
   }
 
   private amountCompare(other: TokenAmount): i32 {
