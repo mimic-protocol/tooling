@@ -29,14 +29,6 @@ async function runTestCase(testCase: string): Promise<void> {
       fs.rmSync(outputPath, { recursive: true })
     })
 
-    before('validate mock.json', () => {
-      const environment = JSON.parse(fs.readFileSync(join(outputPath, 'environment.json'), 'utf8'))
-      const mock = JSON.parse(fs.readFileSync(join(path, 'mock.json'), 'utf8'))
-      const mockKeys = Object.keys(mock)
-      const missing = environment.filter((e) => !mockKeys.includes(e))
-      expect(missing.length == 0, `Mock.json does not have all necesary elements, missing ${missing}`).to.be.true
-    })
-
     it('run task', async () => {
       const mockRunner = new MockRunner(outputPath)
       mockRunner.run()

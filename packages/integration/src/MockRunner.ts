@@ -1,15 +1,23 @@
 import * as fs from 'fs'
 import { join } from 'path'
+
+const LITTLE_ENDIAN = true
+
+const ENV_IMPORTS = {
+  abort: (msg: string, file: string, line: number, col: number) => {
+    throw Error(`${msg} - ${file} - ${line} - ${col}`)
+  },
+}
+
 export default class MockRunner {
   private instance: WebAssembly.Instance
   private taskFolder: string
 
   constructor(taskFolder: string) {
     const taskPath = join(taskFolder, 'task.wasm')
-    const environment = JSON.parse(fs.readFileSync(join(taskFolder, 'environment.json'), 'utf8'))
     const manifest = JSON.parse(fs.readFileSync(join(taskFolder, 'manifest.json'), 'utf8'))
     const mock = JSON.parse(fs.readFileSync(join(taskFolder, '../mock.json'), 'utf8'))
-    const imports = this.generateImports(environment, mock, manifest.inputs)
+    const imports = this.generateImports(mock, manifest.inputs)
     const wasmBuffer = fs.readFileSync(taskPath)
     const wasmModule = new WebAssembly.Module(wasmBuffer)
     this.instance = new WebAssembly.Instance(wasmModule, imports)
@@ -38,33 +46,23 @@ export default class MockRunner {
     fs.appendFileSync(logFile, `${call}: ${params}\n`)
   }
 
-  private generateImports(
-    requestedCalls: string[],
-    mock: Record<string, unknown>,
-    inputs: WebAssembly.ModuleImports
-  ): WebAssembly.Imports {
+  private generateImports(mock: Record<string, unknown>, inputs: WebAssembly.ModuleImports): WebAssembly.Imports {
     const environmentImports: WebAssembly.ModuleImports = {}
     const variableImports: WebAssembly.ModuleImports = {}
-    for (const call of requestedCalls) {
-      if (mock[call] === 'log') environmentImports[call] = this.createLogFn(call)
-      else environmentImports[call] = () => mock[call]
+    for (const [call, value] of Object.entries(mock)) {
+      if (value === 'log') environmentImports[call] = this.createLogFn(call)
+      else environmentImports[call] = () => value
     }
     for (const [key, value] of Object.entries(inputs)) variableImports[`input.${key}`] = value
 
-    const envInports = {
-      abort: (msg: string, file: string, line: number, col: number) => {
-        throw Error(`${msg} - ${file} - ${line} - ${col}`)
-      },
-    }
-
-    return { environment: environmentImports, env: envInports, index: variableImports }
+    return { environment: environmentImports, env: ENV_IMPORTS, index: variableImports }
   }
 
   private getStringFromMemory(ptr: number): string {
     const memory = this.instance.exports.memory as WebAssembly.Memory
     const memoryBuffer = new Uint8Array(memory.buffer)
     const view = new DataView(memory.buffer)
-    const length = view.getInt32(ptr - 4, true) // `true` means little-endian
+    const length = view.getInt32(ptr - 4, LITTLE_ENDIAN)
     const bytes = memoryBuffer.subarray(ptr, ptr + length)
     return new TextDecoder('utf-16le').decode(bytes)
   }
