@@ -1,5 +1,5 @@
-import { join, serialize, serializeArray } from './helpers'
-import { Token, USD } from './tokens'
+import { join, ListType, serialize, serializeArray } from './helpers'
+import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes } from './types'
 
 export namespace environment {
@@ -14,6 +14,9 @@ export namespace environment {
 
   @external('environment', '_getPrice')
   declare function _getPrice(params: string): string
+
+  @external('environment', '_getRelevantTokens')
+  declare function _getRelevantTokens(params: string): string
 
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
@@ -87,6 +90,29 @@ export namespace environment {
   export function getPrice(token: Token): USD {
     const price = _getPrice(join([serialize(token.address), serialize(token.chainId)]))
     return USD.fromBigInt(BigInt.fromString(price))
+  }
+
+  // TODO: Implement missing filters (chaindId list, allowList/denyList)
+  export function getRelevantTokens(
+    address: Address,
+    chainIds: u64[],
+    usdMinAmount: USD = USD.zero(),
+    tokensList: Token[] = [],
+    listType: ListType = ListType.AllowList
+  ): TokenAmount[] {
+    const response = _getRelevantTokens(
+      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType)])
+    )
+    const rows = response.split('\n')
+    const tokenAmounts: TokenAmount[] = []
+
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].length === 0) continue
+
+      tokenAmounts.push(TokenAmount.parse(rows[i]))
+    }
+
+    return tokenAmounts
   }
 
   export function contractCall(
