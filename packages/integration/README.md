@@ -95,13 +95,7 @@ _getPrice: 0x0000000000000000000000000000000000000000,1
 
 ### tsconfig.json
 
-Basic Assemblyscript configuration for your test (can be copied from an existing test):
-
-```json
-{
-  "extends": "../asc.tsconfig.json"
-}
-```
+Basic Assemblyscript configuration for your test (can be copied from an existing test)
 
 ## Running Tests
 
