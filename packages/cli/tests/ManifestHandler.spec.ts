@@ -1,4 +1,3 @@
-import { randomAddress } from '@mimic-fi/helpers'
 import { expect } from 'chai'
 
 import ManifestHandler from '../src/ManifestHandler'
@@ -7,7 +6,6 @@ describe('ManifestHandler', () => {
   const manifest = {
     version: '1.0.0',
     name: 'sample task',
-    trigger: { type: 'cron', schedule: '0 0 * * *', delta: '1h' },
     inputs: [{ firstStaticNumber: 2 }, { secondStaticNumber: 3 }],
     abis: [{ ERC20: './abis/ERC20.json' }],
   }
@@ -72,125 +70,7 @@ describe('ManifestHandler', () => {
       })
 
       context('when the version is invalid', () => {
-        itReturnsAnError({ ...manifest, version: '1.a' }, 'Must be a valid version')
-      })
-
-      context('when the trigger is invalid', () => {
-        context('when the type is not valid', () => {
-          itReturnsAnError(
-            { ...manifest, trigger: { ...manifest.trigger, type: 'nothing' } },
-            `Invalid discriminator value. Expected 'event' | 'cron' | 'balance'`
-          )
-        })
-
-        context('when the trigger is cron', () => {
-          context('when the schedule is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, schedule: '0 0' } }, 'Invalid Schedule')
-          })
-
-          context('when delta is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, delta: undefined } }, 'Required')
-          })
-
-          context('when the delta is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...manifest.trigger, delta: '2' } }, 'Invalid Delta')
-          })
-        })
-
-        context('when the trigger is event', () => {
-          const eventTrigger = {
-            type: 'event',
-            chainId: 1,
-            contract: randomAddress(),
-            event: 'Something(bool)',
-            delta: '1h',
-          }
-
-          context('when chainId is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, chainId: undefined } }, 'Required')
-          })
-
-          context('when chainId is invalid', () => {
-            itReturnsAnError(
-              { ...manifest, trigger: { ...eventTrigger, chainId: '123' } },
-              'Expected number, received string'
-            )
-          })
-
-          context('when contract is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, contract: undefined } }, 'Required')
-          })
-
-          context('when contract is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, contract: '0x0' } }, 'Must be a valid address')
-          })
-
-          context('when event is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, event: undefined } }, 'Required')
-          })
-
-          context('when event is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, event: 'test' } }, 'Must be a valid event')
-          })
-
-          context('when delta is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, delta: undefined } }, 'Required')
-          })
-
-          context('when delta is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...eventTrigger, delta: '2' } }, 'Invalid Delta')
-          })
-        })
-
-        context('when the trigger is balance', () => {
-          const balanceTrigger = {
-            type: 'balance',
-            chainId: 1,
-            account: randomAddress(),
-            token: 'native',
-            gt: '100',
-            lt: '500',
-            delta: '1h',
-          }
-
-          context('when chainId is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, chainId: undefined } }, 'Required')
-          })
-
-          context('when chainId is invalid', () => {
-            itReturnsAnError(
-              { ...manifest, trigger: { ...balanceTrigger, chainId: '123' } },
-              'Expected number, received string'
-            )
-          })
-
-          context('when account is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, account: undefined } }, 'Required')
-          })
-
-          context('when account is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, account: '0x0' } }, 'Must be a valid address')
-          })
-
-          context('when token is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, token: 'test' } }, 'Invalid input')
-          })
-
-          context('when gt and lt are missing', () => {
-            itReturnsAnError(
-              { ...manifest, trigger: { ...balanceTrigger, gt: undefined, lt: undefined } },
-              'Either gt and/or lt should be used'
-            )
-          })
-
-          context('when delta is missing', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, delta: undefined } }, 'Required')
-          })
-
-          context('when delta is invalid', () => {
-            itReturnsAnError({ ...manifest, trigger: { ...balanceTrigger, delta: '2' } }, 'Invalid Delta')
-          })
-        })
+        itReturnsAnError({ ...manifest, version: '1.a' }, 'Must be a valid semver')
       })
 
       context('when the name is empty', () => {
