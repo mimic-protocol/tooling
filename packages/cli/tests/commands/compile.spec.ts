@@ -82,7 +82,7 @@ describe('compile', () => {
           `--output ${outputDir}`,
         ]
 
-        itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
+        itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 2)
       })
 
       context('when the manifest is empty', () => {
