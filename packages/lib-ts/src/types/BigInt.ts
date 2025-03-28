@@ -158,7 +158,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static addUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static addUnsigned(a: BigInt, b: BigInt): BigInt {
     if (a.isZero()) return b.clone()
     if (b.isZero()) return a.clone()
 
@@ -176,7 +176,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static subUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static subUnsigned(a: BigInt, b: BigInt): BigInt {
     const result = new BigInt(a.length)
     let borrow: i32 = 0
     for (let i = 0; i < a.length; i++) {
@@ -193,7 +193,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static mulUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static mulUnsigned(a: BigInt, b: BigInt): BigInt {
     if (a.length < b.length) return BigInt.mulUnsigned(b, a)
     if (b.length === 1 && b[0] === 2) return a.leftShift(1)
 
@@ -210,7 +210,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static divUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static divUnsigned(a: BigInt, b: BigInt): BigInt {
     if (b.isZero()) {
       assert(false, '')
       return BigInt.zero()
@@ -236,7 +236,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return quotient
   }
 
-  static compare(a: BigInt, b: BigInt): i32 {
+  private static compare(a: BigInt, b: BigInt): i32 {
     const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
     const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
     if (!aIsNeg && bIsNeg) return 1
