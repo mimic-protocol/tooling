@@ -6,8 +6,8 @@ export const ParameterizedResponseValidator = z
     default: z.string().optional(),
     log: z.boolean().optional(),
   })
-  .refine((data) => !!data.paramResponse || data.default !== undefined || data.log !== undefined, {
-    message: "At least one of 'paramResponse', 'default', or 'log' must be defined",
+  .refine((data) => !!data.paramResponse || data.default !== undefined, {
+    message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
 export const MockResponseValueValidator = z.union([z.string(), ParameterizedResponseValidator])
