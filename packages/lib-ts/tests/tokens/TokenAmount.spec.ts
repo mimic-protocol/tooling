@@ -62,6 +62,16 @@ describe('TokenAmount', () => {
     })
   })
 
+  describe('parse', () => {
+    it('parses a token amount', () => {
+      const tokenAmount = TokenAmount.fromI32(randomToken(), 100)
+      const serialized = tokenAmount.serialize()
+      const parsed = TokenAmount.parse(serialized)
+
+      expect(parsed.equals(tokenAmount)).toBe(true)
+    })
+  })
+
   describe('fromBigInt', () => {
     it('creates a clone of the amount to prevent mutation', () => {
       const token = randomToken()

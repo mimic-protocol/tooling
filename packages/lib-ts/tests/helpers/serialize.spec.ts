@@ -1,5 +1,7 @@
-import { join, NULL_ADDRESS, serialize, serializeArray } from '../../src/helpers'
+import { join, NULL_ADDRESS, parseCSV, serialize, serializeArray } from '../../src/helpers'
+import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
+import { randomAddress, randomToken } from '../helpers'
 
 describe('serialize', () => {
   describe('serialize', () => {
@@ -25,6 +27,12 @@ describe('serialize', () => {
         const serialized = serialize(bigInt)
         expect(serialized).toBe('BigInt(5)')
       })
+
+      it('converts a negative BigInt to string correctly', () => {
+        const bigInt = BigInt.fromI32(-5)
+        const serialized = serialize(bigInt)
+        expect(serialized).toBe('BigInt(-5)')
+      })
     })
 
     describe('when passing a number', () => {
@@ -32,6 +40,31 @@ describe('serialize', () => {
         const num = 5
         const serialized = serialize(num)
         expect(serialized).toBe('5')
+      })
+    })
+
+    describe('when passing a Token', () => {
+      it('converts it to string correctly', () => {
+        const token = randomToken()
+        const serialized = serialize(token)
+
+        const symbol = token.symbol
+        const address = token.address.toHexString()
+        const chainId = token.chainId
+        const decimals = token.decimals
+        expect(serialized).toBe(`Token(${symbol},${address},${chainId},${decimals})`)
+      })
+    })
+
+    describe('when passing a TokenAmount', () => {
+      it('converts it to string correctly', () => {
+        const token = randomToken()
+        const amount = BigInt.fromI32(5)
+        const tokenAmount = new TokenAmount(token, amount)
+        const serialized = serialize(tokenAmount)
+
+        const serializedToken = serialize(token)
+        expect(serialized).toBe(`TokenAmount(${serializedToken},${amount.serialize()})`)
       })
     })
   })
@@ -97,6 +130,135 @@ describe('serialize', () => {
         const empty: number[] = []
         const serialized = serializeArray(empty)
         expect(serialized).toBe('Array()')
+      })
+    })
+  })
+
+  describe('parseCSV', () => {
+    describe('when parsing a simple CSV string', () => {
+      it('splits it into tokens correctly', () => {
+        const list: (string | null)[] = ['one', 'two', 'three']
+        const input = join(list)
+        const result = parseCSV(input)
+
+        expect(result.length).toBe(list.length)
+        for (let i = 0; i < list.length; i++) {
+          expect(result[i]).toBe(list[i])
+        }
+      })
+    })
+
+    describe('when parsing a CSV string with parentheses', () => {
+      it('correctly handles nested structures', () => {
+        const address = Address.fromString(randomAddress())
+        const chainIds: u64[] = [1, 137]
+        const bigInt = BigInt.fromI32(0)
+        const zero = '0'
+
+        const list: (string | null)[] = [
+          serialize(address),
+          serializeArray(chainIds),
+          serialize(bigInt),
+          serialize(zero),
+        ]
+        const input = join(list)
+        const result = parseCSV(input)
+
+        expect(result.length).toBe(list.length)
+        for (let i = 0; i < list.length; i++) {
+          expect(result[i]).toBe(list[i])
+        }
+      })
+    })
+
+    describe('when parsing a CSV string with complex nested structures', () => {
+      it('preserves the nested commas', () => {
+        const token = randomToken()
+        const amount = BigInt.fromI32(100)
+        const tokenAmount = new TokenAmount(token, amount)
+        const list: (string | null)[] = [serialize(token), serialize(amount), serialize(tokenAmount)]
+        const input = join(list)
+        const result = parseCSV(input)
+
+        expect(result.length).toBe(list.length)
+        for (let i = 0; i < list.length; i++) {
+          expect(result[i]).toBe(list[i])
+        }
+      })
+    })
+
+    describe('when parsing a string with unbalanced parentheses', () => {
+      it('throws an error for opening parenthesis without closing', () => {
+        expect(() => {
+          const input = 'one,(two,three'
+          parseCSV(input)
+        }).toThrow()
+        expect(() => {
+          const input = 'on(e,(two,three'
+          parseCSV(input)
+        }).toThrow()
+      })
+
+      it('throws an error for closing parenthesis without opening', () => {
+        expect(() => {
+          const input = 'one),two,three'
+          parseCSV(input)
+        }).toThrow()
+        expect(() => {
+          const input = 'on)e,two),three'
+          parseCSV(input)
+        }).toThrow()
+      })
+
+      it('throws an error for unmatched parentheses', () => {
+        expect(() => {
+          const input = 'one,)two(,three'
+          parseCSV(input)
+        }).toThrow()
+      })
+    })
+
+    describe('when parsing an empty string', () => {
+      it('returns an empty array', () => {
+        const result = parseCSV('')
+        expect(result.length).toBe(0)
+      })
+    })
+
+    describe('when parsing null values', () => {
+      it('handles a leading null value', () => {
+        const list: (string | null)[] = [null, 'two', 'three']
+        const input = join(list)
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(list)
+      })
+
+      it('handles a trailing null value', () => {
+        const list: (string | null)[] = ['one', 'two', null]
+        const input = join(list)
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(list)
+      })
+
+      it('handles a null value in the middle', () => {
+        const list: (string | null)[] = ['one', null, 'three']
+        const input = join(list)
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(list)
+      })
+
+      it('handles multiple consecutive null values', () => {
+        const list: (string | null)[] = ['one', null, null, 'four']
+        const input = join(list)
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(list)
+      })
+
+      it('handles only null values', () => {
+        const list: (string | null)[] = [null, null, null]
+        const input = join(list)
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(list)
       })
     })
   })

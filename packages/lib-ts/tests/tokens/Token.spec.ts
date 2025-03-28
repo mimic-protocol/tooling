@@ -14,6 +14,16 @@ describe('Token', () => {
     })
   })
 
+  describe('parse', () => {
+    it('parses a token', () => {
+      const token = randomToken()
+      const serialized = token.serialize()
+      const parsed = Token.parse(serialized)
+
+      expect(parsed.equals(token)).toBe(true)
+    })
+  })
+
   describe('equals', () => {
     describe('when comparing two tokens', () => {
       it('returns true for tokens with the same address and chainId', () => {

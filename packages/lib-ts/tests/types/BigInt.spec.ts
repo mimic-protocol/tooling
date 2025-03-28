@@ -574,4 +574,14 @@ describe('BigInt', () => {
       })
     })
   })
+
+  describe('parse', () => {
+    it('parses a BigInt', () => {
+      const bigInt = BigInt.fromStringDecimal('-100.5', STANDARD_DECIMALS)
+      const serialized = bigInt.serialize()
+      const parsed = BigInt.parse(serialized)
+
+      expect(parsed.equals(bigInt)).toBe(true)
+    })
+  })
 })

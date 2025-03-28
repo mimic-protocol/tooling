@@ -1,10 +1,12 @@
 import { environment } from '../environment'
+import { join, parseCSV, Serializable, serialize } from '../helpers/serialize'
 import { BigInt } from '../types'
 
 import { Token } from './Token'
 import { USD } from './USD'
 
-export class TokenAmount {
+export class TokenAmount implements Serializable {
+  private static readonly SERIALIZED_PREFIX: string = 'TokenAmount'
   private _token: Token
   private _amount: BigInt
 
@@ -17,6 +19,20 @@ export class TokenAmount {
   }
 
   static fromBigInt(token: Token, amount: BigInt): TokenAmount {
+    return new TokenAmount(token, amount)
+  }
+
+  static parse(serialized: string): TokenAmount {
+    const isTokenAmount = serialized.startsWith(`${TokenAmount.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
+    if (!isTokenAmount) throw new Error('Invalid serialized token amount')
+
+    const elements = parseCSV(serialized.slice(TokenAmount.SERIALIZED_PREFIX.length + 1, -1))
+    const areNull = elements.some((element) => element === null)
+    if (areNull) throw new Error('Invalid serialized token amount')
+
+    const token = Token.parse(elements[0]!)
+    const amount = BigInt.parse(elements[1]!)
+
     return new TokenAmount(token, amount)
   }
 
@@ -116,6 +132,10 @@ export class TokenAmount {
   toTokenAmount(other: Token): TokenAmount {
     if (this.isZero()) return TokenAmount.fromI32(other, 0)
     return this.toUsd().toTokenAmount(other)
+  }
+
+  serialize(): string {
+    return `${TokenAmount.SERIALIZED_PREFIX}(${join([serialize(this.token), serialize(this.amount)])})`
   }
 
   private amountCompare(other: TokenAmount): i32 {

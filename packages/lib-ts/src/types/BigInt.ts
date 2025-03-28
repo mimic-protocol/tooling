@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bigIntToHex, bigIntToString } from '../helpers'
+import { bigIntToHex, bigIntToString, Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -14,7 +14,8 @@ const ASCII_CODE_ZERO = 48
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
  */
-export class BigInt extends Uint8Array {
+export class BigInt extends Uint8Array implements Serializable {
+  private static readonly SERIALIZED_PREFIX: string = 'BigInt'
   /**
    * Creates a BigInt from a signed 32-bit integer (i32).
    */
@@ -67,6 +68,16 @@ export class BigInt extends Uint8Array {
     }
     signedBytes[bytes.length] = 0
     return signedBytes
+  }
+
+  /**
+   * Parses a serialized representation of a BigInt and converts it to a BigInt.
+   */
+  static parse(serialized: string): BigInt {
+    const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
+    if (!isBigInt) throw new Error('Invalid serialized BigInt')
+
+    return BigInt.fromString(serialized.slice(BigInt.SERIALIZED_PREFIX.length + 1, -1))
   }
 
   /**
@@ -679,5 +690,9 @@ export class BigInt extends Uint8Array {
     return decimalPart.length > 0
       ? `${isNegative ? '-' : ''}${wholePart}.${decimalPart}`
       : `${isNegative ? '-' : ''}${wholePart}`
+  }
+
+  serialize(): string {
+    return `${BigInt.SERIALIZED_PREFIX}(${this.toString()})`
   }
 }
