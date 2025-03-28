@@ -1,4 +1,3 @@
-// @ts-ignore
 @external('environment', '_result')
 declare function _result(params: string): void
 

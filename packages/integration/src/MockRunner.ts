@@ -142,8 +142,8 @@ export default class MockRunner {
       const param = this.getStringFromMemory(ptr)
       let result: number
 
-      if (param in config.paramResponses) {
-        result = this.writeStringToMemory(config.paramResponses[param])
+      if (config.paramResponse && param in config.paramResponse) {
+        result = this.writeStringToMemory(config.paramResponse[param])
       } else if ('default' in config && config.default !== undefined) {
         result = this.writeStringToMemory(config.default)
       } else {
