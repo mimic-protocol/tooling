@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const ParameterizedResponseValidator = z.object({
   paramResponses: z.record(z.string()),
   default: z.string().optional(),
+  log: z.boolean().optional(),
 })
 
 export const MockResponseValueValidator = z.union([z.string(), ParameterizedResponseValidator])

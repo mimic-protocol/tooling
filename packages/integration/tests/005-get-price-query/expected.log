@@ -1,3 +1,7 @@
+_getPrice: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599,1
 _result: wbtcAmount,0.01 WBTC
+_getPrice: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1
 _result: usdcAmountInUSD,1000.2
+_getPrice: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1
+_getPrice: 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,1
 _result: ethAmount,0.5001 ETH

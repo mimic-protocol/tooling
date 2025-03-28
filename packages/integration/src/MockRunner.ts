@@ -140,18 +140,23 @@ export default class MockRunner {
   private createParameterizedFunction(functionName: string, config: ParameterizedResponse): CallableFunction {
     return (ptr: number) => {
       const param = this.getStringFromMemory(ptr)
+      let result: number
 
       if (param in config.paramResponses) {
-        return this.writeStringToMemory(config.paramResponses[param])
+        result = this.writeStringToMemory(config.paramResponses[param])
+      } else if ('default' in config && config.default !== undefined) {
+        result = this.writeStringToMemory(config.default)
+      } else {
+        throw new Error(
+          `No response defined for parameter "${param}" in function "${functionName}" and no default value provided`
+        )
       }
 
-      if ('default' in config && config.default !== undefined) {
-        return this.writeStringToMemory(config.default)
+      if (config.log === true) {
+        this.logToFile(functionName, param)
       }
 
-      throw new Error(
-        `No response defined for parameter "${param}" in function "${functionName}" and no default value provided`
-      )
+      return result
     }
   }
 
