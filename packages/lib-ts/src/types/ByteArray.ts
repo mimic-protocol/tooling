@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bytesToHex, bytesToString } from '../helpers'
+import { bytesToHexString, bytesToString } from '../helpers'
 
 import { BigInt } from './BigInt'
 import { Bytes } from './Bytes'
@@ -129,15 +129,8 @@ export class ByteArray extends Uint8Array {
   /**
    * Converts this ByteArray to a hexadecimal string.
    */
-  toHex(): string {
-    return bytesToHex(this)
-  }
-
-  /**
-   * Converts this ByteArray to a hexadecimal string.
-   */
   toHexString(): string {
-    return bytesToHex(this)
+    return bytesToHexString(this)
   }
 
   /**

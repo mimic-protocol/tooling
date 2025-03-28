@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bigIntToHex, bigIntToString, Serializable } from '../helpers'
+import { Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -14,8 +14,16 @@ const ASCII_CODE_ZERO = 48
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
  */
-export class BigInt extends Uint8Array implements Serializable {
+export class BigInt extends Uint8Array  implements Serializable {
   private static readonly SERIALIZED_PREFIX: string = 'BigInt'
+
+  /**
+   * Returns a BigInt initialized to zero.
+   */
+  static zero(): BigInt {
+    return BigInt.fromI32(0)
+  }
+
   /**
    * Creates a BigInt from a signed 32-bit integer (i32).
    */
@@ -63,9 +71,7 @@ export class BigInt extends Uint8Array implements Serializable {
    */
   static fromUnsignedBytes(bytes: ByteArray): BigInt {
     const signedBytes = new BigInt(bytes.length + 1)
-    for (let i = 0; i < bytes.length; i++) {
-      signedBytes[i] = bytes[i]
-    }
+    for (let i = 0; i < bytes.length; i++) signedBytes[i] = bytes[i]
     signedBytes[bytes.length] = 0
     return signedBytes
   }
@@ -82,12 +88,10 @@ export class BigInt extends Uint8Array implements Serializable {
 
   /**
    * Parses a string representation of a number and converts it to a BigInt.
-   * Supports decimal and hexadecimal formats.
+   * Supports decimal, scientific notation, and hexadecimal formats.
    */
   static fromString(str: string): BigInt {
-    if (!str || str.length === 0) {
-      return BigInt.zero()
-    }
+    if (!str || str.length === 0) return BigInt.zero()
 
     let index = 0
     let isNegative = false
@@ -215,12 +219,10 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   static fromStringDecimal(str: string, precision: u8): BigInt {
-    if (str === '0') {
-      return BigInt.fromI32(0)
-    }
+    if (str === '0') return this.zero()
 
     const parts = str.split('.')
-    if (parts.length > 2) throw new Error('Invalid str. Received: ' + str)
+    if (parts.length > 2) throw new Error('Invalid string. Received: ' + str)
 
     const isNegative = parts[0].startsWith('-')
     const wholePart = isNegative ? parts[0].substring(1) : parts[0]
@@ -234,13 +236,6 @@ export class BigInt extends Uint8Array implements Serializable {
     }
 
     return isNegative ? result.neg() : result
-  }
-
-  /**
-   * Returns a BigInt initialized to zero.
-   */
-  static zero(): BigInt {
-    return BigInt.fromI32(0)
   }
 
   static addUnsigned(a: BigInt, b: BigInt): BigInt {
@@ -361,10 +356,7 @@ export class BigInt extends Uint8Array implements Serializable {
 
   isZero(): boolean {
     if (this.length == 0) return true
-
-    for (let i = 0; i < this.length; i++) {
-      if (this[i] !== 0) return false
-    }
+    for (let i = 0; i < this.length; i++) if (this[i] !== 0) return false
     return true
   }
 
@@ -373,7 +365,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   abs(): BigInt {
-    return this < BigInt.fromI32(0) ? this.neg() : this
+    return this.isNegative() ? this.neg() : this
   }
 
   pow(exp: u8): BigInt {
@@ -386,25 +378,11 @@ export class BigInt extends Uint8Array implements Serializable {
     let result = BigInt.fromI32(1)
 
     while (e > 0) {
-      if ((e & 1) == 1) {
-        result = result.times(base)
-      }
+      if ((e & 1) == 1) result = result.times(base)
       base = base.times(base)
       e >>= 1
     }
     return result
-  }
-
-  sqrt(): BigInt {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const x = this
-    let z = x.plus(BigInt.fromI32(1)).div(BigInt.fromI32(2))
-    let y = x
-    while (z < y) {
-      y = z as this
-      z = x.div(z).plus(z).div(BigInt.fromI32(2))
-    }
-    return y
   }
 
   upscale(precision: u8): BigInt {
@@ -467,9 +445,7 @@ export class BigInt extends Uint8Array implements Serializable {
     const aIsNeg = this.isNegative()
     const bIsNeg = other.isNegative()
     const signIsNeg = (aIsNeg && !bIsNeg) || (!aIsNeg && bIsNeg)
-    const absA = aIsNeg ? this.neg() : this
-    const absB = bIsNeg ? other.neg() : other
-    const resultAbs = BigInt.mulUnsigned(absA, absB)
+    const resultAbs = BigInt.mulUnsigned(this.abs(), other.abs())
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
@@ -479,9 +455,7 @@ export class BigInt extends Uint8Array implements Serializable {
     const aIsNeg = this.isNegative()
     const bIsNeg = other.isNegative()
     const signIsNeg = (aIsNeg && !bIsNeg) || (!aIsNeg && bIsNeg)
-    const absA = aIsNeg ? this.neg() : this
-    const absB = bIsNeg ? other.neg() : other
-    const resultAbs = BigInt.divUnsigned(absA, absB)
+    const resultAbs = BigInt.divUnsigned(this.abs(), other.abs())
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
@@ -648,23 +622,41 @@ export class BigInt extends Uint8Array implements Serializable {
     return byteArray.toU64()
   }
 
-  toHex(): string {
-    return bigIntToHex(this)
-  }
-
   toHexString(): string {
-    return bigIntToHex(this)
+    return bytesToHexString(this)
   }
 
   toString(): string {
-    return bigIntToString(this)
+    if (this.isZero()) return '0'
+
+    let absValue = this.isNegative() ? this.neg() : this.clone()
+    const digits = new Array<i32>()
+    while (!absValue.isZero()) {
+      let carry = 0
+
+      for (let i = absValue.length - 1; i >= 0; i--) {
+        const current = (carry << 8) + absValue[i]
+        absValue[i] = <u8>(current / 10)
+        carry = current % 10
+      }
+
+      digits.push(ASCII_CODE_ZERO + carry)
+
+      while (absValue.length > 1 && absValue[absValue.length - 1] == 0) {
+        absValue = absValue.subarray(0, absValue.length - 1)
+      }
+    }
+
+    if (this.isNegative()) digits.push('-'.charCodeAt(0))
+    digits.reverse()
+    return String.fromCharCodes(digits)
   }
 
   toStringDecimal(precision: u8): string {
     if (this.isZero()) return '0'
 
     const isNegative = this.isNegative()
-    const absAmount = isNegative ? this.neg() : this
+    const absAmount = this.abs()
 
     const str = absAmount.toString()
     if (str.length <= (precision as i32)) {
