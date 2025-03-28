@@ -1,6 +1,6 @@
 import { STANDARD_DECIMALS } from '../src/helpers'
-import { Token, TokenAmount } from '../src/tokens'
-import { Address, BigInt } from '../src/types'
+import { Token } from '../src/tokens'
+import { BigInt } from '../src/types'
 
 /* eslint-disable no-secrets/no-secrets */
 
@@ -40,13 +40,4 @@ declare function _setTokenPrice(address: string, chainId: u64, price: string): v
 export function setTokenPrice(token: Token, priceUsd: number): void {
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
-}
-
-declare function _setRelevantToken(address: string, chainId: u64, tokenAmount: string): void
-
-export function setRelevantTokens(address: Address, chainId: u64, tokenAmounts: TokenAmount[]): void {
-  for (let i = 0; i < tokenAmounts.length; i++) {
-    const tokenAmount = tokenAmounts[i]
-    _setRelevantToken(address.serialize(), chainId, tokenAmount.serialize())
-  }
 }
