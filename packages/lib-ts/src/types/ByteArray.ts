@@ -15,6 +15,14 @@ import { Bytes } from './Bytes'
  */
 export class ByteArray extends Uint8Array {
   /**
+   * Creates an empty ByteArray.
+   * The resulting byte array is in little-endian order.
+   */
+  static empty(): ByteArray {
+    return ByteArray.fromI32(0)
+  }
+
+  /**
    * Creates a ByteArray from a signed 8-bit integer (i8).
    * The resulting byte array is in little-endian order.
    */
@@ -78,19 +86,21 @@ export class ByteArray extends Uint8Array {
     return ByteArray.fromInteger(x, 8)
   }
 
+  /**
+   * Creates a ByteArray from a boolean value.
+   * The resulting byte array is in little-endian order.
+   */
   static fromBool(x: bool): ByteArray {
     return ByteArray.fromInteger((x ? 1 : 0) as u8, 1)
   }
 
-  static empty(): ByteArray {
-    return ByteArray.fromI32(0)
-  }
-
+  /**
+   * Creates a ByteArray from an unsigned arbitrary-length integer.
+   * The resulting byte array is in little-endian order.
+   */
   private static fromInteger<T extends number>(value: T, length: u8): ByteArray {
     const self = new ByteArray(length)
-    for (let i: u8 = 0; i < length; i++) {
-      self[i] = (value >> (i * 8)) as u8
-    }
+    for (let i: u8 = 0; i < length; i++) self[i] = (value >> (i * 8)) as u8
     return self
   }
 
@@ -101,13 +111,9 @@ export class ByteArray extends Uint8Array {
    */
   static fromHexString(hex: string): ByteArray {
     assert(hex.length % 2 == 0, 'input ' + hex + ' has odd length')
-    if (hex.length >= 2 && hex.charAt(0) == '0' && hex.charAt(1) == 'x') {
-      hex = hex.substr(2)
-    }
+    if (hex.length >= 2 && hex.charAt(0) == '0' && hex.charAt(1) == 'x') hex = hex.substring(2)
     const output = new Bytes(hex.length / 2)
-    for (let i = 0; i < hex.length; i += 2) {
-      output[i / 2] = I8.parseInt(hex.substr(i, 2), 16)
-    }
+    for (let i = 0; i < hex.length; i += 2) output[i / 2] = I8.parseInt(hex.substring(i, i + 2), 16)
     return output
   }
 
@@ -179,15 +185,15 @@ export class ByteArray extends Uint8Array {
         assert(false, 'overflow converting ' + this.toHexString() + ' to i32')
       }
     }
+
     const paddedBytes = new Bytes(4)
     paddedBytes[0] = padding
     paddedBytes[1] = padding
     paddedBytes[2] = padding
     paddedBytes[3] = padding
     const minLen = paddedBytes.length < this.length ? paddedBytes.length : this.length
-    for (let i = 0; i < minLen; i++) {
-      paddedBytes[i] = this[i]
-    }
+    for (let i = 0; i < minLen; i++) paddedBytes[i] = this[i]
+
     let x: i32 = 0
     x = (x | paddedBytes[3]) << 8
     x = (x | paddedBytes[2]) << 8
@@ -225,6 +231,7 @@ export class ByteArray extends Uint8Array {
         assert(false, 'overflow converting ' + this.toHexString() + ' to i64')
       }
     }
+
     const paddedBytes = new Bytes(8)
     paddedBytes[0] = padding
     paddedBytes[1] = padding
@@ -235,9 +242,8 @@ export class ByteArray extends Uint8Array {
     paddedBytes[6] = padding
     paddedBytes[7] = padding
     const minLen = paddedBytes.length < this.length ? paddedBytes.length : this.length
-    for (let i = 0; i < minLen; i++) {
-      paddedBytes[i] = this[i]
-    }
+    for (let i = 0; i < minLen; i++) paddedBytes[i] = this[i]
+
     let x: i64 = 0
     x = (x | paddedBytes[7]) << 8
     x = (x | paddedBytes[6]) << 8
@@ -260,6 +266,7 @@ export class ByteArray extends Uint8Array {
         assert(false, 'overflow converting ' + this.toHexString() + ' to u64')
       }
     }
+
     const paddedBytes = new Bytes(8)
     paddedBytes[0] = 0
     paddedBytes[1] = 0
@@ -270,9 +277,8 @@ export class ByteArray extends Uint8Array {
     paddedBytes[6] = 0
     paddedBytes[7] = 0
     const minLen = paddedBytes.length < this.length ? paddedBytes.length : this.length
-    for (let i = 0; i < minLen; i++) {
-      paddedBytes[i] = this[i]
-    }
+    for (let i = 0; i < minLen; i++) paddedBytes[i] = this[i]
+
     let x: u64 = 0
     x = (x | paddedBytes[7]) << 8
     x = (x | paddedBytes[6]) << 8
@@ -290,14 +296,8 @@ export class ByteArray extends Uint8Array {
    */
   @operator('==')
   equals(other: ByteArray): boolean {
-    if (this.length != other.length) {
-      return false
-    }
-    for (let i = 0; i < this.length; i++) {
-      if (this[i] != other[i]) {
-        return false
-      }
-    }
+    if (this.length != other.length) return false
+    for (let i = 0; i < this.length; i++) if (this[i] != other[i]) return false
     return true
   }
 
