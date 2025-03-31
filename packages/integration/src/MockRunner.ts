@@ -173,9 +173,7 @@ export default class MockRunner {
     const memory = this.instance.exports.memory as WebAssembly.Memory
     const malloc = this.instance.exports.__new as CallableFunction
 
-    if (!malloc) {
-      throw new Error('__new function not found in WebAssembly exports')
-    }
+    if (!malloc) throw new Error('__new function not found in WebAssembly exports')
 
     const ptr = malloc(str.length * 2, 2) as number
     const uint16View = new Uint16Array(memory.buffer, ptr, str.length)
