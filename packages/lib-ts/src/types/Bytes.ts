@@ -49,7 +49,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from a signed 8-bit integer (i8).
+   * Creates a Bytes instance from a signed 8-bit integer (i8).
    * The resulting byte array is in little-endian order.
    */
   static fromI8(x: i8): Bytes {
@@ -57,7 +57,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from an unsigned 8-bit integer (u8).
+   * Creates a Bytes instance from an unsigned 8-bit integer (u8).
    * The resulting byte array is in little-endian order.
    */
   static fromU8(x: u8): Bytes {
@@ -65,7 +65,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from a signed 16-bit integer (i16).
+   * Creates a Bytes instance from a signed 16-bit integer (i16).
    * The resulting byte array is in little-endian order.
    */
   static fromI16(x: i16): Bytes {
@@ -73,7 +73,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from an unsigned 16-bit integer (u16).
+   * Creates a Bytes instance from an unsigned 16-bit integer (u16).
    * The resulting byte array is in little-endian order.
    */
   static fromU16(x: u16): Bytes {
@@ -89,7 +89,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from an unsigned 32-bit integer (u32).
+   * Creates a Bytes instance from an unsigned 32-bit integer (u32).
    * The resulting byte array is in little-endian order.
    */
   static fromU32(x: u32): Bytes {
@@ -97,7 +97,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from a signed 64-bit integer (i64).
+   * Creates a Bytes instance from a signed 64-bit integer (i64).
    * The resulting byte array is in little-endian order.
    */
   static fromI64(x: i64): Bytes {
@@ -105,7 +105,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from an unsigned 64-bit integer (u64).
+   * Creates a Bytes instance from an unsigned 64-bit integer (u64).
    * The resulting byte array is in little-endian order.
    */
   static fromU64(x: u64): Bytes {
@@ -113,7 +113,7 @@ export class Bytes extends ByteArray {
   }
 
   /**
-   * Creates a Bytes from a boolean value.
+   * Creates a Bytes instance from a boolean value.
    * The resulting byte array is in little-endian order.
    */
   static fromBool(x: bool): Bytes {
