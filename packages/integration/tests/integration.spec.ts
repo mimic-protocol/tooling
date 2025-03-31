@@ -24,6 +24,16 @@ async function runTestCase(testCase: string): Promise<void> {
     let compilationSuccessful = true
 
     before('build task', () => {
+      const typesOutputPath = join(path, 'src', 'types')
+      const resultCodegen = spawnSync('yarn', ['mimic', 'codegen', '-m', manifestPath, '-o', typesOutputPath])
+
+      if (resultCodegen.status !== 0) {
+        compilationSuccessful = false
+        console.error(`Codegen error in test case '${testCase}':`)
+        console.error(resultCodegen.stderr.toString())
+        return
+      }
+
       const result = spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-t', taskPath, '-o', outputPath])
 
       if (result.status !== 0) {

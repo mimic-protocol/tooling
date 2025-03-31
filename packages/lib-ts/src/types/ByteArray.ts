@@ -5,6 +5,7 @@
 // Modified by Mimic Protocol, 2025.
 
 import { bytesToHexString, bytesToString } from '../helpers'
+import { Serializable } from '../helpers'
 
 import { BigInt } from './BigInt'
 import { Bytes } from './Bytes'
@@ -13,7 +14,7 @@ import { Bytes } from './Bytes'
  * Represents a byte array (Uint8Array) with utility methods
  * for conversions between different numeric and string formats.
  */
-export class ByteArray extends Uint8Array {
+export class ByteArray extends Uint8Array implements Serializable {
   /**
    * Creates an empty ByteArray.
    * The resulting byte array is in little-endian order.
@@ -307,5 +308,9 @@ export class ByteArray extends Uint8Array {
    */
   toString(): string {
     return bytesToString(this)
+  }
+
+  serialize(): string {
+    return this.toHexString()
   }
 }
