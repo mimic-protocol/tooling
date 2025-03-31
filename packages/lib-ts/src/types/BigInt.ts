@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bigIntToHex, bigIntToString, Serializable } from '../helpers'
+import { normalizeScientificNotation, Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -16,6 +16,23 @@ const ASCII_CODE_ZERO = 48
  */
 export class BigInt extends Uint8Array implements Serializable {
   private static readonly SERIALIZED_PREFIX: string = 'BigInt'
+
+  /**
+   * Parses a serialized representation of a BigInt and converts it to a BigInt.
+   */
+  static parse(serialized: string): BigInt {
+    const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
+    if (!isBigInt) throw new Error('Invalid serialized BigInt')
+    return BigInt.fromString(serialized.slice(BigInt.SERIALIZED_PREFIX.length + 1, -1))
+  }
+
+  /**
+   * Returns a BigInt initialized to zero.
+   */
+  static zero(): BigInt {
+    return BigInt.fromI32(0)
+  }
+
   /**
    * Creates a BigInt from a signed 32-bit integer (i32).
    */
@@ -63,170 +80,35 @@ export class BigInt extends Uint8Array implements Serializable {
    */
   static fromUnsignedBytes(bytes: ByteArray): BigInt {
     const signedBytes = new BigInt(bytes.length + 1)
-    for (let i = 0; i < bytes.length; i++) {
-      signedBytes[i] = bytes[i]
-    }
+    for (let i = 0; i < bytes.length; i++) signedBytes[i] = bytes[i]
     signedBytes[bytes.length] = 0
     return signedBytes
   }
 
   /**
-   * Parses a serialized representation of a BigInt and converts it to a BigInt.
+   * Parses a string representation of a number and converts it to a BigInt.
+   * Supports decimal and scientific notation formats.
    */
-  static parse(serialized: string): BigInt {
-    const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
-    if (!isBigInt) throw new Error('Invalid serialized BigInt')
-
-    return BigInt.fromString(serialized.slice(BigInt.SERIALIZED_PREFIX.length + 1, -1))
+  static fromString(str: string): BigInt {
+    const hexIndex = str.toLowerCase().indexOf('0x')
+    if (hexIndex == 0 || hexIndex == 1) return BigInt.fromHexString(str)
+    return this.fromStringDecimal(str, 0)
   }
 
   /**
-   * Parses a string representation of a number and converts it to a BigInt.
-   * Supports decimal and hexadecimal formats.
+   * Parses a string representation of a number with precision and converts it to a BigInt.
+   * Supports decimal and scientific notation formats.
    */
-  static fromString(str: string): BigInt {
-    if (!str || str.length === 0) {
-      return BigInt.zero()
-    }
-
-    let index = 0
-    let isNegative = false
-
-    // Optional sign
-    let firstChar = str.charAt(index)
-    if (firstChar === '-') {
-      isNegative = true
-      index++
-    } else if (firstChar === '+') {
-      index++
-    }
-
-    // Hex prefix
-    let isHex = false
-    if (
-      str.length >= index + 2 &&
-      str.charAt(index) === '0' &&
-      (str.charAt(index + 1) === 'x' || str.charAt(index + 1) === 'X')
-    ) {
-      isHex = true
-      index += 2
-    }
-
-    let result = BigInt.zero()
-    let exponentStr = ''
-    let exponentNegative = false
-    let parsingExponent = false
-    let parsingFraction = false
-    let fractionDigits = 0
-
-    if (isHex) {
-      let hexPart = str.substring(index)
-      if (hexPart.length === 0) return BigInt.zero()
-
-      for (let i = 0; i < hexPart.length; i++) {
-        const c = hexPart.charAt(i)
-        if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))) {
-          throw new Error(`Invalid character in hex string: '${c}'`)
-        }
-      }
-
-      if (hexPart.length % 2 === 1) hexPart = '0' + hexPart
-
-      const byteCount = hexPart.length >>> 1
-      const bytes = new ByteArray(byteCount)
-
-      for (let i = 0; i < byteCount; i++) {
-        const start = hexPart.length - 2 * (i + 1)
-        const hexByte = hexPart.substr(start, 2)
-        bytes[i] = <u8>parseInt(hexByte, 16)
-      }
-
-      result = BigInt.fromUnsignedBytes(bytes)
-      if (isNegative && !result.isZero()) result = result.neg()
-
-      return result
-    } else {
-      while (index < str.length) {
-        let c = str.charAt(index)
-
-        if (!parsingExponent) {
-          if (c === '.') {
-            fractionDigits = 0
-            parsingFraction = true
-            index++
-            continue
-          }
-
-          if (c === 'e' || c === 'E') {
-            parsingExponent = true
-            index++
-
-            if (index < str.length && (str.charAt(index) === '+' || str.charAt(index) === '-')) {
-              if (str.charAt(index) === '-') exponentNegative = true
-              index++
-            }
-
-            continue
-          }
-
-          if (c < '0' || c > '9') throw new Error(`Invalid character in decimal string: '${c}'`)
-          let digit = c.charCodeAt(0) - '0'.charCodeAt(0)
-          result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(digit))
-
-          if (parsingFraction) fractionDigits++
-        } else {
-          if (c < '0' || c > '9') throw new Error(`Invalid character in exponent string: '${c}'`)
-          exponentStr += c
-        }
-
-        index++
-      }
-    }
-
-    if (!isHex) {
-      if (exponentStr.length > 0) {
-        let expValue = parseInt(exponentStr, 10)
-        if (exponentNegative) expValue = -expValue
-        expValue -= fractionDigits
-
-        if (expValue > 0) {
-          for (let i = 0; i < expValue; i++) {
-            result = result.times(BigInt.fromI32(10))
-          }
-        } else if (expValue < 0) {
-          let positiveExp = -expValue
-
-          for (let i = 0; i < positiveExp; i++) {
-            result = result.div(BigInt.fromI32(10))
-          }
-        }
-      } else if (fractionDigits > 0) {
-        for (let i = 0; i < fractionDigits; i++) {
-          result = result.div(BigInt.fromI32(10))
-        }
-      }
-    }
-
-    if (isNegative && !result.isZero()) {
-      result = result.neg()
-    }
-
-    return result
-  }
-
   static fromStringDecimal(str: string, precision: u8): BigInt {
-    if (str === '0') {
-      return BigInt.fromI32(0)
-    }
+    if (str === '0') return this.zero()
+    str = normalizeScientificNotation(str)
 
     const parts = str.split('.')
-    if (parts.length > 2) throw new Error('Invalid str. Received: ' + str)
+    if (parts.length > 2) throw new Error('Invalid string. Received: ' + str)
 
     const isNegative = parts[0].startsWith('-')
     const wholePart = isNegative ? parts[0].substring(1) : parts[0]
-
-    let result = BigInt.fromString(wholePart)
-    result = result.upscale(precision)
+    let result = BigInt.fromStringRaw(wholePart).upscale(precision)
 
     if (parts.length > 1 && parts[1].length > 0) {
       const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
@@ -237,13 +119,46 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   /**
-   * Returns a BigInt initialized to zero.
+   * Parses a hexadecimal string representation of a number and converts it to a BigInt.
    */
-  static zero(): BigInt {
-    return BigInt.fromI32(0)
+  static fromHexString(str: string): BigInt {
+    str = str.toLowerCase()
+    if (!str || str === '0x' || str === '-0x') return BigInt.zero()
+
+    // Remove prefix
+    const isNegative = str.startsWith('-')
+    if (isNegative) str = str.substring(1)
+    else if (str.startsWith('+')) str = str.substring(1)
+    if (str.startsWith('0x')) str = str.substring(2)
+
+    // Validate all characters are hex digits
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i)
+      const isDigit = c >= 48 && c <= 57 // '0'-'9'
+      const isUpper = c >= 65 && c <= 70 // 'A'-'F'
+      const isLower = c >= 97 && c <= 102 // 'a'-'f'
+      if (!(isDigit || isUpper || isLower)) {
+        throw new Error(`Invalid hex character: '${str.charAt(i)}'`)
+      }
+    }
+
+    // ByteArray will still assert even length
+    const bytes = ByteArray.fromHexString(str)
+    const result = BigInt.fromUnsignedBytes(bytes)
+    return isNegative && !result.isZero() ? result.neg() : result
   }
 
-  static addUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static fromStringRaw(str: string): BigInt {
+    let result = BigInt.zero()
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i)
+      if (c < 48 || c > 57) throw new Error(`Invalid digit '${str.charAt(i)}'`)
+      result = result.times(BigInt.fromI32(10)).plus(BigInt.fromI32(c - 48))
+    }
+    return result
+  }
+
+  private static addUnsigned(a: BigInt, b: BigInt): BigInt {
     if (a.isZero()) return b.clone()
     if (b.isZero()) return a.clone()
 
@@ -261,7 +176,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static subUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static subUnsigned(a: BigInt, b: BigInt): BigInt {
     const result = new BigInt(a.length)
     let borrow: i32 = 0
     for (let i = 0; i < a.length; i++) {
@@ -278,7 +193,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static mulUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static mulUnsigned(a: BigInt, b: BigInt): BigInt {
     if (a.length < b.length) return BigInt.mulUnsigned(b, a)
     if (b.length === 1 && b[0] === 2) return a.leftShift(1)
 
@@ -295,7 +210,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
-  static divUnsigned(a: BigInt, b: BigInt): BigInt {
+  private static divUnsigned(a: BigInt, b: BigInt): BigInt {
     if (b.isZero()) {
       assert(false, '')
       return BigInt.zero()
@@ -321,7 +236,7 @@ export class BigInt extends Uint8Array implements Serializable {
     return quotient
   }
 
-  static compare(a: BigInt, b: BigInt): i32 {
+  private static compare(a: BigInt, b: BigInt): i32 {
     const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
     const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
     if (!aIsNeg && bIsNeg) return 1
@@ -361,10 +276,7 @@ export class BigInt extends Uint8Array implements Serializable {
 
   isZero(): boolean {
     if (this.length == 0) return true
-
-    for (let i = 0; i < this.length; i++) {
-      if (this[i] !== 0) return false
-    }
+    for (let i = 0; i < this.length; i++) if (this[i] !== 0) return false
     return true
   }
 
@@ -373,7 +285,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   abs(): BigInt {
-    return this < BigInt.fromI32(0) ? this.neg() : this
+    return this.isNegative() ? this.neg() : this
   }
 
   pow(exp: u8): BigInt {
@@ -386,25 +298,11 @@ export class BigInt extends Uint8Array implements Serializable {
     let result = BigInt.fromI32(1)
 
     while (e > 0) {
-      if ((e & 1) == 1) {
-        result = result.times(base)
-      }
+      if ((e & 1) == 1) result = result.times(base)
       base = base.times(base)
       e >>= 1
     }
     return result
-  }
-
-  sqrt(): BigInt {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const x = this
-    let z = x.plus(BigInt.fromI32(1)).div(BigInt.fromI32(2))
-    let y = x
-    while (z < y) {
-      y = z as this
-      z = x.div(z).plus(z).div(BigInt.fromI32(2))
-    }
-    return y
   }
 
   upscale(precision: u8): BigInt {
@@ -467,9 +365,7 @@ export class BigInt extends Uint8Array implements Serializable {
     const aIsNeg = this.isNegative()
     const bIsNeg = other.isNegative()
     const signIsNeg = (aIsNeg && !bIsNeg) || (!aIsNeg && bIsNeg)
-    const absA = aIsNeg ? this.neg() : this
-    const absB = bIsNeg ? other.neg() : other
-    const resultAbs = BigInt.mulUnsigned(absA, absB)
+    const resultAbs = BigInt.mulUnsigned(this.abs(), other.abs())
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
@@ -479,9 +375,7 @@ export class BigInt extends Uint8Array implements Serializable {
     const aIsNeg = this.isNegative()
     const bIsNeg = other.isNegative()
     const signIsNeg = (aIsNeg && !bIsNeg) || (!aIsNeg && bIsNeg)
-    const absA = aIsNeg ? this.neg() : this
-    const absB = bIsNeg ? other.neg() : other
-    const resultAbs = BigInt.divUnsigned(absA, absB)
+    const resultAbs = BigInt.divUnsigned(this.abs(), other.abs())
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
@@ -648,23 +542,41 @@ export class BigInt extends Uint8Array implements Serializable {
     return byteArray.toU64()
   }
 
-  toHex(): string {
-    return bigIntToHex(this)
-  }
-
   toHexString(): string {
-    return bigIntToHex(this)
+    return bytesToHexString(this)
   }
 
   toString(): string {
-    return bigIntToString(this)
+    if (this.isZero()) return '0'
+
+    let absValue = this.isNegative() ? this.neg() : this.clone()
+    const digits = new Array<i32>()
+    while (!absValue.isZero()) {
+      let carry = 0
+
+      for (let i = absValue.length - 1; i >= 0; i--) {
+        const current = (carry << 8) + absValue[i]
+        absValue[i] = <u8>(current / 10)
+        carry = current % 10
+      }
+
+      digits.push(ASCII_CODE_ZERO + carry)
+
+      while (absValue.length > 1 && absValue[absValue.length - 1] == 0) {
+        absValue = absValue.subarray(0, absValue.length - 1)
+      }
+    }
+
+    if (this.isNegative()) digits.push('-'.charCodeAt(0))
+    digits.reverse()
+    return String.fromCharCodes(digits)
   }
 
   toStringDecimal(precision: u8): string {
     if (this.isZero()) return '0'
 
     const isNegative = this.isNegative()
-    const absAmount = isNegative ? this.neg() : this
+    const absAmount = this.abs()
 
     const str = absAmount.toString()
     if (str.length <= (precision as i32)) {

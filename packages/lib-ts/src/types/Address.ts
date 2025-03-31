@@ -4,8 +4,6 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { stringToH160 } from '../helpers'
-
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
@@ -14,10 +12,19 @@ import { Bytes } from './Bytes'
  */
 export class Address extends Bytes {
   /**
+   * Returns a zero address (20 bytes filled with zeroes).
+   */
+  static zero(): Address {
+    const self = new ByteArray(20)
+    return changetype<Address>(self)
+  }
+
+  /**
    * Converts a string representation of an address to an Address instance.
    */
   static fromString(s: string): Address {
-    return changetype<Address>(stringToH160(s))
+    const bytes = Bytes.fromHexString(s)
+    return this.fromBytes(bytes)
   }
 
   /**
@@ -27,14 +34,6 @@ export class Address extends Bytes {
   static fromBytes(b: Bytes): Address {
     if (b.length != 20) throw new Error(`Bytes of length ${b.length} can not be converted to 20 byte addresses`)
     return changetype<Address>(b)
-  }
-
-  /**
-   * Returns a zero address (20 bytes filled with zeroes).
-   */
-  static zero(): Address {
-    const self = new ByteArray(20)
-    return changetype<Address>(self)
   }
 
   clone(): Address {
