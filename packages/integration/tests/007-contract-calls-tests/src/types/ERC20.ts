@@ -37,8 +37,10 @@ export class ERC20 {
   }
 
   allowance(_owner: Address, _spender: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'allowance', [_owner, _spender])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'allowance', [
+      _owner,
+      _spender,
+    ])
     return BigInt.fromString(result)
   }
-
 }

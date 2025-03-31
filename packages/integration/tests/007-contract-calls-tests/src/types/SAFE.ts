@@ -17,16 +17,28 @@ export class SAFE {
   }
 
   approvedHashes(param0: Address, param1: Bytes): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'approvedHashes', [param0, param1])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'approvedHashes', [
+      param0,
+      param1,
+    ])
     return BigInt.fromString(result)
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
-    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkNSignatures', [dataHash, data, signatures, requiredSignatures.toBytes()])
+    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkNSignatures', [
+      dataHash,
+      data,
+      signatures,
+      requiredSignatures.toBytes(),
+    ])
   }
 
   checkSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes): void {
-    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkSignatures', [dataHash, data, signatures])
+    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkSignatures', [
+      dataHash,
+      data,
+      signatures,
+    ])
   }
 
   domainSeparator(): Bytes {
@@ -34,8 +46,30 @@ export class SAFE {
     return Bytes.fromHexString(result)
   }
 
-  encodeTransactionData(to: Address, value: BigInt, data: Bytes, operation: u8, safeTxGas: BigInt, baseGas: BigInt, gasPrice: BigInt, gasToken: Address, refundReceiver: Address, _nonce: BigInt): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'encodeTransactionData', [to, value.toBytes(), data, Bytes.fromU8(operation), safeTxGas.toBytes(), baseGas.toBytes(), gasPrice.toBytes(), gasToken, refundReceiver, _nonce.toBytes()])
+  encodeTransactionData(
+    to: Address,
+    value: BigInt,
+    data: Bytes,
+    operation: u8,
+    safeTxGas: BigInt,
+    baseGas: BigInt,
+    gasPrice: BigInt,
+    gasToken: Address,
+    refundReceiver: Address,
+    _nonce: BigInt
+  ): Bytes {
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'encodeTransactionData', [
+      to,
+      value.toBytes(),
+      data,
+      Bytes.fromU8(operation),
+      safeTxGas.toBytes(),
+      baseGas.toBytes(),
+      gasPrice.toBytes(),
+      gasToken,
+      refundReceiver,
+      _nonce.toBytes(),
+    ])
     return Bytes.fromHexString(result)
   }
 
@@ -45,17 +79,23 @@ export class SAFE {
   }
 
   getModulesPaginated(start: Address, pageSize: BigInt): unknown[] {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getModulesPaginated', [start, pageSize.toBytes()])
-    return result === '' ? [] : result.split(',').map(value => value)
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getModulesPaginated', [
+      start,
+      pageSize.toBytes(),
+    ])
+    return result === '' ? [] : result.split(',').map((value) => value)
   }
 
   getOwners(): Address[] {
     const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getOwners', [])
-    return result === '' ? [] : result.split(',').map(value => Address.fromString(value))
+    return result === '' ? [] : result.split(',').map((value) => Address.fromString(value))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getStorageAt', [offset.toBytes(), length.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getStorageAt', [
+      offset.toBytes(),
+      length.toBytes(),
+    ])
     return Bytes.fromHexString(result)
   }
 
@@ -64,8 +104,30 @@ export class SAFE {
     return BigInt.fromString(result)
   }
 
-  getTransactionHash(to: Address, value: BigInt, data: Bytes, operation: u8, safeTxGas: BigInt, baseGas: BigInt, gasPrice: BigInt, gasToken: Address, refundReceiver: Address, _nonce: BigInt): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getTransactionHash', [to, value.toBytes(), data, Bytes.fromU8(operation), safeTxGas.toBytes(), baseGas.toBytes(), gasPrice.toBytes(), gasToken, refundReceiver, _nonce.toBytes()])
+  getTransactionHash(
+    to: Address,
+    value: BigInt,
+    data: Bytes,
+    operation: u8,
+    safeTxGas: BigInt,
+    baseGas: BigInt,
+    gasPrice: BigInt,
+    gasToken: Address,
+    refundReceiver: Address,
+    _nonce: BigInt
+  ): Bytes {
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getTransactionHash', [
+      to,
+      value.toBytes(),
+      data,
+      Bytes.fromU8(operation),
+      safeTxGas.toBytes(),
+      baseGas.toBytes(),
+      gasPrice.toBytes(),
+      gasToken,
+      refundReceiver,
+      _nonce.toBytes(),
+    ])
     return Bytes.fromHexString(result)
   }
 
@@ -88,5 +150,4 @@ export class SAFE {
     const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'signedMessages', [param0])
     return BigInt.fromString(result)
   }
-
 }

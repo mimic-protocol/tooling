@@ -27,12 +27,16 @@ export class ERC4626 {
   }
 
   convertToAssets(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'convertToAssets', [shares.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'convertToAssets', [
+      shares.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
   convertToShares(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'convertToShares', [assets.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'convertToShares', [
+      assets.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
@@ -67,22 +71,30 @@ export class ERC4626 {
   }
 
   previewDeposit(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewDeposit', [assets.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewDeposit', [
+      assets.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
   previewMint(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewMint', [shares.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewMint', [
+      shares.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
   previewRedeem(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewRedeem', [shares.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewRedeem', [
+      shares.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
   previewWithdraw(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewWithdraw', [assets.toBytes()])
+    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'previewWithdraw', [
+      assets.toBytes(),
+    ])
     return BigInt.fromString(result)
   }
 
@@ -100,5 +112,4 @@ export class ERC4626 {
     const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'totalSupply', [])
     return BigInt.fromString(result)
   }
-
 }

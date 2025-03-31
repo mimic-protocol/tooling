@@ -12,6 +12,10 @@ describe('Integration tests', async () => {
     .map((d) => d.name)
 
   await Promise.all(testCases.map(runTestCase))
+
+  after('lint', () => {
+    spawnSync('yarn', ['lint', '--fix'])
+  })
 })
 
 async function runTestCase(testCase: string): Promise<void> {
