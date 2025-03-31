@@ -10,7 +10,7 @@ describe('Address', () => {
         const address = Address.fromString(validAddress)
 
         expect(address.length).toBe(20)
-        expect(address.toHex()).toBe(validAddress)
+        expect(address.toHexString()).toBe(validAddress)
       })
     })
 
@@ -38,7 +38,7 @@ describe('Address', () => {
         const address = Address.fromBytes(validBytes)
 
         expect(address.length).toBe(20)
-        expect(address.toHex()).toBe(validBytes.toHex())
+        expect(address.toHexString()).toBe(validBytes.toHexString())
       })
     })
 
@@ -64,7 +64,7 @@ describe('Address', () => {
       const zeroAddress = Address.zero()
 
       expect(zeroAddress.length).toBe(20)
-      expect(zeroAddress.toHex()).toBe(NULL_ADDRESS)
+      expect(zeroAddress.toHexString()).toBe(NULL_ADDRESS)
     })
 
     it('returns a zero address where all bytes are equal to 0', () => {
@@ -83,7 +83,7 @@ describe('Address', () => {
         const clonedAddress = originalAddress.clone()
 
         expect(clonedAddress.length).toBe(originalAddress.length)
-        expect(clonedAddress.toHex()).toBe(originalAddress.toHex())
+        expect(clonedAddress.toHexString()).toBe(originalAddress.toHexString())
       })
 
       it('creates an independent copy', () => {
@@ -93,7 +93,7 @@ describe('Address', () => {
         originalAddress[0] = 255
 
         expect(clonedAddress[0]).not.toBe(originalAddress[0])
-        expect(clonedAddress.toHex()).not.toBe(originalAddress.toHex())
+        expect(clonedAddress.toHexString()).not.toBe(originalAddress.toHexString())
       })
     })
   })

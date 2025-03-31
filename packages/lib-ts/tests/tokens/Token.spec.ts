@@ -9,8 +9,8 @@ describe('Token', () => {
       const modifiedAddress = token.address
       modifiedAddress[0] = 0xff
 
-      expect(token.address.toHex()).not.toBe(modifiedAddress.toHex())
-      expect(token.address.toHex()).toBe(originalAddress.toHex())
+      expect(token.address.toHexString()).not.toBe(modifiedAddress.toHexString())
+      expect(token.address.toHexString()).toBe(originalAddress.toHexString())
     })
   })
 

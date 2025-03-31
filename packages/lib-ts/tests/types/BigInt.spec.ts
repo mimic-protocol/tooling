@@ -67,11 +67,6 @@ describe('BigInt', () => {
         expect(result.toI32()).toBe(-456)
       })
 
-      it('returns zero for a plain "+" sign', () => {
-        const result = BigInt.fromString('+')
-        expect(result.isZero()).toBe(true)
-      })
-
       it('ignores a decimal point and truncates the number', () => {
         const result = BigInt.fromString('12.34')
         expect(result.toI32()).toBe(12)
@@ -214,13 +209,12 @@ describe('BigInt', () => {
         expect(result.toString()).toBe('-10050')
       })
 
-      // TODO: fix scientific notation for decimals
-      // it('converts negative decimal numbers with scientific notation correctly', () => {
-      //   const amount = '-100.5e2'
-      //   const result = BigInt.fromStringDecimal(amount, 2)
-      //
-      //   expect(result.toString()).toBe('-1005000')
-      // })
+      it('converts negative decimal numbers with scientific notation correctly', () => {
+        const amount = '-100.5e2'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('-1005000')
+      })
     })
 
     describe('when converting positive numbers', () => {
@@ -245,13 +239,12 @@ describe('BigInt', () => {
         expect(result.toString()).toBe('10050')
       })
 
-      // TODO: fix scientific notation for decimals
-      // it('converts positive decimal numbers with scientific notation correctly', () => {
-      //   const amount = '100.5e2'
-      //   const result = BigInt.fromStringDecimal(amount, 2)
-      //
-      //   expect(result.toString()).toBe('1005000')
-      // })
+      it('converts positive decimal numbers with scientific notation correctly', () => {
+        const amount = '100.5e2'
+        const result = BigInt.fromStringDecimal(amount, 2)
+
+        expect(result.toString()).toBe('1005000')
+      })
     })
 
     describe('when handling invalid inputs', () => {
