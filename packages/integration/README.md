@@ -13,8 +13,7 @@ tests/
 │   │   └── task.ts       # Assemblyscript task implementation
 │   ├── manifest.yaml     # Task manifest with metadata
 │   ├── mock.json         # Mock configuration for environment functions
-│   ├── expected.log      # Expected output log for validation
-│   └── tsconfig.json     # TypeScript configuration
+│   └── expected.log      # Expected output log for validation
 ```
 
 ## Creating a New Test
@@ -92,10 +91,6 @@ Contains the expected output logs that will be compared against the actual logs 
 _call: 0x0000000000000000000000000000000000000000,1,0x0000000000000000000000000000000000000000,0x0000000000000000000000000000000000000000,BigInt(0),0x00000000
 _getPrice: 0x0000000000000000000000000000000000000000,1
 ```
-
-### tsconfig.json
-
-Basic Assemblyscript configuration for your test (can be copied from an existing test)
 
 ## Running Tests
 
