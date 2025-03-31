@@ -4,12 +4,15 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { normalizeScientificNotation, Serializable } from '../helpers'
+import { bytesToHexString, normalizeScientificNotation, Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
+const ASCII_CODE_A = 97
+const ASCII_CODE_F = 102
 const ASCII_CODE_ZERO = 48
+const ASCII_CODE_NINE = 57
 
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
@@ -104,7 +107,7 @@ export class BigInt extends Uint8Array implements Serializable {
     str = normalizeScientificNotation(str)
 
     const parts = str.split('.')
-    if (parts.length > 2) throw new Error('Invalid string. Received: ' + str)
+    if (parts.length > 2) throw new Error(`Invalid string. Received: ${str}`)
 
     const isNegative = parts[0].startsWith('-')
     const wholePart = isNegative ? parts[0].substring(1) : parts[0]
@@ -121,29 +124,26 @@ export class BigInt extends Uint8Array implements Serializable {
   /**
    * Parses a hexadecimal string representation of a number and converts it to a BigInt.
    */
-  static fromHexString(str: string): BigInt {
-    str = str.toLowerCase()
-    if (!str || str === '0x' || str === '-0x') return BigInt.zero()
+  static fromHexString(hex: string): BigInt {
+    hex = hex.toLowerCase()
+    if (!hex || hex === '0x' || hex === '-0x') return BigInt.zero()
 
     // Remove prefix
-    const isNegative = str.startsWith('-')
-    if (isNegative) str = str.substring(1)
-    else if (str.startsWith('+')) str = str.substring(1)
-    if (str.startsWith('0x')) str = str.substring(2)
+    const isNegative = hex.startsWith('-')
+    if (isNegative) hex = hex.substring(1)
+    else if (hex.startsWith('+')) hex = hex.substring(1)
+    if (hex.startsWith('0x')) hex = hex.substring(2)
 
     // Validate all characters are hex digits
-    for (let i = 0; i < str.length; i++) {
-      const c = str.charCodeAt(i)
-      const isDigit = c >= 48 && c <= 57 // '0'-'9'
-      const isUpper = c >= 65 && c <= 70 // 'A'-'F'
-      const isLower = c >= 97 && c <= 102 // 'a'-'f'
-      if (!(isDigit || isUpper || isLower)) {
-        throw new Error(`Invalid hex character: '${str.charAt(i)}'`)
-      }
+    for (let i = 0; i < hex.length; i++) {
+      const c = hex.charCodeAt(i)
+      const isDigit = c >= ASCII_CODE_ZERO && c <= ASCII_CODE_NINE
+      const isLetter = c >= ASCII_CODE_A && c <= ASCII_CODE_F
+      if (!(isDigit || isLetter)) throw new Error(`Invalid hex character: '${hex.charAt(i)}'`)
     }
 
     // ByteArray will still assert even length
-    const bytes = ByteArray.fromHexString(str)
+    const bytes = ByteArray.fromHexString(hex)
     const result = BigInt.fromUnsignedBytes(bytes)
     return isNegative && !result.isZero() ? result.neg() : result
   }
@@ -211,10 +211,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   private static divUnsigned(a: BigInt, b: BigInt): BigInt {
-    if (b.isZero()) {
-      assert(false, '')
-      return BigInt.zero()
-    }
+    assert(!b.isZero(), 'Trying to divide by zero')
     if (BigInt.compare(a, b) < 0) return BigInt.zero()
 
     let quotient = BigInt.zero()
@@ -543,7 +540,13 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   toHexString(): string {
-    return bytesToHexString(this)
+    if (this.isZero()) return '0x'
+    const abs = this.isNegative() ? this.neg() : this
+    let end = abs.length
+    while (end > 1 && abs[end - 1] === 0) end--
+    const trimmed = abs.subarray(0, end)
+    const hex = bytesToHexString(trimmed)
+    return this.isNegative() ? '-' + hex : hex
   }
 
   toString(): string {

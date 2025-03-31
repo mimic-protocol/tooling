@@ -95,16 +95,6 @@ export class ByteArray extends Uint8Array {
   }
 
   /**
-   * Creates a ByteArray from an unsigned arbitrary-length integer.
-   * The resulting byte array is in little-endian order.
-   */
-  private static fromInteger<T extends number>(value: T, length: u8): ByteArray {
-    const self = new ByteArray(length)
-    for (let i: u8 = 0; i < length; i++) self[i] = (value >> (i * 8)) as u8
-    return self
-  }
-
-  /**
    * Converts a hexadecimal string to a ByteArray.
    * The input must contain an even number of characters.
    * It may optionally start with '0x'.
@@ -133,17 +123,48 @@ export class ByteArray extends Uint8Array {
   }
 
   /**
-   * Converts this ByteArray to a hexadecimal string.
+   * Creates a ByteArray from an unsigned arbitrary-length integer.
+   * The resulting byte array is in little-endian order.
    */
-  toHexString(): string {
-    return bytesToHexString(this)
+  private static fromInteger<T extends number>(value: T, length: u8): ByteArray {
+    const self = new ByteArray(length)
+    for (let i: u8 = 0; i < length; i++) self[i] = (value >> (i * 8)) as u8
+    return self
   }
 
   /**
-   * Converts this ByteArray to a string representation.
+   * Concatenates this ByteArray with another ByteArray.
    */
-  toString(): string {
-    return bytesToString(this)
+  concat(other: ByteArray): ByteArray {
+    const newArray = new ByteArray(this.length + other.length)
+    newArray.set(this, 0)
+    newArray.set(other, this.length)
+    return newArray
+  }
+
+  /**
+   * Concatenates this ByteArray with a signed 32-bit integer.
+   */
+  concatI32(other: i32): ByteArray {
+    return this.concat(ByteArray.fromI32(other))
+  }
+
+  /**
+   * Compares this ByteArray to another for equality.
+   */
+  @operator('==')
+  equals(other: ByteArray): boolean {
+    if (this.length != other.length) return false
+    for (let i = 0; i < this.length; i++) if (this[i] != other[i]) return false
+    return true
+  }
+
+  /**
+   * Compares this ByteArray to another for inequality.
+   */
+  @operator('!=')
+  notEqual(other: ByteArray): boolean {
+    return !(this == other)
   }
 
   /**
@@ -200,23 +221,6 @@ export class ByteArray extends Uint8Array {
     x = (x | paddedBytes[1]) << 8
     x = x | paddedBytes[0]
     return x
-  }
-
-  /**
-   * Concatenates this ByteArray with another ByteArray.
-   */
-  concat(other: ByteArray): ByteArray {
-    const newArray = new ByteArray(this.length + other.length)
-    newArray.set(this, 0)
-    newArray.set(other, this.length)
-    return newArray
-  }
-
-  /**
-   * Concatenates this ByteArray with a signed 32-bit integer.
-   */
-  concatI32(other: i32): ByteArray {
-    return this.concat(ByteArray.fromI32(other))
   }
 
   /**
@@ -292,20 +296,16 @@ export class ByteArray extends Uint8Array {
   }
 
   /**
-   * Compares this ByteArray to another for equality.
+   * Converts this ByteArray to a hexadecimal string.
    */
-  @operator('==')
-  equals(other: ByteArray): boolean {
-    if (this.length != other.length) return false
-    for (let i = 0; i < this.length; i++) if (this[i] != other[i]) return false
-    return true
+  toHexString(): string {
+    return bytesToHexString(this)
   }
 
   /**
-   * Compares this ByteArray to another for inequality.
+   * Converts this ByteArray to a string representation.
    */
-  @operator('!=')
-  notEqual(other: ByteArray): boolean {
-    return !(this == other)
+  toString(): string {
+    return bytesToString(this)
   }
 }

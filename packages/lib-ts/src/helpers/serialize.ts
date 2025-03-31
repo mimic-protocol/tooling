@@ -80,13 +80,7 @@ export function parseCSV(csvString: string): (string | null)[] {
     }
   }
 
-  if (parenthesisDepth !== 0) {
-    throw new Error('Unbalanced brackets at the end of the string')
-  }
-
-  if (csvString.length > 0) {
-    isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
-  }
-
+  if (parenthesisDepth !== 0) throw new Error('Unbalanced brackets at the end of the string')
+  if (csvString.length > 0) isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
   return tokens
 }

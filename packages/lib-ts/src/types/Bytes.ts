@@ -14,6 +14,21 @@ import { ByteArray } from './ByteArray'
  */
 export class Bytes extends ByteArray implements Serializable {
   /**
+   * Returns an empty Bytes instance initialized to zero.
+   */
+  static empty(): Bytes {
+    return changetype<Bytes>(ByteArray.empty())
+  }
+
+  /**
+   * Creates a Bytes instance from a signed 32-bit integer (i32).
+   * The resulting byte array is in little-endian order.
+   */
+  static fromI32(i: i32): Bytes {
+    return changetype<Bytes>(ByteArray.fromI32(i))
+  }
+
+  /**
    * Creates a Bytes instance from a ByteArray.
    */
   static fromByteArray(byteArray: ByteArray): Bytes {
@@ -32,8 +47,8 @@ export class Bytes extends ByteArray implements Serializable {
    * The input must contain an even number of characters.
    * It may optionally start with '0x'.
    */
-  static fromHexString(str: string): Bytes {
-    return changetype<Bytes>(ByteArray.fromHexString(str))
+  static fromHexString(hex: string): Bytes {
+    return changetype<Bytes>(ByteArray.fromHexString(hex))
   }
 
   /**
@@ -41,21 +56,6 @@ export class Bytes extends ByteArray implements Serializable {
    */
   static fromUTF8(str: string): Bytes {
     return Bytes.fromByteArray(ByteArray.fromUTF8(str))
-  }
-
-  /**
-   * Creates a Bytes instance from a signed 32-bit integer (i32).
-   * The resulting byte array is in little-endian order.
-   */
-  static fromI32(i: i32): Bytes {
-    return changetype<Bytes>(ByteArray.fromI32(i))
-  }
-
-  /**
-   * Returns an empty Bytes instance initialized to zero.
-   */
-  static empty(): Bytes {
-    return changetype<Bytes>(ByteArray.empty())
   }
 
   /**

@@ -55,11 +55,9 @@ export function normalizeScientificNotation(input: string): string {
     }
 
     for (; i < len; i++) {
-      const c = input.charAt(i)
-      if (c < '0' || c > '9') {
-        throw new Error('Invalid character in exponent part: ' + c)
-      }
-      exponentStr += c
+      const char = input.charAt(i)
+      if (char < '0' || char > '9') throw new Error(`Invalid character in exponent part: ${char}`)
+      exponentStr += char
     }
   }
 

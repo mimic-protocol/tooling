@@ -22,8 +22,8 @@ export class Address extends Bytes {
   /**
    * Converts a string representation of an address to an Address instance.
    */
-  static fromString(s: string): Address {
-    const bytes = Bytes.fromHexString(s)
+  static fromString(str: string): Address {
+    const bytes = Bytes.fromHexString(str)
     return this.fromBytes(bytes)
   }
 
@@ -31,9 +31,9 @@ export class Address extends Bytes {
    * Converts a Bytes instance to an Address.
    * Throws an error if the input is not exactly 20 bytes long.
    */
-  static fromBytes(b: Bytes): Address {
-    if (b.length != 20) throw new Error(`Bytes of length ${b.length} can not be converted to 20 byte addresses`)
-    return changetype<Address>(b)
+  static fromBytes(bytes: Bytes): Address {
+    if (bytes.length != 20) throw new Error(`Bytes of length ${bytes.length} can not be converted to 20 byte addresses`)
+    return changetype<Address>(bytes)
   }
 
   clone(): Address {
