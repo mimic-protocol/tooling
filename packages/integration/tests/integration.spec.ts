@@ -21,8 +21,16 @@ async function runTestCase(testCase: string): Promise<void> {
     const taskPath = join(path, 'src', 'task.ts')
     const outputPath = join(path, 'build')
 
+    let compilationSuccessful = true
+
     before('build task', () => {
-      spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-t', taskPath, '-o', outputPath])
+      const result = spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-t', taskPath, '-o', outputPath])
+
+      if (result.status !== 0) {
+        compilationSuccessful = false
+        console.error(`Compilation error in test case '${testCase}':`)
+        console.error(result.stderr.toString())
+      }
     })
 
     after('delete artifacts', () => {
@@ -30,6 +38,10 @@ async function runTestCase(testCase: string): Promise<void> {
     })
 
     it('run task', async () => {
+      if (!compilationSuccessful) {
+        throw new Error(`Unable to run test case '${testCase}' due to compilation errors`)
+      }
+
       const mockRunner = new MockRunner(outputPath)
       mockRunner.run()
       const expectedLogs = loadLogs(join(path, 'expected.log'))
