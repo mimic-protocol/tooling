@@ -14,7 +14,11 @@ describe('Integration tests', async () => {
   await Promise.all(testCases.map(runTestCase))
 
   after('lint', () => {
-    spawnSync('yarn', ['lint', '--fix'])
+    const resultLint = spawnSync('yarn', ['lint', '--fix'])
+    if (resultLint.status !== 0) {
+      console.error('Linting errors:')
+      console.error(resultLint.stderr.toString())
+    }
   })
 })
 
