@@ -51,14 +51,14 @@ function generateContractClass(
 
 function appendClassDefinition(lines: string[], contractName: string): void {
   lines.push(`export class ${contractName} {`)
-  lines.push(`  private address: ${LibTypes.Address};`)
-  lines.push(`  private chainId: u64;`)
-  lines.push(`  private blockNumber: ${LibTypes.BigInt};`)
+  lines.push(`  private address: ${LibTypes.Address}`)
+  lines.push(`  private chainId: u64`)
+  lines.push(`  private blockNumber: ${LibTypes.BigInt}`)
   lines.push(``)
   lines.push(`  constructor(address: ${LibTypes.Address}, chainId: u64) {`)
-  lines.push(`    this.address = address;`)
-  lines.push(`    this.chainId = chainId;`)
-  lines.push(`    this.blockNumber = environment.getCurrentBlockNumber(chainId);`)
+  lines.push(`    this.address = address`)
+  lines.push(`    this.chainId = chainId`)
+  lines.push(`    this.blockNumber = environment.getCurrentBlockNumber(chainId)`)
   lines.push(`  }`)
   lines.push(``)
 }
@@ -136,16 +136,16 @@ function appendFunctionBody(
   const contractCallCode = `environment.contractCall(this.address, this.chainId, this.blockNumber, '${fn.name}', [${callArgs}])`
 
   if (returnType === 'void') {
-    lines.push(`    ${contractCallCode};`)
+    lines.push(`    ${contractCallCode}`)
     return
   }
 
-  lines.push(`    const result = ${contractCallCode};`)
+  lines.push(`    const result = ${contractCallCode}`)
 
   if (typeof returnType === 'string' && returnType.endsWith('[]')) {
     const baseType = returnType.slice(0, -2) as InputType
     const mapFunction = generateTypeConversion(baseType, 'value', true)
-    lines.push(`    return result === '' ? [] : result.split(',').map(${mapFunction});`)
+    lines.push(`    return result === '' ? [] : result.split(',').map(${mapFunction})`)
   } else {
     const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
     lines.push(`    ${returnLine}`)
@@ -188,7 +188,7 @@ function generateTypeConversion(type: InputType, valueVarName: string, isMapFunc
       break
   }
 
-  return isMapFunction ? `${valueVarName} => ${conversion}` : `return ${conversion};`
+  return isMapFunction ? `${valueVarName} => ${conversion}` : `return ${conversion}`
 }
 
 function generateIntegerTypeMappings(): Record<string, InputType> {
