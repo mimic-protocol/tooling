@@ -46,8 +46,8 @@ describe('deploy', () => {
         context('when uploading to registry is successful', () => {
           const CID = '123'
 
-          beforeEach('mock register response', () => {
-            axiosMock.onPost(/.*\/register/gm).reply(200, { CID })
+          beforeEach('mock registry response', () => {
+            axiosMock.onPost(/.*\/tasks/gm).reply(200, { CID })
           })
 
           context('when output directory exists', () => {
@@ -75,7 +75,7 @@ describe('deploy', () => {
             const CID = '123'
 
             beforeEach('mock response', () => {
-              axiosMock.onPost(/.*\/register/gm).reply(200, { CID, errorMessage: `Failed to register task: ${CID}` })
+              axiosMock.onPost(/.*\/tasks/gm).reply(200, { CID, errorMessage: `Failed to register task: ${CID}` })
             })
 
             itThrowsACliError(command, `Failed to upload to registry`, 'RegistrationError', 1)

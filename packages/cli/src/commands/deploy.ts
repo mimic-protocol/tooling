@@ -57,7 +57,7 @@ export default class Deploy extends Command {
   private async uploadToRegistry(files: string[], key: string): Promise<string> {
     try {
       const form = filesToForm(files)
-      const { data } = await axios.post(`${MIMIC_REGISTRY}/register`, form, {
+      const { data } = await axios.post(`${MIMIC_REGISTRY}/tasks`, form, {
         headers: {
           'x-auth-token': key,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
