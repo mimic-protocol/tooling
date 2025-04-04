@@ -39,7 +39,7 @@ describe('InterfaceGenerator', () => {
       )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
-      expect(result).to.contain('this.timestamp = timestamp ? timestamp.getTime() : -1')
+      expect(result).to.contain('this.timestamp = timestamp ? timestamp.getTime() / 1000 : -1')
     })
   })
 

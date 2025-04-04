@@ -8,7 +8,7 @@ export class ERC20 {
   constructor(address: Address, chainId: u64, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
-    this.timestamp = timestamp ? timestamp.getTime() : -1
+    this.timestamp = timestamp ? timestamp.getTime() / 1000 : -1
   }
 
   name(): string {
