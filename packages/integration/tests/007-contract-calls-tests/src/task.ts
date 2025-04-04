@@ -17,7 +17,8 @@ export default function main(): void {
   usdcContract.symbol()
   usdcContract.allowance(Address.zero(), Address.zero())
 
-  const erc4626Contract = new ERC4626(Address.zero(), POLYGON_CHAIN_ID)
+  const customTimestamp = Date.fromString('2025-04-04T16:35:57-03:00')
+  const erc4626Contract = new ERC4626(Address.zero(), POLYGON_CHAIN_ID, customTimestamp)
   erc4626Contract.convertToAssets(BigInt.fromI32(1234))
 
   const safeContract = new SAFE(Address.zero(), MAINNET_CHAIN_ID)
