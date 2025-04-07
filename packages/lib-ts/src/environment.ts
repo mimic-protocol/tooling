@@ -125,7 +125,7 @@ export namespace environment {
       join([
         serialize(target),
         serialize(chainId),
-        serialize(timestamp ? timestamp.toISOString() : ''),
+        serialize(timestamp ? timestamp.getTime().toString() : ''),
         serialize(functionName),
         serializeArray(params),
       ])
