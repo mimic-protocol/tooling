@@ -3,12 +3,12 @@ import { Address, BigInt, environment } from '@mimicprotocol/lib-ts'
 export class ERC4626 {
   private address: Address
   private chainId: u64
-  private timestamp: i64
+  private timestamp: Date | null
 
   constructor(address: Address, chainId: u64, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
-    this.timestamp = timestamp ? timestamp.getTime() / 1000 : -1
+    this.timestamp = timestamp
   }
 
   allowance(owner: Address, spender: Address): BigInt {

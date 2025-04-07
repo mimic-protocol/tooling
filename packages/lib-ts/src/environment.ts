@@ -117,7 +117,7 @@ export namespace environment {
   export function contractCall(
     target: Address,
     chainId: u64,
-    timestamp: i64,
+    timestamp: Date | null,
     functionName: string,
     params: Bytes[]
   ): string {
@@ -125,7 +125,7 @@ export namespace environment {
       join([
         serialize(target),
         serialize(chainId),
-        serialize(timestamp >= 0 ? timestamp.toString() : ''),
+        serialize(timestamp ? timestamp.toISOString() : ''),
         serialize(functionName),
         serializeArray(params),
       ])
