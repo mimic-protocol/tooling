@@ -1,12 +1,12 @@
 import { expect } from 'chai'
 
-import ManifestHandler from '../src/ManifestHandler'
+import ManifestHandler from '../src/lib/ManifestHandler'
 
 describe('ManifestHandler', () => {
   const manifest = {
     version: '1.0.0',
     name: 'sample task',
-    inputs: [{ firstStaticNumber: 2 }, { secondStaticNumber: 3 }],
+    inputs: [{ firstStaticNumber: 'uint8' }, { secondStaticNumber: 'uint8' }],
     abis: [{ ERC20: './abis/ERC20.json' }],
   }
 
@@ -71,6 +71,13 @@ describe('ManifestHandler', () => {
 
       context('when the version is invalid', () => {
         itReturnsAnError({ ...manifest, version: '1.a' }, 'Must be a valid semver')
+      })
+
+      context('when an input is invalid', () => {
+        itReturnsAnError(
+          { ...manifest, inputs: [...manifest.inputs, { wrong: 'u8' }] },
+          'Must be a valid solidity type'
+        )
       })
 
       context('when the name is empty', () => {

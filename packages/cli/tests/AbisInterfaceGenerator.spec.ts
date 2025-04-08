@@ -1,17 +1,17 @@
 import { expect } from 'chai'
 
-import InterfaceGenerator from '../src/InterfaceGenerator'
+import AbisInterfaceGenerator from '../src/lib/AbisInterfaceGenerator'
 import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../src/types'
 
 import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'
 
 const CONTRACT_NAME = 'TestContract'
 
-describe('InterfaceGenerator', () => {
+describe('AbisInterfaceGenerator', () => {
   describe('when generating a class', () => {
     it('should generate a class with the exact contract name', () => {
       const abi = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`export class ${CONTRACT_NAME}`)
     })
@@ -19,7 +19,7 @@ describe('InterfaceGenerator', () => {
     it('should respect contract names with special characters', () => {
       const specialName = 'Test_Contract$123'
       const abi = [createViewFunction('getBalance', [], [{ name: 'balance', type: 'uint256' }])]
-      const result = InterfaceGenerator.generate(abi, specialName)
+      const result = AbisInterfaceGenerator.generate(abi, specialName)
 
       expect(result).to.contain(`export class ${specialName}`)
     })
@@ -28,7 +28,7 @@ describe('InterfaceGenerator', () => {
   describe('when initializing private properties and constructor', () => {
     it('should correctly initialize private properties in the constructor', () => {
       const abi = [createViewFunction('getValue', [], [{ type: 'uint256' }])]
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
       expect(result).to.contain(`private chainId: ${AssemblyTypes.u64}`)
@@ -44,7 +44,7 @@ describe('InterfaceGenerator', () => {
       const functionNames = ['getBalance', 'getName', 'getUserDetails']
       const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
     })
@@ -53,7 +53,7 @@ describe('InterfaceGenerator', () => {
       const functionNames = ['get_balance', 'getName123', 'get$Info']
       const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
     })
@@ -71,7 +71,7 @@ describe('InterfaceGenerator', () => {
         ...nonViewFunctionNames.map((name) => createNonViewFunction(name, [], [])),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       viewFunctionNames.concat(pureFunctionNames).forEach((name) => {
         expect(result).to.contain(`${name}()`)
@@ -85,7 +85,7 @@ describe('InterfaceGenerator', () => {
     it('should return an empty string if there are no view/pure functions', () => {
       const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
       expect(result).to.equal('')
     })
   })
@@ -109,7 +109,7 @@ describe('InterfaceGenerator', () => {
         ),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`addressParam: ${LibTypes.Address}`)
       expect(result).to.contain(`boolParam: ${AssemblyTypes.bool}`)
@@ -134,7 +134,7 @@ describe('InterfaceGenerator', () => {
         ),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`addressesArray: ${LibTypes.Address}[]`)
       expect(result).to.contain(`uint256Array: ${LibTypes.BigInt}[]`)
@@ -144,7 +144,7 @@ describe('InterfaceGenerator', () => {
     it('should handle parameters without names', () => {
       const abi = [createViewFunction('getValueWithUnnamedParams', [{ type: 'address' }, { type: 'uint256' }], [])]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`param0: ${LibTypes.Address}`)
       expect(result).to.contain(`param1: ${LibTypes.BigInt}`)
@@ -158,7 +158,7 @@ describe('InterfaceGenerator', () => {
         createViewFunction(functionName, [{ name: 'owner', type: 'address' }], [{ name: 'balance', type: 'uint256' }]),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
         `environment.contractCall(this.address, this.chainId, this.blockNumber, '${functionName}', [owner])`
@@ -178,7 +178,7 @@ describe('InterfaceGenerator', () => {
         ),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain('bigIntParam.toBytes()')
       expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
@@ -194,7 +194,7 @@ describe('InterfaceGenerator', () => {
       for (const type of returnTypes) {
         abi.push(createViewFunction(`get${type}`, [], [{ type }]))
       }
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
@@ -207,7 +207,7 @@ describe('InterfaceGenerator', () => {
     it('should correctly map array return types', () => {
       const abi = [createViewFunction('getAddressArray', [], [{ name: 'addresses', type: 'address[]' }])]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
         `return result === '' ? [] : result.split(',').map(value => ${LibTypes.Address}.fromString(value))`
@@ -217,7 +217,7 @@ describe('InterfaceGenerator', () => {
     it('should handle functions without return values', () => {
       const functionName = 'noReturn'
       const abi = [createViewFunction(functionName, [], [])]
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`${functionName}(): void {`)
       expect(result).to.contain(
@@ -237,7 +237,7 @@ describe('InterfaceGenerator', () => {
         ),
       ]
 
-      const result = InterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
       const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
 
       expect(importMatch).not.to.be.undefined

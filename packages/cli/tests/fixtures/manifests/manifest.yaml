@@ -1,7 +1,7 @@
 version: 1.0.0
 name: sample task
 inputs:
-  - firstStaticNumber: 2
-  - secondStaticNumber: 3
+  - firstStaticNumber: uint32
+  - secondStaticNumber: uint32
 abis:
   - ERC20: './abis/ERC20.json'
