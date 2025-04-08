@@ -1,5 +1,10 @@
 {
   "_call": "log",
   "_transfer": "log",
-  "_swap": "log"
+  "_swap": "log",
+  "inputs": {
+    "chainId": 1,
+    "amount": 10000,
+    "slippage": 95
+  }
 }

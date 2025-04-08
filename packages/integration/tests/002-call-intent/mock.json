@@ -1,3 +1,6 @@
 {
-  "_call": "log"
+  "_call": "log",
+  "inputs": {
+    "chainId": 1
+  }
 }
