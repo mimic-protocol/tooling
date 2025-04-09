@@ -32,10 +32,14 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
       expect(result).to.contain(`private chainId: ${AssemblyTypes.u64}`)
+      expect(result).to.contain(`private timestamp: Date | null`)
 
-      expect(result).to.contain(`constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}) {`)
+      expect(result).to.contain(
+        `constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}, timestamp: Date | null = null) {`
+      )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
+      expect(result).to.contain('this.timestamp = timestamp')
     })
   })
 
@@ -161,7 +165,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.blockNumber, '${functionName}', [owner])`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, '${functionName}', [owner])`
       )
     })
 
@@ -221,7 +225,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`${functionName}(): void {`)
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.blockNumber, '${functionName}', [])`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, '${functionName}', [])`
       )
       expect(result).not.to.contain('return')
     })

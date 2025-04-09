@@ -1,11 +1,4 @@
 {
-  "_getCurrentBlockNumber": {
-    "log": true,
-    "paramResponse": {
-      "1": "1",
-      "137": "2"
-    }
-  },
   "_contractCall": {
     "log": true,
     "default": ""
