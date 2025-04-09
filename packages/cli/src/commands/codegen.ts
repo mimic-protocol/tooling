@@ -1,6 +1,7 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
+import { join } from 'path'
 
 import AbisInterfaceGenerator from '../lib/AbisInterfaceGenerator'
 import InputsInterfaceGenerator from '../lib/InputsInterfaceGenerator'
@@ -50,14 +51,15 @@ export default class Codegen extends Command {
 
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-    generateAbisCode(manifest, outputDir)
+    generateAbisCode(manifest, outputDir, manifestDir)
     generateInputsCode(manifest, outputDir)
+    log.stopAction()
   }
 }
 
-function generateAbisCode(manifest: Manifest, outputDir: string) {
+function generateAbisCode(manifest: Manifest, outputDir: string, manifestDir: string) {
   for (const [contractName, path] of Object.entries(manifest.abis)) {
-    const abi = JSON.parse(fs.readFileSync(path, 'utf-8'))
+    const abi = JSON.parse(fs.readFileSync(join(manifestDir, '../', path), 'utf-8'))
     const abiInterface = AbisInterfaceGenerator.generate(abi, contractName)
     if (abiInterface.length > 0) fs.writeFileSync(`${outputDir}/${contractName}.ts`, abiInterface)
   }

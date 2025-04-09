@@ -4,4 +4,4 @@ inputs:
   - firstStaticNumber: uint32
   - secondStaticNumber: uint32
 abis:
-  - ERC20: './abis/ERC20.json'
+  - ERC20: '../abis/ERC20.json'
