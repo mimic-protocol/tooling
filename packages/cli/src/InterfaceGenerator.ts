@@ -52,13 +52,15 @@ function generateContractClass(
 function appendClassDefinition(lines: string[], contractName: string): void {
   lines.push(`export class ${contractName} {`)
   lines.push(`  private address: ${LibTypes.Address}`)
-  lines.push(`  private chainId: u64`)
-  lines.push(`  private blockNumber: ${LibTypes.BigInt}`)
+  lines.push(`  private chainId: ${AssemblyTypes.u64}`)
+  lines.push(`  private timestamp: ${AssemblyTypes.Date} | null`)
   lines.push(``)
-  lines.push(`  constructor(address: ${LibTypes.Address}, chainId: u64) {`)
+  lines.push(
+    `  constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}, timestamp: ${AssemblyTypes.Date} | null = null) {`
+  )
   lines.push(`    this.address = address`)
   lines.push(`    this.chainId = chainId`)
-  lines.push(`    this.blockNumber = environment.getCurrentBlockNumber(chainId)`)
+  lines.push(`    this.timestamp = timestamp`)
   lines.push(`  }`)
   lines.push(``)
 }
@@ -133,7 +135,7 @@ function appendFunctionBody(
   returnType: InputType | InputTypeArray | 'void',
   callArgs: string
 ): void {
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.blockNumber, '${fn.name}', [${callArgs}])`
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${fn.name}', [${callArgs}])`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)

@@ -3,21 +3,21 @@ import { Address, BigInt, Bytes, environment } from '@mimicprotocol/lib-ts'
 export class SAFE {
   private address: Address
   private chainId: u64
-  private blockNumber: BigInt
+  private timestamp: Date | null
 
-  constructor(address: Address, chainId: u64) {
+  constructor(address: Address, chainId: u64, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
-    this.blockNumber = environment.getCurrentBlockNumber(chainId)
+    this.timestamp = timestamp
   }
 
   VERSION(): string {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'VERSION', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'VERSION', [])
     return result
   }
 
   approvedHashes(param0: Address, param1: Bytes): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'approvedHashes', [
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'approvedHashes', [
       param0,
       param1,
     ])
@@ -25,7 +25,7 @@ export class SAFE {
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
-    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkNSignatures', [
+    environment.contractCall(this.address, this.chainId, this.timestamp, 'checkNSignatures', [
       dataHash,
       data,
       signatures,
@@ -34,7 +34,7 @@ export class SAFE {
   }
 
   checkSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes): void {
-    environment.contractCall(this.address, this.chainId, this.blockNumber, 'checkSignatures', [
+    environment.contractCall(this.address, this.chainId, this.timestamp, 'checkSignatures', [
       dataHash,
       data,
       signatures,
@@ -42,7 +42,7 @@ export class SAFE {
   }
 
   domainSeparator(): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'domainSeparator', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'domainSeparator', [])
     return Bytes.fromHexString(result)
   }
 
@@ -58,7 +58,7 @@ export class SAFE {
     refundReceiver: Address,
     _nonce: BigInt
   ): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'encodeTransactionData', [
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'encodeTransactionData', [
       to,
       value.toBytes(),
       data,
@@ -74,12 +74,12 @@ export class SAFE {
   }
 
   getChainId(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getChainId', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getChainId', [])
     return BigInt.fromString(result)
   }
 
   getModulesPaginated(start: Address, pageSize: BigInt): unknown[] {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getModulesPaginated', [
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getModulesPaginated', [
       start,
       pageSize.toBytes(),
     ])
@@ -87,12 +87,12 @@ export class SAFE {
   }
 
   getOwners(): Address[] {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getOwners', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getOwners', [])
     return result === '' ? [] : result.split(',').map((value) => Address.fromString(value))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getStorageAt', [
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getStorageAt', [
       offset.toBytes(),
       length.toBytes(),
     ])
@@ -100,7 +100,7 @@ export class SAFE {
   }
 
   getThreshold(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getThreshold', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getThreshold', [])
     return BigInt.fromString(result)
   }
 
@@ -116,7 +116,7 @@ export class SAFE {
     refundReceiver: Address,
     _nonce: BigInt
   ): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'getTransactionHash', [
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'getTransactionHash', [
       to,
       value.toBytes(),
       data,
@@ -132,22 +132,22 @@ export class SAFE {
   }
 
   isModuleEnabled(module: Address): bool {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'isModuleEnabled', [module])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'isModuleEnabled', [module])
     return bool.parse(result)
   }
 
   isOwner(owner: Address): bool {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'isOwner', [owner])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'isOwner', [owner])
     return bool.parse(result)
   }
 
   nonce(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'nonce', [])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'nonce', [])
     return BigInt.fromString(result)
   }
 
   signedMessages(param0: Bytes): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.blockNumber, 'signedMessages', [param0])
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'signedMessages', [param0])
     return BigInt.fromString(result)
   }
 }
