@@ -43,7 +43,10 @@ export default class Compile extends Command {
       '--exportRuntime',
     ]
 
-    const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })
+    const result = spawnSync('yarn', ['asc', ...ascArgs], {
+      cwd: outputDir,
+      stdio: 'inherit',
+    })
     if (result.status !== 0) {
       this.error('AssemblyScript compilation failed', {
         code: 'BuildError',
