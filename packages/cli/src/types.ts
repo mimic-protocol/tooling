@@ -36,6 +36,7 @@ export enum AssemblyTypes {
   i64 = 'i64',
   bool = 'bool',
   string = 'string',
+  Date = 'Date',
 }
 
 export type InputType = `${LibTypes}` | `${AssemblyTypes}` | 'unknown'

@@ -3,9 +3,9 @@ import * as fs from 'fs'
 import { load } from 'js-yaml'
 import { ZodError } from 'zod'
 
-import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from './errors'
-import { Manifest } from './types'
-import { ManifestValidator } from './validators'
+import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
+import { Manifest } from '../types'
+import { ManifestValidator } from '../validators'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +20,7 @@ export default {
     return ManifestValidator.parse(mergedManifest)
   },
 
-  load(command: Command, manifestDir: string) {
+  load(command: Command, manifestDir: string): Manifest {
     let loadedManifest
     try {
       loadedManifest = load(fs.readFileSync(manifestDir, 'utf-8'))
