@@ -10,7 +10,7 @@ export function enableLogging(value: boolean): void {
 }
 
 export function setTokenPrice(token: Token, price: USD): void {
-  _setTokenPrice(token.address.serialize(), token.chainId, price.value.serialize())
+  _setTokenPrice(token.address.serialize(), token.chainId, price.value.toString())
 }
 
 export function setRelevantTokens(address: Address, tokens: TokenAmount[]): void {
