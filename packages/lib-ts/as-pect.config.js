@@ -1,317 +1,64 @@
-import { IArray, IBigInt, IToken, ITokenAmount, LIST_TYPES, parseCSV } from './as-pect.helpers.js'
-
-// Constants
-const ONE_USD = 10n ** 18n // 1 USD in 18 decimals
-const ERROR_PREFIX = 'ERROR:'
-
 export default {
+  /**
+   * A set of globs passed to the glob package that qualify typescript files for testing.
+   */
   entries: ['tests/**/*.spec.ts'],
+  /**
+   * A set of globs passed to the glob package that qualify files to be added to each test.
+   */
+  include: ['tests/**/*.include.ts'],
+  /**
+   * A set of regexp that will disclude source files from testing.
+   */
   disclude: [/node_modules/],
+  /**
+   * Add your required AssemblyScript imports here.
+   */
   async instantiate(memory, createImports, instantiate, binary) {
-    // exports with basic error-throwing stubs to prevent null reference
-    let exports = {
-      __getString: () => {
-        throw new Error(`${ERROR_PREFIX} WASM module not initialized`)
-      },
-      __newString: () => {
-        throw new Error(`${ERROR_PREFIX} WASM module not initialized`)
-      },
-    }
+    let exports // Imports can reference this
 
-    // State management
-    const tokenPricesMap = new Map()
-    const relevantTokensMap = new Map()
-    let loggingEnabled = false
-
-    /**
-     * Logs function name and arguments if logging is enabled
-     * @param {string} fnName - Function name
-     * @param {any} args - Function arguments
-     */
-    const log = (fnName, args) => {
-      if (loggingEnabled) {
-        console.log(fnName, args)
-      }
-    }
-
-    /**
-     * Resets all state variables to initial values
-     */
-    const resetState = () => {
-      tokenPricesMap.clear()
-      relevantTokensMap.clear()
-      loggingEnabled = false
-    }
-
-    /**
-     * Filters token amounts based on minimum USD value
-     * @param {Array} tokenAmounts - Array of token amounts
-     * @param {BigInt} minUsdValue - Minimum USD value
-     * @returns {Array} - Filtered token amounts
-     */
-    const filterByMinUsdValue = (tokenAmounts, minUsdValue) => {
-      return tokenAmounts.filter((tokenAmount) => {
-        try {
-          const tokenPriceKey = createTokenKey(tokenAmount.token.address, tokenAmount.token.chainId)
-          const tokenPrice = tokenPricesMap.get(tokenPriceKey) || ONE_USD
-
-          return (
-            minUsdValue.value <= (tokenAmount.amount.value * tokenPrice) / 10n ** BigInt(tokenAmount.token.decimals)
-          )
-        } catch (error) {
-          log('filterByMinValueError', error)
-          return false
-        }
-      })
-    }
+    const tokenPrices = new Map()
 
     const myImports = {
       env: {
         memory,
         'console.log': (ptr) => {
-          try {
-            const string = exports.__getString(ptr)
-            console.log(string)
-          } catch (error) {
-            console.error('console.log error:', error)
-          }
+          const string = exports.__getString(ptr)
+          console.log(string)
         },
       },
       environment: {
-        /**
-         * Handles call operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
-        _call: (paramsPtr) => {
-          try {
-            const paramsStr = exports.__getString(paramsPtr)
-            log('call', paramsStr)
-          } catch (error) {
-            log('callError', error)
-          }
-        },
-        /**
-         * Handles swap operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
-        _swap: (paramsPtr) => {
-          try {
-            const paramsStr = exports.__getString(paramsPtr)
-            log('swap', paramsStr)
-          } catch (error) {
-            log('swapError', error)
-          }
-        },
-        /**
-         * Handles transfer operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
-        _transfer: (paramsPtr) => {
-          try {
-            const paramsStr = exports.__getString(paramsPtr)
-            log('transfer', paramsStr)
-          } catch (error) {
-            log('transferError', error)
-          }
-        },
-        /**
-         * Gets price for token at given address and chain
-         * @param {number} paramsPtr - Pointer to parameters
-         * @returns {number} - Pointer to price string
-         */
         _getPrice: (paramsPtr) => {
-          try {
-            const paramsStr = exports.__getString(paramsPtr)
-            log('getPrice', paramsStr)
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = paramsStr.split(',')
+          const address = params[0]
+          const chainId = params[1]
+          const key = `${address}:${chainId}`
 
-            if (!validateParamsString(paramsStr)) {
-              console.error(`${ERROR_PREFIX} Invalid or empty parameters`)
-              return
-            }
+          // Check if the price is set, if not, return default price
+          const price = tokenPrices.has(key) ? tokenPrices.get(key) : (1 * 10 ** 18).toString()
 
-            const params = parseCSV(paramsStr)
-            const address = params[0]
-            const chainId = params[1]
-
-            const key = createTokenKey(address, chainId)
-            const price = tokenPricesMap.has(key) ? tokenPricesMap.get(key).toString() : ONE_USD.toString()
-
-            return exports.__newString(price)
-          } catch (error) {
-            console.error(`${ERROR_PREFIX} ${error}`)
-          }
-        },
-        /**
-         * Gets relevant tokens based on filters and minimum value
-         * @param {number} paramsPtr - Pointer to parameters
-         * @returns {number} - Pointer to serialized relevant tokens
-         */
-        _getRelevantTokens: (paramsPtr) => {
-          try {
-            const paramsStr = exports.__getString(paramsPtr)
-            log('getRelevantTokens', paramsStr)
-
-            if (!validateParamsString(paramsStr)) {
-              console.error(`${ERROR_PREFIX} Invalid or empty parameters`)
-              return
-            }
-
-            const params = parseCSV(paramsStr)
-            if (params.length < 5) {
-              console.error(`${ERROR_PREFIX} Insufficient parameters for getRelevantTokens`)
-              return
-            }
-
-            const address = params[0]
-            const { items: chainIds } = IArray.parse(params[1])
-            const minUsdValue = IBigInt.parse(params[2])
-            const tokenFilters = IArray.parse(params[3]).items.map((item) => IToken.parse(item))
-            const listType = parseInt(params[4])
-
-            if (!address || !chainIds || !chainIds.length) {
-              console.error(`${ERROR_PREFIX} Missing required parameters: address or chainIds`)
-              return
-            }
-
-            const relevantTokens = []
-
-            for (const chainId of chainIds) {
-              const key = createTokenKey(address, chainId)
-              const tokenAmounts = relevantTokensMap.has(key) ? relevantTokensMap.get(key) : []
-
-              let filteredTokenAmounts = filterByMinUsdValue(tokenAmounts, minUsdValue)
-              filteredTokenAmounts = applyTokenFilters(filteredTokenAmounts, tokenFilters, listType)
-
-              relevantTokens.push(...filteredTokenAmounts)
-            }
-
-            return exports.__newString(relevantTokens.map((tokenAmount) => tokenAmount.serialize()).join('\n'))
-          } catch (error) {
-            console.error(`${ERROR_PREFIX} ${error}`)
-          }
+          return exports.__newString(price)
         },
       },
       helpers: {
-        /**
-         * Enables or disables logging
-         * @param {boolean} value - Enable/disable logging
-         */
-        _enableLogging: (value) => {
-          loggingEnabled = value
-        },
-        /**
-         * Sets token price for testing
-         * @param {number} addressPtr - Pointer to token address
-         * @param {string|number} chainId - Chain ID
-         * @param {number} pricePtr - Pointer to price string
-         */
         _setTokenPrice: (addressPtr, chainId, pricePtr) => {
-          try {
-            const address = exports.__getString(addressPtr)
-            const price = exports.__getString(pricePtr)
-
-            if (!address || !chainId) {
-              throw new Error(`${ERROR_PREFIX} Missing address or chainId for setTokenPrice`)
-            }
-
-            const key = createTokenKey(address, chainId)
-            tokenPricesMap.set(key, BigInt(price))
-          } catch (error) {
-            log('setTokenPriceError', error)
-          }
-        },
-        /**
-         * Sets relevant tokens for testing
-         * @param {number} addressPtr - Pointer to wallet address
-         * @param {number} tokensPtr - Pointer to tokens string
-         */
-        _setRelevantTokens: (addressPtr, tokensPtr) => {
-          try {
-            const address = exports.__getString(addressPtr)
-            const tokenAmountsStr = exports.__getString(tokensPtr)
-
-            if (!address) {
-              throw new Error(`${ERROR_PREFIX} Missing address for setRelevantTokens`)
-            }
-
-            const tokenAmounts = tokenAmountsStr.split('\n')
-
-            for (const tokenAmount of tokenAmounts) {
-              if (tokenAmount === '') continue
-              const parsedTokenAmount = ITokenAmount.parse(tokenAmount)
-              const key = createTokenKey(address, parsedTokenAmount.token.chainId)
-              const relevantTokens = relevantTokensMap.has(key) ? relevantTokensMap.get(key) : []
-              relevantTokens.push(parsedTokenAmount)
-              relevantTokensMap.set(key, relevantTokens)
-            }
-          } catch (error) {
-            log('setRelevantTokensError', error)
-          }
-        },
-        /**
-         * Resets all state to initial values
-         */
-        _resetState: () => {
-          resetState()
+          const address = exports.__getString(addressPtr)
+          const price = exports.__getString(pricePtr)
+          const key = `${address}:${chainId}`
+          tokenPrices.set(key, price)
         },
       },
     }
 
-    // Initialize the WASM module
     let instance = instantiate(binary, createImports(myImports))
-    instance
-      .then((i) => {
-        exports = i.exports
-      })
-      .catch((error) => {
-        console.error('Failed to initialize WASM module:', error)
-      })
-
+    instance.then((i) => {
+      exports = i.exports
+    })
     return instance
   },
+  /**
+   * Specify if the binary wasm file should be written to the file system.
+   */
   outputBinary: false,
-}
-
-/**
- * Validates that a parameter string exists and is not empty
- * @param {string} paramsStr - Parameter string to validate
- * @returns {boolean} - True if valid, false otherwise
- */
-const validateParamsString = (paramsStr) => {
-  return paramsStr && paramsStr.trim().length > 0
-}
-
-/**
- * Creates a token key from address and chainId
- * @param {string} address - Token address
- * @param {string|number} chainId - Chain ID
- * @returns {string} - Formatted key
- */
-const createTokenKey = (address, chainId) => {
-  if (!address || !chainId) {
-    throw new Error(`${ERROR_PREFIX} Missing address or chainId for token key`)
-  }
-  return `${address}:${chainId}`
-}
-
-/**
- * Applies token filters based on list type
- * @param {Array} tokenAmounts - Array of token amounts
- * @param {Array} tokenFilters - Array of token filters
- * @param {number} listType - Filter list type (ALLOW/DENY)
- * @returns {Array} - Filtered token amounts
- */
-const applyTokenFilters = (tokenAmounts, tokenFilters, listType) => {
-  try {
-    if (listType === LIST_TYPES.ALLOW) {
-      return tokenAmounts.filter((tokenAmount) => tokenFilters.some((filter) => filter.equals(tokenAmount.token)))
-    } else if (listType === LIST_TYPES.DENY) {
-      return tokenAmounts.filter((tokenAmount) => !tokenFilters.some((filter) => filter.equals(tokenAmount.token)))
-    } else {
-      throw new Error(`${ERROR_PREFIX} Invalid list type: ${listType}`)
-    }
-  } catch (error) {
-    log('applyTokenFiltersError', error)
-    throw error
-  }
 }

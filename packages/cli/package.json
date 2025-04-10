@@ -9,7 +9,7 @@
   },
   "scripts": {
     "postinstall": "yarn build",
-    "build": "rm -rf dist && tsc && yarn copyfiles -u 1 \"src/templates/{**/*,.*}\" dist && yarn copyfiles -u 2 \"../lib-ts/as-pect.helpers.js\" \"../lib-ts/as-pect.config.js\" dist/templates",
+    "build": "rm -rf dist && tsc && yarn copyfiles -u 1 \"src/templates/{**/*,.*}\" dist",
     "start": "yarn build && node ./bin/run.js",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 30000",
     "lint": "eslint ."
