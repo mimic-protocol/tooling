@@ -35,10 +35,10 @@ export default class MockRunner {
   private initializeWasmInstance(taskFolder: string): WebAssembly.Instance {
     try {
       const taskPath = join(taskFolder, 'task.wasm')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const manifest = this.readJsonFile<any>(join(taskFolder, 'manifest.json'))
-      const mock = this.readJsonFile<MockConfig>(join(taskFolder, '../mock.json'), MockConfigValidator)
-      const imports = this.generateImports(mock, manifest.inputs)
+
+      let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(taskFolder, '../mock.json'), MockConfigValidator)
+      inputs = inputs || {}
+      const imports = this.generateImports(mock, inputs as Record<string, number>)
 
       const wasmBuffer = fs.readFileSync(taskPath)
       const wasmModule = new WebAssembly.Module(wasmBuffer)

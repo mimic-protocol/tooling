@@ -3,8 +3,8 @@ import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import ManifestHandler from '../lib/ManifestHandler'
 import log from '../log'
-import ManifestHandler from '../ManifestHandler'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'

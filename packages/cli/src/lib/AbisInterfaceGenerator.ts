@@ -1,4 +1,4 @@
-import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from './types'
+import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
 type ImportedTypes = LibTypes | 'environment'
 
