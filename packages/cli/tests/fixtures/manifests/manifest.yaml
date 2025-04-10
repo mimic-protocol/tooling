@@ -3,5 +3,6 @@ name: sample task
 inputs:
   - firstStaticNumber: uint32
   - secondStaticNumber: uint32
+  - isTrue: bool
 abis:
   - ERC20: '../abis/ERC20.json'

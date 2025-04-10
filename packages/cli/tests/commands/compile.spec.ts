@@ -35,7 +35,11 @@ describe('compile', () => {
 
           const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-          expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 'uint32', secondStaticNumber: 'uint32' })
+          expect(manifest.inputs).to.be.deep.equal({
+            firstStaticNumber: 'uint32',
+            secondStaticNumber: 'uint32',
+            isTrue: 'bool',
+          })
         })
       })
 
@@ -128,7 +132,11 @@ describe('compile', () => {
 
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-      expect(manifest.inputs).to.be.deep.equal({ firstStaticNumber: 'uint32', secondStaticNumber: 'uint32' })
+      expect(manifest.inputs).to.be.deep.equal({
+        firstStaticNumber: 'uint32',
+        secondStaticNumber: 'uint32',
+        isTrue: 'bool',
+      })
     })
   })
 })
