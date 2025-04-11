@@ -1,3 +1,17 @@
+export class StateManager {
+  loggingEnabled = false
+  tokenPricesMap = new Map()
+  relevantTokensMap = new Map()
+  contractCallMap = new Map()
+
+  reset() {
+    this.loggingEnabled = false
+    this.tokenPricesMap.clear()
+    this.relevantTokensMap.clear()
+    this.contractCallMap.clear()
+  }
+}
+
 export class IBigInt {
   static SERIALIZED_PREFIX = 'BigInt'
   value = 0n

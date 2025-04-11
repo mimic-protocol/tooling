@@ -1,4 +1,4 @@
-import { IArray, IBigInt, IToken, ITokenAmount, LIST_TYPES, parseCSV } from '../../../lib-ts/as-pect.helpers.js'
+import { IArray, IBigInt, IToken, ITokenAmount, LIST_TYPES, parseCSV, StateManager } from './as-pect.helpers.js'
 
 // Constants
 const ONE_USD = 10n ** 18n // 1 USD in 18 decimals
@@ -18,10 +18,7 @@ export default {
       },
     }
 
-    // State management
-    const tokenPricesMap = new Map()
-    const relevantTokensMap = new Map()
-    let loggingEnabled = false
+    const stateManager = new StateManager()
 
     /**
      * Logs function name and arguments if logging is enabled
@@ -29,18 +26,9 @@ export default {
      * @param {any} args - Function arguments
      */
     const log = (fnName, args) => {
-      if (loggingEnabled) {
+      if (stateManager.loggingEnabled) {
         console.log(fnName, args)
       }
-    }
-
-    /**
-     * Resets all state variables to initial values
-     */
-    const resetState = () => {
-      tokenPricesMap.clear()
-      relevantTokensMap.clear()
-      loggingEnabled = false
     }
 
     /**
@@ -53,7 +41,7 @@ export default {
       return tokenAmounts.filter((tokenAmount) => {
         try {
           const tokenPriceKey = createTokenKey(tokenAmount.token.address, tokenAmount.token.chainId)
-          const tokenPrice = tokenPricesMap.get(tokenPriceKey) || ONE_USD
+          const tokenPrice = stateManager.tokenPricesMap.get(tokenPriceKey) || ONE_USD
 
           return (
             minUsdValue.value <= (tokenAmount.amount.value * tokenPrice) / 10n ** BigInt(tokenAmount.token.decimals)
@@ -134,7 +122,9 @@ export default {
             const chainId = params[1]
 
             const key = createTokenKey(address, chainId)
-            const price = tokenPricesMap.has(key) ? tokenPricesMap.get(key).toString() : ONE_USD.toString()
+            const price = stateManager.tokenPricesMap.has(key)
+              ? stateManager.tokenPricesMap.get(key).toString()
+              : ONE_USD.toString()
 
             return exports.__newString(price)
           } catch (error) {
@@ -177,7 +167,9 @@ export default {
 
             for (const chainId of chainIds) {
               const key = createTokenKey(address, chainId)
-              const tokenAmounts = relevantTokensMap.has(key) ? relevantTokensMap.get(key) : []
+              const tokenAmounts = stateManager.relevantTokensMap.has(key)
+                ? stateManager.relevantTokensMap.get(key)
+                : []
 
               let filteredTokenAmounts = filterByMinUsdValue(tokenAmounts, minUsdValue)
               filteredTokenAmounts = applyTokenFilters(filteredTokenAmounts, tokenFilters, listType)
@@ -190,6 +182,44 @@ export default {
             console.error(`${ERROR_PREFIX} ${error}`)
           }
         },
+        /**
+         * Performs a contract call with the given parameters
+         * @param {number} paramsPtr - Pointer to parameters
+         * @returns {number} - Pointer to result string
+         */
+        _contractCall: (paramsPtr) => {
+          try {
+            const paramsStr = exports.__getString(paramsPtr)
+            log('contractCall', paramsStr)
+
+            if (!validateParamsString(paramsStr)) {
+              console.error(`${ERROR_PREFIX} Invalid or empty parameters`)
+              return
+            }
+
+            const params = parseCSV(paramsStr)
+            if (params.length < 5) {
+              console.error(`${ERROR_PREFIX} Insufficient parameters for contractCall`)
+              return
+            }
+
+            const address = params[0]
+            const chainId = params[1]
+            const fnName = params[3]
+
+            if (!address || !chainId || !fnName) {
+              console.error(`${ERROR_PREFIX} Missing required parameters: address or chainId or fnName`)
+              return
+            }
+
+            const value = stateManager.contractCallMap.get(paramsStr)
+
+            const response = exports.__newString(value ?? '')
+            return response
+          } catch (error) {
+            log('contractCallError', error)
+          }
+        },
       },
       helpers: {
         /**
@@ -197,7 +227,7 @@ export default {
          * @param {boolean} value - Enable/disable logging
          */
         _enableLogging: (value) => {
-          loggingEnabled = value
+          stateManager.loggingEnabled = value
         },
         /**
          * Sets token price for testing
@@ -215,7 +245,7 @@ export default {
             }
 
             const key = createTokenKey(address, chainId)
-            tokenPricesMap.set(key, BigInt(price))
+            stateManager.tokenPricesMap.set(key, BigInt(price))
           } catch (error) {
             log('setTokenPriceError', error)
           }
@@ -240,19 +270,35 @@ export default {
               if (tokenAmount === '') continue
               const parsedTokenAmount = ITokenAmount.parse(tokenAmount)
               const key = createTokenKey(address, parsedTokenAmount.token.chainId)
-              const relevantTokens = relevantTokensMap.has(key) ? relevantTokensMap.get(key) : []
+              const relevantTokens = stateManager.relevantTokensMap.has(key)
+                ? stateManager.relevantTokensMap.get(key)
+                : []
               relevantTokens.push(parsedTokenAmount)
-              relevantTokensMap.set(key, relevantTokens)
+              stateManager.relevantTokensMap.set(key, relevantTokens)
             }
           } catch (error) {
             log('setRelevantTokensError', error)
           }
         },
         /**
+         * Sets contract call response for testing
+         * @param {number} paramsPtr - Pointer to parameters string
+         * @param {number} valuePtr - Pointer to return value string
+         */
+        _setContractCall: (paramsPtr, valuePtr) => {
+          try {
+            const paramsStr = exports.__getString(paramsPtr)
+            const value = exports.__getString(valuePtr)
+            stateManager.contractCallMap.set(paramsStr, value)
+          } catch (error) {
+            log('setContractCallError', error)
+          }
+        },
+        /**
          * Resets all state to initial values
          */
         _resetState: () => {
-          resetState()
+          stateManager.reset()
         },
       },
     }
