@@ -67,11 +67,6 @@ describe('BigInt', () => {
         expect(result.toI32()).toBe(-456)
       })
 
-      it('ignores a decimal point and truncates the number', () => {
-        const result = BigInt.fromString('12.34')
-        expect(result.toI32()).toBe(12)
-      })
-
       it('parses a large 30-digit decimal', () => {
         const big9 = BigInt.fromString('999999999999999999999999999999')
         const big9asString = big9.toString()
@@ -135,11 +130,6 @@ describe('BigInt', () => {
         expect(result.toI32()).toBe(10)
       })
 
-      it('parses a negative exponent leading to zero', () => {
-        const result = BigInt.fromString('12e-3')
-        expect(result.isZero()).toBe(true)
-      })
-
       it('handles negative number with exponent', () => {
         const result = BigInt.fromString('-2.5E1')
         expect(result.toI32()).toBe(-25)
@@ -160,9 +150,10 @@ describe('BigInt', () => {
     })
 
     describe('invalid inputs', () => {
-      it('returns zero for an empty string', () => {
-        const result = BigInt.fromString('')
-        expect(result.isZero()).toBe(true)
+      it('throws when en empty string is given', () => {
+        expect(() => {
+          BigInt.fromString('')
+        }).toThrow('Received invalid empty string')
       })
 
       it('throws when invalid characters are passed', () => {
@@ -175,6 +166,18 @@ describe('BigInt', () => {
         expect(() => {
           BigInt.fromString('++123')
         }).toThrow()
+      })
+
+      it('throws when requesting more decimals than the precision allowed', () => {
+        expect(() => {
+          BigInt.fromString('12.34')
+        }).toThrow('Too many decimal places. Max allowed: 2, found: 0')
+      })
+
+      it('throws when requesting more decimals than the precision allowed with scientific notation', () => {
+        expect(() => {
+          BigInt.fromString('12.34e1')
+        }).toThrow('Too many decimal places. Max allowed: 1, found: 0')
       })
     })
   })

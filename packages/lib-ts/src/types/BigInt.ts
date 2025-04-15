@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bytesToHexString, normalizeScientificNotation, Serializable } from '../helpers'
+import { areAllZeros, bytesToHexString, normalizeScientificNotation, Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -114,7 +114,11 @@ export class BigInt extends Uint8Array implements Serializable {
     let result = BigInt.fromStringRaw(wholePart).upscale(precision)
 
     if (parts.length > 1 && parts[1].length > 0) {
-      const decimalPart = parts[1].padEnd(precision, '0').substring(0, precision)
+      const decimalDigits = parts[1]
+      if (decimalDigits.length > <i32>precision && !areAllZeros(decimalDigits)) {
+        throw new Error(`Too many decimal places. Max allowed: ${precision}, found: ${decimalDigits.length}`)
+      }
+      const decimalPart = parts[1].padEnd(precision, '0')
       result = result.plus(BigInt.fromString(decimalPart))
     }
 
@@ -149,6 +153,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   private static fromStringRaw(str: string): BigInt {
+    if (str.length == 0) throw new Error('Received invalid empty string')
     let result = BigInt.zero()
     for (let i = 0; i < str.length; i++) {
       const c = str.charCodeAt(i)
