@@ -1,6 +1,6 @@
 {
   "_contractCall": {
     "log": true,
-    "default": ""
+    "default": "0x00"
   }
 }
