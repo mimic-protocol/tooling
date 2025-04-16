@@ -13,4 +13,4 @@ export default [
       '@typescript-eslint/no-namespace': 'off',
     },
   },
-];
+]

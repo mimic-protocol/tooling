@@ -1,6 +1,5 @@
 import { IArray, IBigInt, IToken, ITokenAmount, LIST_TYPES, parseCSV, StateManager } from './as-pect.helpers.js'
 
-// Constants
 const ONE_USD = 10n ** 18n // 1 USD in 18 decimals
 const ERROR_PREFIX = 'ERROR:'
 
@@ -8,7 +7,6 @@ export default {
   entries: ['tests/**/*.spec.ts'],
   disclude: [/node_modules/],
   async instantiate(memory, createImports, instantiate, binary) {
-    // exports with basic error-throwing stubs to prevent null reference
     let exports = {
       __getString: () => {
         throw new Error(`${ERROR_PREFIX} WASM module not initialized`)
@@ -66,10 +64,6 @@ export default {
         },
       },
       environment: {
-        /**
-         * Handles call operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
         _call: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -78,10 +72,6 @@ export default {
             log('callError', error)
           }
         },
-        /**
-         * Handles swap operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
         _swap: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -90,10 +80,6 @@ export default {
             log('swapError', error)
           }
         },
-        /**
-         * Handles transfer operations
-         * @param {number} paramsPtr - Pointer to parameters
-         */
         _transfer: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -102,11 +88,6 @@ export default {
             log('transferError', error)
           }
         },
-        /**
-         * Gets price for token at given address and chain
-         * @param {number} paramsPtr - Pointer to parameters
-         * @returns {number} - Pointer to price string
-         */
         _getPrice: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -131,11 +112,6 @@ export default {
             console.error(`${ERROR_PREFIX} ${error}`)
           }
         },
-        /**
-         * Gets relevant tokens based on filters and minimum value
-         * @param {number} paramsPtr - Pointer to parameters
-         * @returns {number} - Pointer to serialized relevant tokens
-         */
         _getRelevantTokens: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -182,11 +158,6 @@ export default {
             console.error(`${ERROR_PREFIX} ${error}`)
           }
         },
-        /**
-         * Performs a contract call with the given parameters
-         * @param {number} paramsPtr - Pointer to parameters
-         * @returns {number} - Pointer to result string
-         */
         _contractCall: (paramsPtr) => {
           try {
             const paramsStr = exports.__getString(paramsPtr)
@@ -303,7 +274,6 @@ export default {
       },
     }
 
-    // Initialize the WASM module
     let instance = instantiate(binary, createImports(myImports))
     instance
       .then((i) => {

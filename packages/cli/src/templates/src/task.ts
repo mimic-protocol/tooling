@@ -42,13 +42,11 @@ export default function main(): void {
   console.log(`Total portfolio value: $${portfolioValue.toString()} USD`)
 
   // Step 3: Calculate and display current allocation
-  console.log('\nCurrent Portfolio Allocation:')
+  console.log('Current Portfolio Allocation:')
   for (let i = 0; i < relevantTokens.length; i++) {
     const tokenAmount = relevantTokens[i]
     const tokenValue = tokenAmount.toUsd()
     const tokenValueStr = tokenValue.toString()
-    // We can't do percentage calculation with BigInt directly in AssemblyScript
-    // so we'll just show the raw value
     console.log(`${tokenAmount.token.symbol} (Chain: ${tokenAmount.token.chainId}): $${tokenValueStr}`)
   }
 
@@ -89,5 +87,5 @@ export default function main(): void {
     ethReceived.amount.div(BigInt.fromI32(100)).times(BigInt.fromI32(95)) // 5% slippage protection
   )
 
-  console.log('\nPortfolio analysis complete.')
+  console.log('Portfolio analysis complete.')
 }
