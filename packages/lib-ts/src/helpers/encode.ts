@@ -9,7 +9,7 @@ export function encodeCallData(keccak256: string, params: Bytes[]): Bytes {
 
   return params.reduce<Bytes>((acc, param) => {
     if (param.length > EVM_ENCODE_SLOT_SIZE)
-      throw new Error(`Bytes length is greater than fixed length: ${param.length} > ${EVM_ENCODE_SLOT_SIZE}`)
+      throw new Error(`Param size is larger than ${EVM_ENCODE_SLOT_SIZE} bytes: ${param.toHexString()}`)
 
     const paddedParam = new Bytes(EVM_ENCODE_SLOT_SIZE - param.length).concat(param)
     return acc.concat(paddedParam)
