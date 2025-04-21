@@ -1,5 +1,4 @@
-import { utils } from 'ethers'
-
+import { getKeccak256Selector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
 type ImportedTypes = LibTypes | 'environment' | 'encodeCallData'
@@ -137,10 +136,8 @@ function appendFunctionBody(
   returnType: InputType | InputTypeArray | 'void',
   callArgs: string
 ): void {
-  const functionSignature = `${fn.name}(${(fn.inputs || []).map((input) => input.type).join(',')})`
-  const keccak256Selector = utils.id(functionSignature).slice(0, 10)
-
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${keccak256Selector}', [${callArgs}]))`
+  const selector = getKeccak256Selector(fn)
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [${callArgs}]))`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)

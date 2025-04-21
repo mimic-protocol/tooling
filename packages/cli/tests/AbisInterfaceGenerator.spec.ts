@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 
+import { getKeccak256Selector } from '../src/helpers'
 import AbisInterfaceGenerator from '../src/lib/AbisInterfaceGenerator'
 import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../src/types'
 
@@ -164,8 +165,10 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      const selector = getKeccak256Selector(abi[0])
+
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.timestamp, '${functionName}', [owner])`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [owner]))`
       )
     })
 
@@ -223,9 +226,11 @@ describe('AbisInterfaceGenerator', () => {
       const abi = [createViewFunction(functionName, [], [])]
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      const selector = getKeccak256Selector(abi[0])
+
       expect(result).to.contain(`${functionName}(): void {`)
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.timestamp, '${functionName}', [])`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', []))`
       )
       expect(result).not.to.contain('return')
     })
