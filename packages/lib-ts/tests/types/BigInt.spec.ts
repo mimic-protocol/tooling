@@ -171,13 +171,13 @@ describe('BigInt', () => {
       it('throws when requesting more decimals than the precision allowed', () => {
         expect(() => {
           BigInt.fromString('12.34')
-        }).toThrow('Too many decimal places. Max allowed: 2, found: 0')
+        }).toThrow('Too many decimal places. Max allowed: 0, found: 2')
       })
 
       it('throws when requesting more decimals than the precision allowed with scientific notation', () => {
         expect(() => {
           BigInt.fromString('12.34e1')
-        }).toThrow('Too many decimal places. Max allowed: 1, found: 0')
+        }).toThrow('Too many decimal places. Max allowed: 0, found: 1')
       })
     })
   })
