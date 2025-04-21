@@ -1,6 +1,8 @@
+import { utils } from 'ethers'
+
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment'
+type ImportedTypes = LibTypes | 'environment' | 'encodeCallData'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -16,7 +18,7 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address])
+    const importedTypes = new Set<ImportedTypes>(['environment', 'encodeCallData', LibTypes.BigInt, LibTypes.Address])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -135,7 +137,10 @@ function appendFunctionBody(
   returnType: InputType | InputTypeArray | 'void',
   callArgs: string
 ): void {
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${fn.name}', [${callArgs}])`
+  const functionSignature = `${fn.name}(${(fn.inputs || []).map((input) => input.type).join(',')})`
+  const keccak256Selector = utils.id(functionSignature).slice(0, 10)
+
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${keccak256Selector}', [${callArgs}]))`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)
