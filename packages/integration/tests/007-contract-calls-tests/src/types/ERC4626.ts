@@ -1,4 +1,4 @@
-import { Address, BigInt, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, encodeCallData, environment } from '@mimicprotocol/lib-ts'
 
 export class ERC4626 {
   private address: Address
@@ -12,104 +12,182 @@ export class ERC4626 {
   }
 
   allowance(owner: Address, spender: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'allowance', [owner, spender])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xdd62ed3e', [owner, spender])
+    )
     return BigInt.fromString(result)
   }
 
   asset(): Address {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'asset', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x38d52e0f', [])
+    )
     return Address.fromString(result)
   }
 
   balanceOf(account: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'balanceOf', [account])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x70a08231', [account])
+    )
     return BigInt.fromString(result)
   }
 
   convertToAssets(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'convertToAssets', [
-      shares.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x07a2d13a', [shares.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   convertToShares(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'convertToShares', [
-      assets.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xc6e6f592', [assets.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   decimals(): u8 {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'decimals', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x313ce567', [])
+    )
     return u8.parse(result)
   }
 
   maxDeposit(param0: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'maxDeposit', [param0])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x402d267d', [param0])
+    )
     return BigInt.fromString(result)
   }
 
   maxMint(param0: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'maxMint', [param0])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xc63d75b6', [param0])
+    )
     return BigInt.fromString(result)
   }
 
   maxRedeem(owner: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'maxRedeem', [owner])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xd905777e', [owner])
+    )
     return BigInt.fromString(result)
   }
 
   maxWithdraw(owner: Address): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'maxWithdraw', [owner])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xce96cb77', [owner])
+    )
     return BigInt.fromString(result)
   }
 
   name(): string {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'name', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x06fdde03', [])
+    )
     return result
   }
 
   previewDeposit(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'previewDeposit', [
-      assets.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xef8b30f7', [assets.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   previewMint(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'previewMint', [
-      shares.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xb3d7f6b9', [shares.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   previewRedeem(shares: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'previewRedeem', [
-      shares.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x4cdad506', [shares.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   previewWithdraw(assets: BigInt): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'previewWithdraw', [
-      assets.toBytes(),
-    ])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x0a28a477', [assets.toBytes()])
+    )
     return BigInt.fromString(result)
   }
 
   symbol(): string {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'symbol', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x95d89b41', [])
+    )
     return result
   }
 
   totalAssets(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'totalAssets', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x01e1d114', [])
+    )
     return BigInt.fromString(result)
   }
 
   totalSupply(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, 'totalSupply', [])
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x18160ddd', [])
+    )
     return BigInt.fromString(result)
   }
 }
