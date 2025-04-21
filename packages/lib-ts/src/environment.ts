@@ -118,16 +118,14 @@ export namespace environment {
     target: Address,
     chainId: u64,
     timestamp: Date | null,
-    functionName: string,
-    params: Bytes[]
+    callData: Bytes
   ): string {
     return _contractCall(
       join([
         serialize(target),
         serialize(chainId),
         serialize(timestamp ? timestamp.getTime().toString() : ''),
-        serialize(functionName),
-        serializeArray(params),
+        serialize(callData),
       ])
     )
   }

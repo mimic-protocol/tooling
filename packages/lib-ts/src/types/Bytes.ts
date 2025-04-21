@@ -125,7 +125,6 @@ export class Bytes extends ByteArray {
    * The argument must be of type Bytes.
    */
   concat(other: ByteArray): Bytes {
-    assert(other instanceof Bytes, 'Argument must be of type Bytes')
     return changetype<Bytes>(super.concat(other))
   }
 
