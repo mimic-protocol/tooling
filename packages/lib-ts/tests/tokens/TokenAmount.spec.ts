@@ -60,6 +60,13 @@ describe('TokenAmount', () => {
         TokenAmount.fromStringDecimal(randomToken(), invalidAmount)
       }).toThrow()
     })
+
+    it('throws an error when creating a token amount with more decimals than the requested precision', () => {
+      expect(() => {
+        const amount = '0.1234567890123456789'
+        TokenAmount.fromStringDecimal(randomToken(), amount)
+      }).toThrow('Too many decimal places. Max allowed: 18, found: 19')
+    })
   })
 
   describe('parse', () => {
@@ -429,13 +436,6 @@ describe('TokenAmount', () => {
       const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
-    })
-
-    it('truncates numbers with more than 18 decimals', () => {
-      const amount = '0.1234567890123456789'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
-
-      expect(tokenAmount.toString()).toBe(amount.substring(0, amount.length - 1) + ' ' + tokenAmount.symbol)
     })
   })
 

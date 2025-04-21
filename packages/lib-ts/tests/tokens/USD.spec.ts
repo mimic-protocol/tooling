@@ -328,11 +328,11 @@ describe('USD', () => {
       expect(usd.toString()).toBe(amount)
     })
 
-    it('truncates numbers with more than 18 decimals', () => {
-      const amount = '0.1234567890123456789'
-      const usd = USD.fromStringDecimal(amount)
-
-      expect(usd.toString()).toBe(amount.substring(0, amount.length - 1))
+    it('throws an error when requesting more decimals than the allowed precision', () => {
+      expect(() => {
+        const amount = '0.1234567890123456789'
+        USD.fromStringDecimal(amount)
+      }).toThrow('Too many decimal places. Max allowed: 18, found: 19')
     })
   })
 

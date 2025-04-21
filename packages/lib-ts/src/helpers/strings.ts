@@ -8,6 +8,11 @@ export function bytesToHexString(bytes: Uint8Array): string {
   return hex
 }
 
+export function areAllZeros(str: string): boolean {
+  for (let i = 0; i < str.length; i++) if (str.charCodeAt(i) !== 48) return false
+  return true
+}
+
 export function normalizeScientificNotation(input: string): string {
   let len = input.length
   if (len === 0) return input
