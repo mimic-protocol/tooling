@@ -8,6 +8,7 @@ export function encodeCallData(keccak256: string, params: Bytes[]): Bytes {
   if (!isHex(keccak256, true)) throw new Error('Invalid keccak256: must be a valid hex string (0x prefixed)')
 
   return params.reduce<Bytes>((acc, param) => {
+    // TODO: Remove this once we support dynamic arguments
     if (param.length > EVM_ENCODE_SLOT_SIZE)
       throw new Error(`Param size is larger than ${EVM_ENCODE_SLOT_SIZE} bytes: ${param.toHexString()}`)
 

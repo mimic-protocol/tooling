@@ -9,6 +9,8 @@ import { areAllZeros, bytesToHexString, isHex, normalizeScientificNotation, Seri
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
+const ZERO_ASCII = '0'.charCodeAt(0)
+
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
  */
@@ -557,7 +559,7 @@ export class BigInt extends Uint8Array implements Serializable {
         carry = current % 10
       }
 
-      digits.push('0'.charCodeAt(0) + carry)
+      digits.push(ZERO_ASCII + carry)
 
       while (absValue.length > 1 && absValue[absValue.length - 1] == 0) {
         absValue = absValue.subarray(0, absValue.length - 1)
@@ -580,7 +582,7 @@ export class BigInt extends Uint8Array implements Serializable {
       let decimalPart = str.padStart(precision, '0')
 
       let lastNonZero = decimalPart.length - 1
-      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === '0'.charCodeAt(0)) lastNonZero--
+      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ZERO_ASCII) lastNonZero--
 
       decimalPart = decimalPart.substring(0, lastNonZero + 1)
       return (isNegative ? '-' : '') + '0' + (decimalPart.length ? '.' + decimalPart : '')
@@ -591,7 +593,7 @@ export class BigInt extends Uint8Array implements Serializable {
 
     // Remove trailing zeros manually
     let lastNonZero = decimalPart.length - 1
-    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === '0'.charCodeAt(0)) lastNonZero--
+    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ZERO_ASCII) lastNonZero--
 
     decimalPart = decimalPart.substring(0, lastNonZero + 1)
 
