@@ -2,7 +2,7 @@ import { utils } from 'ethers'
 
 import { AbiFunctionItem } from './types'
 
-export function getKeccak256Selector(fn: AbiFunctionItem) {
-  const functionSignature = `${fn.name}(${(fn.inputs || []).map((input) => input.type).join(',')})`
-  return utils.id(functionSignature).slice(0, 10)
+export function getFunctionSelector(fn: AbiFunctionItem): string {
+  const iface = new utils.Interface([fn])
+  return iface.getSighash(fn.name)
 }
