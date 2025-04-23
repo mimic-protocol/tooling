@@ -4,15 +4,12 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { areAllZeros, bytesToHexString, normalizeScientificNotation, Serializable } from '../helpers'
+import { areAllZeros, bytesToHexString, isHex, normalizeScientificNotation, Serializable } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
-const ASCII_CODE_A = 97
-const ASCII_CODE_F = 102
-const ASCII_CODE_ZERO = 48
-const ASCII_CODE_NINE = 57
+const ZERO_ASCII = '0'.charCodeAt(0)
 
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
@@ -138,13 +135,7 @@ export class BigInt extends Uint8Array implements Serializable {
     else if (hex.startsWith('+')) hex = hex.substring(1)
     if (hex.startsWith('0x')) hex = hex.substring(2)
 
-    // Validate all characters are hex digits
-    for (let i = 0; i < hex.length; i++) {
-      const c = hex.charCodeAt(i)
-      const isDigit = c >= ASCII_CODE_ZERO && c <= ASCII_CODE_NINE
-      const isLetter = c >= ASCII_CODE_A && c <= ASCII_CODE_F
-      if (!(isDigit || isLetter)) throw new Error(`Invalid hex character: '${hex.charAt(i)}'`)
-    }
+    if (!isHex(hex)) throw new Error(`Invalid hex string: '${hex}'`)
 
     // ByteArray will still assert even length
     const bytes = ByteArray.fromHexString(hex)
@@ -568,7 +559,7 @@ export class BigInt extends Uint8Array implements Serializable {
         carry = current % 10
       }
 
-      digits.push(ASCII_CODE_ZERO + carry)
+      digits.push(ZERO_ASCII + carry)
 
       while (absValue.length > 1 && absValue[absValue.length - 1] == 0) {
         absValue = absValue.subarray(0, absValue.length - 1)
@@ -591,7 +582,7 @@ export class BigInt extends Uint8Array implements Serializable {
       let decimalPart = str.padStart(precision, '0')
 
       let lastNonZero = decimalPart.length - 1
-      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+      while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ZERO_ASCII) lastNonZero--
 
       decimalPart = decimalPart.substring(0, lastNonZero + 1)
       return (isNegative ? '-' : '') + '0' + (decimalPart.length ? '.' + decimalPart : '')
@@ -602,7 +593,7 @@ export class BigInt extends Uint8Array implements Serializable {
 
     // Remove trailing zeros manually
     let lastNonZero = decimalPart.length - 1
-    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ASCII_CODE_ZERO) lastNonZero--
+    while (lastNonZero >= 0 && decimalPart.charCodeAt(lastNonZero) === ZERO_ASCII) lastNonZero--
 
     decimalPart = decimalPart.substring(0, lastNonZero + 1)
 

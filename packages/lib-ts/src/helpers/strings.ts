@@ -83,3 +83,21 @@ export function normalizeScientificNotation(input: string): string {
     return sign + fullDigits.substring(0, newDecimalPos) + '.' + fullDigits.substring(newDecimalPos)
   }
 }
+
+export function isHex(str: string, strict: boolean = false): boolean {
+  const hasPrefix = str.startsWith('0x')
+
+  if (strict && !hasPrefix) return false
+
+  const value = hasPrefix ? str.slice(2) : str
+
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i)
+    const isDigit = c >= '0'.charCodeAt(0) && c <= '9'.charCodeAt(0)
+    const isLetter =
+      (c >= 'a'.charCodeAt(0) && c <= 'f'.charCodeAt(0)) || (c >= 'A'.charCodeAt(0) && c <= 'F'.charCodeAt(0))
+    if (!(isDigit || isLetter)) return false
+  }
+
+  return true
+}
