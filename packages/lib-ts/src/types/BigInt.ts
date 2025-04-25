@@ -512,7 +512,24 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   toBytes(): Bytes {
-    return Bytes.fromUint8Array(changetype<Uint8Array>(this))
+    if (this.isZero()) return new Bytes(0)
+    const value = this.clone()
+
+    const isNegative = this.isNegative()
+
+    let end = value.length
+    if (!isNegative) {
+      while (end > 1 && value[end - 1] === 0) end--
+    } else {
+      while (end > 1 && value[end - 1] === 0xff && value[end - 2] >= 0x80) end--
+    }
+
+    const significantBytes = value.subarray(0, end)
+    return Bytes.fromUint8Array(changetype<Uint8Array>(significantBytes))
+  }
+
+  toBytesBigEndian(): Bytes {
+    return changetype<Bytes>(this.toBytes().reverse())
   }
 
   toI32(): i32 {

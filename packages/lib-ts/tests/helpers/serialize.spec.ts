@@ -17,7 +17,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bytes = Bytes.fromI32(5)
         const serialized = serialize(bytes)
-        expect(serialized).toBe('0x05000000')
+        expect(serialized).toBe('0x00000005')
       })
     })
 
@@ -103,9 +103,9 @@ describe('serialize', () => {
 
     describe('when passing an array of Bytes', () => {
       it('converts it to string correctly', () => {
-        const bytesArray = [Bytes.fromI32(5), Bytes.fromI32(10)]
+        const bytesArray = [Bytes.fromI32(32768), Bytes.fromI32(10)]
         const serialized = serializeArray(bytesArray)
-        expect(serialized).toBe('Array(0x05000000,0x0a000000)')
+        expect(serialized).toBe('Array(0x00008000,0x0000000a)')
       })
     })
 

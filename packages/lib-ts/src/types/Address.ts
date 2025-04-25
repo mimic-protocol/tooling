@@ -41,4 +41,8 @@ export class Address extends Bytes {
     copy.set(this)
     return changetype<Address>(copy)
   }
+
+  serialize(): string {
+    return this.toHexString()
+  }
 }

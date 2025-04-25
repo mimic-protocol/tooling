@@ -89,7 +89,7 @@ describe('BigInt', () => {
     describe('hex notation', () => {
       it('parses a positive hex string (0x)', () => {
         const result = BigInt.fromString('0xFF')
-        expect(result.toI32()).toBe(0xff)
+        expect(result.toU32()).toBe(0xff)
       })
 
       it('parses a negative hex string (0x)', () => {
@@ -99,7 +99,7 @@ describe('BigInt', () => {
 
       it('parses a positive hex string (0X)', () => {
         const result = BigInt.fromString('0XAB')
-        expect(result.toI32()).toBe(0xab)
+        expect(result.toU32()).toBe(0xab)
       })
 
       it('throws for an invalid hex character', () => {

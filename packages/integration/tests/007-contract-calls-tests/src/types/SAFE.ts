@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -26,7 +26,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x7d832974', [param0, param1])
+      encodeCallData('0x7d832974', [new CallParam('address', param0), new CallParam('bytes32', param1)])
     )
     return BigInt.fromString(result)
   }
@@ -36,7 +36,12 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x12fb68e0', [dataHash, data, signatures, requiredSignatures.toBytes()])
+      encodeCallData('0x12fb68e0', [
+        new CallParam('bytes32', dataHash),
+        new CallParam('bytes', data),
+        new CallParam('bytes', signatures),
+        new CallParam('uint256', requiredSignatures.toBytesBigEndian()),
+      ])
     )
   }
 
@@ -45,7 +50,11 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x934f3a11', [dataHash, data, signatures])
+      encodeCallData('0x934f3a11', [
+        new CallParam('bytes32', dataHash),
+        new CallParam('bytes', data),
+        new CallParam('bytes', signatures),
+      ])
     )
   }
 
@@ -76,16 +85,16 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       encodeCallData('0xe86637db', [
-        to,
-        value.toBytes(),
-        data,
-        Bytes.fromU8(operation),
-        safeTxGas.toBytes(),
-        baseGas.toBytes(),
-        gasPrice.toBytes(),
-        gasToken,
-        refundReceiver,
-        _nonce.toBytes(),
+        new CallParam('address', to),
+        new CallParam('uint256', value.toBytesBigEndian()),
+        new CallParam('bytes', data),
+        new CallParam('uint8', Bytes.fromU8(operation)),
+        new CallParam('uint256', safeTxGas.toBytesBigEndian()),
+        new CallParam('uint256', baseGas.toBytesBigEndian()),
+        new CallParam('uint256', gasPrice.toBytesBigEndian()),
+        new CallParam('address', gasToken),
+        new CallParam('address', refundReceiver),
+        new CallParam('uint256', _nonce.toBytesBigEndian()),
       ])
     )
     return Bytes.fromHexString(result)
@@ -106,7 +115,10 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xcc2f8452', [start, pageSize.toBytes()])
+      encodeCallData('0xcc2f8452', [
+        new CallParam('address', start),
+        new CallParam('uint256', pageSize.toBytesBigEndian()),
+      ])
     )
     return result === '' ? [] : result.split(',').map((value) => value)
   }
@@ -126,7 +138,10 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x5624b25b', [offset.toBytes(), length.toBytes()])
+      encodeCallData('0x5624b25b', [
+        new CallParam('uint256', offset.toBytesBigEndian()),
+        new CallParam('uint256', length.toBytesBigEndian()),
+      ])
     )
     return Bytes.fromHexString(result)
   }
@@ -158,16 +173,16 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       encodeCallData('0xd8d11f78', [
-        to,
-        value.toBytes(),
-        data,
-        Bytes.fromU8(operation),
-        safeTxGas.toBytes(),
-        baseGas.toBytes(),
-        gasPrice.toBytes(),
-        gasToken,
-        refundReceiver,
-        _nonce.toBytes(),
+        new CallParam('address', to),
+        new CallParam('uint256', value.toBytesBigEndian()),
+        new CallParam('bytes', data),
+        new CallParam('uint8', Bytes.fromU8(operation)),
+        new CallParam('uint256', safeTxGas.toBytesBigEndian()),
+        new CallParam('uint256', baseGas.toBytesBigEndian()),
+        new CallParam('uint256', gasPrice.toBytesBigEndian()),
+        new CallParam('address', gasToken),
+        new CallParam('address', refundReceiver),
+        new CallParam('uint256', _nonce.toBytesBigEndian()),
       ])
     )
     return Bytes.fromHexString(result)
@@ -178,7 +193,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x2d9ad53d', [module])
+      encodeCallData('0x2d9ad53d', [new CallParam('address', module)])
     )
     return bool.parse(result)
   }
@@ -188,7 +203,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x2f54bf6e', [owner])
+      encodeCallData('0x2f54bf6e', [new CallParam('address', owner)])
     )
     return bool.parse(result)
   }
@@ -208,7 +223,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x5ae6bd37', [param0])
+      encodeCallData('0x5ae6bd37', [new CallParam('bytes32', param0)])
     )
     return BigInt.fromString(result)
   }

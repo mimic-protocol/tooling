@@ -30,7 +30,7 @@ export default function main(): void {
     BigInt.fromI32(2),
     BigInt.fromI32(3),
     BigInt.fromI32(4),
-    Address.zero(),
+    USDC.address,
     Address.zero(),
     BigInt.fromI32(5)
   )

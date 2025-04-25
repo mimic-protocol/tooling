@@ -1,4 +1,4 @@
-import { Address, BigInt, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, CallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
@@ -46,7 +46,7 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x70a08231', [_owner])
+      encodeCallData('0x70a08231', [new CallParam('address', _owner)])
     )
     return BigInt.fromString(result)
   }
@@ -66,7 +66,7 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xdd62ed3e', [_owner, _spender])
+      encodeCallData('0xdd62ed3e', [new CallParam('address', _owner), new CallParam('address', _spender)])
     )
     return BigInt.fromString(result)
   }

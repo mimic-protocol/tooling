@@ -311,6 +311,6 @@ export class ByteArray extends Uint8Array implements Serializable {
   }
 
   serialize(): string {
-    return this.toHexString()
+    return changetype<ByteArray>(this.reverse()).toHexString()
   }
 }
