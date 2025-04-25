@@ -87,8 +87,8 @@ export namespace environment {
   }
 
   // Returns the price of a token in USD expressed in 18 decimal places
-  export function getPrice(token: Token): USD {
-    const price = _getPrice(join([serialize(token.address), serialize(token.chainId)]))
+  export function getPrice(token: Token, timestamp: Date | null = null): USD {
+    const price = _getPrice(join([serialize(token.address), serialize(token.chainId), serialize(timestamp ? timestamp.getTime().toString() : '')]))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 

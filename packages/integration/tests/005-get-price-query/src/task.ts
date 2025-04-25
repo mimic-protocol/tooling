@@ -1,4 +1,4 @@
-import { Token, TokenAmount, USD } from '@mimicprotocol/lib-ts'
+import { environment, Token, TokenAmount, USD } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   // Token definitions
@@ -16,4 +16,7 @@ export default function main(): void {
 
   // Convert USDC to ETH
   usdcAmount.toTokenAmount(ETH)
+
+  // Ask for a price at a certain time
+  environment.getPrice(USDC, new Date(1744818017000))
 }
