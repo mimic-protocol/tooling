@@ -106,26 +106,39 @@ function determineReturnType(
 }
 
 function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
+  importedTypes.add(LibTypes.CallParam)
+
   return inputs
     .map((input, index) => {
       const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
-      const paramType = mapAbiType(input.type, importedTypes)
+      const abiType = input.type
+      const mappedType = mapAbiType(abiType, importedTypes)
 
-      switch (paramType) {
-        case LibTypes.BigInt:
-          return `${paramName}.toBytes()`
-        case AssemblyTypes.bool:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromBool(${paramName})`
-        case AssemblyTypes.i8:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromI8(${paramName})`
-        case AssemblyTypes.u8:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromU8(${paramName})`
-        default:
-          return paramName
+      let valueExpression: string
+      if (abiType === 'string') {
+        valueExpression = `Bytes.fromUTF8(${paramName})`
+      } else if (abiType === 'bytes') {
+        valueExpression = paramName
+      } else if (mappedType === LibTypes.BigInt) {
+        valueExpression = `${paramName}.toBytesBigEndian()`
+      } else if (mappedType === AssemblyTypes.bool) {
+        importedTypes.add(LibTypes.Bytes)
+        valueExpression = `${LibTypes.Bytes}.fromBool(${paramName})`
+      } else if (mappedType === AssemblyTypes.i8) {
+        importedTypes.add(LibTypes.Bytes)
+        valueExpression = `${LibTypes.Bytes}.fromI8(${paramName})`
+      } else if (mappedType === AssemblyTypes.u8) {
+        importedTypes.add(LibTypes.Bytes)
+        valueExpression = `${LibTypes.Bytes}.fromU8(${paramName})`
+      } else if (mappedType === LibTypes.Address) {
+        valueExpression = paramName
+      } else if (abiType.startsWith('bytes') && abiType !== 'bytes') {
+        valueExpression = paramName
+      } else {
+        valueExpression = paramName
       }
+
+      return `new ${LibTypes.CallParam}('${abiType}', ${valueExpression})`
     })
     .join(', ')
 }

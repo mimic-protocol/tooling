@@ -23,6 +23,7 @@ export enum LibTypes {
   BigInt = 'BigInt',
   Address = 'Address',
   Bytes = 'Bytes',
+  CallParam = 'CallParam',
 }
 
 export enum AssemblyTypes {
