@@ -2,13 +2,8 @@
 pragma solidity ^0.8.0;
 
 contract Test {
-    // Enum example
     enum Status { Pending, Active, Inactive }
 
-    // Example state variable
-    uint256 private number = 42;
-
-    // ------- Basic Types --------
     function getUint() external pure returns (uint256) {
         return 123;
     }
@@ -21,7 +16,7 @@ contract Test {
         return true;
     }
 
-    function getAddress() external view returns (address) {
+    function getCallerAddress() external view returns (address) {
         return msg.sender;
     }
 
@@ -33,7 +28,6 @@ contract Test {
         return Status.Active;
     }
 
-    // ------- Dynamic Types --------
     function getString() external pure returns (string memory) {
         return "Hello, Remix!";
     }
@@ -42,7 +36,6 @@ contract Test {
         return hex"123456";
     }
 
-    // ------- Arrays --------
     function getUintArray() external pure returns (uint256[] memory) {
         uint256[] memory arr = new uint256[](3);
         arr[0] = 10;
@@ -62,12 +55,10 @@ contract Test {
         return arr;
     }
 
-    // ------- Multiple Returns --------
     function getMultipleValues() external pure returns (uint256, bool, string memory) {
         return (100, false, "Multiple");
     }
 
-    // ------- Functions with Parameters --------
     function echoUint(uint256 value) external pure returns (uint256) {
         return value;
     }
@@ -93,7 +84,6 @@ contract Test {
         return "Inactive";
     }
 
-    // ------- Complex Combinations --------
     function processTransactionData(
         address user,
         uint256 amount,
@@ -109,5 +99,17 @@ contract Test {
             output[i] = input[input.length - 1 - i];
         }
         return output;
+    }
+
+    function readAddress(address _addr) external pure returns (address) {
+        return _addr;
+    }
+
+    function readFixedAddressArray(address[3] memory _addrs) external pure returns (address) {
+        return _addrs[0];
+    }
+
+    function readDynamicAddressArray(address[] memory _addrs) external pure returns (uint256) {
+        return _addrs.length;
     }
 }
