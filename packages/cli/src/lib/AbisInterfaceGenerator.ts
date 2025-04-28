@@ -113,29 +113,39 @@ function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<Import
       const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
       const abiType = input.type
       const mappedType = mapAbiType(abiType, importedTypes)
+      const isArray = abiType.includes('[')
 
       let valueExpression: string
-      if (abiType === 'string') {
-        valueExpression = `Bytes.fromUTF8(${paramName})`
-      } else if (abiType === 'bytes') {
-        valueExpression = paramName
-      } else if (mappedType === LibTypes.BigInt) {
-        valueExpression = `${paramName}.toBytesBigEndian()`
-      } else if (mappedType === AssemblyTypes.bool) {
-        importedTypes.add(LibTypes.Bytes)
-        valueExpression = `${LibTypes.Bytes}.fromBool(${paramName})`
-      } else if (mappedType === AssemblyTypes.i8) {
-        importedTypes.add(LibTypes.Bytes)
-        valueExpression = `${LibTypes.Bytes}.fromI8(${paramName})`
-      } else if (mappedType === AssemblyTypes.u8) {
-        importedTypes.add(LibTypes.Bytes)
-        valueExpression = `${LibTypes.Bytes}.fromU8(${paramName})`
-      } else if (mappedType === LibTypes.Address) {
-        valueExpression = paramName
-      } else if (abiType.startsWith('bytes') && abiType !== 'bytes') {
+
+      if (isArray) {
         valueExpression = paramName
       } else {
-        valueExpression = paramName
+        switch (abiType) {
+          case 'string':
+            importedTypes.add(LibTypes.Bytes)
+            valueExpression = `Bytes.fromUTF8(${paramName})`
+            break
+          case 'bool':
+            importedTypes.add(LibTypes.Bytes)
+            valueExpression = `${LibTypes.Bytes}.fromBool(${paramName})`
+            break
+          case 'int8':
+            importedTypes.add(LibTypes.Bytes)
+            valueExpression = `${LibTypes.Bytes}.fromI8(${paramName})`
+            break
+          case 'uint8':
+            importedTypes.add(LibTypes.Bytes)
+            valueExpression = `${LibTypes.Bytes}.fromU8(${paramName})`
+            break
+          default:
+            // Cases handled by mappedType or pattern
+            if (mappedType === LibTypes.BigInt) {
+              valueExpression = `${paramName}.toBytesBigEndian()`
+            } else {
+              valueExpression = paramName // General fallback
+            }
+            break
+        }
       }
 
       return `new ${LibTypes.CallParam}('${abiType}', ${valueExpression})`
@@ -164,24 +174,34 @@ function appendFunctionBody(
     const mapFunction = generateTypeConversion(baseType, 'value', true)
     lines.push(`    return result === '' ? [] : result.split(',').map(${mapFunction})`)
   } else {
-    const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
-    lines.push(`    ${returnLine}`)
+    const returnStatement = generateTypeConversion(returnType as InputType, 'result', false)
+    lines.push(`    ${returnStatement}`)
   }
 }
 
 function mapAbiType(abiType: string, importedTypes: Set<ImportedTypes>): InputType | InputTypeArray {
-  if (abiType.endsWith('[]')) {
-    const baseType = mapAbiType(abiType.slice(0, -2), importedTypes)
-    return `${baseType}[]` as InputTypeArray
+  const fixedArrayMatch = abiType.match(/^(.+)\[(\d+)\]$/) // Match fixed-size arrays like type[N]
+  const dynamicArrayMatch = abiType.endsWith('[]')
+  let baseAbiType = abiType
+
+  if (fixedArrayMatch) {
+    baseAbiType = fixedArrayMatch[1] // Get the base type part (e.g., "bytes32" from "bytes32[3]")
+  } else if (dynamicArrayMatch) {
+    baseAbiType = abiType.slice(0, -2) // Get the base type part (e.g., "string" from "string[]")
   }
 
-  const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
+  const mappedBaseType = ABI_TYPECAST_MAP[baseAbiType] || 'unknown'
 
-  if (Object.values(LibTypes).includes(mapped as LibTypes)) {
-    importedTypes.add(mapped as LibTypes)
+  if (Object.values(LibTypes).includes(mappedBaseType as LibTypes)) {
+    importedTypes.add(mappedBaseType as LibTypes)
   }
 
-  return mapped
+  if (fixedArrayMatch || dynamicArrayMatch) {
+    if (typeof mappedBaseType === 'string' && mappedBaseType.endsWith('[]')) return 'unknown[]'
+    return `${mappedBaseType}[]` as InputTypeArray
+  }
+
+  return mappedBaseType
 }
 
 function generateTypeConversion(type: InputType, valueVarName: string, isMapFunction: boolean): string {
