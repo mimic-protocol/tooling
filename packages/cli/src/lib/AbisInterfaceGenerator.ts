@@ -193,7 +193,7 @@ function generateTypeConversion(type: InputType, valueVarName: string, isMapFunc
       conversion = `${type}.fromString(${valueVarName})`
       break
     case LibTypes.Bytes:
-      conversion = `${type}.fromHexString(${valueVarName})`
+      conversion = `changetype<${LibTypes.Bytes}>(${type}.fromHexString(${valueVarName}).reverse())`
       break
     case AssemblyTypes.i8:
     case AssemblyTypes.u8:

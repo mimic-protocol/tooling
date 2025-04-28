@@ -4,7 +4,7 @@ import { EVM_ENCODE_SLOT_SIZE } from './constants'
 import { isHex } from './strings'
 
 function isDynamicType(type: string): bool {
-  return type === 'string' || type === 'bytes' || type.endsWith('[]')
+  return type === 'string' || type === 'bytes'
 }
 
 function uintToBytes32(value: u64): Bytes {
@@ -72,6 +72,9 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
     }
   }
 
-  // Combine all parts
+  /* NOTE:
+   ** The reverse is necessary because we are building the data in big endian order
+   ** but internally it is stored in little endian order
+   */
   return changetype<Bytes>(selector.concat(staticPart).concat(dynamicPart).reverse())
 }

@@ -168,7 +168,7 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [owner]))`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [new ${LibTypes.CallParam}('address', owner)]))`
       )
     })
 
@@ -187,7 +187,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain('bigIntParam.toBytes()')
+      expect(result).to.contain('bigIntParam.toBytesBigEndian()')
       expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
       expect(result).to.contain(`${LibTypes.Bytes}.fromU8(u8Param)`)
     })
@@ -205,7 +205,9 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
-      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(result)`)
+      expect(result).to.contain(
+        `return changetype<${LibTypes.Bytes}>(${LibTypes.Bytes}.fromHexString(result).reverse())`
+      )
       expect(result).to.contain(`return ${AssemblyTypes.bool}.parse(result)`)
       expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result)`)
       expect(result).to.contain(`return result`)
