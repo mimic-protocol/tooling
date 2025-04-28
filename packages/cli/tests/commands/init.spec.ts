@@ -12,7 +12,7 @@ describe('init', () => {
   })
 
   context('when force flag is not passed', () => {
-    const command = ['init', `--directory ${commandPath}`]
+    const command = ['init', `--directory ${commandPath}`, '-y']
 
     context('when the directory does not exist', () => {
       it('creates the correct files', async () => {
@@ -41,7 +41,7 @@ describe('init', () => {
 
   context('when force flag is passed', () => {
     let userResponse
-    const command = ['init', `--directory ${commandPath}`, '--force']
+    const command = ['init', `--directory ${commandPath}`, '--force', '-y']
 
     context('when the user accepts the confirmation', () => {
       beforeEach('stub user input', () => {

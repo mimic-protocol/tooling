@@ -21,9 +21,6 @@ export namespace environment {
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
 
-  @external('environment', '_getCurrentBlockNumber')
-  declare function _getCurrentBlockNumber(params: string): string
-
   export function call(
     settler: Address,
     chainId: u64,
@@ -128,9 +125,5 @@ export namespace environment {
         serialize(callData),
       ])
     )
-  }
-
-  export function getCurrentBlockNumber(chainId: u64): BigInt {
-    return BigInt.fromString(_getCurrentBlockNumber(join([serialize(chainId)])))
   }
 }

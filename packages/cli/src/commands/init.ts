@@ -1,5 +1,6 @@
-import { confirm } from '@inquirer/prompts'
+import { confirm, input } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
+import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -13,11 +14,12 @@ export default class Init extends Command {
   static override flags = {
     directory: Flags.string({ char: 'd', description: 'Directory to initialize project', default: './' }),
     force: Flags.boolean({ char: 'f', description: 'Overwrite existing files if they already exist', default: false }),
+    useDefault: Flags.boolean({ char: 'y', description: 'Use default task name without asking', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Init)
-    const { directory, force } = flags
+    const { directory, force, useDefault } = flags
     const fullDirectory = path.resolve(directory)
     const templateDirectory = path.join(__dirname, '../templates')
 
@@ -33,6 +35,18 @@ export default class Init extends Command {
       }
       log.startAction(`Deleting contents of ${fullDirectory}`)
       if (fs.existsSync(fullDirectory)) fs.rmSync(fullDirectory, { recursive: true })
+      log.stopAction()
+    }
+
+    let taskName = 'mimic-task'
+
+    if (!useDefault) {
+      taskName = await input({
+        message: 'Give a name to your task:',
+        default: 'mimic-task',
+      })
+    } else {
+      console.log(`Using default task name: ${log.highlightText(taskName)}`)
     }
 
     log.startAction('Creating files')
@@ -47,12 +61,25 @@ export default class Init extends Command {
       })
     }
 
-    const srcPath = path.join(fullDirectory, 'src/')
-    const manifestPath = path.join(fullDirectory, 'manifest.yaml')
-    fs.mkdirSync(srcPath, { recursive: true })
-    fs.copyFileSync(`${templateDirectory}/task.ts`, path.join(srcPath, 'task.ts'))
-    fs.copyFileSync(`${templateDirectory}/manifest.yaml`, manifestPath)
+    fs.cpSync(templateDirectory, fullDirectory, { recursive: true })
+
+    if (!useDefault) {
+      const packageJsonPath = path.join(fullDirectory, 'package.json')
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+        packageJson.name = taskName.replace(/\s+/g, '-')
+        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
+      }
+    }
     log.stopAction()
+
+    log.startAction('Installing dependencies')
+    spawnSync('yarn', ['install'], {
+      cwd: fullDirectory,
+      stdio: 'inherit',
+    })
+    log.stopAction()
+
     console.log('New project initialized!')
   }
 }
