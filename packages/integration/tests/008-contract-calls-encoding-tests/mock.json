@@ -1,0 +1,9 @@
+{
+  "_contractCall": {
+    "log": true,
+    "default": "0x00",
+    "paramResponse": {
+      "0x2fc31716b5b385645255c5f08d9e65ce1fd21b21,11155111,,0x38cc4831": "0x2fc31716b5b385645255c5f08d9e65ce1fd21b21"
+    }
+  }
+}
