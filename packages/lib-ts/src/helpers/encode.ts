@@ -76,5 +76,5 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
    ** The reverse is necessary because we are building the data in big endian order
    ** but internally it is stored in little endian order
    */
-  return changetype<Bytes>(selector.concat(staticPart).concat(dynamicPart).reverse())
+  return selector.concat(staticPart).concat(dynamicPart).reverse()
 }

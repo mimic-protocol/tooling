@@ -65,7 +65,7 @@ export class SAFE {
       this.timestamp,
       encodeCallData('0xf698da25', [])
     )
-    return changetype<Bytes>(Bytes.fromHexString(result).reverse())
+    return Bytes.fromHexString(result).reverse()
   }
 
   encodeTransactionData(
@@ -97,7 +97,7 @@ export class SAFE {
         new CallParam('uint256', _nonce.toBytesBigEndian()),
       ])
     )
-    return changetype<Bytes>(Bytes.fromHexString(result).reverse())
+    return Bytes.fromHexString(result).reverse()
   }
 
   getChainId(): BigInt {
@@ -143,7 +143,7 @@ export class SAFE {
         new CallParam('uint256', length.toBytesBigEndian()),
       ])
     )
-    return changetype<Bytes>(Bytes.fromHexString(result).reverse())
+    return Bytes.fromHexString(result).reverse()
   }
 
   getThreshold(): BigInt {
@@ -185,7 +185,7 @@ export class SAFE {
         new CallParam('uint256', _nonce.toBytesBigEndian()),
       ])
     )
-    return changetype<Bytes>(Bytes.fromHexString(result).reverse())
+    return Bytes.fromHexString(result).reverse()
   }
 
   isModuleEnabled(module: Address): bool {

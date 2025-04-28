@@ -529,7 +529,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   toBytesBigEndian(): Bytes {
-    return changetype<Bytes>(this.toBytes().reverse())
+    return this.toBytes().reverse()
   }
 
   toI32(): i32 {

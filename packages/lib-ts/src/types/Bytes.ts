@@ -134,4 +134,8 @@ export class Bytes extends ByteArray {
   concatI32(other: i32): Bytes {
     return changetype<Bytes>(super.concat(ByteArray.fromI32(other)))
   }
+
+  reverse(): this {
+    return changetype<this>(super.reverse())
+  }
 }

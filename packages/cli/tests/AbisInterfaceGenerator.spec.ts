@@ -205,9 +205,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
-      expect(result).to.contain(
-        `return changetype<${LibTypes.Bytes}>(${LibTypes.Bytes}.fromHexString(result).reverse())`
-      )
+      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(result).reverse()`)
       expect(result).to.contain(`return ${AssemblyTypes.bool}.parse(result)`)
       expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result)`)
       expect(result).to.contain(`return result`)
