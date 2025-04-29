@@ -4,7 +4,7 @@ export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
   const chainId = 1
   const target = Address.fromString(NULL_ADDRESS)
-  const data = Bytes.empty()
+  const data = Bytes.fromI32(0)
   const feeToken = Address.fromString(NULL_ADDRESS)
   const feeAmount = BigInt.zero()
 

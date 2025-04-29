@@ -1,4 +1,4 @@
-import { Address, BigInt, CallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, CallParam, environment, evmEncode } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
@@ -12,32 +12,17 @@ export class ERC20 {
   }
 
   name(): string {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x06fdde03', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0x06fdde03', []))
     return result
   }
 
   totalSupply(): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x18160ddd', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0x18160ddd', []))
     return BigInt.fromString(result)
   }
 
   decimals(): u8 {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x313ce567', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0x313ce567', []))
     return u8.parse(result)
   }
 
@@ -46,18 +31,13 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x70a08231', [new CallParam('address', _owner)])
+      evmEncode('0x70a08231', [new CallParam('address', _owner)])
     )
     return BigInt.fromString(result)
   }
 
   symbol(): string {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x95d89b41', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0x95d89b41', []))
     return result
   }
 
@@ -66,7 +46,7 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xdd62ed3e', [new CallParam('address', _owner), new CallParam('address', _spender)])
+      evmEncode('0xdd62ed3e', [new CallParam('address', _owner), new CallParam('address', _spender)])
     )
     return BigInt.fromString(result)
   }

@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'encodeCallData' | 'encodeArrayData'
+type ImportedTypes = LibTypes | 'environment' | 'evmEncode' | 'evmEncodeArray'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -19,7 +19,7 @@ export default {
 
     const importedTypes = new Set<ImportedTypes>([
       'environment',
-      'encodeCallData',
+      'evmEncode',
       LibTypes.BigInt,
       LibTypes.Address,
       LibTypes.CallParam,
@@ -120,9 +120,9 @@ function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<Import
       let valueExpression: string
 
       if (isArray) {
-        importedTypes.add('encodeArrayData')
+        importedTypes.add('evmEncodeArray')
         const libType = mapAbiType(abiType, importedTypes, true)
-        valueExpression = `encodeArrayData<${libType}>('${abiType}', ${paramName})`
+        valueExpression = `evmEncodeArray<${libType}>('${abiType}', ${paramName})`
       } else {
         const mappedType = mapAbiType(abiType, importedTypes)
         switch (abiType) {
@@ -165,7 +165,7 @@ function appendFunctionBody(
   callArgs: string
 ): void {
   const selector = getFunctionSelector(fn)
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [${callArgs}]))`
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('${selector}', [${callArgs}]))`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)

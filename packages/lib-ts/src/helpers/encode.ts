@@ -27,11 +27,17 @@ function isFixedArray(type: string): bool {
   return isArrayType(type) && !type.endsWith('[]')
 }
 
-function uintToBytes32(value: u64): Bytes {
-  return padBytes32(BigInt.fromU64(value).toBytesBigEndian())
+function toEvmBytes32(value: u64): Bytes {
+  const valueBytes = BigInt.fromU64(value).toBytesBigEndian()
+  if (valueBytes.length <= EVM_ENCODE_SLOT_SIZE) {
+    const padding = new Bytes(EVM_ENCODE_SLOT_SIZE - valueBytes.length)
+    return padding.concat(valueBytes)
+  } else {
+    return changetype<Bytes>(valueBytes.slice(valueBytes.length - EVM_ENCODE_SLOT_SIZE))
+  }
 }
 
-function padToMultipleOf32(data: Bytes): Bytes {
+function padToWordBoundary(data: Bytes): Bytes {
   const remainder = data.length % EVM_ENCODE_SLOT_SIZE
 
   if (remainder === 0) return data
@@ -42,7 +48,7 @@ function padToMultipleOf32(data: Bytes): Bytes {
   return data.concat(padding)
 }
 
-export function encodeArrayData<T>(abiType: string, values: T[]): Bytes {
+export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
   let encodedElements = new Bytes(0)
   const isDynamicArray = abiType.endsWith('[]')
 
@@ -72,7 +78,7 @@ export function encodeArrayData<T>(abiType: string, values: T[]): Bytes {
   }
 
   if (isDynamicArray) {
-    const lengthBytes = uintToBytes32(values.length as u64)
+    const lengthBytes = toEvmBytes32(values.length as u64)
     return lengthBytes.concat(encodedElements)
   } else {
     // Fixed arrays just have concatenated elements
@@ -103,15 +109,26 @@ export function encodeArrayData<T>(abiType: string, values: T[]): Bytes {
   }
 }
 
-export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
+/*
+ ** EVM Encode
+ **
+ ** This function encodes a function selector and parameters into a bytes array
+ ** according to the EVM encoding rules. Note that encodes in big endian order
+ ** but internally it is stored in little endian order.
+ **
+ ** @param keccak256 - The function selector (4 bytes)
+ ** @param params - The parameters to encode
+ **
+ ** @returns The encoded bytes array
+ */
+export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
   if (keccak256.length != 10) throw new Error('Invalid keccak256: must be exactly 4 bytes (0x + 8 chars)')
   if (!isHex(keccak256, true)) throw new Error('Invalid keccak256: must be a valid hex string (0x prefixed)')
 
   let selector = Bytes.fromHexString(keccak256)
-  let staticPart = new Bytes(0)
-  let dynamicPart = new Bytes(0)
-  let headSize = params.length * EVM_ENCODE_SLOT_SIZE
-  let currentDynamicOffset = headSize
+  let staticPart = Bytes.empty()
+  let dynamicPart = Bytes.empty()
+  let currentDynamicOffset = params.length * EVM_ENCODE_SLOT_SIZE
 
   const dynamicDataSegments: Bytes[] = []
 
@@ -124,8 +141,8 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
       let dataToEncode: Bytes
       if (paramType === 'string' || paramType === 'bytes') {
         const dataBytes = param.value
-        const lengthBytes = uintToBytes32(dataBytes.length as u64)
-        const paddedData = padToMultipleOf32(dataBytes)
+        const lengthBytes = toEvmBytes32(dataBytes.length as u64)
+        const paddedData = padToWordBoundary(dataBytes)
         dataToEncode = lengthBytes.concat(paddedData)
       } else if (isArrayType(paramType)) {
         dataToEncode = param.value
@@ -146,7 +163,7 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
     const paramType = param.type
 
     if (isDynamicType(paramType)) {
-      const offsetBytes = uintToBytes32(currentDynamicOffset)
+      const offsetBytes = toEvmBytes32(currentDynamicOffset)
       staticPart = staticPart.concat(offsetBytes)
       const encodedParam = dynamicDataSegments[dynamicParamIndex++]
       dynamicPart = dynamicPart.concat(encodedParam)
@@ -161,9 +178,5 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
     }
   }
 
-  /* NOTE:
-   ** The reverse is necessary because we are building the data in big endian order
-   ** but internally it is stored in little endian order
-   */
-  return selector.concat(staticPart).concat(dynamicPart).reverse()
+  return selector.concat(staticPart).concat(dynamicPart)
 }
