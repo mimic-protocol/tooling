@@ -2,8 +2,9 @@ import { Address, BigInt, Bytes } from '@mimicprotocol/lib-ts'
 
 import { TEST } from './types/TEST'
 
-const TEST_ADDRESS = Address.fromString('0xcc7d7defe9d5e26cddea572e7d9f46d87d849105')
+const TEST_ADDRESS = Address.fromString('0x29464439c0267fe6ab8a306f304402f760b29f7e')
 const TEST_CHAIN_ID = 11155111
+const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
 export default function main(): void {
   const testContract = new TEST(TEST_ADDRESS, TEST_CHAIN_ID)
@@ -22,7 +23,18 @@ export default function main(): void {
 
   const arr = [bytes1, bytes2, bytes3]
   testContract.getElement(arr, BigInt.fromU32(1))
+  testContract.getStatusName(1)
 
   testContract.readDynamicAddressArray([TEST_ADDRESS])
   testContract.readFixedAddressArray([TEST_ADDRESS, TEST_ADDRESS, TEST_ADDRESS])
+
+  testContract.processTransactionData(TEST_ADDRESS, BigInt.fromU64(8388608), 'testing', TEST_BYTES)
+  testContract.reverseBytes(TEST_BYTES)
+  testContract.sumArray([
+    BigInt.fromU32(1000),
+    BigInt.fromU32(2000),
+    BigInt.fromU32(3000),
+    BigInt.fromU32(4000),
+    BigInt.fromU32(5000),
+  ])
 }

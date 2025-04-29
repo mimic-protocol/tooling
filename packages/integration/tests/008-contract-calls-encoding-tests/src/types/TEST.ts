@@ -139,6 +139,26 @@ export class TEST {
     return Address.fromString(result)
   }
 
+  readBytes16(_input: Bytes): Bytes {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      evmEncode('0x544d0ec9', [new CallParam('bytes16', _input)])
+    )
+    return Bytes.fromHexString(result).reverse()
+  }
+
+  readBytes8(_input: Bytes): Bytes {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      evmEncode('0x6a9a1222', [new CallParam('bytes8', _input)])
+    )
+    return Bytes.fromHexString(result).reverse()
+  }
+
   readDynamicAddressArray(_addrs: Address[]): BigInt {
     const result = environment.contractCall(
       this.address,
@@ -149,6 +169,16 @@ export class TEST {
     return BigInt.fromString(result)
   }
 
+  readDynamicStringArray(_strings: string[]): string {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      evmEncode('0x19c6982e', [new CallParam('string[]', evmEncodeArray<string>('string[]', _strings))])
+    )
+    return result
+  }
+
   readFixedAddressArray(_addrs: Address[]): Address {
     const result = environment.contractCall(
       this.address,
@@ -157,6 +187,16 @@ export class TEST {
       evmEncode('0xceca6c77', [new CallParam('address[3]', evmEncodeArray<Address>('address[3]', _addrs))])
     )
     return Address.fromString(result)
+  }
+
+  readFixedStringArray(_strings: string[]): string {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      evmEncode('0x0ec91470', [new CallParam('string[2]', evmEncodeArray<string>('string[2]', _strings))])
+    )
+    return result
   }
 
   reverseBytes(input: Bytes): Bytes {

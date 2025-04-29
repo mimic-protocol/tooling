@@ -112,4 +112,21 @@ contract Test {
     function readDynamicAddressArray(address[] memory _addrs) external pure returns (uint256) {
         return _addrs.length;
     }
+
+    function readDynamicStringArray(string[] memory _strings) external pure returns (string memory) {
+        if (_strings.length == 0) return "";
+        return _strings[0];
+    }
+
+    function readFixedStringArray(string[2] memory _strings) external pure returns (string memory) {
+        return _strings[0];
+    }
+
+    function readBytes8(bytes8 _input) external pure returns (bytes8) {
+        return _input;
+    }
+
+    function readBytes16(bytes16 _input) external pure returns (bytes16) {
+        return _input;
+    }
 }
