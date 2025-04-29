@@ -3,10 +3,46 @@ import { Address, BigInt, Bytes, CallParam } from '../types'
 import { EVM_ENCODE_SLOT_SIZE } from './constants'
 import { isHex } from './strings'
 
-function padBytes32(bytes: Bytes): Bytes {
-  if (bytes.length > EVM_ENCODE_SLOT_SIZE) throw new Error('Bytes are too long')
+/**
+ * Padding function for EVM encoding that handles different padding scenarios
+ * @param input - Input value: Bytes
+ * @param leftPad - pad from left (true) or right (false). Default: true (for static values)
+ * @param exact - pad to exact EVM_ENCODE_SLOT_SIZE (true) or to the next multiple (false). Default: true
+ * @param throwOnOversize - throw on oversized input (true) or truncate (false). Default: true
+ * @returns Properly padded Bytes
+ */
+function evmPad(input: Bytes, leftPad: boolean = true, exact: boolean = true, throwOnOversize: boolean = true): Bytes {
+  // Calculate the target size and padding length
+  let targetSize: i32 = 0
+  if (exact) {
+    targetSize = EVM_ENCODE_SLOT_SIZE
+    if (input.length > targetSize && throwOnOversize) {
+      throw new Error('Input bytes exceed EVM_ENCODE_SLOT_SIZE')
+    }
+  } else {
+    // Pad to the next multiple of EVM_ENCODE_SLOT_SIZE
+    const remainder = input.length % EVM_ENCODE_SLOT_SIZE
+    targetSize = remainder === 0 ? input.length : input.length + (EVM_ENCODE_SLOT_SIZE - remainder)
+  }
 
-  return new Bytes(EVM_ENCODE_SLOT_SIZE - bytes.length).concat(bytes)
+  // If input is already the target size, return it directly
+  if (input.length === targetSize) {
+    return input
+  }
+
+  // Handle oversized input by truncating if not throwing
+  if (input.length > targetSize) {
+    return changetype<Bytes>(input.slice(input.length - targetSize))
+  }
+
+  // Create padding
+  const paddingLength = targetSize - input.length
+  const padding = new Bytes(paddingLength)
+
+  // Apply the padding in the right direction
+  return leftPad
+    ? padding.concat(input) // Left padding (for static values)
+    : input.concat(padding) // Right padding (for dynamic values)
 }
 
 function isDynamicType(type: string): bool {
@@ -27,37 +63,19 @@ function isFixedArray(type: string): bool {
   return isArrayType(type) && !type.endsWith('[]')
 }
 
-function toEvmBytes32(value: u64): Bytes {
-  const valueBytes = BigInt.fromU64(value).toBytesBigEndian()
-  if (valueBytes.length <= EVM_ENCODE_SLOT_SIZE) {
-    const padding = new Bytes(EVM_ENCODE_SLOT_SIZE - valueBytes.length)
-    return padding.concat(valueBytes)
-  } else {
-    return changetype<Bytes>(valueBytes.slice(valueBytes.length - EVM_ENCODE_SLOT_SIZE))
-  }
-}
-
-function padToWordBoundary(data: Bytes): Bytes {
-  const remainder = data.length % EVM_ENCODE_SLOT_SIZE
-
-  if (remainder === 0) return data
-
-  const paddingLength = EVM_ENCODE_SLOT_SIZE - remainder
-  const padding = new Bytes(paddingLength)
-
-  return data.concat(padding)
-}
-
+/**
+ * Encodes array values per Ethereum ABI spec
+ * @param abiType - ABI type string (e.g. 'uint256[]', 'address[3]')
+ * @param values - Values to encode (BigInt, Address, or Bytes)
+ * @returns Encoded bytes for EVM
+ * @throws For string arrays, size mismatches, or unsupported types
+ */
 export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
   let encodedElements = new Bytes(0)
   const isDynamicArray = abiType.endsWith('[]')
 
-  // Special handling for string arrays, as string itself is dynamic
   if (abiType === 'string[]') {
-    // For string[], each element is dynamic. Need to calculate offsets within the array encoding.
-    // Simplified: treat as bytes[] for now, needs proper dynamic element offset calculation
-    // This requires a more complex encoding similar to encodeCallData itself
-    throw new Error('Encoding for string[] not fully implemented yet.') // Placeholder
+    throw new Error('Encoding for string[] not fully implemented yet.')
   }
 
   // Encode each element
@@ -66,11 +84,11 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
     const element = values[i]
 
     if (element instanceof BigInt) {
-      elementBytes = padBytes32(element.toBytesBigEndian())
+      elementBytes = evmPad(element.toBytesBigEndian())
     } else if (element instanceof Address) {
-      elementBytes = padBytes32(element)
+      elementBytes = evmPad(element)
     } else if (element instanceof Bytes) {
-      elementBytes = padBytes32(element.reverse())
+      elementBytes = evmPad(element.reverse())
     } else {
       throw new Error(`Unsupported element type in array: ${abiType}`)
     }
@@ -78,7 +96,7 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
   }
 
   if (isDynamicArray) {
-    const lengthBytes = toEvmBytes32(values.length as u64)
+    const lengthBytes = evmPad(BigInt.fromU64(values.length as u64).toBytesBigEndian())
     return lengthBytes.concat(encodedElements)
   } else {
     // Fixed arrays just have concatenated elements
@@ -109,17 +127,17 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
   }
 }
 
-/*
- ** EVM Encode
- **
- ** This function encodes a function selector and parameters into a bytes array
- ** according to the EVM encoding rules. Note that encodes in big endian order
- ** but internally it is stored in little endian order.
- **
- ** @param keccak256 - The function selector (4 bytes)
- ** @param params - The parameters to encode
- **
- ** @returns The encoded bytes array
+/**
+ * EVM Encode
+ *
+ * This function encodes a function selector and parameters into a bytes array
+ * according to the EVM encoding rules. Note that encodes in big endian order
+ * but internally it is stored in little endian order.
+ *
+ * @param keccak256 - The function selector (4 bytes)
+ * @param params - The parameters to encode
+ *
+ * @returns The encoded bytes array
  */
 export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
   if (keccak256.length != 10) throw new Error('Invalid keccak256: must be exactly 4 bytes (0x + 8 chars)')
@@ -141,8 +159,8 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
       let dataToEncode: Bytes
       if (paramType === 'string' || paramType === 'bytes') {
         const dataBytes = param.value
-        const lengthBytes = toEvmBytes32(dataBytes.length as u64)
-        const paddedData = padToWordBoundary(dataBytes)
+        const lengthBytes = evmPad(BigInt.fromU64(dataBytes.length as u64).toBytesBigEndian())
+        const paddedData = evmPad(dataBytes, false, false, false) // right pad to word boundary
         dataToEncode = lengthBytes.concat(paddedData)
       } else if (isArrayType(paramType)) {
         dataToEncode = param.value
@@ -163,7 +181,7 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
     const paramType = param.type
 
     if (isDynamicType(paramType)) {
-      const offsetBytes = toEvmBytes32(currentDynamicOffset)
+      const offsetBytes = evmPad(BigInt.fromU64(currentDynamicOffset as u64).toBytesBigEndian())
       staticPart = staticPart.concat(offsetBytes)
       const encodedParam = dynamicDataSegments[dynamicParamIndex++]
       dynamicPart = dynamicPart.concat(encodedParam)
@@ -173,7 +191,7 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
       staticPart = staticPart.concat(staticArrayBytes)
     } else {
       const staticValueBytes = param.value
-      const paddedStatic = padBytes32(staticValueBytes)
+      const paddedStatic = evmPad(staticValueBytes)
       staticPart = staticPart.concat(paddedStatic)
     }
   }

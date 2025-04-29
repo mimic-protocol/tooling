@@ -1,4 +1,4 @@
-import { evmEncode } from '../../src/helpers/encode'
+import { evmEncode, evmEncodeArray } from '../../src/helpers/encode'
 import { Address, BigInt, Bytes, CallParam } from '../../src/types'
 
 function padTo32Bytes(hex: string, padEnd: boolean = false): string {
@@ -91,15 +91,11 @@ describe('evmEncode', () => {
       const val3 = Address.fromString('0x2222222222222222222222222222222222222222')
       const val4 = Bytes.fromHexString('0xabcdef')
 
-      // Convert string to hex
-      const stringBytes = Bytes.fromUTF8(val2) // 0x64796e616d69632064617461, length 12 (0xc)
-      const bytesBytes = val4 // length 3 (0x3)
-
       const params: CallParam[] = [
         new CallParam('uint256', val1.toBytesBigEndian()),
-        new CallParam('string', stringBytes),
+        new CallParam('string', Bytes.fromUTF8(val2)),
         new CallParam('address', val3),
-        new CallParam('bytes', bytesBytes),
+        new CallParam('bytes', val4),
       ]
 
       // Static part size: 4 params * 32 bytes = 128 bytes (0x80)
@@ -111,10 +107,10 @@ describe('evmEncode', () => {
       // Dynamic part
       // String
       const expectedLengthVal2 = padTo32Bytes('0xc')
-      const expectedDataVal2 = padTo32Bytes(stringBytes.toHexString(), true).substring(2) // 0x64796e616d696320646174610000000000000000000000000000000000000000 (padded to 32)
+      const expectedDataVal2 = padTo32Bytes(Bytes.fromUTF8(val2).toHexString(), true).substring(2) // 0x64796e616d696320646174610000000000000000000000000000000000000000 (padded to 32)
       // Bytes
       const expectedLengthVal4 = padTo32Bytes('0x3')
-      const expectedDataVal4 = padTo32Bytes(bytesBytes.toHexString(), true).substring(2) // 0xabcdef0000000000000000000000000000000000000000000000000000000000 (padded to 32)
+      const expectedDataVal4 = padTo32Bytes(val4.toHexString(), true).substring(2) // 0xabcdef0000000000000000000000000000000000000000000000000000000000 (padded to 32)
 
       const expected =
         selector +
@@ -181,7 +177,6 @@ describe('evmEncode', () => {
 
     it('should handle empty dynamic parameters', () => {
       const val1 = ''
-      // Convert empty string to hex (will be '0x')
       const val1Bytes = Bytes.fromUTF8(val1)
 
       const params: CallParam[] = [new CallParam('string', val1Bytes)]
@@ -195,6 +190,100 @@ describe('evmEncode', () => {
 
       const encoded = evmEncode(selector, params)
       expect(encoded.serialize()).toBe(expected)
+    })
+  })
+})
+
+describe('evmEncodeArray', () => {
+  describe('Dynamic Arrays', () => {
+    it('should encode empty dynamic array correctly', () => {
+      const result = evmEncodeArray('uint256[]', [])
+      const expected = padTo32Bytes('0x0')
+      expect(result.serialize()).toBe(expected)
+    })
+
+    it('should encode dynamic array of BigInt values', () => {
+      const values = [BigInt.fromU64(10), BigInt.fromU64(20), BigInt.fromU64(30)]
+      const result = evmEncodeArray('uint256[]', values)
+
+      const expectedLength = padTo32Bytes('0x3')
+      const expectedItem1 = padTo32Bytes('0xa') // 10
+      const expectedItem2 = padTo32Bytes('0x14') // 20
+      const expectedItem3 = padTo32Bytes('0x1e') // 30
+
+      const expected =
+        expectedLength.substring(2) +
+        expectedItem1.substring(2) +
+        expectedItem2.substring(2) +
+        expectedItem3.substring(2)
+
+      expect(result.serialize()).toBe('0x' + expected)
+    })
+
+    it('should encode dynamic array of Address values', () => {
+      const addr1 = Address.fromString('0x1111111111111111111111111111111111111111')
+      const addr2 = Address.fromString('0x2222222222222222222222222222222222222222')
+      const values = [addr1, addr2]
+
+      const result = evmEncodeArray('address[]', values)
+
+      const expectedLength = padTo32Bytes('0x2')
+      const expectedAddr1 = padTo32Bytes(addr1.toHexString())
+      const expectedAddr2 = padTo32Bytes(addr2.toHexString())
+
+      const expected = expectedLength.substring(2) + expectedAddr1.substring(2) + expectedAddr2.substring(2)
+
+      expect(result.serialize()).toBe('0x' + expected)
+    })
+
+    it('should encode dynamic array of Bytes values', () => {
+      const bytes1 = Bytes.fromUTF8('hello')
+      const bytes2 = Bytes.fromUTF8('world')
+      const values = [bytes1, bytes2]
+
+      const result = evmEncodeArray('bytes32[]', values)
+
+      const expectedLength = padTo32Bytes('0x2')
+      const expectedBytes1 = padTo32Bytes(bytes1.toHexString())
+      const expectedBytes2 = padTo32Bytes(bytes2.toHexString())
+
+      const expected = expectedLength.substring(2) + expectedBytes1.substring(2) + expectedBytes2.substring(2)
+
+      expect(result.serialize()).toBe('0x' + expected)
+    })
+  })
+
+  describe('Fixed Arrays', () => {
+    it('should encode fixed array of BigInt values', () => {
+      const values = [BigInt.fromU64(100), BigInt.fromU64(200)]
+      const result = evmEncodeArray('uint256[2]', values)
+
+      const expectedItem1 = padTo32Bytes('0x64') // 100
+      const expectedItem2 = padTo32Bytes('0xc8') // 200
+
+      const expected = expectedItem1.substring(2) + expectedItem2.substring(2)
+
+      expect(result.serialize()).toBe('0x' + expected)
+    })
+
+    it("should throw when fixed array size doesn't match input length", () => {
+      expect(() => {
+        const values = [BigInt.fromU64(100), BigInt.fromU64(200)]
+        evmEncodeArray('uint256[3]', values)
+      }).toThrow()
+
+      expect(() => {
+        const values = [BigInt.fromU64(100), BigInt.fromU64(200)]
+        evmEncodeArray('uint256[1]', values)
+      }).toThrow()
+    })
+  })
+
+  describe('Error Handling', () => {
+    it('should throw for string array type', () => {
+      expect(() => {
+        evmEncodeArray('string[]', [Bytes.fromUTF8('test')])
+      }).toThrow()
     })
   })
 })
