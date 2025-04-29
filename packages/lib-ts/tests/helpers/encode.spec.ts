@@ -244,8 +244,8 @@ describe('evmEncodeArray', () => {
       const result = evmEncodeArray('bytes32[]', values)
 
       const expectedLength = padTo32Bytes('0x2')
-      const expectedBytes1 = padTo32Bytes(bytes1.toHexString())
-      const expectedBytes2 = padTo32Bytes(bytes2.toHexString())
+      const expectedBytes1 = padTo32Bytes(bytes1.toHexString(), true)
+      const expectedBytes2 = padTo32Bytes(bytes2.toHexString(), true)
 
       const expected = expectedLength.substring(2) + expectedBytes1.substring(2) + expectedBytes2.substring(2)
 
