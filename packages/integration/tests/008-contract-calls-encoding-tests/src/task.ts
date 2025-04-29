@@ -22,4 +22,7 @@ export default function main(): void {
 
   const arr = [bytes1, bytes2, bytes3]
   testContract.getElement(arr, BigInt.fromU32(1))
+
+  testContract.readDynamicAddressArray([TEST_ADDRESS])
+  testContract.readFixedAddressArray([TEST_ADDRESS, TEST_ADDRESS, TEST_ADDRESS])
 }

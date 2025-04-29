@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, CallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallParam, encodeArrayData, encodeCallData, environment } from '@mimicprotocol/lib-ts'
 
 export class TEST {
   private address: Address
@@ -34,16 +34,6 @@ export class TEST {
     return BigInt.fromString(result)
   }
 
-  getAddress(): Address {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x38cc4831', [])
-    )
-    return Address.fromString(result)
-  }
-
   getBool(): bool {
     const result = environment.contractCall(
       this.address,
@@ -74,13 +64,23 @@ export class TEST {
     return Bytes.fromHexString(result).reverse()
   }
 
+  getCallerAddress(): Address {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x46b3353b', [])
+    )
+    return Address.fromString(result)
+  }
+
   getElement(arr: Bytes[], index: BigInt): Bytes {
     const result = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       encodeCallData('0x6e8184d0', [
-        new CallParam('bytes32[3]', arr),
+        new CallParam('bytes32[3]', encodeArrayData<Bytes>('bytes32[3]', arr)),
         new CallParam('uint256', index.toBytesBigEndian()),
       ])
     )
@@ -192,6 +192,36 @@ export class TEST {
     return Bytes.fromHexString(result).reverse()
   }
 
+  readAddress(_addr: Address): Address {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xcade77fa', [new CallParam('address', _addr)])
+    )
+    return Address.fromString(result)
+  }
+
+  readDynamicAddressArray(_addrs: Address[]): BigInt {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0x890e4c02', [new CallParam('address[]', encodeArrayData<Address>('address[]', _addrs))])
+    )
+    return BigInt.fromString(result)
+  }
+
+  readFixedAddressArray(_addrs: Address[]): Address {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      encodeCallData('0xceca6c77', [new CallParam('address[3]', encodeArrayData<Address>('address[3]', _addrs))])
+    )
+    return Address.fromString(result)
+  }
+
   reverseBytes(input: Bytes): Bytes {
     const result = environment.contractCall(
       this.address,
@@ -207,7 +237,7 @@ export class TEST {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x1e2aea06', [new CallParam('uint256[]', values)])
+      encodeCallData('0x1e2aea06', [new CallParam('uint256[]', encodeArrayData<BigInt>('uint256[]', values))])
     )
     return BigInt.fromString(result)
   }

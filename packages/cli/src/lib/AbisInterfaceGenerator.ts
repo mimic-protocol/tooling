@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'encodeCallData'
+type ImportedTypes = LibTypes | 'environment' | 'encodeCallData' | 'encodeArrayData'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -17,7 +17,13 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', 'encodeCallData', LibTypes.BigInt, LibTypes.Address])
+    const importedTypes = new Set<ImportedTypes>([
+      'environment',
+      'encodeCallData',
+      LibTypes.BigInt,
+      LibTypes.Address,
+      LibTypes.CallParam,
+    ])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -106,20 +112,19 @@ function determineReturnType(
 }
 
 function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
-  importedTypes.add(LibTypes.CallParam)
-
   return inputs
     .map((input, index) => {
       const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
       const abiType = input.type
-      const mappedType = mapAbiType(abiType, importedTypes)
       const isArray = abiType.includes('[')
-
       let valueExpression: string
 
       if (isArray) {
-        valueExpression = paramName
+        importedTypes.add('encodeArrayData')
+        const libType = mapAbiType(abiType, importedTypes, true)
+        valueExpression = `encodeArrayData<${libType}>('${abiType}', ${paramName})`
       } else {
+        const mappedType = mapAbiType(abiType, importedTypes)
         switch (abiType) {
           case 'string':
             importedTypes.add(LibTypes.Bytes)
@@ -179,26 +184,37 @@ function appendFunctionBody(
   }
 }
 
-function mapAbiType(abiType: string, importedTypes: Set<ImportedTypes>): InputType | InputTypeArray {
-  const fixedArrayMatch = abiType.match(/^(.+)\[(\d+)\]$/) // Match fixed-size arrays like type[N]
-  const dynamicArrayMatch = abiType.endsWith('[]')
+function mapAbiType(
+  abiType: string,
+  importedTypes: Set<ImportedTypes>,
+  onlyBaseType: boolean = false
+): InputType | InputTypeArray {
+  const fixedArrayMatch = abiType.match(/^(.+)\[(\d+)\]$/)
+  const dynamicArrayMatch = abiType.match(/^(.+)\[\]$/)
   let baseAbiType = abiType
+  let isArray = false
 
   if (fixedArrayMatch) {
-    baseAbiType = fixedArrayMatch[1] // Get the base type part (e.g., "bytes32" from "bytes32[3]")
+    baseAbiType = fixedArrayMatch[1]
+    isArray = true
   } else if (dynamicArrayMatch) {
-    baseAbiType = abiType.slice(0, -2) // Get the base type part (e.g., "string" from "string[]")
+    baseAbiType = dynamicArrayMatch[1]
+    isArray = true
   }
 
-  const mappedBaseType = ABI_TYPECAST_MAP[baseAbiType] || 'unknown'
+  let mappedBaseType: InputType | 'unknown' = 'unknown'
+  if (baseAbiType === 'tuple') {
+    mappedBaseType = 'unknown'
+  } else {
+    mappedBaseType = ABI_TYPECAST_MAP[baseAbiType] || 'unknown'
+  }
 
   if (Object.values(LibTypes).includes(mappedBaseType as LibTypes)) {
     importedTypes.add(mappedBaseType as LibTypes)
   }
 
-  if (fixedArrayMatch || dynamicArrayMatch) {
-    if (typeof mappedBaseType === 'string' && mappedBaseType.endsWith('[]')) return 'unknown[]'
-    return `${mappedBaseType}[]` as InputTypeArray
+  if (isArray) {
+    return onlyBaseType ? mappedBaseType : (`${mappedBaseType}[]` as InputTypeArray)
   }
 
   return mappedBaseType
