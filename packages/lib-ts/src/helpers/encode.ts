@@ -45,8 +45,8 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
   if (!isHex(keccak256, true)) throw new Error('Invalid keccak256: must be a valid hex string (0x prefixed)')
 
   let selector = Bytes.fromHexString(keccak256)
-  let staticPart = new Bytes(0)
-  let dynamicPart = new Bytes(0)
+  let staticPart = Bytes.empty()
+  let dynamicPart = Bytes.empty()
   let currentDynamicOffset = params.length * EVM_ENCODE_SLOT_SIZE
 
   const encodedDynamicData: Bytes[] = []

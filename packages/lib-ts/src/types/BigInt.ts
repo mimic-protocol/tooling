@@ -512,7 +512,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   toBytes(): Bytes {
-    if (this.isZero()) return new Bytes(0)
+    if (this.isZero()) return Bytes.empty()
     const value = this.clone()
 
     const isNegative = this.isNegative()
