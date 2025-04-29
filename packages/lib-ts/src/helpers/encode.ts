@@ -187,6 +187,7 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
   for (let i = 0; i < params.length; i++) {
     const param = params[i]
     const paramType = param.type
+    const paramValue = param.value
 
     if (isDynamicType(paramType)) {
       const offsetBytes = evmPad(BigInt.fromU64(currentDynamicOffset as u64).toBytesBigEndian())
@@ -194,13 +195,15 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
       const encodedParam = dynamicDataSegments[dynamicParamIndex++]
       dynamicPart = dynamicPart.concat(encodedParam)
       currentDynamicOffset += encodedParam.length
-    } else if (isFixedArray(paramType)) {
-      const staticArrayBytes = param.value
-      staticPart = staticPart.concat(staticArrayBytes)
     } else {
-      const staticValueBytes = param.value
-      const paddedStatic = evmPad(staticValueBytes, !isFixedBytes(paramType))
-      staticPart = staticPart.concat(paddedStatic)
+      let staticValueBytes: Bytes
+      if (isFixedArray(paramType)) {
+        staticValueBytes = paramValue
+      } else {
+        const leftPad = !isFixedBytes(paramType)
+        staticValueBytes = evmPad(paramValue, leftPad)
+      }
+      staticPart = staticPart.concat(staticValueBytes)
     }
   }
 
