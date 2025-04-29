@@ -12,42 +12,25 @@ import { isHex } from './strings'
  * @returns Properly padded Bytes
  */
 function evmPad(input: Bytes, leftPad: boolean = true, exact: boolean = true, throwOnOversize: boolean = true): Bytes {
-  // Calculate the target size and padding length
   let targetSize: i32 = 0
   if (exact) {
     targetSize = EVM_ENCODE_SLOT_SIZE
-    if (input.length > targetSize && throwOnOversize) {
-      throw new Error('Input bytes exceed EVM_ENCODE_SLOT_SIZE')
-    }
+    if (input.length > targetSize && throwOnOversize) throw new Error('Input bytes exceed EVM_ENCODE_SLOT_SIZE')
   } else {
-    // Pad to the next multiple of EVM_ENCODE_SLOT_SIZE
     const remainder = input.length % EVM_ENCODE_SLOT_SIZE
     targetSize = remainder === 0 ? input.length : input.length + (EVM_ENCODE_SLOT_SIZE - remainder)
   }
 
-  // If input is already the target size, return it directly
-  if (input.length === targetSize) {
-    return input
-  }
+  if (input.length === targetSize) return input
+  if (input.length > targetSize) return changetype<Bytes>(input.slice(input.length - targetSize))
 
-  // Handle oversized input by truncating if not throwing
-  if (input.length > targetSize) {
-    return changetype<Bytes>(input.slice(input.length - targetSize))
-  }
-
-  // Create padding
   const paddingLength = targetSize - input.length
   const padding = new Bytes(paddingLength)
 
-  // Apply the padding in the right direction
-  return leftPad
-    ? padding.concat(input) // Left padding (for static values)
-    : input.concat(padding) // Right padding (for dynamic values)
+  return leftPad ? padding.concat(input) : input.concat(padding)
 }
 
 function isDynamicType(type: string): bool {
-  // Array types containing '[]' but not fixed size '[\d+]' are dynamic.
-  // Also includes base dynamic types like 'string' and 'bytes'.
   if (type.includes('[]')) return true
   if (type === 'string' || type === 'bytes') return true
   if (type.includes('[')) return false
@@ -82,11 +65,9 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
     throw new Error('Encoding for string[] not fully implemented yet.')
   }
 
-  // Determine the base type and if it's fixed-size bytes
   const openBracketIndex = abiType.indexOf('[')
   const baseType = openBracketIndex === -1 ? abiType : abiType.slice(0, openBracketIndex)
 
-  // Encode each element
   for (let i = 0; i < values.length; i++) {
     let elementBytes: Bytes
     const element = values[i]
@@ -107,8 +88,6 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
     const lengthBytes = evmPad(BigInt.fromU64(values.length as u64).toBytesBigEndian())
     return lengthBytes.concat(encodedElements)
   } else {
-    // Fixed arrays just have concatenated elements
-    // Extract array size N from type string like "bytes32[N]"
     const openBracketIndex = abiType.lastIndexOf('[')
     const closeBracketIndex = abiType.lastIndexOf(']')
     if (openBracketIndex === -1 || closeBracketIndex === -1 || closeBracketIndex !== abiType.length - 1)
