@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, CallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallParam, environment, evmEncode } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -12,12 +12,7 @@ export class SAFE {
   }
 
   VERSION(): string {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xffa1ad74', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0xffa1ad74', []))
     return result
   }
 
@@ -26,7 +21,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x7d832974', [new CallParam('address', param0), new CallParam('bytes32', param1)])
+      evmEncode('0x7d832974', [new CallParam('address', param0), new CallParam('bytes32', param1)])
     )
     return BigInt.fromString(result)
   }
@@ -36,7 +31,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x12fb68e0', [
+      evmEncode('0x12fb68e0', [
         new CallParam('bytes32', dataHash),
         new CallParam('bytes', data),
         new CallParam('bytes', signatures),
@@ -50,7 +45,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x934f3a11', [
+      evmEncode('0x934f3a11', [
         new CallParam('bytes32', dataHash),
         new CallParam('bytes', data),
         new CallParam('bytes', signatures),
@@ -59,12 +54,7 @@ export class SAFE {
   }
 
   domainSeparator(): Bytes {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xf698da25', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0xf698da25', []))
     return Bytes.fromHexString(result).reverse()
   }
 
@@ -84,7 +74,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xe86637db', [
+      evmEncode('0xe86637db', [
         new CallParam('address', to),
         new CallParam('uint256', value.toBytesBigEndian()),
         new CallParam('bytes', data),
@@ -101,12 +91,7 @@ export class SAFE {
   }
 
   getChainId(): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x3408e470', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0x3408e470', []))
     return BigInt.fromString(result)
   }
 
@@ -115,21 +100,13 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xcc2f8452', [
-        new CallParam('address', start),
-        new CallParam('uint256', pageSize.toBytesBigEndian()),
-      ])
+      evmEncode('0xcc2f8452', [new CallParam('address', start), new CallParam('uint256', pageSize.toBytesBigEndian())])
     )
     return result === '' ? [] : result.split(',').map((value) => value)
   }
 
   getOwners(): Address[] {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xa0e67e2b', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0xa0e67e2b', []))
     return result === '' ? [] : result.split(',').map((value) => Address.fromString(value))
   }
 
@@ -138,7 +115,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x5624b25b', [
+      evmEncode('0x5624b25b', [
         new CallParam('uint256', offset.toBytesBigEndian()),
         new CallParam('uint256', length.toBytesBigEndian()),
       ])
@@ -147,12 +124,7 @@ export class SAFE {
   }
 
   getThreshold(): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xe75235b8', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0xe75235b8', []))
     return BigInt.fromString(result)
   }
 
@@ -172,7 +144,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0xd8d11f78', [
+      evmEncode('0xd8d11f78', [
         new CallParam('address', to),
         new CallParam('uint256', value.toBytesBigEndian()),
         new CallParam('bytes', data),
@@ -193,7 +165,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x2d9ad53d', [new CallParam('address', module)])
+      evmEncode('0x2d9ad53d', [new CallParam('address', module)])
     )
     return bool.parse(result)
   }
@@ -203,18 +175,13 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x2f54bf6e', [new CallParam('address', owner)])
+      evmEncode('0x2f54bf6e', [new CallParam('address', owner)])
     )
     return bool.parse(result)
   }
 
   nonce(): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xaffed0e0', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('0xaffed0e0', []))
     return BigInt.fromString(result)
   }
 
@@ -223,7 +190,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      encodeCallData('0x5ae6bd37', [new CallParam('bytes32', param0)])
+      evmEncode('0x5ae6bd37', [new CallParam('bytes32', param0)])
     )
     return BigInt.fromString(result)
   }

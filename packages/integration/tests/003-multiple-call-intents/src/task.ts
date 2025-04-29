@@ -5,7 +5,7 @@ import { input } from './types'
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString(NULL_ADDRESS)
-  const data = Bytes.empty()
+  const data = Bytes.fromI32(0)
   const feeToken = Address.fromString(NULL_ADDRESS)
   const feeAmount = BigInt.fromI32(2)
   environment.call(settler, input.chainId, target, feeToken, feeAmount, data)

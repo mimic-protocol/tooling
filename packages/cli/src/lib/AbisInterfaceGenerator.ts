@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'encodeCallData'
+type ImportedTypes = LibTypes | 'environment' | 'evmEncode'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -17,7 +17,7 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', 'encodeCallData', LibTypes.BigInt, LibTypes.Address])
+    const importedTypes = new Set<ImportedTypes>(['environment', 'evmEncode', LibTypes.BigInt, LibTypes.Address])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -150,7 +150,7 @@ function appendFunctionBody(
   callArgs: string
 ): void {
   const selector = getFunctionSelector(fn)
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [${callArgs}]))`
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('${selector}', [${callArgs}]))`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)

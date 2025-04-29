@@ -5,11 +5,7 @@ describe('ByteArray', () => {
     describe('when calling the empty method', () => {
       it('returns a ByteArray initialized to 0', (): void => {
         const result = ByteArray.empty()
-        expect(result.length).toBe(4)
-        expect(result[0]).toBe(0)
-        expect(result[1]).toBe(0)
-        expect(result[2]).toBe(0)
-        expect(result[3]).toBe(0)
+        expect(result.length).toBe(0)
       })
     })
   })

@@ -168,7 +168,7 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [new ${LibTypes.CallParam}('address', owner)]))`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('${selector}', [new ${LibTypes.CallParam}('address', owner)]))`
       )
     })
 
@@ -230,7 +230,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`${functionName}(): void {`)
       expect(result).to.contain(
-        `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', []))`
+        `environment.contractCall(this.address, this.chainId, this.timestamp, evmEncode('${selector}', []))`
       )
       expect(result).not.to.contain('return')
     })

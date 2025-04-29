@@ -7,7 +7,7 @@ function isDynamicType(type: string): bool {
   return type === 'string' || type === 'bytes'
 }
 
-function uintToBytes32(value: u64): Bytes {
+function toEvmBytes32(value: u64): Bytes {
   const valueBytes = BigInt.fromU64(value).toBytesBigEndian()
   if (valueBytes.length <= EVM_ENCODE_SLOT_SIZE) {
     const padding = new Bytes(EVM_ENCODE_SLOT_SIZE - valueBytes.length)
@@ -17,7 +17,7 @@ function uintToBytes32(value: u64): Bytes {
   }
 }
 
-function padToMultipleOf32(data: Bytes): Bytes {
+function padToWordBoundary(data: Bytes): Bytes {
   const remainder = data.length % EVM_ENCODE_SLOT_SIZE
 
   if (remainder === 0) return data
@@ -28,7 +28,19 @@ function padToMultipleOf32(data: Bytes): Bytes {
   return data.concat(padding)
 }
 
-export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
+/*
+ ** EVM Encode
+ **
+ ** This function encodes a function selector and parameters into a bytes array
+ ** according to the EVM encoding rules. Note that encodes in big endian order
+ ** but internally it is stored in little endian order.
+ **
+ ** @param keccak256 - The function selector (4 bytes)
+ ** @param params - The parameters to encode
+ **
+ ** @returns The encoded bytes array
+ */
+export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
   if (keccak256.length != 10) throw new Error('Invalid keccak256: must be exactly 4 bytes (0x + 8 chars)')
   if (!isHex(keccak256, true)) throw new Error('Invalid keccak256: must be a valid hex string (0x prefixed)')
 
@@ -44,8 +56,8 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
     const param = params[i]
     if (isDynamicType(param.type)) {
       const dataBytes = param.value
-      const lengthBytes = uintToBytes32(dataBytes.length)
-      const paddedData = padToMultipleOf32(dataBytes)
+      const lengthBytes = toEvmBytes32(dataBytes.length)
+      const paddedData = padToWordBoundary(dataBytes)
       const encodedDynamic = lengthBytes.concat(paddedData)
       encodedDynamicData.push(encodedDynamic)
     }
@@ -56,7 +68,7 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
   for (let i = 0; i < params.length; i++) {
     const param = params[i]
     if (isDynamicType(param.type)) {
-      const offsetBytes = uintToBytes32(currentDynamicOffset)
+      const offsetBytes = toEvmBytes32(currentDynamicOffset)
       staticPart = staticPart.concat(offsetBytes)
       const encodedParam = encodedDynamicData[dynamicParamIndex++]
       dynamicPart = dynamicPart.concat(encodedParam)
@@ -72,9 +84,5 @@ export function encodeCallData(keccak256: string, params: CallParam[]): Bytes {
     }
   }
 
-  /* NOTE:
-   ** The reverse is necessary because we are building the data in big endian order
-   ** but internally it is stored in little endian order
-   */
-  return selector.concat(staticPart).concat(dynamicPart).reverse()
+  return selector.concat(staticPart).concat(dynamicPart)
 }
