@@ -37,4 +37,6 @@ export default function main(): void {
     BigInt.fromU32(4000),
     BigInt.fromU32(5000),
   ])
+  testContract.readBytes8(TEST_BYTES)
+  testContract.readBytes16(TEST_BYTES.concat(TEST_BYTES))
 }

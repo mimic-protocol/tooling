@@ -63,6 +63,10 @@ function isFixedArray(type: string): bool {
   return isArrayType(type) && !type.endsWith('[]')
 }
 
+function isFixedBytes(type: string): bool {
+  return type.startsWith('bytes') && type !== 'bytes'
+}
+
 /**
  * Encodes array values per Ethereum ABI spec
  * @param abiType - ABI type string (e.g. 'uint256[]', 'address[3]')
@@ -78,6 +82,10 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
     throw new Error('Encoding for string[] not fully implemented yet.')
   }
 
+  // Determine the base type and if it's fixed-size bytes
+  const openBracketIndex = abiType.indexOf('[')
+  const baseType = openBracketIndex === -1 ? abiType : abiType.slice(0, openBracketIndex)
+
   // Encode each element
   for (let i = 0; i < values.length; i++) {
     let elementBytes: Bytes
@@ -88,7 +96,7 @@ export function evmEncodeArray<T>(abiType: string, values: T[]): Bytes {
     } else if (element instanceof Address) {
       elementBytes = evmPad(element)
     } else if (element instanceof Bytes) {
-      elementBytes = evmPad(element.reverse())
+      elementBytes = evmPad(element.reverse(), !isFixedBytes(baseType))
     } else {
       throw new Error(`Unsupported element type in array: ${abiType}`)
     }
@@ -191,7 +199,7 @@ export function evmEncode(keccak256: string, params: CallParam[]): Bytes {
       staticPart = staticPart.concat(staticArrayBytes)
     } else {
       const staticValueBytes = param.value
-      const paddedStatic = evmPad(staticValueBytes)
+      const paddedStatic = evmPad(staticValueBytes, !isFixedBytes(paramType))
       staticPart = staticPart.concat(paddedStatic)
     }
   }
