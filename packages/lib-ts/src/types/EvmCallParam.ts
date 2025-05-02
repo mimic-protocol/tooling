@@ -1,5 +1,6 @@
+import { join, Serializable, serialize, serializeArray } from '../helpers'
+
 import { Bytes } from './Bytes'
-import { join, Serializable, serialize, serializeArray } from "../helpers";
 
 export class EvmCallParam implements Serializable {
   private static readonly SERIALIZED_PREFIX: string = 'EvmCallParam'
@@ -27,6 +28,6 @@ export class EvmCallParam implements Serializable {
   }
 
   serialize(): string {
-    return this.toString();
+    return this.toString()
   }
 }

@@ -17,7 +17,13 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', 'encodeCallData', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
+    const importedTypes = new Set<ImportedTypes>([
+      'environment',
+      'encodeCallData',
+      LibTypes.BigInt,
+      LibTypes.Address,
+      'EvmCallParam',
+    ])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -128,13 +134,13 @@ function toBytes(paramType: InputType | InputTypeArray, paramName: string, impor
 function generateEvmParam(input: AbiParameter, importedTypes: Set<ImportedTypes>, index: number): string {
   const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
   const paramType = mapAbiType(input.type, importedTypes)
-  if(input.type.endsWith(']')) {
-    const lastOpen = input.type.lastIndexOf("[");
-    const base = input.type.slice(0, lastOpen);
+  if (input.type.endsWith(']')) {
+    const lastOpen = input.type.lastIndexOf('[')
+    const base = input.type.slice(0, lastOpen)
 
-    const lastOpenType = paramType.lastIndexOf("[");
-    const baseType = paramType.slice(0, lastOpenType);
-    return `EvmCallParam.fromValues('${input.type}', ${paramName}.map((x: ${baseType}) => ${generateEvmParam({name: 'x', type: base}, importedTypes, 0)}))`
+    const lastOpenType = paramType.lastIndexOf('[')
+    const baseType = paramType.slice(0, lastOpenType)
+    return `EvmCallParam.fromValues('${input.type}', ${paramName}.map((x: ${baseType}) => ${generateEvmParam({ name: 'x', type: base }, importedTypes, 0)}))`
   }
   return `EvmCallParam.fromValue('${input.type}', ${toBytes(paramType, paramName, importedTypes)})`
 }
@@ -177,7 +183,7 @@ function mapAbiType(abiType: string, importedTypes: Set<ImportedTypes>): InputTy
   if (abiType.endsWith(']')) {
     // It can be a nested array, so we only remove the last one
     // We use indexOf to find the last occurrence of '[' to support fixed arrays
-    const lastIndex = abiType.lastIndexOf('[');
+    const lastIndex = abiType.lastIndexOf('[')
     const baseType = mapAbiType(abiType.slice(0, lastIndex), importedTypes)
     return `${baseType}[]` as InputTypeArray
   }
