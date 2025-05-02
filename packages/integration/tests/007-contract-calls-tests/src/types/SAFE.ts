@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, encodeCallData, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address

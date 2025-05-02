@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'encodeCallData' | 'EvmCallParam'
+type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -17,13 +17,7 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>([
-      'environment',
-      'encodeCallData',
-      LibTypes.BigInt,
-      LibTypes.Address,
-      'EvmCallParam',
-    ])
+    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)

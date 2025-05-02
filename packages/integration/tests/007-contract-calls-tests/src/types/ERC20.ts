@@ -1,4 +1,4 @@
-import { Address, BigInt, encodeCallData, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
