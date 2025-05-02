@@ -2,5 +2,9 @@
   "_contractCall": {
     "log": true,
     "default": "0x00"
+  },
+  "_evmEncode": {
+    "log": true,
+    "default": "0x00"
   }
 }
