@@ -1,4 +1,4 @@
-import { Address, BigInt, encodeCallData, environment } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, EvmCallParam, encodeCallData, environment } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
@@ -12,62 +12,33 @@ export class ERC20 {
   }
 
   name(): string {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x06fdde03', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x06fdde03' )
     return result
   }
 
   totalSupply(): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x18160ddd', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x18160ddd' )
     return BigInt.fromString(result)
   }
 
   decimals(): u8 {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x313ce567', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x313ce567' )
     return u8.parse(result)
   }
 
   balanceOf(_owner: Address): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x70a08231', [_owner])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x70a08231' + environment.evmEncode([EvmCallParam.fromValue('address', _owner)]))
     return BigInt.fromString(result)
   }
 
   symbol(): string {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0x95d89b41', [])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x95d89b41' )
     return result
   }
 
   allowance(_owner: Address, _spender: Address): BigInt {
-    const result = environment.contractCall(
-      this.address,
-      this.chainId,
-      this.timestamp,
-      encodeCallData('0xdd62ed3e', [_owner, _spender])
-    )
+    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xdd62ed3e' + environment.evmEncode([EvmCallParam.fromValue('address', _owner), EvmCallParam.fromValue('address', _spender)]))
     return BigInt.fromString(result)
   }
+
 }
