@@ -1,6 +1,6 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, Bytes } from './types'
+import { Address, BigInt, Bytes, EvmCallParam } from './types'
 
 export namespace environment {
   @external('environment', '_call')
@@ -23,6 +23,9 @@ export namespace environment {
 
   @external('environment', '_getCurrentBlockNumber')
   declare function _getCurrentBlockNumber(params: string): string
+
+  @external('environment', '_evmEncode')
+  declare function _evmEncode(params: string): string
 
   export function call(
     settler: Address,
@@ -118,7 +121,7 @@ export namespace environment {
     target: Address,
     chainId: u64,
     timestamp: Date | null,
-    callData: Bytes
+    callData: string
   ): string {
     return _contractCall(
       join([
@@ -130,7 +133,7 @@ export namespace environment {
     )
   }
 
-  export function getCurrentBlockNumber(chainId: u64): BigInt {
-    return BigInt.fromString(_getCurrentBlockNumber(join([serialize(chainId)])))
+  export function evmEncode(callParameters: EvmCallParam[]): string {
+    return _evmEncode(join([serializeArray(callParameters)]))
   }
 }
