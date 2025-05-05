@@ -37,7 +37,7 @@ export class SAFE {
           EvmCallParam.fromValue('bytes32', dataHash),
           EvmCallParam.fromValue('bytes', data),
           EvmCallParam.fromValue('bytes', signatures),
-          EvmCallParam.fromValue('uint256', requiredSignatures.toBytes()),
+          EvmCallParam.fromValue('uint256', requiredSignatures),
         ])
     )
   }
@@ -80,15 +80,15 @@ export class SAFE {
       '0xe86637db' +
         environment.evmEncode([
           EvmCallParam.fromValue('address', to),
-          EvmCallParam.fromValue('uint256', value.toBytes()),
+          EvmCallParam.fromValue('uint256', value),
           EvmCallParam.fromValue('bytes', data),
           EvmCallParam.fromValue('uint8', Bytes.fromU8(operation)),
-          EvmCallParam.fromValue('uint256', safeTxGas.toBytes()),
-          EvmCallParam.fromValue('uint256', baseGas.toBytes()),
-          EvmCallParam.fromValue('uint256', gasPrice.toBytes()),
+          EvmCallParam.fromValue('uint256', safeTxGas),
+          EvmCallParam.fromValue('uint256', baseGas),
+          EvmCallParam.fromValue('uint256', gasPrice),
           EvmCallParam.fromValue('address', gasToken),
           EvmCallParam.fromValue('address', refundReceiver),
-          EvmCallParam.fromValue('uint256', _nonce.toBytes()),
+          EvmCallParam.fromValue('uint256', _nonce),
         ])
     )
     return Bytes.fromHexString(result)
@@ -105,17 +105,14 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       '0xcc2f8452' +
-        environment.evmEncode([
-          EvmCallParam.fromValue('address', start),
-          EvmCallParam.fromValue('uint256', pageSize.toBytes()),
-        ])
+        environment.evmEncode([EvmCallParam.fromValue('address', start), EvmCallParam.fromValue('uint256', pageSize)])
     )
-    return result === '' ? [] : result.split(',').map((value) => value)
+    return result === '' ? [] : result.split(',').map<unknown>((value) => value)
   }
 
   getOwners(): Address[] {
     const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xa0e67e2b')
-    return result === '' ? [] : result.split(',').map((value) => Address.fromString(value))
+    return result === '' ? [] : result.split(',').map<Address>((value) => Address.fromString(value))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
@@ -124,10 +121,7 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       '0x5624b25b' +
-        environment.evmEncode([
-          EvmCallParam.fromValue('uint256', offset.toBytes()),
-          EvmCallParam.fromValue('uint256', length.toBytes()),
-        ])
+        environment.evmEncode([EvmCallParam.fromValue('uint256', offset), EvmCallParam.fromValue('uint256', length)])
     )
     return Bytes.fromHexString(result)
   }
@@ -156,15 +150,15 @@ export class SAFE {
       '0xd8d11f78' +
         environment.evmEncode([
           EvmCallParam.fromValue('address', to),
-          EvmCallParam.fromValue('uint256', value.toBytes()),
+          EvmCallParam.fromValue('uint256', value),
           EvmCallParam.fromValue('bytes', data),
           EvmCallParam.fromValue('uint8', Bytes.fromU8(operation)),
-          EvmCallParam.fromValue('uint256', safeTxGas.toBytes()),
-          EvmCallParam.fromValue('uint256', baseGas.toBytes()),
-          EvmCallParam.fromValue('uint256', gasPrice.toBytes()),
+          EvmCallParam.fromValue('uint256', safeTxGas),
+          EvmCallParam.fromValue('uint256', baseGas),
+          EvmCallParam.fromValue('uint256', gasPrice),
           EvmCallParam.fromValue('address', gasToken),
           EvmCallParam.fromValue('address', refundReceiver),
-          EvmCallParam.fromValue('uint256', _nonce.toBytes()),
+          EvmCallParam.fromValue('uint256', _nonce),
         ])
     )
     return Bytes.fromHexString(result)

@@ -1,6 +1,6 @@
 const SEPARATOR = ','
 
-interface Stringable {
+export interface Stringable {
   toString(): string
 }
 

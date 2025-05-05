@@ -72,4 +72,6 @@ export default function main(): void {
   ])
   testContract.readBytes8(TEST_BYTES)
   testContract.readBytes16(TEST_BYTES.concat(TEST_BYTES))
+
+  testContract.getIntArray(BigInt.fromI32(-20))
 }

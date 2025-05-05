@@ -107,8 +107,6 @@ function determineReturnType(
 
 function toBytes(paramType: InputType | InputTypeArray, paramName: string, importedTypes: Set<ImportedTypes>): string {
   switch (paramType) {
-    case LibTypes.BigInt:
-      return `${paramName}.toBytes()`
     case AssemblyTypes.bool:
       importedTypes.add(LibTypes.Bytes)
       return `${LibTypes.Bytes}.fromBool(${paramName})`
@@ -165,7 +163,7 @@ function appendFunctionBody(
   if (typeof returnType === 'string' && returnType.endsWith('[]')) {
     const baseType = returnType.slice(0, -2) as InputType
     const mapFunction = generateTypeConversion(baseType, 'value', true)
-    lines.push(`    return result === '' ? [] : result.split(',').map(${mapFunction})`)
+    lines.push(`    return result === '' ? [] : result.split(',').map<${baseType}>(${mapFunction})`)
   } else {
     const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
     lines.push(`    ${returnLine}`)

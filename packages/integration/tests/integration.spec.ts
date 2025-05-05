@@ -64,7 +64,7 @@ async function runTestCase(testCase: string): Promise<void> {
       mockRunner.run()
       const expectedLogs = loadLogs(join(path, 'expected.log'))
       const testLogs = loadLogs(join(outputPath, 'test.log'))
-      expect(expectedLogs).to.be.deep.equal(testLogs)
+      expect(testLogs).to.be.deep.equal(expectedLogs)
     })
   })
 }
