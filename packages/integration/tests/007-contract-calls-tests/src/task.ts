@@ -3,9 +3,14 @@ import { Address, BigInt, Bytes, Token } from '@mimicprotocol/lib-ts'
 import { ERC20 } from './types/ERC20'
 import { ERC4626 } from './types/ERC4626'
 import { SAFE } from './types/SAFE'
+import { Test } from './types/Test'
 
 const MAINNET_CHAIN_ID = 1
 const POLYGON_CHAIN_ID = 137
+
+const TEST_ADDRESS = Address.fromString('0x29464439c0267fe6ab8a306f304402f760b29f7e')
+const TEST_CHAIN_ID = 11155111
+const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
 export default function main(): void {
   const USDC = new Token('USDC', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', MAINNET_CHAIN_ID, 6)
@@ -34,4 +39,37 @@ export default function main(): void {
     Address.zero(),
     BigInt.fromI32(5)
   )
+
+  const testContract = new Test(TEST_ADDRESS, TEST_CHAIN_ID)
+
+  testContract.concatStrings('Hello', 'World')
+  testContract.echoUint(BigInt.fromU32(123456))
+  testContract.readAddress(TEST_ADDRESS)
+  testContract.getBool()
+
+  const bytes1 = new Bytes(32)
+  bytes1.set([1], 0)
+  const bytes2 = new Bytes(32)
+  bytes2.set([2], 0)
+  const bytes3 = new Bytes(32)
+  bytes3.set([3], 0)
+
+  const arr = [bytes1, bytes2, bytes3]
+  testContract.getElement(arr, BigInt.fromU32(1))
+  testContract.getStatusName(1)
+
+  testContract.readDynamicAddressArray([TEST_ADDRESS])
+  testContract.readFixedAddressArray([TEST_ADDRESS, TEST_ADDRESS, TEST_ADDRESS])
+
+  testContract.processTransactionData(TEST_ADDRESS, BigInt.fromU64(8388608), 'testing', TEST_BYTES)
+  testContract.reverseBytes(TEST_BYTES)
+  testContract.sumArray([
+    BigInt.fromU32(1000),
+    BigInt.fromU32(2000),
+    BigInt.fromU32(3000),
+    BigInt.fromU32(4000),
+    BigInt.fromU32(5000),
+  ])
+  testContract.readBytes8(TEST_BYTES)
+  testContract.readBytes16(TEST_BYTES.concat(TEST_BYTES))
 }

@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'encodeCallData'
+type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam'
 
 const ABI_TYPECAST_MAP: Record<string, InputType> = {
   ...generateIntegerTypeMappings(),
@@ -17,7 +17,7 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', 'encodeCallData', LibTypes.BigInt, LibTypes.Address])
+    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes)
     const importsCode = generateImports(importedTypes)
@@ -105,27 +105,43 @@ function determineReturnType(
   return areAllSameType ? (`${firstOutputType}[]` as InputTypeArray) : 'unknown[]'
 }
 
+function toBytes(paramType: InputType | InputTypeArray, paramName: string, importedTypes: Set<ImportedTypes>): string {
+  switch (paramType) {
+    case LibTypes.BigInt:
+      return `${paramName}.toBytes()`
+    case AssemblyTypes.bool:
+      importedTypes.add(LibTypes.Bytes)
+      return `${LibTypes.Bytes}.fromBool(${paramName})`
+    case AssemblyTypes.i8:
+      importedTypes.add(LibTypes.Bytes)
+      return `${LibTypes.Bytes}.fromI8(${paramName})`
+    case AssemblyTypes.u8:
+      importedTypes.add(LibTypes.Bytes)
+      return `${LibTypes.Bytes}.fromU8(${paramName})`
+    case AssemblyTypes.string:
+      return `Bytes.fromUTF8(${paramName})`
+    default:
+      return paramName
+  }
+}
+
+function generateEvmParam(input: AbiParameter, importedTypes: Set<ImportedTypes>, index: number): string {
+  const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+  const paramType = mapAbiType(input.type, importedTypes)
+  if (input.type.endsWith(']')) {
+    const lastOpen = input.type.lastIndexOf('[')
+    const base = input.type.slice(0, lastOpen)
+
+    const lastOpenType = paramType.lastIndexOf('[')
+    const baseType = paramType.slice(0, lastOpenType)
+    return `EvmCallParam.fromValues('${input.type}', ${paramName}.map((x: ${baseType}) => ${generateEvmParam({ name: 'x', type: base }, importedTypes, 0)}))`
+  }
+  return `EvmCallParam.fromValue('${input.type}', ${toBytes(paramType, paramName, importedTypes)})`
+}
 function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
   return inputs
     .map((input, index) => {
-      const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
-      const paramType = mapAbiType(input.type, importedTypes)
-
-      switch (paramType) {
-        case LibTypes.BigInt:
-          return `${paramName}.toBytes()`
-        case AssemblyTypes.bool:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromBool(${paramName})`
-        case AssemblyTypes.i8:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromI8(${paramName})`
-        case AssemblyTypes.u8:
-          importedTypes.add(LibTypes.Bytes)
-          return `${LibTypes.Bytes}.fromU8(${paramName})`
-        default:
-          return paramName
-      }
+      return generateEvmParam(input, importedTypes, index)
     })
     .join(', ')
 }
@@ -137,7 +153,7 @@ function appendFunctionBody(
   callArgs: string
 ): void {
   const selector = getFunctionSelector(fn)
-  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, encodeCallData('${selector}', [${callArgs}]))`
+  const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${callArgs ? `+ environment.evmEncode([${callArgs}])` : ''})`
 
   if (returnType === 'void') {
     lines.push(`    ${contractCallCode}`)
@@ -157,8 +173,12 @@ function appendFunctionBody(
 }
 
 function mapAbiType(abiType: string, importedTypes: Set<ImportedTypes>): InputType | InputTypeArray {
-  if (abiType.endsWith('[]')) {
-    const baseType = mapAbiType(abiType.slice(0, -2), importedTypes)
+  // Support for arrays ([]) and fixed arrays ([n])
+  if (abiType.endsWith(']')) {
+    // It can be a nested array, so we only remove the last one
+    // We use indexOf to find the last occurrence of '[' to support fixed arrays
+    const lastIndex = abiType.lastIndexOf('[')
+    const baseType = mapAbiType(abiType.slice(0, lastIndex), importedTypes)
     return `${baseType}[]` as InputTypeArray
   }
 
