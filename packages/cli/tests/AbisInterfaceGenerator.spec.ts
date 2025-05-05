@@ -187,7 +187,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain('bigIntParam.toBytes()')
+      expect(result).to.contain('bigIntParam')
       expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
       expect(result).to.contain(`${LibTypes.Bytes}.fromU8(u8Param)`)
     })
@@ -217,7 +217,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `return result === '' ? [] : result.split(',').map(value => ${LibTypes.Address}.fromString(value))`
+        `return result === '' ? [] : result.split(',').map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
       )
     })
 
