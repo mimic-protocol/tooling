@@ -5,3 +5,4 @@ abis:
   - ERC20: ./abis/ERC20.json
   - ERC4626: ./abis/ERC4626.json
   - SAFE: ./abis/SAFE.json
+  - Test: ./abis/Test.json # https://sepolia.etherscan.io/address/0x29464439c0267fe6ab8a306f304402f760b29f7e#readContract

@@ -1,10 +1,10 @@
 {
   "_contractCall": {
     "log": true,
-    "default": "0x00"
+    "default": "0x29464439c0267fe6ab8a306f304402f760b29f7e"
   },
   "_evmEncode": {
     "log": true,
-    "default": "0x00"
+    "default": "00"
   }
 }
