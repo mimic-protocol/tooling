@@ -230,7 +230,6 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`${functionName}(): void {`)
 
-      console.log(result)
       expect(result).to.contain(`environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' )`)
       expect(result).not.to.contain('return')
     })
