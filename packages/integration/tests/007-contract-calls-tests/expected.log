@@ -37,3 +37,5 @@ _evmEncode: Array(EvmCallParam(bytes16,0x01020304050102030405,Array()))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x544d0ec900
 _evmEncode: Array(EvmCallParam(int256,BigInt(-20),Array()))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0xa49c97b400
+_evmEncode: Array(EvmCallParam((),,Array(EvmCallParam(uint256,BigInt(1),Array()),EvmCallParam(string,0x74657374,Array()),EvmCallParam(int256,BigInt(-20),Array()))))
+_contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x5b6a43af00

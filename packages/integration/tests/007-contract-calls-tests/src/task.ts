@@ -3,7 +3,7 @@ import { Address, BigInt, Bytes, Token } from '@mimicprotocol/lib-ts'
 import { ERC20 } from './types/ERC20'
 import { ERC4626 } from './types/ERC4626'
 import { SAFE } from './types/SAFE'
-import { Test } from './types/Test'
+import { MyStruct, Test } from './types/Test'
 
 const MAINNET_CHAIN_ID = 1
 const POLYGON_CHAIN_ID = 137
@@ -74,4 +74,7 @@ export default function main(): void {
   testContract.readBytes16(TEST_BYTES.concat(TEST_BYTES))
 
   testContract.getIntArray(BigInt.fromI32(-20))
+
+  const myStruct = new MyStruct(BigInt.fromU32(1), 'test', BigInt.fromI32(-20))
+  testContract.echoStruct(myStruct)
 }
