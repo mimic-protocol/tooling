@@ -8,7 +8,7 @@ _evmEncode: Array(EvmCallParam(address,0x000000000000000000000000000000000000000
 _contractCall: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1,,0xdd62ed3e00
 _evmEncode: Array(EvmCallParam(uint256,BigInt(1234),Array()))
 _contractCall: 0x0000000000000000000000000000000000000000,137,1743795357000,0x07a2d13a00
-_evmEncode: Array(EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(uint256,BigInt(1),Array()),EvmCallParam(bytes,0x1234,Array()),EvmCallParam(uint8,0x00,Array()),EvmCallParam(uint256,BigInt(2),Array()),EvmCallParam(uint256,BigInt(3),Array()),EvmCallParam(uint256,BigInt(4),Array()),EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(uint256,BigInt(5),Array()))
+_evmEncode: Array(EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(uint256,BigInt(1),Array()),EvmCallParam(bytes,0x1234,Array()),EvmCallParam(uint8,BigInt(0),Array()),EvmCallParam(uint256,BigInt(2),Array()),EvmCallParam(uint256,BigInt(3),Array()),EvmCallParam(uint256,BigInt(4),Array()),EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(address,0x0000000000000000000000000000000000000000,Array()),EvmCallParam(uint256,BigInt(5),Array()))
 _contractCall: 0x0000000000000000000000000000000000000000,1,,0xe86637db00
 _evmEncode: Array(EvmCallParam(string,0x48656c6c6f,Array()),EvmCallParam(string,0x576f726c64,Array()))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x12600aa300
@@ -19,7 +19,7 @@ _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0xcade77fa00
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x12a7b914
 _evmEncode: Array(EvmCallParam(bytes32[3],,Array(EvmCallParam(bytes32,0x0100000000000000000000000000000000000000000000000000000000000000,Array()),EvmCallParam(bytes32,0x0200000000000000000000000000000000000000000000000000000000000000,Array()),EvmCallParam(bytes32,0x0300000000000000000000000000000000000000000000000000000000000000,Array()))),EvmCallParam(uint256,BigInt(1),Array()))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x6e8184d000
-_evmEncode: Array(EvmCallParam(uint8,0x01,Array()))
+_evmEncode: Array(EvmCallParam(uint8,BigInt(1),Array()))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0xed49652900
 _evmEncode: Array(EvmCallParam(address[],,Array(EvmCallParam(address,0x99605430cf9259456dd7a8024c3da8c03e319541,Array()))))
 _contractCall: 0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x890e4c0200

@@ -132,7 +132,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', Bytes.fromU8(status))])
+      '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', BigInt.fromU8(status))])
     )
     return result
   }

@@ -105,19 +105,24 @@ function determineReturnType(
   return areAllSameType ? (`${firstOutputType}[]` as InputTypeArray) : 'unknown[]'
 }
 
-function toBytes(paramType: InputType | InputTypeArray, paramName: string, importedTypes: Set<ImportedTypes>): string {
+function toLibType(
+  paramType: InputType | InputTypeArray,
+  paramName: string,
+  importedTypes: Set<ImportedTypes>
+): string {
   switch (paramType) {
     case AssemblyTypes.bool:
       importedTypes.add(LibTypes.Bytes)
       return `${LibTypes.Bytes}.fromBool(${paramName})`
     case AssemblyTypes.i8:
-      importedTypes.add(LibTypes.Bytes)
-      return `${LibTypes.Bytes}.fromI8(${paramName})`
+      importedTypes.add(LibTypes.BigInt)
+      return `${LibTypes.BigInt}.fromI8(${paramName})`
     case AssemblyTypes.u8:
-      importedTypes.add(LibTypes.Bytes)
-      return `${LibTypes.Bytes}.fromU8(${paramName})`
+      importedTypes.add(LibTypes.BigInt)
+      return `${LibTypes.BigInt}.fromU8(${paramName})`
     case AssemblyTypes.string:
-      return `Bytes.fromUTF8(${paramName})`
+      importedTypes.add(LibTypes.Bytes)
+      return `${LibTypes.Bytes}.fromUTF8(${paramName})`
     default:
       return paramName
   }
@@ -134,7 +139,7 @@ function generateEvmParam(input: AbiParameter, importedTypes: Set<ImportedTypes>
     const baseType = paramType.slice(0, lastOpenType)
     return `EvmCallParam.fromValues('${input.type}', ${paramName}.map((x: ${baseType}) => ${generateEvmParam({ name: 'x', type: base }, importedTypes, 0)}))`
   }
-  return `EvmCallParam.fromValue('${input.type}', ${toBytes(paramType, paramName, importedTypes)})`
+  return `EvmCallParam.fromValue('${input.type}', ${toLibType(paramType, paramName, importedTypes)})`
 }
 function generateCallArguments(inputs: AbiParameter[], importedTypes: Set<ImportedTypes>): string {
   return inputs

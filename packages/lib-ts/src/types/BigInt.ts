@@ -34,6 +34,34 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   /**
+   * Creates a BigInt from a signed 8-bit integer (i8).
+   */
+  static fromI8(x: i8): BigInt {
+    return BigInt.fromByteArray(ByteArray.fromI8(x))
+  }
+
+  /**
+   * Creates a BigInt from an unsigned 8-bit integer (u8).
+   */
+  static fromU8(x: u8): BigInt {
+    return BigInt.fromByteArray(ByteArray.fromU8(x))
+  }
+
+  /**
+   * Creates a BigInt from a signed 16-bit integer (i16).
+   */
+  static fromI16(x: i16): BigInt {
+    return BigInt.fromByteArray(ByteArray.fromI16(x))
+  }
+
+  /**
+   * Creates a BigInt from an unsigned 16-bit integer (u16).
+   */
+  static fromU16(x: u16): BigInt {
+    return BigInt.fromByteArray(ByteArray.fromU16(x))
+  }
+
+  /**
    * Creates a BigInt from a signed 32-bit integer (i32).
    */
   static fromI32(x: i32): BigInt {
