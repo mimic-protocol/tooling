@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam'
+type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'parseCSV'
 
 type TupleDefinition = {
   className: string
@@ -25,7 +25,7 @@ export default {
     if (viewFunctions.length === 0) return ''
 
     const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
-    const tupleDefinitions = extractTupleDefinitions(abi, contractName)
+    const tupleDefinitions = extractTupleDefinitions(abi)
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes, tupleDefinitions)
     const tupleClassesCode = generateTupleClassesCode(tupleDefinitions, importedTypes)
@@ -47,62 +47,54 @@ function generateImports(importedTypes: Set<ImportedTypes>): string {
   return `import { ${[...importedTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
-function extractTupleDefinitions(abi: AbiFunctionItem[], contractName: string): TupleDefinitionsMap {
+function extractTupleDefinitions(abi: AbiFunctionItem[]): TupleDefinitionsMap {
   const definitions: TupleDefinitionsMap = new Map()
+  let tupleCounter = 0
+
+  const processParam = (param: AbiParameter): string | undefined => {
+    if (param.type !== 'tuple' || !param.components) return
+
+    const existing = findMatchingDefinition(param, definitions)
+    if (existing) return existing.className
+
+    const className = `Tuple${tupleCounter++}`
+    const key = param.internalType || className
+
+    definitions.set(key, {
+      className,
+      components: param.components,
+    })
+
+    // Recursively process nested components
+    param.components.forEach((subComp) => processParam(subComp))
+
+    return className
+  }
 
   abi.forEach((item) => {
-    if (item.type === 'function') {
-      if (item.inputs) {
-        item.inputs.forEach((input, index) => {
-          if (input.type === 'tuple' && input.components) {
-            const inputName = input.name || `input${index}`
-            const contextName = `${contractName}_${item.name}_${inputName}`
-
-            let className = input.internalType ? input.internalType.split('.').pop() : ''
-            if (!className || className === 'tuple') {
-              className = `${contextName.replace(/[^a-zA-Z0-9_]/g, '')}_Tuple`
-            }
-
-            const key = input.internalType || className
-            if (!definitions.has(key)) {
-              definitions.set(key, {
-                className: className as string,
-                components: input.components,
-              })
-            }
-          }
-        })
-      }
-
-      if (item.outputs) {
-        item.outputs.forEach((output, index) => {
-          if (output.type === 'tuple' && output.components) {
-            const outputName = output.name || `output${index}`
-            const contextName = `${contractName}_${item.name}_${outputName}`
-
-            let className = output.internalType ? output.internalType.split('.').pop() : ''
-            if (!className || className === 'tuple') {
-              className = `${contextName.replace(/[^a-zA-Z0-9_]/g, '')}_Tuple`
-            }
-
-            const key = output.internalType || className
-            if (!definitions.has(key)) {
-              definitions.set(key, {
-                className: className as string,
-                components: output.components,
-              })
-            }
-          }
-        })
-      }
-    }
+    if (item.type !== 'function') return
+    item.inputs?.forEach((input) => processParam(input))
+    item.outputs?.forEach((output) => processParam(output))
   })
 
   return definitions
 }
 
+function findMatchingDefinition(param: AbiParameter, definitions: TupleDefinitionsMap): TupleDefinition | undefined {
+  return [...definitions.values()].find(
+    (def) =>
+      def.components.length === param.components?.length &&
+      def.components.every(
+        (c, i) =>
+          c.type === param.components?.[i].type &&
+          (c.name === param.components?.[i].name || !c.name || !param.components?.[i].name)
+      )
+  )
+}
+
 function generateTupleClassesCode(tupleDefinitions: TupleDefinitionsMap, importedTypes: Set<ImportedTypes>): string {
   if (tupleDefinitions.size === 0) return ''
+  importedTypes.add('parseCSV')
 
   const lines: string[] = []
 
@@ -134,7 +126,7 @@ function generateTupleClassesCode(tupleDefinitions: TupleDefinitionsMap, importe
     lines.push('')
 
     lines.push(`  static _parse(data: string): ${def.className} {`)
-    lines.push(`    const parts = data.split(',')`)
+    lines.push(`    const parts = changetype<string[]>(parseCSV(data))`)
     lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
     const parseLines = def.components.map((comp, index) => {
@@ -441,6 +433,7 @@ function mapAbiType(
       }
     }
 
+    console.warn(`Unknown tuple type: ${param.type}`)
     return 'unknown'
   }
 
@@ -451,6 +444,7 @@ function mapAbiType(
   }
 
   const mapped = ABI_TYPECAST_MAP[abiType] || 'unknown'
+  if (mapped === 'unknown') console.warn(`Unknown type: ${abiType}`)
 
   if (Object.values(LibTypes).includes(mapped as LibTypes)) {
     importedTypes.add(mapped as LibTypes)
