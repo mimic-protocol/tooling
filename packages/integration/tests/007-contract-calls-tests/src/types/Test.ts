@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
@@ -25,7 +25,7 @@ export class Test {
     return result
   }
 
-  createStruct(id: BigInt, name: string, value: BigInt): MyStruct {
+  createStruct(id: BigInt, name: string, value: BigInt): Tuple0 {
     const result = environment.contractCall(
       this.address,
       this.chainId,
@@ -37,17 +37,17 @@ export class Test {
           EvmCallParam.fromValue('int256', value),
         ])
     )
-    return MyStruct._parse(result)
+    return Tuple0._parse(result)
   }
 
-  echoStruct(s: MyStruct): MyStruct {
+  echoStruct(s: Tuple0): Tuple0 {
     const result = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValues('()', s.toEvmCallParams())])
     )
-    return MyStruct._parse(result)
+    return Tuple0._parse(result)
   }
 
   echoUint(value: BigInt): BigInt {
@@ -294,7 +294,7 @@ export class Test {
   }
 }
 
-export class MyStruct {
+export class Tuple0 {
   readonly id: BigInt
   readonly name: string
   readonly value: BigInt
@@ -305,13 +305,13 @@ export class MyStruct {
     this.value = value
   }
 
-  static _parse(data: string): MyStruct {
-    const parts = data.split(',')
+  static _parse(data: string): Tuple0 {
+    const parts = changetype<string[]>(parseCSV(data))
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const id_value: BigInt = BigInt.fromString(parts[0])
     const name_value: string = parts[1]
     const value_value: BigInt = BigInt.fromString(parts[2])
-    return new MyStruct(id_value, name_value, value_value)
+    return new Tuple0(id_value, name_value, value_value)
   }
 
   toEvmCallParams(): EvmCallParam[] {
