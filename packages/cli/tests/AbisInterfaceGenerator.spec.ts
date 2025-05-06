@@ -189,7 +189,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain('bigIntParam')
       expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
-      expect(result).to.contain(`${LibTypes.Bytes}.fromU8(u8Param)`)
+      expect(result).to.contain(`${LibTypes.BigInt}.fromU8(u8Param)`)
     })
   })
 
