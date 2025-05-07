@@ -31,11 +31,7 @@ export default {
     const tupleClassesCode = generateTupleClassesCode(tupleDefinitions, importedTypes)
     const importsCode = generateImports(importedTypes)
 
-    return `${importsCode}
-
-${contractClassCode}
-
-${tupleClassesCode}`.trim()
+    return `${importsCode}\n\n${contractClassCode}\n\n${tupleClassesCode}`.trim()
   },
 }
 
@@ -57,7 +53,14 @@ function extractTupleDefinitions(abi: AbiFunctionItem[]): TupleDefinitionsMap {
     const existing = findMatchingDefinition(param, definitions)
     if (existing) return existing.className
 
-    const className = `Tuple${tupleCounter++}`
+    let className = `Tuple${tupleCounter++}`
+    if (param.internalType) {
+      const structMatch = param.internalType.match(/struct\s+(?:\w+\.)?(\w+)/)
+      if (structMatch && structMatch[1]) {
+        className = structMatch[1]
+      }
+    }
+
     const key = param.internalType || className
 
     definitions.set(key, {
@@ -65,7 +68,6 @@ function extractTupleDefinitions(abi: AbiFunctionItem[]): TupleDefinitionsMap {
       components: param.components,
     })
 
-    // Recursively process nested components
     param.components.forEach((subComp) => processParam(subComp))
 
     return className
@@ -164,23 +166,12 @@ function generateTupleClassesCode(tupleDefinitions: TupleDefinitionsMap, importe
       const fieldName = comp.name || `field${index}`
       const componentType = mapAbiType(comp, importedTypes, tupleDefinitions)
 
-      importedTypes.add('EvmCallParam')
-
       let paramCode
-      if (componentType === LibTypes.BigInt || componentType === LibTypes.Address) {
-        paramCode = `EvmCallParam.fromValue('${comp.type}', this.${fieldName})`
-      } else if (componentType === LibTypes.Bytes) {
-        paramCode = `EvmCallParam.fromValue('${comp.type}', this.${fieldName})`
-      } else if (componentType === AssemblyTypes.bool) {
-        importedTypes.add(LibTypes.Bytes)
-        paramCode = `EvmCallParam.fromValue('${comp.type}', Bytes.fromBool(this.${fieldName}))`
-      } else if (componentType === AssemblyTypes.string) {
-        importedTypes.add(LibTypes.Bytes)
-        paramCode = `EvmCallParam.fromValue('${comp.type}', Bytes.fromUTF8(this.${fieldName}))`
-      } else if (componentType.endsWith('_Tuple')) {
+      if (componentType.endsWith('_Tuple') || comp.type === 'tuple') {
         paramCode = `EvmCallParam.fromValues('${comp.type}', this.${fieldName}.toEvmCallParams())`
       } else {
-        paramCode = `EvmCallParam.fromValue('${comp.type}', this.${fieldName})`
+        const convertedValue = toLibType(componentType, `this.${fieldName}`, importedTypes)
+        paramCode = `EvmCallParam.fromValue('${comp.type}', ${convertedValue})`
       }
 
       lines.push(`      ${paramCode},`)
