@@ -25,12 +25,37 @@ export class Test {
     return result
   }
 
+  createStruct(id: BigInt, name: string, value: BigInt): unknown {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      '0xb0d6df12' +
+        environment.evmEncode([
+          EvmCallParam.fromValue('uint256', id),
+          EvmCallParam.fromValue('string', Bytes.fromUTF8(name)),
+          EvmCallParam.fromValue('int256', value),
+        ])
+    )
+    return result
+  }
+
+  echoStruct(s: unknown): unknown {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValue('tuple', s)])
+    )
+    return result
+  }
+
   echoUint(value: BigInt): BigInt {
     const result = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
-      '0x3b021af1' + environment.evmEncode([EvmCallParam.fromValue('uint256', value.toBytes())])
+      '0x3b021af1' + environment.evmEncode([EvmCallParam.fromValue('uint256', value)])
     )
     return BigInt.fromString(result)
   }
@@ -66,7 +91,7 @@ export class Test {
             'bytes32[3]',
             arr.map((x: Bytes) => EvmCallParam.fromValue('bytes32', x))
           ),
-          EvmCallParam.fromValue('uint256', index.toBytes()),
+          EvmCallParam.fromValue('uint256', index),
         ])
     )
     return Bytes.fromHexString(result)
@@ -79,7 +104,7 @@ export class Test {
 
   getFixedUintArray(): BigInt[] {
     const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x09cf75a7')
-    return result === '' ? [] : result.split(',').map((value) => BigInt.fromString(value))
+    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getInt(): BigInt {
@@ -87,9 +112,19 @@ export class Test {
     return BigInt.fromString(result)
   }
 
+  getIntArray(input: BigInt): BigInt[] {
+    const result = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      '0xa49c97b4' + environment.evmEncode([EvmCallParam.fromValue('int256', input)])
+    )
+    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
+  }
+
   getMultipleValues(): unknown[] {
     const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
-    return result === '' ? [] : result.split(',').map((value) => value)
+    return result === '' ? [] : result.split(',').map<unknown>((value) => value)
   }
 
   getStatusName(status: u8): string {
@@ -97,7 +132,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', Bytes.fromU8(status))])
+      '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', BigInt.fromU8(status))])
     )
     return result
   }
@@ -109,7 +144,7 @@ export class Test {
 
   getStringArray(): string[] {
     const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
-    return result === '' ? [] : result.split(',').map((value) => value)
+    return result === '' ? [] : result.split(',').map<string>((value) => value)
   }
 
   getUint(): BigInt {
@@ -119,7 +154,7 @@ export class Test {
 
   getUintArray(): BigInt[] {
     const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x4fe1e215')
-    return result === '' ? [] : result.split(',').map((value) => BigInt.fromString(value))
+    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
@@ -130,7 +165,7 @@ export class Test {
       '0xbc6270a0' +
         environment.evmEncode([
           EvmCallParam.fromValue('address', user),
-          EvmCallParam.fromValue('uint256', amount.toBytes()),
+          EvmCallParam.fromValue('uint256', amount),
           EvmCallParam.fromValue('string', Bytes.fromUTF8(note)),
           EvmCallParam.fromValue('bytes', data),
         ])
@@ -251,7 +286,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'uint256[]',
-            values.map((x: BigInt) => EvmCallParam.fromValue('uint256', x.toBytes()))
+            values.map((x: BigInt) => EvmCallParam.fromValue('uint256', x))
           ),
         ])
     )

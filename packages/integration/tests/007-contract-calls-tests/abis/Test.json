@@ -11,6 +11,57 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "string", "name": "name", "type": "string" },
+      { "internalType": "int256", "name": "value", "type": "int256" }
+    ],
+    "name": "createStruct",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "int256", "name": "value", "type": "int256" }
+        ],
+        "internalType": "struct Test.MyStruct",
+        "name": "s",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "int256", "name": "value", "type": "int256" }
+        ],
+        "internalType": "struct Test.MyStruct",
+        "name": "s",
+        "type": "tuple"
+      }
+    ],
+    "name": "echoStruct",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "uint256", "name": "id", "type": "uint256" },
+          { "internalType": "string", "name": "name", "type": "string" },
+          { "internalType": "int256", "name": "value", "type": "int256" }
+        ],
+        "internalType": "struct Test.MyStruct",
+        "name": "copia",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "value", "type": "uint256" }
     ],
     "name": "echoUint",
@@ -78,6 +129,15 @@
     "inputs": [],
     "name": "getInt",
     "outputs": [{ "internalType": "int256", "name": "", "type": "int256" }],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "int256", "name": "input", "type": "int256" }],
+    "name": "getIntArray",
+    "outputs": [
+      { "internalType": "int256[]", "name": "arr", "type": "int256[]" }
+    ],
     "stateMutability": "pure",
     "type": "function"
   },

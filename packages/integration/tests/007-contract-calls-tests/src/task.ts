@@ -8,7 +8,7 @@ import { Test } from './types/Test'
 const MAINNET_CHAIN_ID = 1
 const POLYGON_CHAIN_ID = 137
 
-const TEST_ADDRESS = Address.fromString('0x29464439c0267fe6ab8a306f304402f760b29f7e')
+const TEST_ADDRESS = Address.fromString('0x99605430cf9259456dd7a8024c3da8c03e319541')
 const TEST_CHAIN_ID = 11155111
 const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
@@ -72,4 +72,6 @@ export default function main(): void {
   ])
   testContract.readBytes8(TEST_BYTES)
   testContract.readBytes16(TEST_BYTES.concat(TEST_BYTES))
+
+  testContract.getIntArray(BigInt.fromI32(-20))
 }

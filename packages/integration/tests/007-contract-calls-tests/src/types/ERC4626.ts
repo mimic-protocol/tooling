@@ -42,7 +42,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x07a2d13a' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares.toBytes())])
+      '0x07a2d13a' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
     )
     return BigInt.fromString(result)
   }
@@ -52,7 +52,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xc6e6f592' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets.toBytes())])
+      '0xc6e6f592' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
     )
     return BigInt.fromString(result)
   }
@@ -112,7 +112,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xef8b30f7' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets.toBytes())])
+      '0xef8b30f7' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
     )
     return BigInt.fromString(result)
   }
@@ -122,7 +122,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xb3d7f6b9' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares.toBytes())])
+      '0xb3d7f6b9' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
     )
     return BigInt.fromString(result)
   }
@@ -132,7 +132,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x4cdad506' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares.toBytes())])
+      '0x4cdad506' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
     )
     return BigInt.fromString(result)
   }
@@ -142,7 +142,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x0a28a477' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets.toBytes())])
+      '0x0a28a477' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
     )
     return BigInt.fromString(result)
   }
