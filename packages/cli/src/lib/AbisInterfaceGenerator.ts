@@ -141,18 +141,7 @@ function generateTupleClassesCode(tupleDefinitions: TupleDefinitionsMap, importe
       const fieldName = comp.name || `field${index}`
       const componentType = mapAbiType(comp, importedTypes, tupleDefinitions)
 
-      let conversion
-      if (componentType === LibTypes.BigInt) {
-        conversion = `BigInt.fromString(parts[${index}])`
-      } else if (componentType === LibTypes.Address) {
-        conversion = `Address.fromString(parts[${index}])`
-      } else if (componentType === LibTypes.Bytes) {
-        conversion = `Bytes.fromHexString(parts[${index}])`
-      } else if (componentType === AssemblyTypes.bool) {
-        conversion = `parts[${index}] === 'true' || parts[${index}] === '1'`
-      } else {
-        conversion = `parts[${index}]`
-      }
+      const conversion = generateTypeConversion(componentType as InputType, `parts[${index}]`, false, false)
 
       return `    const ${fieldName}_value: ${componentType} = ${conversion}`
     })
@@ -471,7 +460,12 @@ function mapAbiType(
   return mapped
 }
 
-function generateTypeConversion(type: InputType, valueVarName: string, isMapFunction: boolean): string {
+function generateTypeConversion(
+  type: InputType,
+  valueVarName: string,
+  isMapFunction: boolean,
+  includeReturn: boolean = true
+): string {
   let conversion: string
 
   switch (type) {
@@ -490,15 +484,17 @@ function generateTypeConversion(type: InputType, valueVarName: string, isMapFunc
     case AssemblyTypes.u32:
     case AssemblyTypes.i64:
     case AssemblyTypes.u64:
-    case AssemblyTypes.bool:
       conversion = `${type}.parse(${valueVarName})`
+      break
+    case AssemblyTypes.bool:
+      conversion = `${AssemblyTypes.u8}.parse(${valueVarName}) as ${AssemblyTypes.bool}`
       break
     default:
       conversion = valueVarName
       break
   }
 
-  return isMapFunction ? `${valueVarName} => ${conversion}` : `return ${conversion}`
+  return isMapFunction ? `${valueVarName} => ${conversion}` : includeReturn ? `return ${conversion}` : conversion
 }
 
 function generateIntegerTypeMappings(): Record<string, InputType> {

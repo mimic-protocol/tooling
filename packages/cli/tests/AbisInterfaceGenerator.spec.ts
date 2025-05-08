@@ -206,7 +206,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(result)`)
-      expect(result).to.contain(`return ${AssemblyTypes.bool}.parse(result)`)
+      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result) as ${AssemblyTypes.bool}`)
       expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result)`)
       expect(result).to.contain(`return result`)
     })
@@ -252,6 +252,151 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).to.contain(`${LibTypes.Address}`)
       expect(importMatch).to.contain(`${LibTypes.BigInt}`)
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
+    })
+  })
+
+  describe('when generating tuple classes', () => {
+    it('should extract struct name from internalType', () => {
+      const abi = [
+        createViewFunction(
+          'getUserInfo',
+          [],
+          [
+            {
+              name: 'info',
+              type: 'tuple',
+              internalType: 'struct UserContract.UserInfo',
+              components: [
+                { name: 'id', type: 'uint256' },
+                { name: 'name', type: 'string' },
+              ],
+            },
+          ]
+        ),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('export class UserInfo {')
+      expect(result).not.to.contain('export class Tuple0 {')
+    })
+
+    it('should extract struct name without contract prefix', () => {
+      const abi = [
+        createViewFunction(
+          'getAssetDetails',
+          [],
+          [
+            {
+              name: 'details',
+              type: 'tuple',
+              internalType: 'struct AssetDetails',
+              components: [
+                { name: 'id', type: 'uint256' },
+                { name: 'value', type: 'uint256' },
+              ],
+            },
+          ]
+        ),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('export class AssetDetails {')
+    })
+
+    it('should fallback to generic tuple name if no internalType is provided', () => {
+      const abi = [
+        createViewFunction(
+          'getConfig',
+          [],
+          [
+            {
+              name: 'config',
+              type: 'tuple',
+              components: [
+                { name: 'enabled', type: 'bool' },
+                { name: 'value', type: 'uint256' },
+              ],
+            },
+          ]
+        ),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('export class Tuple0 {')
+    })
+
+    it('should properly handle type conversions in toEvmCallParams', () => {
+      const abi = [
+        createViewFunction(
+          'getData',
+          [],
+          [
+            {
+              name: 'data',
+              type: 'tuple',
+              components: [
+                { name: 'flag', type: 'bool' },
+                { name: 'text', type: 'string' },
+                { name: 'amount', type: 'uint256' },
+              ],
+            },
+          ]
+        ),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      // Check that proper type conversions are applied in toEvmCallParams
+      expect(result).to.contain('toEvmCallParams(): EvmCallParam[] {')
+      expect(result).to.contain(`EvmCallParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(this.flag))`)
+      expect(result).to.contain(`EvmCallParam.fromValue('string', ${LibTypes.Bytes}.fromUTF8(this.text))`)
+      expect(result).to.contain(`EvmCallParam.fromValue('uint256', this.amount)`)
+    })
+
+    it('should generate proper _parse method for handling tuple data', () => {
+      const abi = [
+        createViewFunction(
+          'getComplexData',
+          [],
+          [
+            {
+              name: 'complexData',
+              type: 'tuple',
+              components: [
+                { name: 'id', type: 'uint256' },
+                { name: 'account', type: 'address' },
+                { name: 'active', type: 'bool' },
+                { name: 'data', type: 'bytes' },
+                { name: 'description', type: 'string' },
+              ],
+            },
+          ]
+        ),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      // Check parse method existence and signature
+      expect(result).to.contain('static _parse(data: string): Tuple0 {')
+      expect(result).to.contain('const parts = changetype<string[]>(parseCSV(data))')
+      expect(result).to.contain('if (parts.length !== 5) throw new Error("Invalid data for tuple parsing")')
+
+      // Check type conversions
+      expect(result).to.contain(`id_value: ${LibTypes.BigInt} = BigInt.fromString(parts[0])`)
+      expect(result).to.contain(`account_value: ${LibTypes.Address} = Address.fromString(parts[1])`)
+      expect(result).to.contain(
+        `active_value: ${AssemblyTypes.bool} = ${AssemblyTypes.u8}.parse(parts[2]) as ${AssemblyTypes.bool}`
+      )
+      expect(result).to.contain(`data_value: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
+      expect(result).to.contain(`description_value: ${AssemblyTypes.string} = parts[4]`)
+
+      // Check constructor call
+      expect(result).to.contain(
+        'return new Tuple0(id_value, account_value, active_value, data_value, description_value)'
+      )
     })
   })
 })
