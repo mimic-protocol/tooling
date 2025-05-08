@@ -159,4 +159,17 @@ contract Test {
     ) external pure returns (MyStruct memory s) {
         s = MyStruct({ id: id, name: name, value: value });
     }
+
+    function echoStructs(MyStruct[] memory structs) external pure returns (MyStruct[] memory) {
+        return structs;
+    }
+
+    struct NestedStruct {
+        MyStruct single;
+        MyStruct[] list;
+    }
+
+    function echoNestedStruct(NestedStruct memory ns) external pure returns (NestedStruct memory) {
+        return ns;
+    }
 }

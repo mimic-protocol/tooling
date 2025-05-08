@@ -8,7 +8,7 @@ import { MyStruct, Test } from './types/Test'
 const MAINNET_CHAIN_ID = 1
 const POLYGON_CHAIN_ID = 137
 
-const TEST_ADDRESS = Address.fromString('0x99605430cf9259456dd7a8024c3da8c03e319541')
+const TEST_ADDRESS = Address.fromString('0x047be3bb46f9416732fe39a05134f20235c19334')
 const TEST_CHAIN_ID = 11155111
 const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
