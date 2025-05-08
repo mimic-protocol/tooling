@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam, parseCSV } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
@@ -12,7 +12,7 @@ export class Test {
   }
 
   concatStrings(a: string, b: string): string {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -22,11 +22,12 @@ export class Test {
           EvmCallParam.fromValue('string', Bytes.fromUTF8(b)),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('string', response))
     return result
   }
 
   createStruct(id: BigInt, name: string, value: BigInt): MyStruct {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -37,51 +38,58 @@ export class Test {
           EvmCallParam.fromValue('int256', value),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
     return MyStruct._parse(result)
   }
 
   echoStruct(s: MyStruct): MyStruct {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValues('()', s.toEvmCallParams())])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
     return MyStruct._parse(result)
   }
 
   echoUint(value: BigInt): BigInt {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x3b021af1' + environment.evmEncode([EvmCallParam.fromValue('uint256', value)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(result)
   }
 
   getBool(): bool {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x12a7b914')
-    return bool.parse(result)
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x12a7b914')
+    const result = environment.evmDecode(new EvmDecodeParam('bool', response))
+    return u8.parse(result) as bool
   }
 
   getBytes(): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x0bcd3b33')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x0bcd3b33')
+    const result = environment.evmDecode(new EvmDecodeParam('bytes', response))
     return Bytes.fromHexString(result)
   }
 
   getBytes32(): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x1f903037')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x1f903037')
+    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
     return Bytes.fromHexString(result)
   }
 
   getCallerAddress(): Address {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x46b3353b')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x46b3353b')
+    const result = environment.evmDecode(new EvmDecodeParam('address', response))
     return Address.fromString(result)
   }
 
   getElement(arr: Bytes[], index: BigInt): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -94,71 +102,82 @@ export class Test {
           EvmCallParam.fromValue('uint256', index),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
     return Bytes.fromHexString(result)
   }
 
   getEnum(): u8 {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf0ebce5a')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf0ebce5a')
+    const result = environment.evmDecode(new EvmDecodeParam('uint8', response))
     return u8.parse(result)
   }
 
   getFixedUintArray(): BigInt[] {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x09cf75a7')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x09cf75a7')
+    const result = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
     return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getInt(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x62738998')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x62738998')
+    const result = environment.evmDecode(new EvmDecodeParam('int256', response))
     return BigInt.fromString(result)
   }
 
   getIntArray(input: BigInt): BigInt[] {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0xa49c97b4' + environment.evmEncode([EvmCallParam.fromValue('int256', input)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('int256[]', response))
     return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getMultipleValues(): unknown[] {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
+    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return result === '' ? [] : result.split(',').map<unknown>((value) => value)
   }
 
   getStatusName(status: u8): string {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', BigInt.fromU8(status))])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('string', response))
     return result
   }
 
   getString(): string {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x89ea642f')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x89ea642f')
+    const result = environment.evmDecode(new EvmDecodeParam('string', response))
     return result
   }
 
   getStringArray(): string[] {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
+    const result = environment.evmDecode(new EvmDecodeParam('string[]', response))
     return result === '' ? [] : result.split(',').map<string>((value) => value)
   }
 
   getUint(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x000267a4')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x000267a4')
+    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(result)
   }
 
   getUintArray(): BigInt[] {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x4fe1e215')
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x4fe1e215')
+    const result = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
     return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -170,41 +189,45 @@ export class Test {
           EvmCallParam.fromValue('bytes', data),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
     return Bytes.fromHexString(result)
   }
 
   readAddress(_addr: Address): Address {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0xcade77fa' + environment.evmEncode([EvmCallParam.fromValue('address', _addr)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('address', response))
     return Address.fromString(result)
   }
 
   readBytes16(_input: Bytes): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x544d0ec9' + environment.evmEncode([EvmCallParam.fromValue('bytes16', _input)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('bytes16', response))
     return Bytes.fromHexString(result)
   }
 
   readBytes8(_input: Bytes): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x6a9a1222' + environment.evmEncode([EvmCallParam.fromValue('bytes8', _input)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('bytes8', response))
     return Bytes.fromHexString(result)
   }
 
   readDynamicAddressArray(_addrs: Address[]): BigInt {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -216,11 +239,12 @@ export class Test {
           ),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(result)
   }
 
   readDynamicStringArray(_strings: string[]): string {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -232,11 +256,12 @@ export class Test {
           ),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('string', response))
     return result
   }
 
   readFixedAddressArray(_addrs: Address[]): Address {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -248,11 +273,12 @@ export class Test {
           ),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('address', response))
     return Address.fromString(result)
   }
 
   readFixedStringArray(_strings: string[]): string {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -264,21 +290,23 @@ export class Test {
           ),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('string', response))
     return result
   }
 
   reverseBytes(input: Bytes): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x2f278ecb' + environment.evmEncode([EvmCallParam.fromValue('bytes', input)])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('bytes', response))
     return Bytes.fromHexString(result)
   }
 
   sumArray(values: BigInt[]): BigInt {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -290,6 +318,7 @@ export class Test {
           ),
         ])
     )
+    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(result)
   }
 }

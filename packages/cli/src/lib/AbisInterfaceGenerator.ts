@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'parseCSV'
+type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'EvmDecodeParam' | 'parseCSV'
 
 type TupleDefinition = {
   className: string
@@ -24,7 +24,13 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
+    const importedTypes = new Set<ImportedTypes>([
+      'environment',
+      LibTypes.BigInt,
+      LibTypes.Address,
+      'EvmCallParam',
+      'EvmDecodeParam',
+    ])
     const tupleDefinitions = extractTupleDefinitions(abi)
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes, tupleDefinitions)
@@ -346,6 +352,19 @@ function generateCallArguments(
     .join(', ')
 }
 
+function generateTupleTypeString(components: AbiParameter[]): string {
+  if (!components || components.length === 0) return '()'
+
+  const typeStrings = components.map((comp) => {
+    if (comp.type === 'tuple' && comp.components) {
+      return generateTupleTypeString(comp.components)
+    }
+    return comp.type
+  })
+
+  return `(${typeStrings.join(',')})`
+}
+
 function appendFunctionBody(
   lines: string[],
   fn: AbiFunctionItem,
@@ -361,7 +380,15 @@ function appendFunctionBody(
     return
   }
 
-  lines.push(`    const result = ${contractCallCode}`)
+  const abiType = fn.outputs?.[0].type
+  let decodeTypeParam = abiType
+
+  if (abiType === 'tuple') {
+    decodeTypeParam = fn.outputs?.[0].components ? generateTupleTypeString(fn.outputs[0].components) : '()'
+  }
+
+  lines.push(`    const response = ${contractCallCode}`)
+  lines.push(`    const result = environment.evmDecode(new EvmDecodeParam('${decodeTypeParam}', response))`)
 
   let isTupleClass = false
   if (typeof returnType === 'string') {
