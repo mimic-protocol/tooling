@@ -22,8 +22,8 @@ export class Test {
           EvmCallParam.fromValue('string', Bytes.fromUTF8(b)),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   createStruct(id: BigInt, name: string, value: BigInt): MyStruct {
@@ -38,8 +38,8 @@ export class Test {
           EvmCallParam.fromValue('int256', value),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
-    return MyStruct._parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
+    return MyStruct._parse(decodedResponse)
   }
 
   echoStruct(s: MyStruct): MyStruct {
@@ -49,8 +49,8 @@ export class Test {
       this.timestamp,
       '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValues('()', s.toEvmCallParams())])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
-    return MyStruct._parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
+    return MyStruct._parse(decodedResponse)
   }
 
   echoUint(value: BigInt): BigInt {
@@ -60,32 +60,32 @@ export class Test {
       this.timestamp,
       '0x3b021af1' + environment.evmEncode([EvmCallParam.fromValue('uint256', value)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   getBool(): bool {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x12a7b914')
-    const result = environment.evmDecode(new EvmDecodeParam('bool', response))
-    return u8.parse(result) as bool
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bool', response))
+    return u8.parse(decodedResponse) as bool
   }
 
   getBytes(): Bytes {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x0bcd3b33')
-    const result = environment.evmDecode(new EvmDecodeParam('bytes', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   getBytes32(): Bytes {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x1f903037')
-    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   getCallerAddress(): Address {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x46b3353b')
-    const result = environment.evmDecode(new EvmDecodeParam('address', response))
-    return Address.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address', response))
+    return Address.fromString(decodedResponse)
   }
 
   getElement(arr: Bytes[], index: BigInt): Bytes {
@@ -102,26 +102,26 @@ export class Test {
           EvmCallParam.fromValue('uint256', index),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   getEnum(): u8 {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf0ebce5a')
-    const result = environment.evmDecode(new EvmDecodeParam('uint8', response))
-    return u8.parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint8', response))
+    return u8.parse(decodedResponse)
   }
 
   getFixedUintArray(): BigInt[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x09cf75a7')
-    const result = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
-    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getInt(): BigInt {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x62738998')
-    const result = environment.evmDecode(new EvmDecodeParam('int256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   getIntArray(input: BigInt): BigInt[] {
@@ -131,14 +131,14 @@ export class Test {
       this.timestamp,
       '0xa49c97b4' + environment.evmEncode([EvmCallParam.fromValue('int256', input)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('int256[]', response))
-    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256[]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getMultipleValues(): unknown[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return result === '' ? [] : result.split(',').map<unknown>((value) => value)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<unknown>((value) => value)
   }
 
   getStatusName(status: u8): string {
@@ -148,32 +148,32 @@ export class Test {
       this.timestamp,
       '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', BigInt.fromU8(status))])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   getString(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x89ea642f')
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   getStringArray(): string[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
-    const result = environment.evmDecode(new EvmDecodeParam('string[]', response))
-    return result === '' ? [] : result.split(',').map<string>((value) => value)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string[]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<string>((value) => value)
   }
 
   getUint(): BigInt {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x000267a4')
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   getUintArray(): BigInt[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x4fe1e215')
-    const result = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
-    return result === '' ? [] : result.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
@@ -189,8 +189,8 @@ export class Test {
           EvmCallParam.fromValue('bytes', data),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('bytes32', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   readAddress(_addr: Address): Address {
@@ -200,8 +200,8 @@ export class Test {
       this.timestamp,
       '0xcade77fa' + environment.evmEncode([EvmCallParam.fromValue('address', _addr)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('address', response))
-    return Address.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address', response))
+    return Address.fromString(decodedResponse)
   }
 
   readBytes16(_input: Bytes): Bytes {
@@ -211,8 +211,8 @@ export class Test {
       this.timestamp,
       '0x544d0ec9' + environment.evmEncode([EvmCallParam.fromValue('bytes16', _input)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('bytes16', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes16', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   readBytes8(_input: Bytes): Bytes {
@@ -222,8 +222,8 @@ export class Test {
       this.timestamp,
       '0x6a9a1222' + environment.evmEncode([EvmCallParam.fromValue('bytes8', _input)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('bytes8', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes8', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   readDynamicAddressArray(_addrs: Address[]): BigInt {
@@ -239,8 +239,8 @@ export class Test {
           ),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   readDynamicStringArray(_strings: string[]): string {
@@ -256,8 +256,8 @@ export class Test {
           ),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   readFixedAddressArray(_addrs: Address[]): Address {
@@ -273,8 +273,8 @@ export class Test {
           ),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('address', response))
-    return Address.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address', response))
+    return Address.fromString(decodedResponse)
   }
 
   readFixedStringArray(_strings: string[]): string {
@@ -290,8 +290,8 @@ export class Test {
           ),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   reverseBytes(input: Bytes): Bytes {
@@ -301,8 +301,8 @@ export class Test {
       this.timestamp,
       '0x2f278ecb' + environment.evmEncode([EvmCallParam.fromValue('bytes', input)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('bytes', response))
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   sumArray(values: BigInt[]): BigInt {
@@ -318,8 +318,8 @@ export class Test {
           ),
         ])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 }
 

@@ -377,7 +377,7 @@ function appendFunctionBody(
   }
 
   lines.push(`    const response = ${contractCallCode}`)
-  lines.push(`    const result = environment.evmDecode(new EvmDecodeParam('${decodeTypeParam}', response))`)
+  lines.push(`    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeTypeParam}', response))`)
 
   let isTupleClass = false
   if (typeof returnType === 'string') {
@@ -387,16 +387,16 @@ function appendFunctionBody(
   }
 
   if (isTupleClass) {
-    lines.push(`    return ${returnType}._parse(result)`)
+    lines.push(`    return ${returnType}._parse(decodedResponse)`)
     return
   }
 
   if (typeof returnType === 'string' && returnType.endsWith('[]')) {
     const baseType = returnType.slice(0, -2) as InputType
     const mapFunction = generateTypeConversion(baseType, 'value', true)
-    lines.push(`    return result === '' ? [] : result.split(',').map<${baseType}>(${mapFunction})`)
+    lines.push(`    return decodedResponse === '' ? [] : decodedResponse.split(',').map<${baseType}>(${mapFunction})`)
   } else {
-    const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
+    const returnLine = generateTypeConversion(returnType as InputType, 'decodedResponse', false)
     lines.push(`    ${returnLine}`)
   }
 }

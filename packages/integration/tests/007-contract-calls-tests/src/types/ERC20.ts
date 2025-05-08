@@ -13,20 +13,20 @@ export class ERC20 {
 
   name(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x06fdde03')
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   totalSupply(): BigInt {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x18160ddd')
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   decimals(): u8 {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x313ce567')
-    const result = environment.evmDecode(new EvmDecodeParam('uint8', response))
-    return u8.parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint8', response))
+    return u8.parse(decodedResponse)
   }
 
   balanceOf(_owner: Address): BigInt {
@@ -36,14 +36,14 @@ export class ERC20 {
       this.timestamp,
       '0x70a08231' + environment.evmEncode([EvmCallParam.fromValue('address', _owner)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   symbol(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x95d89b41')
-    const result = environment.evmDecode(new EvmDecodeParam('string', response))
-    return result
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   allowance(_owner: Address, _spender: Address): BigInt {
@@ -54,7 +54,7 @@ export class ERC20 {
       '0xdd62ed3e' +
         environment.evmEncode([EvmCallParam.fromValue('address', _owner), EvmCallParam.fromValue('address', _spender)])
     )
-    const result = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 }
