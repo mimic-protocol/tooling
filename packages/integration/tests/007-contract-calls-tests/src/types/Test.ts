@@ -42,6 +42,19 @@ export class Test {
     return MyStruct._parse(decodedResponse)
   }
 
+  echoNestedStruct(ns: NestedStruct): NestedStruct {
+    const response = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      '0x544170e2' + environment.evmEncode([EvmCallParam.fromValues('()', ns.toEvmCallParams())])
+    )
+    const decodedResponse = environment.evmDecode(
+      new EvmDecodeParam('((uint256,string,int256),(uint256,string,int256)[])', response)
+    )
+    return NestedStruct._parse(decodedResponse)
+  }
+
   echoStruct(s: MyStruct): MyStruct {
     const response = environment.contractCall(
       this.address,
@@ -51,6 +64,25 @@ export class Test {
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
     return MyStruct._parse(decodedResponse)
+  }
+
+  echoStructs(structs: MyStruct[]): MyStruct[] {
+    const response = environment.contractCall(
+      this.address,
+      this.chainId,
+      this.timestamp,
+      '0x5d1aea3b' +
+        environment.evmEncode([
+          EvmCallParam.fromValues(
+            '()[]',
+            structs.map<EvmCallParam>((item) => EvmCallParam.fromValues('()', item.toEvmCallParams()))
+          ),
+        ])
+    )
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)[]', response))
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<MyStruct>((item) => MyStruct._parse(item))
   }
 
   echoUint(value: BigInt): BigInt {
@@ -97,7 +129,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'bytes32[3]',
-            arr.map((x: Bytes) => EvmCallParam.fromValue('bytes32', x))
+            arr.map<EvmCallParam>((item) => EvmCallParam.fromValue('bytes32', item))
           ),
           EvmCallParam.fromValue('uint256', index),
         ])
@@ -115,7 +147,9 @@ export class Test {
   getFixedUintArray(): BigInt[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x09cf75a7')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
   }
 
   getInt(): BigInt {
@@ -132,13 +166,15 @@ export class Test {
       '0xa49c97b4' + environment.evmEncode([EvmCallParam.fromValue('int256', input)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256[]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
   }
 
-  getMultipleValues(): unknown[] {
+  getMultipleValues(): GetMultipleValuesOutputs {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<unknown>((value) => value)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,bool,string)', response))
+    return GetMultipleValuesOutputs._parse(decodedResponse)
   }
 
   getStatusName(status: u8): string {
@@ -161,7 +197,7 @@ export class Test {
   getStringArray(): string[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('string[]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<string>((value) => value)
+    return decodedResponse === '' ? [] : changetype<string[]>(parseCSV(decodedResponse)).map<string>((value) => value)
   }
 
   getUint(): BigInt {
@@ -173,7 +209,9 @@ export class Test {
   getUintArray(): BigInt[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x4fe1e215')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<BigInt>((value) => BigInt.fromString(value))
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
@@ -235,7 +273,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'address[]',
-            _addrs.map((x: Address) => EvmCallParam.fromValue('address', x))
+            _addrs.map<EvmCallParam>((item) => EvmCallParam.fromValue('address', item))
           ),
         ])
     )
@@ -252,7 +290,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'string[]',
-            _strings.map((x: string) => EvmCallParam.fromValue('string', Bytes.fromUTF8(x)))
+            _strings.map<EvmCallParam>((item) => EvmCallParam.fromValue('string', Bytes.fromUTF8(item)))
           ),
         ])
     )
@@ -269,7 +307,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'address[3]',
-            _addrs.map((x: Address) => EvmCallParam.fromValue('address', x))
+            _addrs.map<EvmCallParam>((item) => EvmCallParam.fromValue('address', item))
           ),
         ])
     )
@@ -286,7 +324,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'string[2]',
-            _strings.map((x: string) => EvmCallParam.fromValue('string', Bytes.fromUTF8(x)))
+            _strings.map<EvmCallParam>((item) => EvmCallParam.fromValue('string', Bytes.fromUTF8(item)))
           ),
         ])
     )
@@ -314,7 +352,7 @@ export class Test {
         environment.evmEncode([
           EvmCallParam.fromValues(
             'uint256[]',
-            values.map((x: BigInt) => EvmCallParam.fromValue('uint256', x))
+            values.map<EvmCallParam>((item) => EvmCallParam.fromValue('uint256', item))
           ),
         ])
     )
@@ -337,10 +375,10 @@ export class MyStruct {
   static _parse(data: string): MyStruct {
     const parts = changetype<string[]>(parseCSV(data))
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
-    const id_value: BigInt = BigInt.fromString(parts[0])
-    const name_value: string = parts[1]
-    const value_value: BigInt = BigInt.fromString(parts[2])
-    return new MyStruct(id_value, name_value, value_value)
+    const id: BigInt = BigInt.fromString(parts[0])
+    const name: string = parts[1]
+    const value: BigInt = BigInt.fromString(parts[2])
+    return new MyStruct(id, name, value)
   }
 
   toEvmCallParams(): EvmCallParam[] {
@@ -348,6 +386,64 @@ export class MyStruct {
       EvmCallParam.fromValue('uint256', this.id),
       EvmCallParam.fromValue('string', Bytes.fromUTF8(this.name)),
       EvmCallParam.fromValue('int256', this.value),
+    ]
+  }
+}
+
+export class NestedStruct {
+  readonly single: MyStruct
+  readonly list: MyStruct[]
+
+  constructor(single: MyStruct, list: MyStruct[]) {
+    this.single = single
+    this.list = list
+  }
+
+  static _parse(data: string): NestedStruct {
+    const parts = changetype<string[]>(parseCSV(data))
+    if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
+    const single: MyStruct = MyStruct._parse(parts[0])
+    const list: MyStruct[] =
+      parts[1] === '' ? [] : changetype<string[]>(parseCSV(parts[1])).map<MyStruct>((item) => MyStruct._parse(item))
+    return new NestedStruct(single, list)
+  }
+
+  toEvmCallParams(): EvmCallParam[] {
+    return [
+      EvmCallParam.fromValues('()', this.single.toEvmCallParams()),
+      EvmCallParam.fromValues(
+        '()[]',
+        this.list.map<EvmCallParam>((s) => EvmCallParam.fromValues('()', s.toEvmCallParams()))
+      ),
+    ]
+  }
+}
+
+export class GetMultipleValuesOutputs {
+  readonly field0: BigInt
+  readonly field1: bool
+  readonly field2: string
+
+  constructor(field0: BigInt, field1: bool, field2: string) {
+    this.field0 = field0
+    this.field1 = field1
+    this.field2 = field2
+  }
+
+  static _parse(data: string): GetMultipleValuesOutputs {
+    const parts = changetype<string[]>(parseCSV(data))
+    if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
+    const field0: BigInt = BigInt.fromString(parts[0])
+    const field1: bool = u8.parse(parts[1]) as bool
+    const field2: string = parts[2]
+    return new GetMultipleValuesOutputs(field0, field1, field2)
+  }
+
+  toEvmCallParams(): EvmCallParam[] {
+    return [
+      EvmCallParam.fromValue('uint256', this.field0),
+      EvmCallParam.fromValue('bool', Bytes.fromBool(this.field1)),
+      EvmCallParam.fromValue('string', Bytes.fromUTF8(this.field2)),
     ]
   }
 }

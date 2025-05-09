@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -104,7 +104,7 @@ export class SAFE {
     return BigInt.fromString(decodedResponse)
   }
 
-  getModulesPaginated(start: Address, pageSize: BigInt): unknown[] {
+  getModulesPaginated(start: Address, pageSize: BigInt): GetModulesPaginatedOutputs {
     const response = environment.contractCall(
       this.address,
       this.chainId,
@@ -112,14 +112,16 @@ export class SAFE {
       '0xcc2f8452' +
         environment.evmEncode([EvmCallParam.fromValue('address', start), EvmCallParam.fromValue('uint256', pageSize)])
     )
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<unknown>((value) => value)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('(address[],address)', response))
+    return GetModulesPaginatedOutputs._parse(decodedResponse)
   }
 
   getOwners(): Address[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xa0e67e2b')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
-    return decodedResponse === '' ? [] : decodedResponse.split(',').map<Address>((value) => Address.fromString(value))
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<Address>((value) => Address.fromString(value))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
@@ -211,5 +213,53 @@ export class SAFE {
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+}
+
+export class ExecTransactionFromModuleReturnDataOutputs {
+  readonly success: bool
+  readonly returnData: Bytes
+
+  constructor(success: bool, returnData: Bytes) {
+    this.success = success
+    this.returnData = returnData
+  }
+
+  static _parse(data: string): ExecTransactionFromModuleReturnDataOutputs {
+    const parts = changetype<string[]>(parseCSV(data))
+    if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
+    const success: bool = u8.parse(parts[0]) as bool
+    const returnData: Bytes = Bytes.fromHexString(parts[1])
+    return new ExecTransactionFromModuleReturnDataOutputs(success, returnData)
+  }
+
+  toEvmCallParams(): EvmCallParam[] {
+    return [
+      EvmCallParam.fromValue('bool', Bytes.fromBool(this.success)),
+      EvmCallParam.fromValue('bytes', this.returnData),
+    ]
+  }
+}
+
+export class GetModulesPaginatedOutputs {
+  readonly array: Address[]
+  readonly next: Address
+
+  constructor(array: Address[], next: Address) {
+    this.array = array
+    this.next = next
+  }
+
+  static _parse(data: string): GetModulesPaginatedOutputs {
+    const parts = changetype<string[]>(parseCSV(data))
+    if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
+    const array: Address[] =
+      parts[0] === '' ? [] : changetype<string[]>(parseCSV(parts[0])).map<Address>((value) => Address.fromString(value))
+    const next: Address = Address.fromString(parts[1])
+    return new GetModulesPaginatedOutputs(array, next)
+  }
+
+  toEvmCallParams(): EvmCallParam[] {
+    return [EvmCallParam.fromValue('address[]', this.array), EvmCallParam.fromValue('address', this.next)]
   }
 }
