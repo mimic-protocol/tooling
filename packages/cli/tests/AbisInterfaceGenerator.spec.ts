@@ -216,7 +216,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `return decodedResponse === '' ? [] : decodedResponse.split(',').map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
+        `return decodedResponse === '' ? [] : changetype<string[]>(parseCSV(decodedResponse)).map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
       )
     })
 
@@ -384,18 +384,16 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain('if (parts.length !== 5) throw new Error("Invalid data for tuple parsing")')
 
       // Check type conversions
-      expect(result).to.contain(`id_value: ${LibTypes.BigInt} = BigInt.fromString(parts[0])`)
-      expect(result).to.contain(`account_value: ${LibTypes.Address} = Address.fromString(parts[1])`)
+      expect(result).to.contain(`id: ${LibTypes.BigInt} = BigInt.fromString(parts[0])`)
+      expect(result).to.contain(`account: ${LibTypes.Address} = Address.fromString(parts[1])`)
       expect(result).to.contain(
-        `active_value: ${AssemblyTypes.bool} = ${AssemblyTypes.u8}.parse(parts[2]) as ${AssemblyTypes.bool}`
+        `active: ${AssemblyTypes.bool} = ${AssemblyTypes.u8}.parse(parts[2]) as ${AssemblyTypes.bool}`
       )
-      expect(result).to.contain(`data_value: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
-      expect(result).to.contain(`description_value: ${AssemblyTypes.string} = parts[4]`)
+      expect(result).to.contain(`data: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
+      expect(result).to.contain(`description: ${AssemblyTypes.string} = parts[4]`)
 
       // Check constructor call
-      expect(result).to.contain(
-        'return new Tuple0(id_value, account_value, active_value, data_value, description_value)'
-      )
+      expect(result).to.contain('return new Tuple0(id, account, active, data, description)')
     })
   })
 })
