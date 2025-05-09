@@ -28,43 +28,74 @@ export function join(lst: (string | null)[]): string {
 }
 
 /**
- * Parses a CSV string into an array of tokens, handling nested structures and null values.
+ * Parses a CSV string into an array of tokens, handling nested structures,
+ * null values, and stripping one layer of outer parentheses if they wrap the entire string.
  *
- * @param csvString - String containing comma-separated values, nested structures (e.g., "Array(1,2)"), and nulls
- * @returns Array of strings and nulls, preserving nested structures as single strings
+ * @param csvString - String containing comma-separated values, nested structures (e.g., "(1,2)"), and nulls
+ * @returns Array of strings (trimmed) and nulls, preserving internal nesting
  * @throws {Error} If parentheses are unbalanced
- *
- * @example
- * parseCSV("one,,three")     // ["one", null, "three"]
- * parseCSV("Array(1,2),3")   // ["Array(1,2)", "3"]
  */
 export function parseCSV(csvString: string): (string | null)[] {
   const tokens: (string | null)[] = []
   const currentTokenChars: string[] = []
-  let parenthesisDepth: i32 = 0
-  let isEmpty: boolean = true
+  const len = csvString.length
+  let depth: i32 = 0
+  let isEmpty = true
 
-  for (let i = 0; i < csvString.length; i++) {
+  let shouldStripOuter = false
+  if (len > 1 && csvString.charAt(0) == '(' && csvString.charAt(len - 1) == ')') {
+    let balance = 0
+    let firstParenMatchesLast = true
+    for (let k = 0; k < len; k++) {
+      if (csvString.charAt(k) == '(') {
+        balance++
+      } else if (csvString.charAt(k) == ')') {
+        balance--
+      }
+      if (balance == 0 && k < len - 1) {
+        firstParenMatchesLast = false
+        break
+      }
+    }
+    if (firstParenMatchesLast && balance == 0) {
+      shouldStripOuter = true
+    }
+  }
+
+  for (let i = 0; i < len; i++) {
     const char = csvString.charAt(i)
     const charCode = char.charCodeAt(0)
 
     switch (charCode) {
       case '('.charCodeAt(0):
-        parenthesisDepth++
+        if (shouldStripOuter && i == 0) {
+          depth++
+          break
+        }
+        depth++
         currentTokenChars.push(char)
         isEmpty = false
         break
 
       case ')'.charCodeAt(0):
-        parenthesisDepth--
-        if (parenthesisDepth < 0) throw new Error(`Unbalanced brackets at position ${i}`)
+        if (shouldStripOuter && i == len - 1) {
+          depth--
+          break
+        }
+        depth--
+        if (depth < 0) throw new Error(`Unbalanced parentheses at position ${i}`)
         currentTokenChars.push(char)
         isEmpty = false
         break
 
       case SEPARATOR.charCodeAt(0):
-        if (parenthesisDepth === 0) {
-          isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
+        const isTopLevelComma = (shouldStripOuter && depth == 1) || (!shouldStripOuter && depth == 0)
+        if (isTopLevelComma) {
+          if (isEmpty) {
+            tokens.push(null)
+          } else {
+            tokens.push(currentTokenChars.join('').trim())
+          }
           currentTokenChars.length = 0
           isEmpty = true
         } else {
@@ -80,7 +111,15 @@ export function parseCSV(csvString: string): (string | null)[] {
     }
   }
 
-  if (parenthesisDepth !== 0) throw new Error('Unbalanced brackets at the end of the string')
-  if (csvString.length > 0) isEmpty ? tokens.push(null) : tokens.push(currentTokenChars.join(''))
+  if (depth != 0) throw new Error('Unbalanced parentheses at the end of the string')
+
+  if (len > 0) {
+    if (isEmpty) {
+      tokens.push(null)
+    } else {
+      tokens.push(currentTokenChars.join('').trim())
+    }
+  }
+
   return tokens
 }

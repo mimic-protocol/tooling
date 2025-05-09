@@ -6,4 +6,3 @@ abis:
   - ERC4626: ./abis/ERC4626.json
   - SAFE: ./abis/SAFE.json
   - Test: ./abis/Test.json # https://sepolia.etherscan.io/address/0x047be3bb46f9416732fe39a05134f20235c19334#readContract
-  - Mimic: ./abis/Mimic.json
