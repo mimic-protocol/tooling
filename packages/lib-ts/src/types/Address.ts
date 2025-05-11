@@ -49,7 +49,7 @@ export class Address extends Bytes {
    * we don't want to return the UTF-8 encoded version of the address.
    */
   toString(): string {
-    return super.toHexString();
+    return super.toHexString()
   }
 
   clone(): Address {
