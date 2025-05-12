@@ -32,6 +32,7 @@ export default class Compile extends Command {
     const watPath = path.join(outputDir, 'task.wat')
 
     const ascArgs = [
+      'asc',
       taskFile,
       '--target',
       'release',
@@ -43,7 +44,7 @@ export default class Compile extends Command {
       '--exportRuntime',
     ]
 
-    const result = spawnSync('asc', ascArgs, { stdio: 'inherit' })
+    const result = spawnSync('yarn', ascArgs, { stdio: 'inherit' })
     if (result.status !== 0) {
       this.error('AssemblyScript compilation failed', {
         code: 'BuildError',

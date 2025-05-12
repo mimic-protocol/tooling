@@ -27,6 +27,7 @@ describe('init', () => {
     context('when the directory exists', () => {
       beforeEach('create directory', () => {
         fs.mkdirSync(commandPath)
+        fs.writeFileSync(join(commandPath, 'file.txt'), '')
       })
 
       it('throws an error', async () => {
@@ -94,5 +95,6 @@ const runCommandWithUserInput = (command: string[], userResponse: string) => {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
     input: `${userResponse}\n`,
+    env: { ...process.env, NODE_ENV: 'test'},
   })
 }
