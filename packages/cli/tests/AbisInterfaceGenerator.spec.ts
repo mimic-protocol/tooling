@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 
 import { getFunctionSelector } from '../src/helpers'
-import AbisInterfaceGenerator from '../src/lib/AbisInterfaceGenerator'
+import { AbisInterfaceGenerator } from '../src/lib'
 import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../src/types'
 
 import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'

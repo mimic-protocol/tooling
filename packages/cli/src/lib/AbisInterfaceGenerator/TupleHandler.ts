@@ -49,7 +49,7 @@ export class TupleHandler {
 
     const representativeParamForSearch: AbiParameter = {
       ...param,
-      type: 'tuple', // Ensure we search for the base tuple structure
+      type: 'tuple',
     }
     const existingByStructure = this.findMatchingDefinition(representativeParamForSearch, this.tupleDefinitions)
     if (existingByStructure) {

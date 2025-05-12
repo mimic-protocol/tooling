@@ -1,4 +1,4 @@
-import { AbiFunctionItem } from '../../types' // LibTypes needed for initial imports
+import { AbiFunctionItem } from '../../types'
 
 import { ClassGenerator } from './ClassGenerator'
 import { ImportManager } from './ImportManager'

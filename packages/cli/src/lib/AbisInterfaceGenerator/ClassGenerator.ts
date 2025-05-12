@@ -140,8 +140,6 @@ export class ClassGenerator {
       return this.abiTypeConverter.mapAbiType(fn.outputs[0])
     }
 
-    // Multiple outputs (fn.outputs.length > 1)
-    // Always treat as a specific output tuple class
     let fnNamePart = fn.name.replace(/[^a-zA-Z0-9_]/g, '')
     if (!fnNamePart) fnNamePart = 'UnnamedFunction'
     fnNamePart = fnNamePart.charAt(0).toUpperCase() + fnNamePart.slice(1)
@@ -160,7 +158,7 @@ export class ClassGenerator {
     }
 
     console.error(`Could not determine tuple class name for outputs of function ${fn.name}`)
-    return 'unknown' // Or throw an error
+    return 'unknown'
   }
 
   private generateEvmParam(input: AbiParameter, index: number): string {
@@ -222,14 +220,12 @@ export class ClassGenerator {
         if (this.tupleHandler.isTupleType(singleOutput.type) && singleOutput.components) {
           decodeAbiTypeString = this.tupleHandler.generateTupleTypeString(singleOutput.type, singleOutput.components)
         } else {
-          decodeAbiTypeString = singleOutput.type // Direct ABI type for non-tuple single output
+          decodeAbiTypeString = singleOutput.type
         }
       } else {
-        // Multiple outputs, always use full tuple string for decoding
         decodeAbiTypeString = this.tupleHandler.generateTupleTypeString('tuple', fn.outputs)
       }
     } else {
-      // Fallback for safety if fn.outputs is unexpectedly empty but returnType wasn't void
       decodeAbiTypeString = '()'
     }
 
