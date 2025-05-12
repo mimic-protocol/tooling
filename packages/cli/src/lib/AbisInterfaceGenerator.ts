@@ -1,7 +1,7 @@
 import { getFunctionSelector } from '../helpers'
 import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../types'
 
-type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'parseCSV'
+type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'EvmDecodeParam' | 'parseCSV'
 
 type TupleDefinition = {
   className: string
@@ -24,7 +24,13 @@ export default {
 
     if (viewFunctions.length === 0) return ''
 
-    const importedTypes = new Set<ImportedTypes>(['environment', LibTypes.BigInt, LibTypes.Address, 'EvmCallParam'])
+    const importedTypes = new Set<ImportedTypes>([
+      'environment',
+      LibTypes.BigInt,
+      LibTypes.Address,
+      'EvmCallParam',
+      'EvmDecodeParam',
+    ])
     const tupleDefinitions = extractTupleDefinitions(abi)
 
     const contractClassCode = generateContractClass(viewFunctions, contractName, importedTypes, tupleDefinitions)
@@ -335,6 +341,19 @@ function generateCallArguments(
     .join(', ')
 }
 
+function generateTupleTypeString(components: AbiParameter[]): string {
+  if (!components || components.length === 0) return '()'
+
+  const typeStrings = components.map((comp) => {
+    if (comp.type === 'tuple' && comp.components) {
+      return generateTupleTypeString(comp.components)
+    }
+    return comp.type
+  })
+
+  return `(${typeStrings.join(',')})`
+}
+
 function appendFunctionBody(
   lines: string[],
   fn: AbiFunctionItem,
@@ -350,7 +369,15 @@ function appendFunctionBody(
     return
   }
 
-  lines.push(`    const result = ${contractCallCode}`)
+  const abiType = fn.outputs?.[0].type
+  let decodeTypeParam = abiType
+
+  if (abiType === 'tuple') {
+    decodeTypeParam = fn.outputs?.[0].components ? generateTupleTypeString(fn.outputs[0].components) : '()'
+  }
+
+  lines.push(`    const response = ${contractCallCode}`)
+  lines.push(`    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeTypeParam}', response))`)
 
   let isTupleClass = false
   if (typeof returnType === 'string') {
@@ -360,16 +387,16 @@ function appendFunctionBody(
   }
 
   if (isTupleClass) {
-    lines.push(`    return ${returnType}._parse(result)`)
+    lines.push(`    return ${returnType}._parse(decodedResponse)`)
     return
   }
 
   if (typeof returnType === 'string' && returnType.endsWith('[]')) {
     const baseType = returnType.slice(0, -2) as InputType
     const mapFunction = generateTypeConversion(baseType, 'value', true)
-    lines.push(`    return result === '' ? [] : result.split(',').map<${baseType}>(${mapFunction})`)
+    lines.push(`    return decodedResponse === '' ? [] : decodedResponse.split(',').map<${baseType}>(${mapFunction})`)
   } else {
-    const returnLine = generateTypeConversion(returnType as InputType, 'result', false)
+    const returnLine = generateTypeConversion(returnType as InputType, 'decodedResponse', false)
     lines.push(`    ${returnLine}`)
   }
 }

@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -12,19 +12,21 @@ export class SAFE {
   }
 
   VERSION(): string {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xffa1ad74')
-    return result
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xffa1ad74')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    return decodedResponse
   }
 
   approvedHashes(param0: Address, param1: Bytes): BigInt {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x7d832974' +
         environment.evmEncode([EvmCallParam.fromValue('address', param0), EvmCallParam.fromValue('bytes32', param1)])
     )
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
@@ -57,8 +59,9 @@ export class SAFE {
   }
 
   domainSeparator(): Bytes {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf698da25')
-    return Bytes.fromHexString(result)
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf698da25')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   encodeTransactionData(
@@ -73,7 +76,7 @@ export class SAFE {
     refundReceiver: Address,
     _nonce: BigInt
   ): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -91,44 +94,50 @@ export class SAFE {
           EvmCallParam.fromValue('uint256', _nonce),
         ])
     )
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   getChainId(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0x3408e470')
-    return BigInt.fromString(result)
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x3408e470')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   getModulesPaginated(start: Address, pageSize: BigInt): unknown[] {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0xcc2f8452' +
         environment.evmEncode([EvmCallParam.fromValue('address', start), EvmCallParam.fromValue('uint256', pageSize)])
     )
-    return result === '' ? [] : result.split(',').map<unknown>((value) => value)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<unknown>((value) => value)
   }
 
   getOwners(): Address[] {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xa0e67e2b')
-    return result === '' ? [] : result.split(',').map<Address>((value) => Address.fromString(value))
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xa0e67e2b')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
+    return decodedResponse === '' ? [] : decodedResponse.split(',').map<Address>((value) => Address.fromString(value))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x5624b25b' +
         environment.evmEncode([EvmCallParam.fromValue('uint256', offset), EvmCallParam.fromValue('uint256', length)])
     )
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   getThreshold(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xe75235b8')
-    return BigInt.fromString(result)
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xe75235b8')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   getTransactionHash(
@@ -143,7 +152,7 @@ export class SAFE {
     refundReceiver: Address,
     _nonce: BigInt
   ): Bytes {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
@@ -161,41 +170,46 @@ export class SAFE {
           EvmCallParam.fromValue('uint256', _nonce),
         ])
     )
-    return Bytes.fromHexString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
+    return Bytes.fromHexString(decodedResponse)
   }
 
   isModuleEnabled(module: Address): bool {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x2d9ad53d' + environment.evmEncode([EvmCallParam.fromValue('address', module)])
     )
-    return bool.parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bool', response))
+    return u8.parse(decodedResponse) as bool
   }
 
   isOwner(owner: Address): bool {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x2f54bf6e' + environment.evmEncode([EvmCallParam.fromValue('address', owner)])
     )
-    return bool.parse(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('bool', response))
+    return u8.parse(decodedResponse) as bool
   }
 
   nonce(): BigInt {
-    const result = environment.contractCall(this.address, this.chainId, this.timestamp, '0xaffed0e0')
-    return BigInt.fromString(result)
+    const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xaffed0e0')
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 
   signedMessages(param0: Bytes): BigInt {
-    const result = environment.contractCall(
+    const response = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
       '0x5ae6bd37' + environment.evmEncode([EvmCallParam.fromValue('bytes32', param0)])
     )
-    return BigInt.fromString(result)
+    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    return BigInt.fromString(decodedResponse)
   }
 }

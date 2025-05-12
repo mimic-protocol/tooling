@@ -203,12 +203,11 @@ describe('AbisInterfaceGenerator', () => {
       }
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`return ${LibTypes.Address}.fromString(result)`)
-      expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(result)`)
-      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(result)`)
-      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result) as ${AssemblyTypes.bool}`)
-      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(result)`)
-      expect(result).to.contain(`return result`)
+      expect(result).to.contain(`return ${LibTypes.Address}.fromString(decodedResponse)`)
+      expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(decodedResponse)`)
+      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(decodedResponse)`)
+      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(decodedResponse) as ${AssemblyTypes.bool}`)
+      expect(result).to.contain(`return decodedResponse`)
     })
 
     it('should correctly map array return types', () => {
@@ -217,7 +216,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `return result === '' ? [] : result.split(',').map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
+        `return decodedResponse === '' ? [] : decodedResponse.split(',').map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
       )
     })
 
