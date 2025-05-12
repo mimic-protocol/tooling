@@ -21,8 +21,16 @@ export class Address extends Bytes {
 
   /**
    * Converts a string representation of an address to an Address instance.
+   * It is assumed that the string is a hex string.
    */
   static fromString(str: string): Address {
+    return this.fromHexString(str)
+  }
+
+  /**
+   * Converts a hex string representation of an address to an Address instance.
+   */
+  static fromHexString(str: string): Address {
     const bytes = Bytes.fromHexString(str)
     return this.fromBytes(bytes)
   }
@@ -34,6 +42,14 @@ export class Address extends Bytes {
   static fromBytes(bytes: Bytes): Address {
     if (bytes.length != 20) throw new Error(`Bytes of length ${bytes.length} can not be converted to 20 byte addresses`)
     return changetype<Address>(bytes)
+  }
+
+  /**
+   * Returns the address in hexadecimal. This method is overridden to avoid
+   * returning the UTF-8 encoded version of the address.
+   */
+  toString(): string {
+    return super.toHexString()
   }
 
   clone(): Address {
