@@ -5,8 +5,14 @@ import InputsInterfaceGenerator from '../src/lib/InputsInterfaceGenerator'
 describe('InputsInterfaceGenerator', () => {
   describe('generate', () => {
     function expectItIncludes(result: string, ...lines: string[]) {
-      expect(result).to.contain('export declare namespace input {')
-      expect(result).to.contain('}')
+      const expectedBlock = [
+        '}',
+        '',
+        '// The class name is intentionally lowercase and plural to resemble a namespace when used in a task',
+        'export class inputs {',
+      ].join('\n')
+      expect(result).to.contain('declare namespace input {')
+      expect(result).to.contain(expectedBlock)
       for (const line of lines) expect(result).to.contain(line)
     }
 
@@ -15,7 +21,13 @@ describe('InputsInterfaceGenerator', () => {
         it('generates correctly', () => {
           const inputs = { first: 'uint64', isTrue: 'bool' }
           const result = InputsInterfaceGenerator.generate(inputs)
-          expectItIncludes(result, 'const first: u64', 'const isTrue: bool')
+          expectItIncludes(
+            result,
+            'const first: u64',
+            'const isTrue: bool',
+            'static get first(): u64',
+            'static get isTrue(): bool'
+          )
         })
       })
 
@@ -26,8 +38,10 @@ describe('InputsInterfaceGenerator', () => {
           expectItIncludes(
             result,
             `import { Address, Bytes } from '@mimicprotocol/lib-ts'`,
-            'const first: Bytes',
-            'const someAddress: Address'
+            'var firstPtr: u32',
+            'var someAddressPtr: u32',
+            'static get first(): Bytes',
+            'static get someAddress(): Address'
           )
         })
       })
@@ -40,9 +54,13 @@ describe('InputsInterfaceGenerator', () => {
             result,
             `import { Address } from '@mimicprotocol/lib-ts'`,
             'const first: i32',
-            'const someAddress: Address',
+            'var someAddressPtr: u32',
             'const isTrue: bool',
-            'const s: string'
+            'var sPtr: u32',
+            'static get first(): i32',
+            'static get someAddress(): Address',
+            'static get isTrue(): bool',
+            'static get s(): string'
           )
         })
       })
@@ -51,7 +69,7 @@ describe('InputsInterfaceGenerator', () => {
         it('reduces the size', () => {
           const inputs = { first: 'int256' }
           const result = InputsInterfaceGenerator.generate(inputs)
-          expectItIncludes(result, 'const first: i64')
+          expectItIncludes(result, 'const first: i64', 'static get first(): i64')
         })
       })
     })
