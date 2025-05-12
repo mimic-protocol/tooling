@@ -95,6 +95,6 @@ const runCommandWithUserInput = (command: string[], userResponse: string) => {
     encoding: 'utf-8',
     stdio: ['pipe', 'pipe', 'pipe'],
     input: `${userResponse}\n`,
-    env: { ...process.env, NODE_ENV: 'test'},
+    env: { ...process.env, NODE_ENV: 'test' },
   })
 }
