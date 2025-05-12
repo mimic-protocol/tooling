@@ -45,8 +45,8 @@ export class Address extends Bytes {
   }
 
   /**
-   * Returns the address in hexadecimal. We override this method because
-   * we don't want to return the UTF-8 encoded version of the address.
+   * Returns the address in hexadecimal. This method is overridden to avoid
+   * returning the UTF-8 encoded version of the address.
    */
   toString(): string {
     return super.toHexString()
