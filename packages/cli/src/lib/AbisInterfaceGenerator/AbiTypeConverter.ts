@@ -25,9 +25,7 @@ export class AbiTypeConverter {
 
     if (this.tupleHandler.isTupleType(abiType)) {
       const existingClassName = this.tupleHandler.getClassNameForTupleDefinition(param)
-      if (existingClassName) {
-        return existingClassName
-      }
+      if (existingClassName) return existingClassName
       console.warn(
         `Tuple class name not found by AbiTypeConverter for: ${param.type}, internal: ${param.internalType}. It might be an anonymous or unextracted tuple.`
       )
@@ -44,9 +42,7 @@ export class AbiTypeConverter {
   }
 
   public toLibType(paramType: InputType | InputTypeArray | string, paramName: string): string {
-    if (ArrayHandler.isArrayType(String(paramType))) {
-      return paramName
-    }
+    if (ArrayHandler.isArrayType(String(paramType))) return paramName
 
     switch (paramType) {
       case AssemblyTypes.bool:

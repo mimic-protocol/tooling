@@ -136,9 +136,7 @@ export class ClassGenerator {
   private determineReturnType(fn: AbiFunctionItem): InputType | InputTypeArray | 'void' | string {
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
-    if (fn.outputs.length === 1) {
-      return this.abiTypeConverter.mapAbiType(fn.outputs[0])
-    }
+    if (fn.outputs.length === 1) return this.abiTypeConverter.mapAbiType(fn.outputs[0])
 
     let fnNamePart = fn.name.replace(/[^a-zA-Z0-9_]/g, '')
     if (!fnNamePart) fnNamePart = 'UnnamedFunction'
@@ -153,9 +151,7 @@ export class ClassGenerator {
     }
 
     const tupleClassName = this.tupleHandler.getClassNameForTupleDefinition(representativeOutputTuple)
-    if (tupleClassName) {
-      return tupleClassName
-    }
+    if (tupleClassName) return tupleClassName
 
     console.error(`Could not determine tuple class name for outputs of function ${fn.name}`)
     return 'unknown'
@@ -182,9 +178,8 @@ export class ClassGenerator {
       return `EvmCallParam.fromValues('${abiType}', ${paramName}.map<EvmCallParam>((${elementAbiParam.name}) => ${nestedEvmParam}))`
     }
 
-    if (this.tupleHandler.isTupleType(input.type)) {
+    if (this.tupleHandler.isTupleType(input.type))
       return `EvmCallParam.fromValues('${abiType}', ${paramName}.toEvmCallParams())`
-    }
     return `EvmCallParam.fromValue('${abiType}', ${this.abiTypeConverter.toLibType(paramType, paramName)})`
   }
 

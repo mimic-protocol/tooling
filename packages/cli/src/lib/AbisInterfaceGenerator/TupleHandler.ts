@@ -43,18 +43,15 @@ export class TupleHandler {
 
     const baseInternalType = param.internalType ? ArrayHandler.getUltimateBaseAbiType(param.internalType) : undefined
 
-    if (baseInternalType && this.tupleDefinitions.has(baseInternalType)) {
+    if (baseInternalType && this.tupleDefinitions.has(baseInternalType))
       return this.tupleDefinitions.get(baseInternalType)!.className
-    }
 
     const representativeParamForSearch: AbiParameter = {
       ...param,
       type: 'tuple',
     }
     const existingByStructure = this.findMatchingDefinition(representativeParamForSearch, this.tupleDefinitions)
-    if (existingByStructure) {
-      return existingByStructure.className
-    }
+    if (existingByStructure) return existingByStructure.className
 
     return undefined
   }
@@ -76,9 +73,7 @@ export class TupleHandler {
         components: param.components,
       }
 
-      if (!tupleToDefine.components || tupleToDefine.components.length === 0) {
-        return
-      }
+      if (!tupleToDefine.components || tupleToDefine.components.length === 0) return
 
       const existingClassName = this.getClassNameForTupleDefinition(tupleToDefine)
       if (existingClassName) return existingClassName
@@ -90,9 +85,7 @@ export class TupleHandler {
 
       if (baseInternalType) {
         const structMatch = baseInternalType.match(/struct\s+(?:\w+\.)?(\w+)/)
-        if (structMatch && structMatch[1]) {
-          className = structMatch[1]
-        }
+        if (structMatch && structMatch[1]) className = structMatch[1]
       }
 
       const key = baseInternalType || className
@@ -149,9 +142,8 @@ export class TupleHandler {
     if (!components || components.length === 0) return `()${arrayDepthString}`
 
     const typeStrings = components.map((comp) => {
-      if (this.isTupleType(comp.type) && comp.components) {
+      if (this.isTupleType(comp.type) && comp.components)
         return this.generateTupleTypeString(comp.type, comp.components)
-      }
       return comp.type
     })
     return `(${typeStrings.join(',')})${arrayDepthString}`
