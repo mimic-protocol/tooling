@@ -31,6 +31,34 @@ describe('Address', () => {
     })
   })
 
+  describe('fromHexString', () => {
+    describe('when the hex string is valid', () => {
+      it('converts a valid hex string to an Address', () => {
+        const validAddress = randomAddress()
+        const address = Address.fromHexString(validAddress)
+
+        expect(address.length).toBe(20)
+        expect(address.toHexString()).toBe(validAddress)
+      })
+    })
+
+    describe('when the hex string length is invalid', () => {
+      it('throws an error for short strings', () => {
+        expect(() => {
+          const shortAddress = randomHex(10)
+          Address.fromHexString(shortAddress)
+        }).toThrow('Invalid string for H160')
+      })
+
+      it('throws an error for long strings', () => {
+        expect(() => {
+          const longAddress = randomHex(50)
+          Address.fromHexString(longAddress)
+        }).toThrow('Invalid string for H160')
+      })
+    })
+  })
+
   describe('fromBytes', () => {
     describe('when the Bytes object has a valid length', () => {
       it('converts a valid Bytes object to an Address', () => {
@@ -56,6 +84,14 @@ describe('Address', () => {
           Address.fromBytes(longBytes)
         }).toThrow('Bytes of length 25 can not be converted to 20 byte addresses')
       })
+    })
+  })
+
+  describe('toString', () => {
+    it('returns the hex representation', () => {
+      const validAddress = randomAddress()
+      const address = Address.fromHexString(validAddress)
+      expect(address.toString()).toBe(validAddress)
     })
   })
 

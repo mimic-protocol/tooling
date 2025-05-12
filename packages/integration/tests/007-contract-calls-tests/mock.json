@@ -1,7 +1,10 @@
 {
   "_contractCall": {
     "log": true,
-    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541"
+    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541",
+    "paramResponse": {
+      "0x99605430cf9259456dd7a8024c3da8c03e319541,11155111,,0x5b6a43af00": "1,test,-20"
+    }
   },
   "_evmEncode": {
     "log": true,
