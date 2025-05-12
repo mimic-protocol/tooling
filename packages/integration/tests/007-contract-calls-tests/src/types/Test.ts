@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmCallParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
@@ -25,7 +25,7 @@ export class Test {
     return result
   }
 
-  createStruct(id: BigInt, name: string, value: BigInt): unknown {
+  createStruct(id: BigInt, name: string, value: BigInt): MyStruct {
     const result = environment.contractCall(
       this.address,
       this.chainId,
@@ -37,17 +37,17 @@ export class Test {
           EvmCallParam.fromValue('int256', value),
         ])
     )
-    return result
+    return MyStruct._parse(result)
   }
 
-  echoStruct(s: unknown): unknown {
+  echoStruct(s: MyStruct): MyStruct {
     const result = environment.contractCall(
       this.address,
       this.chainId,
       this.timestamp,
-      '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValue('tuple', s)])
+      '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValues('()', s.toEvmCallParams())])
     )
-    return result
+    return MyStruct._parse(result)
   }
 
   echoUint(value: BigInt): BigInt {
@@ -291,5 +291,34 @@ export class Test {
         ])
     )
     return BigInt.fromString(result)
+  }
+}
+
+export class MyStruct {
+  readonly id: BigInt
+  readonly name: string
+  readonly value: BigInt
+
+  constructor(id: BigInt, name: string, value: BigInt) {
+    this.id = id
+    this.name = name
+    this.value = value
+  }
+
+  static _parse(data: string): MyStruct {
+    const parts = changetype<string[]>(parseCSV(data))
+    if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
+    const id_value: BigInt = BigInt.fromString(parts[0])
+    const name_value: string = parts[1]
+    const value_value: BigInt = BigInt.fromString(parts[2])
+    return new MyStruct(id_value, name_value, value_value)
+  }
+
+  toEvmCallParams(): EvmCallParam[] {
+    return [
+      EvmCallParam.fromValue('uint256', this.id),
+      EvmCallParam.fromValue('string', Bytes.fromUTF8(this.name)),
+      EvmCallParam.fromValue('int256', this.value),
+    ]
   }
 }

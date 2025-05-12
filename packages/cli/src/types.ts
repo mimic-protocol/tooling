@@ -7,7 +7,8 @@ export type Manifest = z.infer<typeof ManifestValidator>
 export type AbiParameter = {
   name?: string
   type: string
-  components?: Array<{ name: string; type: string }>
+  internalType?: string
+  components?: Array<{ name?: string; type: string; internalType?: string; components?: AbiParameter[] }>
 }
 
 export type AbiFunctionItem = {
