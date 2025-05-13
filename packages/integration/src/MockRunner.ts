@@ -38,11 +38,15 @@ export default class MockRunner {
 
       let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(taskFolder, '../mock.json'), MockConfigValidator)
       inputs = inputs || {}
-      const imports = this.generateImports(mock, inputs as Record<string, number>)
+      const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
       const wasmBuffer = fs.readFileSync(taskPath)
       const wasmModule = new WebAssembly.Module(wasmBuffer)
-      return new WebAssembly.Instance(wasmModule, imports)
+      const instance = new WebAssembly.Instance(wasmModule, imports)
+
+      this.patchStringInputs(inputs as WebAssembly.ModuleImports, imports, instance)
+
+      return instance
     } catch (error) {
       throw new Error(`Failed to initialize WASM instance: ${error}`)
     }
@@ -108,13 +112,27 @@ export default class MockRunner {
     }
 
     for (const [key, value] of Object.entries(inputs)) {
-      variableImports[`input.${key}`] = value
+      variableImports[`input.${key}`] =
+        typeof value === 'string' ? new WebAssembly.Global({ value: 'i32', mutable: true }, 0) : value
     }
 
     return {
       environment: environmentImports,
       env: this.ENV_IMPORTS,
       index: variableImports,
+    }
+  }
+
+  private patchStringInputs(
+    inputs: WebAssembly.ModuleImports,
+    imports: WebAssembly.Imports,
+    instance: WebAssembly.Instance
+  ): void {
+    for (const [key, value] of Object.entries(inputs)) {
+      if (typeof value === 'string') {
+        const ptr = this.writeStringToMemory(value, instance)
+        ;(imports.index![`input.${key}`] as WebAssembly.Global).value = ptr
+      }
     }
   }
 
@@ -169,9 +187,9 @@ export default class MockRunner {
     return new TextDecoder('utf-16le').decode(bytes)
   }
 
-  private writeStringToMemory(str: string): number {
-    const memory = this.instance.exports.memory as WebAssembly.Memory
-    const malloc = this.instance.exports.__new as CallableFunction
+  private writeStringToMemory(str: string, instance = this.instance): number {
+    const memory = instance.exports.memory as WebAssembly.Memory
+    const malloc = instance.exports.__new as CallableFunction
 
     if (!malloc) throw new Error('__new function not found in WebAssembly exports')
 
