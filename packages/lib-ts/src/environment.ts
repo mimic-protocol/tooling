@@ -1,7 +1,7 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes, EvmCallParam } from './types'
-import { EvmDecodeParam } from './types/EvmDecodeParam'
+import { EvmDecodeParam } from './types'
 
 export namespace environment {
   @external('environment', '_call')
@@ -104,7 +104,10 @@ export namespace environment {
     listType: ListType = ListType.DenyList
   ): TokenAmount[] {
     const response = _getRelevantTokens(
-      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType)])
+      // NOTE: The runner expects an optional timestamp that the user will not be able to input
+      // that's why serialize('') is used
+      // this is a workaround until a decision is made regarding the timestamp
+      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType), serialize('')])
     )
     const rows = response.split('\n')
     const tokenAmounts: TokenAmount[] = []
