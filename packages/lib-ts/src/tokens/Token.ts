@@ -38,11 +38,26 @@ export class Token implements Serializable {
     symbol: string = Token.EMPTY_SYMBOL,
     timestamp: Date | null = null
   ) {
-    this._symbol = symbol
     this._address = Address.fromString(address)
     this._chainId = chainId
-    this._decimals = decimals
     this._timestamp = timestamp
+    this._symbol = symbol
+    this._decimals = decimals
+    // Ensure symbol and decimals are set for native tokens.
+    // Since queries return only the address and chainId, missing metadata must be filled
+    // to prevent the symbol and decimals getters from failing for native tokens
+    if (
+      this._address.equals(Address.fromString(NATIVE_ADDRESS)) &&
+      (this._symbol === Token.EMPTY_SYMBOL || this._decimals === Token.EMPTY_DECIMALS)
+    ) {
+      const nativeToken = Token.native(this._chainId)
+      if (this._symbol === Token.EMPTY_SYMBOL) {
+        this._symbol = nativeToken.symbol
+      }
+      if (this._decimals === Token.EMPTY_DECIMALS) {
+        this._decimals = nativeToken.decimals
+      }
+    }
   }
 
   get symbol(): string {

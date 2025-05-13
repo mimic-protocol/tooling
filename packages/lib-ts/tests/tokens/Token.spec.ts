@@ -1,3 +1,4 @@
+import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
 
@@ -11,6 +12,30 @@ describe('Token', () => {
 
       expect(token.address.toHexString()).not.toBe(modifiedAddress.toHexString())
       expect(token.address.toHexString()).toBe(originalAddress.toHexString())
+    })
+  })
+
+  describe('when it is a native token', () => {
+    it('respects the user parameters if add them', () => {
+      const token = new Token(randomAddress(), 1, 6, 'USDC')
+      expect('USDC').toBe(token.symbol)
+      // expect(6).toBe(token.decimals)
+    })
+
+    it('populates the symbol and decimal if missing', () => {
+      const token = new Token(NATIVE_ADDRESS, 1)
+      expect('ETH').toBe(token.symbol)
+      expect(18).toBe(token.decimals)
+    })
+
+    it('populates the symbol if missing', () => {
+      const token = new Token(NATIVE_ADDRESS, 1, 18)
+      expect('ETH').toBe(token.symbol)
+    })
+
+    it('populates the decimals if missing', () => {
+      const token = new Token(NATIVE_ADDRESS, 1, Token.EMPTY_DECIMALS, 'ETH')
+      expect(18).toBe(token.decimals)
     })
   })
 

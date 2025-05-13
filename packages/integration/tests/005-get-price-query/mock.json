@@ -10,12 +10,10 @@
   },
   "_contractCall": {
     "log": true,
-    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541"
+    "default": ""
   },
   "_evmDecode": {
-    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541",
-    "paramResponse": {
-      "EvmDecodeParam((uint256,string,int256),0x99605430cf9259456dd7a8024c3da8c03e319541)": "1,test,-20"
-    }
+    "default": "",
+    "paramResponse": {"": ""}
   }
 }

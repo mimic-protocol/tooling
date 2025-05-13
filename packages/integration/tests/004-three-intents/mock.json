@@ -6,5 +6,13 @@
     "chainId": 1,
     "amount": 10000,
     "slippage": 95
+  },
+  "_contractCall": {
+    "log": true,
+    "default": ""
+  },
+  "_evmDecode": {
+    "default": "",
+    "paramResponse": {"": ""}
   }
 }
