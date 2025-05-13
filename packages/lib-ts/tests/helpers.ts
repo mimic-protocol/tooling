@@ -26,7 +26,7 @@ export function randomAddress(): string {
 
 export function randomToken(decimals: u8 = STANDARD_DECIMALS): Token {
   const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
-  return new Token('TEST', randomAddress(), chainId, decimals)
+  return new Token(randomAddress(), chainId, decimals, 'TEST')
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
@@ -41,3 +41,7 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }
+
+export declare function setContractCall(target: string, chainId: u64, data: string, result: string): void
+
+export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void

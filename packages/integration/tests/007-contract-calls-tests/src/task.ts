@@ -13,7 +13,7 @@ const TEST_CHAIN_ID = 11155111
 const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
 export default function main(): void {
-  const USDC = new Token('USDC', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', MAINNET_CHAIN_ID, 6)
+  const USDC = new Token('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', MAINNET_CHAIN_ID, 6)
   const usdcContract = new ERC20(USDC.address, USDC.chainId)
   usdcContract.name()
   usdcContract.totalSupply()
