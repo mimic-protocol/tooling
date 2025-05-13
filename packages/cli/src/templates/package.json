@@ -5,12 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "mimic compile",
-    "lint": "eslint ."
+    "build": "mimic compile"
   },
   "devDependencies": {
     "assemblyscript": "^0.27.31",
-    "eslint-config-mimic": "^0.0.3",
     "typescript": "^5.5.4"
   }
 }
