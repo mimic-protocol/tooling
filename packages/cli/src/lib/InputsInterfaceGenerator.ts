@@ -59,14 +59,13 @@ function convertType(type: string): string {
 
 function generateGetter(name: string, type: string): string {
   const str = `input.${name}`
-  const returnStr =
-    type === 'string'
-      ? `${str}!`
-      : type === 'Address'
-        ? `Address.fromString(${str}!)`
-        : type === 'Bytes'
-          ? `Bytes.fromHexString(${str}!)`
-          : str
+  let returnStr: string
+
+  if (type === 'string') returnStr = `${str}!`
+  else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
+  else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
+  else returnStr = str
+
   return `static get ${name}(): ${type} {
     return ${returnStr}
   }`
