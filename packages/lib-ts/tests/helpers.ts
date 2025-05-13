@@ -26,7 +26,7 @@ export function randomAddress(): string {
 
 export function randomToken(decimals: u8 = STANDARD_DECIMALS): Token {
   const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
-  return new Token('TEST', randomAddress(), chainId, decimals)
+  return new Token(randomAddress(), chainId, decimals, 'TEST')
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {

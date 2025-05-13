@@ -29,24 +29,24 @@ describe('Token', () => {
       it('returns true for tokens with the same address and chainId', () => {
         const address = randomAddress()
         const chainId: u64 = 1
-        const token1 = new Token('TOKEN1', address, chainId, 18)
-        const token2 = new Token('TOKEN2', address, chainId, 6)
+        const token1 = new Token(address, chainId, 18, 'TOKEN1')
+        const token2 = new Token(address, chainId, 6, 'TOKEN2')
 
         expect(token1.equals(token2)).toBe(true)
       })
 
       it('returns false for tokens with different addresses', () => {
         const chainId: u64 = 1
-        const token1 = new Token('TOKEN', randomAddress(), chainId, 18)
-        const token2 = new Token('TOKEN', randomAddress(), chainId, 18)
+        const token1 = new Token(randomAddress(), chainId, 18, 'TOKEN')
+        const token2 = new Token(randomAddress(), chainId, 18, 'TOKEN')
 
         expect(token1.equals(token2)).toBe(false)
       })
 
       it('returns false for tokens with different chainIds', () => {
         const address = randomAddress()
-        const token1 = new Token('TOKEN', address, 1, 18)
-        const token2 = new Token('TOKEN', address, 137, 18)
+        const token1 = new Token(address, 1, 18, 'TOKEN')
+        const token2 = new Token(address, 137, 18, 'TOKEN')
 
         expect(token1.equals(token2)).toBe(false)
       })
