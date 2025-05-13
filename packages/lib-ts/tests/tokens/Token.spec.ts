@@ -1,5 +1,5 @@
 import { Token } from '../../src/tokens'
-import { randomAddress, randomToken } from '../helpers'
+import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
 
 describe('Token', () => {
   describe('when creating a token', () => {
@@ -11,6 +11,50 @@ describe('Token', () => {
 
       expect(token.address.toHexString()).not.toBe(modifiedAddress.toHexString())
       expect(token.address.toHexString()).toBe(originalAddress.toHexString())
+    })
+  })
+
+  describe("when token doesn't have decimals or symbol", () => {
+    it('looks for the symbol on chain', () => {
+      const token = new Token(randomAddress(), 1)
+      setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
+      setEvmDecode('string', '0x123', 'ETH')
+      expect('ETH').toBe(token.symbol)
+    })
+
+    it('uses the cache to get the symbol if it already looked for it', () => {
+      const token = new Token(randomAddress(), 1)
+      setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
+      setEvmDecode('string', '0x123', 'ETH')
+      expect('ETH').toBe(token.symbol)
+      setEvmDecode('string', '0x123', 'ETH1')
+      expect('ETH').toBe(token.symbol)
+    })
+
+    it('uses the cache if it was created with a symbol', () => {
+      const token = new Token(randomAddress(), 1, Token.EMPTY_DECIMALS, 'USDC')
+      expect('USDC').toBe(token.symbol)
+    })
+
+    it('looks for the decimals on chain', () => {
+      const token = new Token(randomAddress(), 1)
+      setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
+      setEvmDecode('uint256', '0x123', '18')
+      expect(18).toBe(token.decimals)
+    })
+
+    it('uses the cache to get the decimals if it already looked for it', () => {
+      const token = new Token(randomAddress(), 1)
+      setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
+      setEvmDecode('uint256', '0x123', '18')
+      expect(18).toBe(token.decimals)
+      setEvmDecode('uint256', '0x123', '18')
+      expect(18).toBe(token.decimals)
+    })
+
+    it('uses the cache if it was created with decimals', () => {
+      const token = new Token(randomAddress(), 1, 6)
+      expect(6).toBe(token.decimals)
     })
   })
 

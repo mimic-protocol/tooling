@@ -7,5 +7,15 @@
       "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,1,": "2000000000000000000000",
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1,1744818017000": "1000000000000000000"
     }
+  },
+  "_contractCall": {
+    "log": true,
+    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541"
+  },
+  "_evmDecode": {
+    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541",
+    "paramResponse": {
+      "EvmDecodeParam((uint256,string,int256),0x99605430cf9259456dd7a8024c3da8c03e319541)": "1,test,-20"
+    }
   }
 }
