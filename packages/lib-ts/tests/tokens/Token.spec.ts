@@ -64,16 +64,16 @@ describe('Token', () => {
     it('looks for the decimals on chain', () => {
       const token = new Token(randomAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
-      setEvmDecode('uint256', '0x123', '18')
+      setEvmDecode('uint8', '0x123', '18')
       expect(18).toBe(token.decimals)
     })
 
     it('uses the cache to get the decimals if it already looked for it', () => {
       const token = new Token(randomAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
-      setEvmDecode('uint256', '0x123', '18')
+      setEvmDecode('uint8', '0x123', '18')
       expect(18).toBe(token.decimals)
-      setEvmDecode('uint256', '0x123', '18')
+      setEvmDecode('uint8', '0x123', '18')
       expect(18).toBe(token.decimals)
     })
 

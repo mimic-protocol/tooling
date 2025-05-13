@@ -79,7 +79,7 @@ export class Token implements Serializable {
   get decimals(): u8 {
     if (this._decimals == Token.EMPTY_DECIMALS) {
       const result = environment.contractCall(this.address, this.chainId, this._timestamp, '0x313ce567')
-      this._decimals = u8.parse(environment.evmDecode(new EvmDecodeParam('uint256', result)))
+      this._decimals = u8.parse(environment.evmDecode(new EvmDecodeParam('uint8', result)))
     }
     return this._decimals
   }
