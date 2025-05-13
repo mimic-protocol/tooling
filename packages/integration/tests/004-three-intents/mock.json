@@ -8,11 +8,9 @@
     "slippage": 95
   },
   "_contractCall": {
-    "log": true,
     "default": ""
   },
   "_evmDecode": {
-    "default": "",
-    "paramResponse": {"": ""}
+    "default": ""
   }
 }

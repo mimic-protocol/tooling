@@ -9,11 +9,9 @@
     }
   },
   "_contractCall": {
-    "log": true,
     "default": ""
   },
   "_evmDecode": {
-    "default": "",
-    "paramResponse": {"": ""}
+    "default": ""
   }
 }
