@@ -104,6 +104,9 @@ export namespace environment {
     listType: ListType = ListType.DenyList
   ): TokenAmount[] {
     const response = _getRelevantTokens(
+      // NOTE: The runner expects an optional timestamp that the user will not be able to input
+      // that's why serialize('') is used
+      // this is a workaround until a decision is made regarding the timestamp
       join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType), serialize('')])
     )
     const rows = response.split('\n')
