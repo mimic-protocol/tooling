@@ -35,25 +35,16 @@ function generateImports(inputs: Record<string, string>): string {
 function generateInputsMapping(inputs: Record<string, string>): string {
   return Object.entries(inputs)
     .map(([name, type]) =>
-      type === 'string' || type === 'Address' || type === 'Bytes' ? `var ${name}Ptr: u32` : `const ${name}: ${type}`
+      type === 'string' || type === 'Address' || type === 'Bytes'
+        ? `var ${name}: string | null`
+        : `const ${name}: ${type}`
     )
     .join('\n  ')
 }
 
 function generateInputsClass(inputs: Record<string, string>): string {
   return Object.entries(inputs)
-    .map(([name, type]) => {
-      switch (type) {
-        case 'string':
-          return generateStringGetter(name)
-        case 'Address':
-          return generateHexGetter(name, type, 'Address.fromString')
-        case 'Bytes':
-          return generateHexGetter(name, type, 'Bytes.fromHexString')
-        default:
-          return generateDefaultGetter(name, type)
-      }
-    })
+    .map(([name, type]) => generateGetter(name, type))
     .join('\n\n  ')
 }
 
@@ -66,21 +57,16 @@ function convertType(type: string): string {
   return type
 }
 
-function generateStringGetter(name: string): string {
-  return `static get ${name}(): string {
-    return changetype<string>(input.${name}Ptr)
-  }`
-}
+function generateGetter(name: string, type: string): string {
+  const str = `input.${name}`
+  let returnStr: string
 
-function generateHexGetter(name: string, type: string, fn: string): string {
-  return `static get ${name}(): ${type} {
-    const str = changetype<string>(input.${name}Ptr)
-    return ${fn}(str)
-  }`
-}
+  if (type === 'string') returnStr = `${str}!`
+  else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
+  else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
+  else returnStr = str
 
-function generateDefaultGetter(name: string, type: string): string {
   return `static get ${name}(): ${type} {
-    return input.${name}
+    return ${returnStr}
   }`
 }

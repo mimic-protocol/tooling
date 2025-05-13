@@ -1,5 +1,6 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
+import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -37,7 +38,7 @@ export default class Init extends Command {
 
     log.startAction('Creating files')
 
-    if (fs.existsSync(fullDirectory)) {
+    if (fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
       this.error(`Directory ${log.highlightText(fullDirectory)} is not empty`, {
         code: 'DirectoryNotEmpty',
         suggestions: [
@@ -47,12 +48,18 @@ export default class Init extends Command {
       })
     }
 
-    const srcPath = path.join(fullDirectory, 'src/')
-    const manifestPath = path.join(fullDirectory, 'manifest.yaml')
-    fs.mkdirSync(srcPath, { recursive: true })
-    fs.copyFileSync(`${templateDirectory}/task.ts`, path.join(srcPath, 'task.ts'))
-    fs.copyFileSync(`${templateDirectory}/manifest.yaml`, manifestPath)
+    fs.cpSync(templateDirectory, fullDirectory, { recursive: true })
+
+    this.installDependancies(fullDirectory)
     log.stopAction()
     console.log('New project initialized!')
+  }
+
+  installDependancies(fullDirectory: string) {
+    if (process.env.NODE_ENV === 'test') return
+    spawnSync('yarn', ['install'], {
+      cwd: fullDirectory,
+      stdio: 'inherit',
+    })
   }
 }

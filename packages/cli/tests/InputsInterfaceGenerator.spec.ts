@@ -38,8 +38,8 @@ describe('InputsInterfaceGenerator', () => {
           expectItIncludes(
             result,
             `import { Address, Bytes } from '@mimicprotocol/lib-ts'`,
-            'var firstPtr: u32',
-            'var someAddressPtr: u32',
+            'var first: string',
+            'var someAddress: string',
             'static get first(): Bytes',
             'static get someAddress(): Address'
           )
@@ -54,9 +54,9 @@ describe('InputsInterfaceGenerator', () => {
             result,
             `import { Address } from '@mimicprotocol/lib-ts'`,
             'const first: i32',
-            'var someAddressPtr: u32',
+            'var someAddress: string',
             'const isTrue: bool',
-            'var sPtr: u32',
+            'var s: string',
             'static get first(): i32',
             'static get someAddress(): Address',
             'static get isTrue(): bool',
