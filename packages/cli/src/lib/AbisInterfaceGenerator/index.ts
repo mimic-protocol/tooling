@@ -8,13 +8,9 @@ export default {
   generate(abi: AbiFunctionItem[], contractName: string): string {
     const viewFunctions = filterViewFunctions(abi)
 
-    if (viewFunctions.length === 0) return ''
-
     const importManager = new ImportManager()
     const tupleHandler = new TupleHandler()
     const classGenerator = new ClassGenerator(importManager, tupleHandler)
-
-    importManager.addType('environment')
 
     tupleHandler.extractTupleDefinitions(abi)
 

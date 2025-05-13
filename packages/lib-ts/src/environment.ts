@@ -1,6 +1,6 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, Bytes, EvmCallParam } from './types'
+import { Address, BigInt, Bytes, EvmEncodeParam } from './types'
 import { EvmDecodeParam } from './types/EvmDecodeParam'
 
 export namespace environment {
@@ -134,7 +134,7 @@ export namespace environment {
     )
   }
 
-  export function evmEncode(callParameters: EvmCallParam[]): string {
+  export function evmEncode(callParameters: EvmEncodeParam[]): string {
     return _evmEncode(join([serializeArray(callParameters)]))
   }
 

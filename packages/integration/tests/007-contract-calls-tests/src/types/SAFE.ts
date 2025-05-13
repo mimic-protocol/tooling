@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam, parseCSV } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmDecodeParam, EvmEncodeParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -23,7 +23,10 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       '0x7d832974' +
-        environment.evmEncode([EvmCallParam.fromValue('address', param0), EvmCallParam.fromValue('bytes32', param1)])
+        environment.evmEncode([
+          EvmEncodeParam.fromValue('address', param0),
+          EvmEncodeParam.fromValue('bytes32', param1),
+        ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -36,10 +39,10 @@ export class SAFE {
       this.timestamp,
       '0x12fb68e0' +
         environment.evmEncode([
-          EvmCallParam.fromValue('bytes32', dataHash),
-          EvmCallParam.fromValue('bytes', data),
-          EvmCallParam.fromValue('bytes', signatures),
-          EvmCallParam.fromValue('uint256', requiredSignatures),
+          EvmEncodeParam.fromValue('bytes32', dataHash),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('bytes', signatures),
+          EvmEncodeParam.fromValue('uint256', requiredSignatures),
         ])
     )
   }
@@ -51,9 +54,9 @@ export class SAFE {
       this.timestamp,
       '0x934f3a11' +
         environment.evmEncode([
-          EvmCallParam.fromValue('bytes32', dataHash),
-          EvmCallParam.fromValue('bytes', data),
-          EvmCallParam.fromValue('bytes', signatures),
+          EvmEncodeParam.fromValue('bytes32', dataHash),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('bytes', signatures),
         ])
     )
   }
@@ -82,16 +85,16 @@ export class SAFE {
       this.timestamp,
       '0xe86637db' +
         environment.evmEncode([
-          EvmCallParam.fromValue('address', to),
-          EvmCallParam.fromValue('uint256', value),
-          EvmCallParam.fromValue('bytes', data),
-          EvmCallParam.fromValue('uint8', BigInt.fromU8(operation)),
-          EvmCallParam.fromValue('uint256', safeTxGas),
-          EvmCallParam.fromValue('uint256', baseGas),
-          EvmCallParam.fromValue('uint256', gasPrice),
-          EvmCallParam.fromValue('address', gasToken),
-          EvmCallParam.fromValue('address', refundReceiver),
-          EvmCallParam.fromValue('uint256', _nonce),
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+          EvmEncodeParam.fromValue('uint256', safeTxGas),
+          EvmEncodeParam.fromValue('uint256', baseGas),
+          EvmEncodeParam.fromValue('uint256', gasPrice),
+          EvmEncodeParam.fromValue('address', gasToken),
+          EvmEncodeParam.fromValue('address', refundReceiver),
+          EvmEncodeParam.fromValue('uint256', _nonce),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
@@ -110,7 +113,10 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       '0xcc2f8452' +
-        environment.evmEncode([EvmCallParam.fromValue('address', start), EvmCallParam.fromValue('uint256', pageSize)])
+        environment.evmEncode([
+          EvmEncodeParam.fromValue('address', start),
+          EvmEncodeParam.fromValue('uint256', pageSize),
+        ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(address[],address)', response))
     return GetModulesPaginatedOutputs._parse(decodedResponse)
@@ -130,7 +136,10 @@ export class SAFE {
       this.chainId,
       this.timestamp,
       '0x5624b25b' +
-        environment.evmEncode([EvmCallParam.fromValue('uint256', offset), EvmCallParam.fromValue('uint256', length)])
+        environment.evmEncode([
+          EvmEncodeParam.fromValue('uint256', offset),
+          EvmEncodeParam.fromValue('uint256', length),
+        ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
     return Bytes.fromHexString(decodedResponse)
@@ -160,16 +169,16 @@ export class SAFE {
       this.timestamp,
       '0xd8d11f78' +
         environment.evmEncode([
-          EvmCallParam.fromValue('address', to),
-          EvmCallParam.fromValue('uint256', value),
-          EvmCallParam.fromValue('bytes', data),
-          EvmCallParam.fromValue('uint8', BigInt.fromU8(operation)),
-          EvmCallParam.fromValue('uint256', safeTxGas),
-          EvmCallParam.fromValue('uint256', baseGas),
-          EvmCallParam.fromValue('uint256', gasPrice),
-          EvmCallParam.fromValue('address', gasToken),
-          EvmCallParam.fromValue('address', refundReceiver),
-          EvmCallParam.fromValue('uint256', _nonce),
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+          EvmEncodeParam.fromValue('uint256', safeTxGas),
+          EvmEncodeParam.fromValue('uint256', baseGas),
+          EvmEncodeParam.fromValue('uint256', gasPrice),
+          EvmEncodeParam.fromValue('address', gasToken),
+          EvmEncodeParam.fromValue('address', refundReceiver),
+          EvmEncodeParam.fromValue('uint256', _nonce),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
@@ -181,7 +190,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x2d9ad53d' + environment.evmEncode([EvmCallParam.fromValue('address', module)])
+      '0x2d9ad53d' + environment.evmEncode([EvmEncodeParam.fromValue('address', module)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bool', response))
     return u8.parse(decodedResponse) as bool
@@ -192,7 +201,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x2f54bf6e' + environment.evmEncode([EvmCallParam.fromValue('address', owner)])
+      '0x2f54bf6e' + environment.evmEncode([EvmEncodeParam.fromValue('address', owner)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bool', response))
     return u8.parse(decodedResponse) as bool
@@ -209,7 +218,7 @@ export class SAFE {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x5ae6bd37' + environment.evmEncode([EvmCallParam.fromValue('bytes32', param0)])
+      '0x5ae6bd37' + environment.evmEncode([EvmEncodeParam.fromValue('bytes32', param0)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -233,10 +242,10 @@ export class ExecTransactionFromModuleReturnDataOutputs {
     return new ExecTransactionFromModuleReturnDataOutputs(success, returnData)
   }
 
-  toEvmCallParams(): EvmCallParam[] {
+  toEvmEncodeParams(): EvmEncodeParam[] {
     return [
-      EvmCallParam.fromValue('bool', Bytes.fromBool(this.success)),
-      EvmCallParam.fromValue('bytes', this.returnData),
+      EvmEncodeParam.fromValue('bool', Bytes.fromBool(this.success)),
+      EvmEncodeParam.fromValue('bytes', this.returnData),
     ]
   }
 }
@@ -259,7 +268,7 @@ export class GetModulesPaginatedOutputs {
     return new GetModulesPaginatedOutputs(array, next)
   }
 
-  toEvmCallParams(): EvmCallParam[] {
-    return [EvmCallParam.fromValue('address[]', this.array), EvmCallParam.fromValue('address', this.next)]
+  toEvmEncodeParams(): EvmEncodeParam[] {
+    return [EvmEncodeParam.fromValue('address[]', this.array), EvmEncodeParam.fromValue('address', this.next)]
   }
 }

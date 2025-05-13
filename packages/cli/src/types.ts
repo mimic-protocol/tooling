@@ -41,4 +41,3 @@ export enum AssemblyTypes {
 }
 
 export type InputType = `${LibTypes}` | `${AssemblyTypes}` | 'unknown'
-export type InputTypeArray = `${InputType}[]`

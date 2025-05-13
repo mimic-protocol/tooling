@@ -87,11 +87,15 @@ describe('AbisInterfaceGenerator', () => {
       })
     })
 
-    it('should return an empty string if there are no view/pure functions', () => {
+    it('should return a class with no methods if there are no view/pure functions', () => {
       const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      expect(result).to.equal('')
+      expect(result).to.contain(`import { ${LibTypes.Address} } from '@mimicprotocol/lib-ts'`)
+      expect(result).to.contain(`export class ${CONTRACT_NAME} {`)
+      expect(result).to.contain(
+        `constructor(address: ${LibTypes.Address}, chainId: u64, timestamp: Date | null = null) {`
+      )
     })
   })
 
@@ -168,7 +172,7 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(
-        ` environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' + environment.evmEncode([EvmCallParam.fromValue('address', owner)]))`
+        ` environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' + environment.evmEncode([EvmEncodeParam.fromValue('address', owner)]))`
       )
     })
 
@@ -327,7 +331,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain('export class Tuple0 {')
     })
 
-    it('should properly handle type conversions in toEvmCallParams', () => {
+    it('should properly handle type conversions in toEvmEncodeParams', () => {
       const abi = [
         createViewFunction(
           'getData',
@@ -348,11 +352,12 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      // Check that proper type conversions are applied in toEvmCallParams
-      expect(result).to.contain('toEvmCallParams(): EvmCallParam[] {')
-      expect(result).to.contain(`EvmCallParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(this.flag))`)
-      expect(result).to.contain(`EvmCallParam.fromValue('string', ${LibTypes.Bytes}.fromUTF8(this.text))`)
-      expect(result).to.contain(`EvmCallParam.fromValue('uint256', this.amount)`)
+      // Check that proper type conversions are applied in toEvmEncodeParams
+      expect(result).to.contain('toEvmEncodeParams(): EvmEncodeParam[] {')
+      expect(result).to.contain(`EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(this.flag))`)
+      expect(result).to.contain(`EvmEncodeParam.fromValue('string', ${LibTypes.Bytes}.fromUTF8(this.text))`)
+      // eslint-disable-next-line no-secrets/no-secrets
+      expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', this.amount)`)
     })
 
     it('should generate proper _parse method for handling tuple data', () => {

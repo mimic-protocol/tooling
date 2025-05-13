@@ -1,5 +1,5 @@
 import { getFunctionSelector } from '../../helpers'
-import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../../types'
+import { AbiFunctionItem, AbiParameter, AssemblyTypes, InputType, LibTypes } from '../../types'
 
 import { AbiTypeConverter } from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
@@ -62,8 +62,8 @@ export class ClassGenerator {
       lines.push(`  }`)
       lines.push('')
 
-      lines.push(`  toEvmCallParams(): EvmCallParam[] {`)
-      this.importManager.addType('EvmCallParam')
+      lines.push(`  toEvmEncodeParams(): EvmEncodeParam[] {`)
+      this.importManager.addType('EvmEncodeParam')
       lines.push(`    return [`)
       lines.push(...this._generateTupleToEvmParamsMethodBody(def))
       lines.push(`    ]`)
@@ -133,7 +133,7 @@ export class ClassGenerator {
       .join(', ')
   }
 
-  private determineReturnType(fn: AbiFunctionItem): InputType | InputTypeArray | 'void' | string {
+  private determineReturnType(fn: AbiFunctionItem): string {
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
     if (fn.outputs.length === 1) return this.abiTypeConverter.mapAbiType(fn.outputs[0])
@@ -160,27 +160,27 @@ export class ClassGenerator {
   private generateEvmParam(input: AbiParameter, index: number): string {
     const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
     const paramType = this.abiTypeConverter.mapAbiType(input)
-    this.importManager.addType('EvmCallParam')
+    this.importManager.addType('EvmEncodeParam')
     let abiType: string = input.type
     if (this.tupleHandler.isTupleType(input.type)) abiType = this.tupleHandler.mapTupleType(input.type)
 
     if (ArrayHandler.isArrayType(input.type)) {
-      const baseAbiType = ArrayHandler.getBaseAbiType(input.type)
+      const baseAbiType = ArrayHandler.getArrayAbiType(input.type)
 
       const elementAbiParam: AbiParameter = {
         name: 'item',
         type: baseAbiType,
         components: this.tupleHandler.isTupleType(baseAbiType) ? input.components : undefined,
-        internalType: input.internalType ? ArrayHandler.getBaseAbiType(input.internalType) : undefined,
+        internalType: input.internalType ? ArrayHandler.getArrayAbiType(input.internalType) : undefined,
       }
 
       const nestedEvmParam = this.generateEvmParam(elementAbiParam, 0)
-      return `EvmCallParam.fromValues('${abiType}', ${paramName}.map<EvmCallParam>((${elementAbiParam.name}) => ${nestedEvmParam}))`
+      return `EvmEncodeParam.fromValues('${abiType}', ${paramName}.map<EvmEncodeParam>((${elementAbiParam.name}) => ${nestedEvmParam}))`
     }
 
     if (this.tupleHandler.isTupleType(input.type))
-      return `EvmCallParam.fromValues('${abiType}', ${paramName}.toEvmCallParams())`
-    return `EvmCallParam.fromValue('${abiType}', ${this.abiTypeConverter.toLibType(paramType, paramName)})`
+      return `EvmEncodeParam.fromValues('${abiType}', ${paramName}.toEvmEncodeParams())`
+    return `EvmEncodeParam.fromValue('${abiType}', ${this.abiTypeConverter.toLibType(paramType, paramName)})`
   }
 
   private generateCallArguments(inputs: AbiParameter[]): string {
@@ -191,12 +191,7 @@ export class ClassGenerator {
       .join(', ')
   }
 
-  private appendFunctionBody(
-    lines: string[],
-    fn: AbiFunctionItem,
-    returnType: InputType | InputTypeArray | 'void' | string,
-    callArgs: string
-  ): void {
+  private appendFunctionBody(lines: string[], fn: AbiFunctionItem, returnType: string, callArgs: string): void {
     const selector = getFunctionSelector(fn)
     this.importManager.addType('environment')
     const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${callArgs ? `+ environment.evmEncode([${callArgs}])` : ''})`
@@ -229,10 +224,8 @@ export class ClassGenerator {
       `    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeAbiTypeString}', response))`
     )
 
-    const isReturnTypeArray = ArrayHandler.isArrayType(String(returnType))
-    const baseReturnType = isReturnTypeArray
-      ? String(returnType).substring(0, String(returnType).lastIndexOf('['))
-      : String(returnType)
+    const isReturnTypeArray = ArrayHandler.isArrayType(returnType)
+    const baseReturnType = isReturnTypeArray ? returnType.substring(0, returnType.lastIndexOf('[')) : returnType
 
     const tupleDefinitions = this.tupleHandler.getDefinitions()
     const isBaseReturnTypeTupleClass = [...tupleDefinitions.values()].some((def) => def.className === baseReturnType)
@@ -270,10 +263,10 @@ export class ClassGenerator {
       const componentType = this.abiTypeConverter.mapAbiType(comp)
 
       const isAbiArray = ArrayHandler.isArrayType(comp.type)
-      const abiBaseType = isAbiArray ? ArrayHandler.getBaseAbiType(comp.type) : ''
+      const abiBaseType = isAbiArray ? ArrayHandler.getArrayAbiType(comp.type) : ''
 
       if (isAbiArray && this.tupleHandler.isTupleType(abiBaseType)) {
-        const mappedComponentTypeStr = String(componentType)
+        const mappedComponentTypeStr = componentType
         const baseMappedType = mappedComponentTypeStr.substring(0, mappedComponentTypeStr.lastIndexOf('['))
         return this._generateParseArrayOfCustomObjectsCode(
           'parts',
@@ -287,7 +280,7 @@ export class ClassGenerator {
         let baseInternalType: string | undefined = undefined
         if (comp.internalType) {
           baseInternalType = ArrayHandler.isArrayType(comp.internalType)
-            ? ArrayHandler.getBaseAbiType(comp.internalType)
+            ? ArrayHandler.getArrayAbiType(comp.internalType)
             : comp.internalType
         }
 
@@ -297,15 +290,10 @@ export class ClassGenerator {
           internalType: baseInternalType,
           components: undefined,
         }
-        const tsBaseType = this.abiTypeConverter.mapAbiType(baseCompAbiParameter)
+        const inputType = this.abiTypeConverter.mapAbiType(baseCompAbiParameter) as InputType
 
-        const elementConversionLogic = this.abiTypeConverter.generateTypeConversion(
-          tsBaseType as InputType,
-          'value',
-          false,
-          false
-        )
-        return `    const ${fieldName}: ${componentType} = parts[${index}] === '' ? [] : changetype<string[]>(parseCSV(parts[${index}])).map<${tsBaseType}>((value) => ${elementConversionLogic});`
+        const elementConversionLogic = this.abiTypeConverter.generateTypeConversion(inputType, 'value', false, false)
+        return `    const ${fieldName}: ${componentType} = parts[${index}] === '' ? [] : changetype<string[]>(parseCSV(parts[${index}])).map<${inputType}>((value) => ${elementConversionLogic});`
       } else {
         const conversion = this.abiTypeConverter.generateTypeConversion(
           componentType as InputType,
@@ -329,10 +317,10 @@ export class ClassGenerator {
       if (this.tupleHandler.isTupleType(comp.type)) {
         const tupleType = this.tupleHandler.mapTupleType(comp.type)
         const isArray = ArrayHandler.isArrayType(tupleType)
-        paramCode = `EvmCallParam.fromValues('${tupleType}', ${isArray ? `this.${fieldName}.map<EvmCallParam>((s) => EvmCallParam.fromValues(\'()\', s.toEvmCallParams()))` : `this.${fieldName}.toEvmCallParams()`})`
+        paramCode = `EvmEncodeParam.fromValues('${tupleType}', ${isArray ? `this.${fieldName}.map<EvmEncodeParam>((s) => EvmEncodeParam.fromValues(\'()\', s.toEvmEncodeParams()))` : `this.${fieldName}.toEvmEncodeParams()`})`
       } else {
         const convertedValue = this.abiTypeConverter.toLibType(componentType, `this.${fieldName}`)
-        paramCode = `EvmCallParam.fromValue('${comp.type}', ${convertedValue})`
+        paramCode = `EvmEncodeParam.fromValue('${comp.type}', ${convertedValue})`
       }
       paramLines.push(`      ${paramCode},`)
     })

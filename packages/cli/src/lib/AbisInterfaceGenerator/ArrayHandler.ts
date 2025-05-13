@@ -1,19 +1,25 @@
-import { AbiParameter, InputType, InputTypeArray } from '../../types'
+import { AbiParameter } from '../../types'
 
-export type MapBaseTypeCallback = (param: AbiParameter) => InputType | InputTypeArray | string
+export type MapBaseTypeCallback = (param: AbiParameter) => string
 
 export default class ArrayHandler {
   static isArrayType(abiOrMappedType: string): boolean {
     return abiOrMappedType.endsWith(']')
   }
 
-  static getBaseAbiType(abiType: string): string {
+  /**
+   * Returns the base type of an array, e.g., "uint256[2][]" -> "uint256[2]".
+   */
+  static getArrayAbiType(abiType: string): string {
     if (!this.isArrayType(abiType)) return abiType
     const lastBracket = abiType.lastIndexOf('[')
     if (lastBracket === -1) return abiType
     return abiType.substring(0, lastBracket)
   }
 
+  /**
+   * Returns the depth of an array, e.g., "uint256[][]" -> 2.
+   */
   static getArrayDepth(abiType: string): number {
     let depth = 0
     let tempType = abiType
@@ -26,49 +32,46 @@ export default class ArrayHandler {
     return depth
   }
 
+  /**
+   * Returns the string representation of the array depth, e.g., "uint256[2][]" -> "[2][]".
+   */
   static getArrayDepthString(abiType: string): string {
-    if (!this.isArrayType(abiType)) return ''
     const idx = abiType.indexOf('[')
     if (idx === -1) return ''
     return abiType.substring(idx)
   }
 
   /**
-   * Recursively finds the ultimate base type of a potentially nested ABI array type string.
+   * Recursively finds the  base type of a potentially nested ABI array type string.
    * E.g., for "uint256[][]", it returns "uint256".
    */
-  static getUltimateBaseAbiType(abiType: string): string {
-    let currentType = abiType
-    while (this.isArrayType(currentType)) {
-      currentType = this.getBaseAbiType(currentType)
-    }
-    return currentType
+  static getBaseAbiType(abiType: string): string {
+    const bracketIndex = abiType.indexOf('[')
+    if (bracketIndex === -1) return abiType
+    return abiType.substring(0, bracketIndex)
   }
 
   /**
-   * Gets the mapped type of the ultimate base element of an array.
+   * Gets the mapped type of the  base element of an array.
    */
-  static getMappedUltimateBaseType(
-    param: AbiParameter,
-    mapBaseTypeFunc: MapBaseTypeCallback
-  ): InputType | InputTypeArray | string {
-    const ultimateBaseAbiType = this.getUltimateBaseAbiType(param.type)
+  static baseAbiTypeToLibType(param: AbiParameter, mapBaseTypeFunc: MapBaseTypeCallback): string {
+    const baseAbiType = this.getBaseAbiType(param.type)
     const baseParam: AbiParameter = {
       ...param,
-      type: ultimateBaseAbiType,
-      components: ultimateBaseAbiType === 'tuple' ? param.components : undefined,
-      internalType: param.internalType ? this.getUltimateBaseAbiType(param.internalType) : undefined,
+      type: baseAbiType,
+      components: baseAbiType === 'tuple' ? param.components : undefined,
+      internalType: param.internalType ? this.getBaseAbiType(param.internalType) : undefined,
     }
     return mapBaseTypeFunc(baseParam)
   }
 
   /**
-   * Constructs the full mapped array type string, e.g., "BigInt[][]",
-   * based on the mapped ultimate base type and the original ABI array type's depth.
+   * Constructs the full lib type array string, e.g., "BigInt[][]",
+   * based on the original ABI array type's depth.
    */
-  static constructMappedArrayTypeString(originalParam: AbiParameter, mapBaseTypeFunc: MapBaseTypeCallback): string {
-    const mappedUltimateBaseType = this.getMappedUltimateBaseType(originalParam, mapBaseTypeFunc)
+  static generateLibTypeArray(originalParam: AbiParameter, mapBaseTypeFunc: MapBaseTypeCallback): string {
+    const mappedBaseType = this.baseAbiTypeToLibType(originalParam, mapBaseTypeFunc)
     const depth = this.getArrayDepth(originalParam.type)
-    return mappedUltimateBaseType + '[]'.repeat(depth)
+    return mappedBaseType + '[]'.repeat(depth)
   }
 }

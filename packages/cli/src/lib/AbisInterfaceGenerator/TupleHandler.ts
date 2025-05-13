@@ -23,7 +23,7 @@ export class TupleHandler {
    * E.g., 'tuple', 'tuple[]', 'tuple[2]' would all return true.
    */
   public isTupleType(abiType: string): boolean {
-    const ultimateBaseAbiType = ArrayHandler.getUltimateBaseAbiType(abiType)
+    const ultimateBaseAbiType = ArrayHandler.getBaseAbiType(abiType)
     return ultimateBaseAbiType === 'tuple'
   }
 
@@ -41,7 +41,7 @@ export class TupleHandler {
   public getClassNameForTupleDefinition(param: AbiParameter): string | undefined {
     if (!this.isTupleType(param.type)) return undefined
 
-    const baseInternalType = param.internalType ? ArrayHandler.getUltimateBaseAbiType(param.internalType) : undefined
+    const baseInternalType = param.internalType ? ArrayHandler.getBaseAbiType(param.internalType) : undefined
 
     if (baseInternalType && this.tupleDefinitions.has(baseInternalType))
       return this.tupleDefinitions.get(baseInternalType)!.className
@@ -80,7 +80,7 @@ export class TupleHandler {
 
       let className = `Tuple${this.tupleCounter++}`
       const baseInternalType = tupleToDefine.internalType
-        ? ArrayHandler.getUltimateBaseAbiType(tupleToDefine.internalType)
+        ? ArrayHandler.getBaseAbiType(tupleToDefine.internalType)
         : undefined
 
       if (baseInternalType) {

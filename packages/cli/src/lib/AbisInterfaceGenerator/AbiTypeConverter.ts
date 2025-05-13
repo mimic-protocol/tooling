@@ -1,6 +1,6 @@
-import { AbiParameter, AssemblyTypes, InputType, InputTypeArray, LibTypes } from '../../types'
+import { AbiParameter, AssemblyTypes, InputType, LibTypes } from '../../types'
 
-import ArrayHandler, { MapBaseTypeCallback } from './ArrayHandler'
+import ArrayHandler from './ArrayHandler'
 import { ImportManager } from './ImportManager'
 import { TupleHandler } from './TupleHandler'
 
@@ -15,12 +15,12 @@ export class AbiTypeConverter {
     this.abiTypecastMap = this.generateAbiTypecastMap()
   }
 
-  public mapAbiType(param: AbiParameter): InputType | InputTypeArray | string {
+  public mapAbiType(param: AbiParameter): string {
     const abiType = param.type
 
     if (ArrayHandler.isArrayType(abiType)) {
-      const mapBaseTypeCallback: MapBaseTypeCallback = this.mapAbiType.bind(this)
-      return ArrayHandler.constructMappedArrayTypeString(param, mapBaseTypeCallback)
+      const mapBaseTypeCallback = this.mapAbiType.bind(this)
+      return ArrayHandler.generateLibTypeArray(param, mapBaseTypeCallback)
     }
 
     if (this.tupleHandler.isTupleType(abiType)) {
@@ -41,8 +41,8 @@ export class AbiTypeConverter {
     return mapped
   }
 
-  public toLibType(paramType: InputType | InputTypeArray | string, paramName: string): string {
-    if (ArrayHandler.isArrayType(String(paramType))) return paramName
+  public toLibType(paramType: string, paramName: string): string {
+    if (ArrayHandler.isArrayType(paramType)) return paramName
 
     switch (paramType) {
       case AssemblyTypes.bool:

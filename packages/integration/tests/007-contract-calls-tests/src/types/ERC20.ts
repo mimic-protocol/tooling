@@ -1,4 +1,4 @@
-import { Address, BigInt, environment, EvmCallParam, EvmDecodeParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
@@ -34,7 +34,7 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x70a08231' + environment.evmEncode([EvmCallParam.fromValue('address', _owner)])
+      '0x70a08231' + environment.evmEncode([EvmEncodeParam.fromValue('address', _owner)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -52,7 +52,10 @@ export class ERC20 {
       this.chainId,
       this.timestamp,
       '0xdd62ed3e' +
-        environment.evmEncode([EvmCallParam.fromValue('address', _owner), EvmCallParam.fromValue('address', _spender)])
+        environment.evmEncode([
+          EvmEncodeParam.fromValue('address', _owner),
+          EvmEncodeParam.fromValue('address', _spender),
+        ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)

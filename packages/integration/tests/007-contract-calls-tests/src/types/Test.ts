@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, environment, EvmCallParam, EvmDecodeParam, parseCSV } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, environment, EvmDecodeParam, EvmEncodeParam, parseCSV } from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
@@ -18,8 +18,8 @@ export class Test {
       this.timestamp,
       '0x12600aa3' +
         environment.evmEncode([
-          EvmCallParam.fromValue('string', Bytes.fromUTF8(a)),
-          EvmCallParam.fromValue('string', Bytes.fromUTF8(b)),
+          EvmEncodeParam.fromValue('string', Bytes.fromUTF8(a)),
+          EvmEncodeParam.fromValue('string', Bytes.fromUTF8(b)),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
@@ -33,9 +33,9 @@ export class Test {
       this.timestamp,
       '0xb0d6df12' +
         environment.evmEncode([
-          EvmCallParam.fromValue('uint256', id),
-          EvmCallParam.fromValue('string', Bytes.fromUTF8(name)),
-          EvmCallParam.fromValue('int256', value),
+          EvmEncodeParam.fromValue('uint256', id),
+          EvmEncodeParam.fromValue('string', Bytes.fromUTF8(name)),
+          EvmEncodeParam.fromValue('int256', value),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
@@ -47,7 +47,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x544170e2' + environment.evmEncode([EvmCallParam.fromValues('()', ns.toEvmCallParams())])
+      '0x544170e2' + environment.evmEncode([EvmEncodeParam.fromValues('()', ns.toEvmEncodeParams())])
     )
     const decodedResponse = environment.evmDecode(
       new EvmDecodeParam('((uint256,string,int256),(uint256,string,int256)[])', response)
@@ -60,7 +60,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x5b6a43af' + environment.evmEncode([EvmCallParam.fromValues('()', s.toEvmCallParams())])
+      '0x5b6a43af' + environment.evmEncode([EvmEncodeParam.fromValues('()', s.toEvmEncodeParams())])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
     return MyStruct._parse(decodedResponse)
@@ -73,9 +73,9 @@ export class Test {
       this.timestamp,
       '0x5d1aea3b' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             '()[]',
-            structs.map<EvmCallParam>((item) => EvmCallParam.fromValues('()', item.toEvmCallParams()))
+            structs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValues('()', item.toEvmEncodeParams()))
           ),
         ])
     )
@@ -90,7 +90,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x3b021af1' + environment.evmEncode([EvmCallParam.fromValue('uint256', value)])
+      '0x3b021af1' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', value)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -127,11 +127,11 @@ export class Test {
       this.timestamp,
       '0x6e8184d0' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'bytes32[3]',
-            arr.map<EvmCallParam>((item) => EvmCallParam.fromValue('bytes32', item))
+            arr.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('bytes32', item))
           ),
-          EvmCallParam.fromValue('uint256', index),
+          EvmEncodeParam.fromValue('uint256', index),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
@@ -163,7 +163,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xa49c97b4' + environment.evmEncode([EvmCallParam.fromValue('int256', input)])
+      '0xa49c97b4' + environment.evmEncode([EvmEncodeParam.fromValue('int256', input)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256[]', response))
     return decodedResponse === ''
@@ -182,7 +182,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xed496529' + environment.evmEncode([EvmCallParam.fromValue('uint8', BigInt.fromU8(status))])
+      '0xed496529' + environment.evmEncode([EvmEncodeParam.fromValue('uint8', BigInt.fromU8(status))])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
     return decodedResponse
@@ -221,10 +221,10 @@ export class Test {
       this.timestamp,
       '0xbc6270a0' +
         environment.evmEncode([
-          EvmCallParam.fromValue('address', user),
-          EvmCallParam.fromValue('uint256', amount),
-          EvmCallParam.fromValue('string', Bytes.fromUTF8(note)),
-          EvmCallParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('address', user),
+          EvmEncodeParam.fromValue('uint256', amount),
+          EvmEncodeParam.fromValue('string', Bytes.fromUTF8(note)),
+          EvmEncodeParam.fromValue('bytes', data),
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes32', response))
@@ -236,7 +236,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xcade77fa' + environment.evmEncode([EvmCallParam.fromValue('address', _addr)])
+      '0xcade77fa' + environment.evmEncode([EvmEncodeParam.fromValue('address', _addr)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('address', response))
     return Address.fromString(decodedResponse)
@@ -247,7 +247,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x544d0ec9' + environment.evmEncode([EvmCallParam.fromValue('bytes16', _input)])
+      '0x544d0ec9' + environment.evmEncode([EvmEncodeParam.fromValue('bytes16', _input)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes16', response))
     return Bytes.fromHexString(decodedResponse)
@@ -258,7 +258,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x6a9a1222' + environment.evmEncode([EvmCallParam.fromValue('bytes8', _input)])
+      '0x6a9a1222' + environment.evmEncode([EvmEncodeParam.fromValue('bytes8', _input)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes8', response))
     return Bytes.fromHexString(decodedResponse)
@@ -271,9 +271,9 @@ export class Test {
       this.timestamp,
       '0x890e4c02' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'address[]',
-            _addrs.map<EvmCallParam>((item) => EvmCallParam.fromValue('address', item))
+            _addrs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('address', item))
           ),
         ])
     )
@@ -288,9 +288,9 @@ export class Test {
       this.timestamp,
       '0x19c6982e' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'string[]',
-            _strings.map<EvmCallParam>((item) => EvmCallParam.fromValue('string', Bytes.fromUTF8(item)))
+            _strings.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(item)))
           ),
         ])
     )
@@ -305,9 +305,9 @@ export class Test {
       this.timestamp,
       '0xceca6c77' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'address[3]',
-            _addrs.map<EvmCallParam>((item) => EvmCallParam.fromValue('address', item))
+            _addrs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('address', item))
           ),
         ])
     )
@@ -322,9 +322,9 @@ export class Test {
       this.timestamp,
       '0x0ec91470' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'string[2]',
-            _strings.map<EvmCallParam>((item) => EvmCallParam.fromValue('string', Bytes.fromUTF8(item)))
+            _strings.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(item)))
           ),
         ])
     )
@@ -337,7 +337,7 @@ export class Test {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x2f278ecb' + environment.evmEncode([EvmCallParam.fromValue('bytes', input)])
+      '0x2f278ecb' + environment.evmEncode([EvmEncodeParam.fromValue('bytes', input)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('bytes', response))
     return Bytes.fromHexString(decodedResponse)
@@ -350,9 +350,9 @@ export class Test {
       this.timestamp,
       '0x1e2aea06' +
         environment.evmEncode([
-          EvmCallParam.fromValues(
+          EvmEncodeParam.fromValues(
             'uint256[]',
-            values.map<EvmCallParam>((item) => EvmCallParam.fromValue('uint256', item))
+            values.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('uint256', item))
           ),
         ])
     )
@@ -381,11 +381,11 @@ export class MyStruct {
     return new MyStruct(id, name, value)
   }
 
-  toEvmCallParams(): EvmCallParam[] {
+  toEvmEncodeParams(): EvmEncodeParam[] {
     return [
-      EvmCallParam.fromValue('uint256', this.id),
-      EvmCallParam.fromValue('string', Bytes.fromUTF8(this.name)),
-      EvmCallParam.fromValue('int256', this.value),
+      EvmEncodeParam.fromValue('uint256', this.id),
+      EvmEncodeParam.fromValue('string', Bytes.fromUTF8(this.name)),
+      EvmEncodeParam.fromValue('int256', this.value),
     ]
   }
 }
@@ -408,12 +408,12 @@ export class NestedStruct {
     return new NestedStruct(single, list)
   }
 
-  toEvmCallParams(): EvmCallParam[] {
+  toEvmEncodeParams(): EvmEncodeParam[] {
     return [
-      EvmCallParam.fromValues('()', this.single.toEvmCallParams()),
-      EvmCallParam.fromValues(
+      EvmEncodeParam.fromValues('()', this.single.toEvmEncodeParams()),
+      EvmEncodeParam.fromValues(
         '()[]',
-        this.list.map<EvmCallParam>((s) => EvmCallParam.fromValues('()', s.toEvmCallParams()))
+        this.list.map<EvmEncodeParam>((s) => EvmEncodeParam.fromValues('()', s.toEvmEncodeParams()))
       ),
     ]
   }
@@ -439,11 +439,11 @@ export class GetMultipleValuesOutputs {
     return new GetMultipleValuesOutputs(field0, field1, field2)
   }
 
-  toEvmCallParams(): EvmCallParam[] {
+  toEvmEncodeParams(): EvmEncodeParam[] {
     return [
-      EvmCallParam.fromValue('uint256', this.field0),
-      EvmCallParam.fromValue('bool', Bytes.fromBool(this.field1)),
-      EvmCallParam.fromValue('string', Bytes.fromUTF8(this.field2)),
+      EvmEncodeParam.fromValue('uint256', this.field0),
+      EvmEncodeParam.fromValue('bool', Bytes.fromBool(this.field1)),
+      EvmEncodeParam.fromValue('string', Bytes.fromUTF8(this.field2)),
     ]
   }
 }

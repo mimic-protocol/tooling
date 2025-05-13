@@ -1,6 +1,6 @@
 import { LibTypes } from '../../types'
 
-export type ImportedTypes = LibTypes | 'environment' | 'EvmCallParam' | 'EvmDecodeParam' | 'parseCSV'
+export type ImportedTypes = LibTypes | 'environment' | 'EvmEncodeParam' | 'EvmDecodeParam' | 'parseCSV'
 
 export class ImportManager {
   private types: Set<ImportedTypes>
@@ -13,18 +13,10 @@ export class ImportManager {
     this.types.add(type)
   }
 
-  addTypes(types: ImportedTypes[]): void {
-    types.forEach((t) => this.types.add(t))
-  }
-
-  getImportedTypes(): Set<ImportedTypes> {
-    return this.types
-  }
-
   generateImportsCode(): string {
     if (this.types.size === 0) return ''
 
     const sortedTypes = [...this.types].sort((a, b) => String(a).localeCompare(String(b)))
-    return `import { ${sortedTypes.join(', ')} } from '@mimicprotocol/lib-ts';`
+    return `import { ${sortedTypes.join(', ')} } from '@mimicprotocol/lib-ts'`
   }
 }
