@@ -1,7 +1,7 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes, EvmCallParam } from './types'
-import { EvmDecodeParam } from './types/EvmDecodeParam'
+import { EvmDecodeParam } from './types'
 
 export namespace environment {
   @external('environment', '_call')
@@ -104,7 +104,7 @@ export namespace environment {
     listType: ListType = ListType.DenyList
   ): TokenAmount[] {
     const response = _getRelevantTokens(
-      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType)])
+      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType), serialize('')])
     )
     const rows = response.split('\n')
     const tokenAmounts: TokenAmount[] = []
