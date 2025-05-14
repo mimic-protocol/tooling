@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://mimic.fi"><img src="https://www.mimic.fi/logo.png" alt="Mimic Finance" width="200"></a> 
+  <a href="https://mimic.fi"><img src="https://www.mimic.fi/logo.png" alt="Mimic Protocol" width="200"></a> 
 </h1>
 
 <h4 align="center">Blockchain automation protocol</h4>
@@ -10,9 +10,6 @@
   </a>
   <a href="https://discord.mimic.fi">
     <img alt="Discord" src="https://img.shields.io/discord/989984112397922325">
-  </a>
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/Unlicensed-grey">
   </a>
 </p>
 

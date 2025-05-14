@@ -10,7 +10,7 @@ export const ParameterizedResponseValidator = z
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
-const InputsValidator = z.record(z.string(), z.number())
+const InputsValidator = z.record(z.string(), z.union([z.number(), z.string()]))
 
 export const MockResponseValueValidator = z.union([z.string(), ParameterizedResponseValidator, InputsValidator])
 export const MockConfigValidator = z.record(MockResponseValueValidator)

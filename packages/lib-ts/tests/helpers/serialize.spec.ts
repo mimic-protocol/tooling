@@ -48,11 +48,9 @@ describe('serialize', () => {
         const token = randomToken()
         const serialized = serialize(token)
 
-        const symbol = token.symbol
         const address = token.address.toHexString()
         const chainId = token.chainId
-        const decimals = token.decimals
-        expect(serialized).toBe(`Token(${symbol},${address},${chainId},${decimals})`)
+        expect(serialized).toBe(`Token(${address},${chainId})`)
       })
     })
 
