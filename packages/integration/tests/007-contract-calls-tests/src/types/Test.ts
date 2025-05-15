@@ -82,7 +82,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<MyStruct>((item) => MyStruct._parse(item))
+      : changetype<string[]>(parseCSV(decodedResponse)).map<MyStruct>((item0: string) => MyStruct._parse(item0))
   }
 
   echoUint(value: BigInt): BigInt {
@@ -149,7 +149,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getInt(): BigInt {
@@ -168,7 +168,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getMultipleValues(): GetMultipleValuesOutputs {
@@ -197,7 +197,9 @@ export class Test {
   getStringArray(): string[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('string[]', response))
-    return decodedResponse === '' ? [] : changetype<string[]>(parseCSV(decodedResponse)).map<string>((value) => value)
+    return decodedResponse === ''
+      ? []
+      : changetype<string[]>(parseCSV(decodedResponse)).map<string>((item0: string) => item0)
   }
 
   getUint(): BigInt {
@@ -211,7 +213,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((value) => BigInt.fromString(value))
+      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {

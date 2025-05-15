@@ -1,21 +1,22 @@
 import { AbiFunctionItem } from '../../types'
 
-import { ClassGenerator } from './ClassGenerator'
+import { ContractClassGenerator } from './ContractClassGenerator'
+import { FunctionHandler } from './FunctionHandler'
 import { ImportManager } from './ImportManager'
-import { TupleHandler } from './TupleHandler'
+
+export { FunctionHandler }
 
 export default {
   generate(abi: AbiFunctionItem[], contractName: string): string {
     const viewFunctions = filterViewFunctions(abi)
 
     const importManager = new ImportManager()
-    const tupleHandler = new TupleHandler()
-    const classGenerator = new ClassGenerator(importManager, tupleHandler)
+    const contractClassGenerator = new ContractClassGenerator(importManager)
 
-    tupleHandler.extractTupleDefinitions(abi)
+    contractClassGenerator.processAbi(abi)
 
-    const contractClassCode = classGenerator.generateContractClass(viewFunctions, contractName)
-    const tupleClassesCode = classGenerator.generateTupleClassesCode()
+    const contractClassCode = contractClassGenerator.generateContractClass(viewFunctions, contractName)
+    const tupleClassesCode = contractClassGenerator.generateTupleClasses()
     const importsCode = importManager.generateImportsCode() // Note: this should be generated after any other generation
 
     const separator = '\n\n'

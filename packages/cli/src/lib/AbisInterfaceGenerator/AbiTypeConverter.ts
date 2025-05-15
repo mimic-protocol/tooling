@@ -2,16 +2,16 @@ import { AbiParameter, AssemblyTypes, InputType, LibTypes } from '../../types'
 
 import ArrayHandler from './ArrayHandler'
 import { ImportManager } from './ImportManager'
-import { TupleHandler } from './TupleHandler'
+import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
 
 export class AbiTypeConverter {
   private importManager: ImportManager
-  private tupleHandler: TupleHandler
+  private tupleDefinitions: TupleDefinitionsMap
   private readonly abiTypecastMap: Readonly<Record<string, InputType>>
 
-  constructor(importManager: ImportManager, tupleHandler: TupleHandler) {
+  constructor(importManager: ImportManager, tupleDefinitions: TupleDefinitionsMap) {
     this.importManager = importManager
-    this.tupleHandler = tupleHandler
+    this.tupleDefinitions = tupleDefinitions
     this.abiTypecastMap = this.generateAbiTypecastMap()
   }
 
@@ -23,8 +23,8 @@ export class AbiTypeConverter {
       return ArrayHandler.generateLibTypeArray(param, mapBaseTypeCallback)
     }
 
-    if (this.tupleHandler.isTupleType(abiType)) {
-      const existingClassName = this.tupleHandler.getClassNameForTupleDefinition(param)
+    if (TupleHandler.isTupleType(abiType)) {
+      const existingClassName = TupleHandler.getClassNameForTupleDefinition(param, this.tupleDefinitions)
       if (existingClassName) return existingClassName
       console.warn(
         `Tuple class name not found by AbiTypeConverter for: ${param.type}, internal: ${param.internalType}. It might be an anonymous or unextracted tuple.`
@@ -85,7 +85,7 @@ export class AbiTypeConverter {
   }
 
   public generateTypeConversion(
-    type: InputType,
+    type: string,
     valueVarName: string,
     isMapFunction: boolean,
     includeReturn: boolean = true
@@ -113,7 +113,9 @@ export class AbiTypeConverter {
         conversion = `${AssemblyTypes.u8}.parse(${valueVarName}) as ${AssemblyTypes.bool}`
         break
       default:
-        conversion = this.tupleHandler.isTupleClassName(type) ? `${type}._parse(${valueVarName})` : valueVarName
+        conversion = TupleHandler.isTupleClassName(type, this.tupleDefinitions)
+          ? `${type}._parse(${valueVarName})`
+          : valueVarName
         break
     }
     return isMapFunction ? `${valueVarName} => ${conversion}` : includeReturn ? `return ${conversion}` : conversion

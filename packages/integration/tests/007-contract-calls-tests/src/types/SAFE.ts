@@ -127,7 +127,7 @@ export class SAFE {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<Address>((value) => Address.fromString(value))
+      : changetype<string[]>(parseCSV(decodedResponse)).map<Address>((item0: string) => Address.fromString(item0))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
