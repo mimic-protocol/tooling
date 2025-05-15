@@ -21,7 +21,7 @@ export class FunctionHandler {
     lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
 
     const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
-    this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, tupleDefinitions, abiTypeConverter)
+    this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, abiTypeConverter)
 
     lines.push(`  }`)
     lines.push('')
@@ -161,11 +161,9 @@ export class FunctionHandler {
     returnType: string,
     decodedResponseVarName: string,
     importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter,
-    tupleDefinitions: TupleDefinitionsMap
+    abiTypeConverter: AbiTypeConverter
   ): void {
     const isArray = ArrayHandler.isArrayType(returnType)
-    const baseType = isArray ? ArrayHandler.getBaseType(returnType) : returnType
 
     if (isArray) {
       const parseExpression = this.buildArrayParseLogic(
@@ -175,8 +173,6 @@ export class FunctionHandler {
         abiTypeConverter
       )
       lines.push(`    return ${parseExpression};`)
-    } else if (TupleHandler.isTupleClassName(baseType, tupleDefinitions)) {
-      lines.push(`    return ${baseType}._parse(${decodedResponseVarName})`)
     } else {
       const returnLine = abiTypeConverter.generateTypeConversion(returnType, decodedResponseVarName, false)
       lines.push(`    ${returnLine}`)
@@ -189,7 +185,6 @@ export class FunctionHandler {
     returnType: string,
     callArgs: string,
     importManager: ImportManager,
-    tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): void {
     const selector = getFunctionSelector(fn)
@@ -209,6 +204,6 @@ export class FunctionHandler {
     lines.push(`    const response = ${contractCallCode}`)
     lines.push(`    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeAbiType}', response))`)
 
-    this.getReturnParsingLogic(lines, returnType, 'decodedResponse', importManager, abiTypeConverter, tupleDefinitions)
+    this.getReturnParsingLogic(lines, returnType, 'decodedResponse', importManager, abiTypeConverter)
   }
 }

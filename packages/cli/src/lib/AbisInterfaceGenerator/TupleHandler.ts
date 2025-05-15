@@ -252,7 +252,6 @@ export class TupleHandler {
 
     const isAbiArray = ArrayHandler.isArrayType(componentAbiParam.type)
     const baseAbiType = ArrayHandler.getBaseType(componentAbiParam.type)
-    const baseMappedType = ArrayHandler.getArrayType(mappedTargetType)
 
     if (isAbiArray) {
       const elementType = ArrayHandler.getArrayType(mappedTargetType)
@@ -278,11 +277,7 @@ export class TupleHandler {
       )
       return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
     } else {
-      if (TupleHandler.isBaseTypeATuple(componentAbiParam.type)) {
-        return `${baseMappedType}._parse(${dataAccessString})`
-      } else {
-        return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
-      }
+      return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
     }
   }
 
