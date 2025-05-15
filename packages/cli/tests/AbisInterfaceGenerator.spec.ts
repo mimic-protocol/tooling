@@ -2,7 +2,7 @@ import { expect } from 'chai'
 
 import { getFunctionSelector } from '../src/helpers'
 import { AbisInterfaceGenerator } from '../src/lib'
-import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../src/types'
+import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../src/types'
 
 import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'
 
@@ -32,11 +32,11 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
-      expect(result).to.contain(`private chainId: ${AssemblyTypes.u64}`)
+      expect(result).to.contain(`private chainId: ${AssemblyPrimitiveTypes.u64}`)
       expect(result).to.contain(`private timestamp: Date | null`)
 
       expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}, timestamp: Date | null = null) {`
+        `constructor(address: ${LibTypes.Address}, chainId: ${AssemblyPrimitiveTypes.u64}, timestamp: Date | null = null) {`
       )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
@@ -121,11 +121,11 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`addressParam: ${LibTypes.Address}`)
-      expect(result).to.contain(`boolParam: ${AssemblyTypes.bool}`)
-      expect(result).to.contain(`stringParam: ${AssemblyTypes.string}`)
-      expect(result).to.contain(`uint8Param: ${AssemblyTypes.u8}`)
+      expect(result).to.contain(`boolParam: ${AssemblyPrimitiveTypes.bool}`)
+      expect(result).to.contain(`stringParam: ${AssemblyPrimitiveTypes.string}`)
+      expect(result).to.contain(`uint8Param: ${AssemblyPrimitiveTypes.u8}`)
       expect(result).to.contain(`uint256Param: ${LibTypes.BigInt}`)
-      expect(result).to.contain(`int8Param: ${AssemblyTypes.i8}`)
+      expect(result).to.contain(`int8Param: ${AssemblyPrimitiveTypes.i8}`)
       expect(result).to.contain(`bytesParam: ${LibTypes.Bytes}`)
       expect(result).to.contain(`bytes32Param: ${LibTypes.Bytes}`)
     })
@@ -147,7 +147,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`addressesArray: ${LibTypes.Address}[]`)
       expect(result).to.contain(`uint256Array: ${LibTypes.BigInt}[]`)
-      expect(result).to.contain(`boolArray: ${AssemblyTypes.bool}[]`)
+      expect(result).to.contain(`boolArray: ${AssemblyPrimitiveTypes.bool}[]`)
     })
 
     it('should handle parameters without names', () => {
@@ -210,7 +210,9 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(decodedResponse)`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(decodedResponse)`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(decodedResponse)`)
-      expect(result).to.contain(`return ${AssemblyTypes.u8}.parse(decodedResponse) as ${AssemblyTypes.bool}`)
+      expect(result).to.contain(
+        `return ${AssemblyPrimitiveTypes.u8}.parse(decodedResponse) as ${AssemblyPrimitiveTypes.bool}`
+      )
       expect(result).to.contain(`return decodedResponse`)
     })
 
@@ -220,7 +222,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `return decodedResponse === '' ? [] : changetype<string[]>(parseCSV(decodedResponse)).map<${LibTypes.Address}>(value => ${LibTypes.Address}.fromString(value))`
+        `return decodedResponse === '' ? [] : changetype<string[]>(parseCSV(decodedResponse)).map<${LibTypes.Address}>(((item0: string) => ${LibTypes.Address}.fromString(item0)))`
       )
     })
 
@@ -392,10 +394,10 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`id: ${LibTypes.BigInt} = BigInt.fromString(parts[0])`)
       expect(result).to.contain(`account: ${LibTypes.Address} = Address.fromString(parts[1])`)
       expect(result).to.contain(
-        `active: ${AssemblyTypes.bool} = ${AssemblyTypes.u8}.parse(parts[2]) as ${AssemblyTypes.bool}`
+        `active: ${AssemblyPrimitiveTypes.bool} = ${AssemblyPrimitiveTypes.u8}.parse(parts[2]) as ${AssemblyPrimitiveTypes.bool}`
       )
       expect(result).to.contain(`data: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
-      expect(result).to.contain(`description: ${AssemblyTypes.string} = parts[4]`)
+      expect(result).to.contain(`description: ${AssemblyPrimitiveTypes.string} = parts[4]`)
 
       // Check constructor call
       expect(result).to.contain('return new Tuple0(id, account, active, data, description)')
