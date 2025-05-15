@@ -20,7 +20,7 @@ export class FunctionHandler {
 
     lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
 
-    const callArgs = this.generateCallArguments(inputs, importManager, tupleDefinitions, abiTypeConverter)
+    const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
     this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, tupleDefinitions, abiTypeConverter)
 
     lines.push(`  }`)
@@ -62,52 +62,60 @@ export class FunctionHandler {
       .join(', ')
   }
 
-  private static generateEvmEncodeParam(
-    input: AbiParameter,
-    index: number,
+  public static buildEvmEncodeParamCode(
+    valueIdentifier: string,
+    paramDefinition: AbiParameter,
+    abiTypeConverter: AbiTypeConverter,
     importManager: ImportManager,
-    tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
+    depth: number = 0
   ): string {
-    const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
-    const paramType = abiTypeConverter.mapAbiType(input)
     importManager.addType('EvmEncodeParam')
-    const abiType = TupleHandler.isBaseTypeATuple(input.type) ? TupleHandler.mapTupleType(input.type) : input.type
+    const currentAbiTypeSignature = TupleHandler.isBaseTypeATuple(paramDefinition.type)
+      ? TupleHandler.mapTupleType(paramDefinition.type)
+      : paramDefinition.type
 
-    if (ArrayHandler.isArrayType(input.type)) {
-      const baseAbiType = ArrayHandler.getArrayAbiType(input.type)
+    if (ArrayHandler.isArrayType(paramDefinition.type)) {
+      const elementLambdaVar = `s${depth}`
 
-      const elementAbiParam: AbiParameter = {
-        name: 'item',
-        type: baseAbiType,
-        components: TupleHandler.isBaseTypeATuple(baseAbiType) ? input.components : undefined,
-        internalType: input.internalType ? ArrayHandler.getArrayAbiType(input.internalType) : undefined,
+      const elementAbiDefinition: AbiParameter = {
+        name: elementLambdaVar,
+        type: ArrayHandler.getArrayType(paramDefinition.type),
+        components: TupleHandler.isBaseTypeATuple(ArrayHandler.getArrayType(paramDefinition.type))
+          ? paramDefinition.components
+          : undefined,
+        internalType: paramDefinition.internalType
+          ? ArrayHandler.getArrayType(paramDefinition.internalType)
+          : undefined,
       }
 
-      const nestedEvmParam = this.generateEvmEncodeParam(
-        elementAbiParam,
-        0,
+      const nestedEvmParam = FunctionHandler.buildEvmEncodeParamCode(
+        elementLambdaVar,
+        elementAbiDefinition,
+        abiTypeConverter,
         importManager,
-        tupleDefinitions,
-        abiTypeConverter
+        depth + 1
       )
-      return `EvmEncodeParam.fromValues('${abiType}', ${paramName}.map<EvmEncodeParam>((${elementAbiParam.name}) => ${nestedEvmParam}))`
+      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.map<EvmEncodeParam>((${elementLambdaVar}) => ${nestedEvmParam}))`
     }
 
-    if (TupleHandler.isBaseTypeATuple(input.type))
-      return `EvmEncodeParam.fromValues('${abiType}', ${paramName}.toEvmEncodeParams())`
-    return `EvmEncodeParam.fromValue('${abiType}', ${abiTypeConverter.toLibType(paramType, paramName)})`
+    if (TupleHandler.isBaseTypeATuple(paramDefinition.type)) {
+      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.toEvmEncodeParams())`
+    }
+
+    const mappedParamType = abiTypeConverter.mapAbiType(paramDefinition)
+    const convertedValue = abiTypeConverter.toLibType(mappedParamType, valueIdentifier)
+    return `EvmEncodeParam.fromValue('${currentAbiTypeSignature}', ${convertedValue})`
   }
 
   private static generateCallArguments(
     inputs: AbiParameter[],
     importManager: ImportManager,
-    tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): string {
     return inputs
       .map((input, index) => {
-        return this.generateEvmEncodeParam(input, index, importManager, tupleDefinitions, abiTypeConverter)
+        const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+        return FunctionHandler.buildEvmEncodeParamCode(paramName, input, abiTypeConverter, importManager, 0)
       })
       .join(', ')
   }
@@ -124,7 +132,7 @@ export class FunctionHandler {
     if (!ArrayHandler.isArrayType(currentType))
       return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
 
-    const elementType = ArrayHandler.getArrayAbiType(currentType)
+    const elementType = ArrayHandler.getArrayType(currentType)
     const itemVar = `item${depth}`
 
     const subLogic = this.buildArrayParseLogic(itemVar, elementType, importManager, abiTypeConverter, depth + 1)
@@ -157,7 +165,7 @@ export class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap
   ): void {
     const isArray = ArrayHandler.isArrayType(returnType)
-    const baseType = isArray ? ArrayHandler.getBaseAbiType(returnType) : returnType
+    const baseType = isArray ? ArrayHandler.getBaseType(returnType) : returnType
 
     if (isArray) {
       const parseExpression = this.buildArrayParseLogic(

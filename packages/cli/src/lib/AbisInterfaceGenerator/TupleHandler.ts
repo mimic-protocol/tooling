@@ -3,6 +3,7 @@ import { AbiFunctionItem, AbiParameter } from '../../types'
 
 import { AbiTypeConverter } from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
+import { FunctionHandler } from './FunctionHandler'
 import { ImportManager } from './ImportManager'
 
 export type TupleDefinition = {
@@ -18,7 +19,7 @@ export class TupleHandler {
    * E.g., 'tuple', 'tuple[]', 'tuple[2]' would all return true.
    */
   public static isBaseTypeATuple(abiType: string): boolean {
-    const ultimateBaseAbiType = ArrayHandler.getBaseAbiType(abiType)
+    const ultimateBaseAbiType = ArrayHandler.getBaseType(abiType)
     return ultimateBaseAbiType === 'tuple'
   }
 
@@ -39,7 +40,7 @@ export class TupleHandler {
   ): string | undefined {
     if (!this.isBaseTypeATuple(param.type)) return undefined
 
-    const baseInternalType = param.internalType ? ArrayHandler.getBaseAbiType(param.internalType) : undefined
+    const baseInternalType = param.internalType ? ArrayHandler.getBaseType(param.internalType) : undefined
 
     if (baseInternalType && tupleDefinitions.has(baseInternalType))
       return tupleDefinitions.get(baseInternalType)!.className
@@ -78,7 +79,7 @@ export class TupleHandler {
 
       let className = `Tuple${tupleCounter++}`
       const baseInternalType = tupleToDefine.internalType
-        ? ArrayHandler.getBaseAbiType(tupleToDefine.internalType)
+        ? ArrayHandler.getBaseType(tupleToDefine.internalType)
         : undefined
 
       if (baseInternalType) {
@@ -194,7 +195,7 @@ export class TupleHandler {
       lines.push(`    const parts = changetype<string[]>(parseCSV(data))`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
-      lines.push(...this.generateTupleParseMethodBody(def, abiTypeConverter, importManager))
+      lines.push(...this.getTupleParseMethodBody(def, abiTypeConverter, importManager))
 
       const constructorArgs = def.components.map((comp, index) => `${comp.name || `field${index}`}`).join(', ')
       lines.push(`    return new ${def.className}(${constructorArgs})`)
@@ -204,7 +205,7 @@ export class TupleHandler {
       lines.push(`  toEvmEncodeParams(): EvmEncodeParam[] {`)
       importManager.addType('EvmEncodeParam')
       lines.push(`    return [`)
-      lines.push(...this.generateTupleToEvmParamsMethodBody(def, abiTypeConverter))
+      lines.push(...this.getTupleToEvmParamsMethodBody(def, abiTypeConverter, importManager))
       lines.push(`    ]`)
       lines.push(`  }`)
       lines.push(`}`)
@@ -219,88 +220,88 @@ export class TupleHandler {
     return `${pascalCase(fnNamePart)}Outputs`
   }
 
-  private static generateTupleParseMethodBody(
+  private static getTupleParseMethodBody(
     def: TupleDefinition,
     abiTypeConverter: AbiTypeConverter,
     importManager: ImportManager
   ): string[] {
-    const parseLines = def.components.map((comp: AbiParameter, index: number) => {
+    return def.components.map((comp: AbiParameter, index: number) => {
       const fieldName = comp.name || `field${index}`
-      const componentType = abiTypeConverter.mapAbiType(comp)
-
-      const isAbiArray = ArrayHandler.isArrayType(comp.type)
-      const abiBaseType = isAbiArray ? ArrayHandler.getArrayAbiType(comp.type) : ''
-
-      if (isAbiArray && this.isBaseTypeATuple(abiBaseType)) {
-        const mappedComponentTypeStr = componentType
-        const baseMappedType = ArrayHandler.getArrayAbiType(mappedComponentTypeStr)
-        return this.generateParseArrayOfCustomObjectsCode(
-          'parts',
-          index,
-          fieldName,
-          mappedComponentTypeStr,
-          baseMappedType,
-          importManager
-        )
-      } else if (isAbiArray) {
-        importManager.addType('parseCSV')
-        let baseInternalType: string | undefined = undefined
-        if (comp.internalType) {
-          baseInternalType = ArrayHandler.isArrayType(comp.internalType)
-            ? ArrayHandler.getArrayAbiType(comp.internalType)
-            : comp.internalType
-        }
-
-        const baseCompAbiParameter: AbiParameter = {
-          name: comp.name ? `${comp.name}_base` : `field${index}_base`,
-          type: abiBaseType,
-          internalType: baseInternalType,
-          components: undefined,
-        }
-        const inputType = abiTypeConverter.mapAbiType(baseCompAbiParameter)
-
-        const elementConversionLogic = abiTypeConverter.generateTypeConversion(inputType, 'value', false, false)
-        return `    const ${fieldName}: ${componentType} = parts[${index}] === '' ? [] : changetype<string[]>(parseCSV(parts[${index}])).map<${inputType}>((value) => ${elementConversionLogic});`
-      } else {
-        const conversion = abiTypeConverter.generateTypeConversion(componentType, `parts[${index}]`, false, false)
-        return `    const ${fieldName}: ${componentType} = ${conversion}`
-      }
+      const mappedComponentType = abiTypeConverter.mapAbiType(comp)
+      const dataAccess = `parts[${index}]`
+      const parseLogic = this.buildFieldParseLogic(
+        dataAccess,
+        comp,
+        mappedComponentType,
+        abiTypeConverter,
+        importManager
+      )
+      return `    const ${fieldName}: ${mappedComponentType} = ${parseLogic};`
     })
-    return parseLines
   }
 
-  private static generateParseArrayOfCustomObjectsCode(
-    csvPartsVarName: string,
-    itemIndex: number,
-    fieldName: string,
-    mappedComponentType: string,
-    baseMappedType: string,
-    importManager: ImportManager
+  private static buildFieldParseLogic(
+    dataAccessString: string,
+    componentAbiParam: AbiParameter,
+    mappedTargetType: string,
+    abiTypeConverter: AbiTypeConverter,
+    importManager: ImportManager,
+    depth: number = 0
   ): string {
     importManager.addType('parseCSV')
-    return `    const ${fieldName}: ${mappedComponentType} = ${csvPartsVarName}[${itemIndex}] === '' ? [] : changetype<string[]>(parseCSV(${csvPartsVarName}[${itemIndex}])).map<${baseMappedType}>((item) => ${baseMappedType}._parse(item))`
+
+    const isAbiArray = ArrayHandler.isArrayType(componentAbiParam.type)
+    const baseAbiType = ArrayHandler.getBaseType(componentAbiParam.type)
+    const baseMappedType = ArrayHandler.getArrayType(mappedTargetType)
+
+    if (isAbiArray) {
+      const elementType = ArrayHandler.getArrayType(mappedTargetType)
+      const itemVar = `item${depth}`
+
+      const elementAbiParam: AbiParameter = {
+        ...componentAbiParam,
+        name: `${componentAbiParam.name || 'arrayElement'}_item${depth}`,
+        type: ArrayHandler.getArrayType(componentAbiParam.type),
+        components: baseAbiType === 'tuple' ? componentAbiParam.components : undefined,
+        internalType: componentAbiParam.internalType
+          ? ArrayHandler.getArrayType(componentAbiParam.internalType)
+          : undefined,
+      }
+
+      const subLogic = this.buildFieldParseLogic(
+        itemVar,
+        elementAbiParam,
+        elementType,
+        abiTypeConverter,
+        importManager,
+        depth + 1
+      )
+      return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
+    } else {
+      if (TupleHandler.isBaseTypeATuple(componentAbiParam.type)) {
+        return `${baseMappedType}._parse(${dataAccessString})`
+      } else {
+        return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
+      }
+    }
   }
 
-  private static generateTupleToEvmParamsMethodBody(
+  private static getTupleToEvmParamsMethodBody(
     def: TupleDefinition,
-    abiTypeConverter: AbiTypeConverter
+    abiTypeConverter: AbiTypeConverter,
+    importManager: ImportManager
   ): string[] {
-    const paramLines: string[] = []
-    def.components.forEach((comp: AbiParameter, index: number) => {
+    return def.components.map((comp: AbiParameter, index: number) => {
       const fieldName = comp.name || `field${index}`
-      const componentType = abiTypeConverter.mapAbiType(comp)
-      let paramCode: string
-
-      if (this.isBaseTypeATuple(comp.type)) {
-        const tupleType = this.mapTupleType(comp.type)
-        const isArray = ArrayHandler.isArrayType(tupleType)
-        paramCode = `EvmEncodeParam.fromValues('${tupleType}', ${isArray ? `this.${fieldName}.map<EvmEncodeParam>((s) => EvmEncodeParam.fromValues('()', s.toEvmEncodeParams()))` : `this.${fieldName}.toEvmEncodeParams()`})`
-      } else {
-        const convertedValue = abiTypeConverter.toLibType(componentType, `this.${fieldName}`)
-        paramCode = `EvmEncodeParam.fromValue('${comp.type}', ${convertedValue})`
-      }
-      paramLines.push(`      ${paramCode},`)
+      const valueAccessPath = `this.${fieldName}`
+      const paramCode = FunctionHandler.buildEvmEncodeParamCode(
+        valueAccessPath,
+        comp,
+        abiTypeConverter,
+        importManager,
+        0
+      )
+      return `      ${paramCode},`
     })
-    return paramLines
   }
 }

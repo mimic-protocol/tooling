@@ -75,7 +75,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             '()[]',
-            structs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValues('()', item.toEvmEncodeParams()))
+            structs.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('()', s0.toEvmEncodeParams()))
           ),
         ])
     )
@@ -129,7 +129,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'bytes32[3]',
-            arr.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('bytes32', item))
+            arr.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('bytes32', s0))
           ),
           EvmEncodeParam.fromValue('uint256', index),
         ])
@@ -275,7 +275,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'address[]',
-            _addrs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('address', item))
+            _addrs.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0))
           ),
         ])
     )
@@ -292,7 +292,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'string[]',
-            _strings.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(item)))
+            _strings.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(s0)))
           ),
         ])
     )
@@ -309,7 +309,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'address[3]',
-            _addrs.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('address', item))
+            _addrs.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0))
           ),
         ])
     )
@@ -326,7 +326,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'string[2]',
-            _strings.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(item)))
+            _strings.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('string', Bytes.fromUTF8(s0)))
           ),
         ])
     )
@@ -354,7 +354,7 @@ export class Test {
         environment.evmEncode([
           EvmEncodeParam.fromValues(
             'uint256[]',
-            values.map<EvmEncodeParam>((item) => EvmEncodeParam.fromValue('uint256', item))
+            values.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('uint256', s0))
           ),
         ])
     )
@@ -406,7 +406,9 @@ export class NestedStruct {
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const single: MyStruct = MyStruct._parse(parts[0])
     const list: MyStruct[] =
-      parts[1] === '' ? [] : changetype<string[]>(parseCSV(parts[1])).map<MyStruct>((item) => MyStruct._parse(item))
+      parts[1] === ''
+        ? []
+        : changetype<string[]>(parseCSV(parts[1])).map<MyStruct>((item0: string) => MyStruct._parse(item0))
     return new NestedStruct(single, list)
   }
 
@@ -415,7 +417,7 @@ export class NestedStruct {
       EvmEncodeParam.fromValues('()', this.single.toEvmEncodeParams()),
       EvmEncodeParam.fromValues(
         '()[]',
-        this.list.map<EvmEncodeParam>((s) => EvmEncodeParam.fromValues('()', s.toEvmEncodeParams()))
+        this.list.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('()', s0.toEvmEncodeParams()))
       ),
     ]
   }

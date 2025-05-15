@@ -10,11 +10,11 @@ export default class ArrayHandler {
   /**
    * Returns the base type of an array, e.g., "uint256[2][]" -> "uint256[2]".
    */
-  static getArrayAbiType(abiType: string): string {
-    if (!this.isArrayType(abiType)) return abiType
-    const lastBracket = abiType.lastIndexOf('[')
-    if (lastBracket === -1) return abiType
-    return abiType.substring(0, lastBracket)
+  static getArrayType(type: string): string {
+    if (!this.isArrayType(type)) return type
+    const lastBracket = type.lastIndexOf('[')
+    if (lastBracket === -1) return type
+    return type.substring(0, lastBracket)
   }
 
   /**
@@ -45,22 +45,22 @@ export default class ArrayHandler {
    * Recursively finds the  base type of a potentially nested ABI array type string.
    * E.g., for "uint256[][]", it returns "uint256".
    */
-  static getBaseAbiType(abiType: string): string {
-    const bracketIndex = abiType.indexOf('[')
-    if (bracketIndex === -1) return abiType
-    return abiType.substring(0, bracketIndex)
+  static getBaseType(type: string): string {
+    const bracketIndex = type.indexOf('[')
+    if (bracketIndex === -1) return type
+    return type.substring(0, bracketIndex)
   }
 
   /**
    * Gets the mapped type of the  base element of an array.
    */
   static baseAbiTypeToLibType(param: AbiParameter, mapBaseTypeFunc: MapBaseTypeCallback): string {
-    const baseAbiType = this.getBaseAbiType(param.type)
+    const baseAbiType = this.getBaseType(param.type)
     const baseParam: AbiParameter = {
       ...param,
       type: baseAbiType,
       components: baseAbiType === 'tuple' ? param.components : undefined,
-      internalType: param.internalType ? this.getBaseAbiType(param.internalType) : undefined,
+      internalType: param.internalType ? this.getBaseType(param.internalType) : undefined,
     }
     return mapBaseTypeFunc(baseParam)
   }

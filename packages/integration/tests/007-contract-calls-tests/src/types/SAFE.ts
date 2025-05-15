@@ -263,12 +263,20 @@ export class GetModulesPaginatedOutputs {
     const parts = changetype<string[]>(parseCSV(data))
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const array: Address[] =
-      parts[0] === '' ? [] : changetype<string[]>(parseCSV(parts[0])).map<Address>((value) => Address.fromString(value))
+      parts[0] === ''
+        ? []
+        : changetype<string[]>(parseCSV(parts[0])).map<Address>((item0: string) => Address.fromString(item0))
     const next: Address = Address.fromString(parts[1])
     return new GetModulesPaginatedOutputs(array, next)
   }
 
   toEvmEncodeParams(): EvmEncodeParam[] {
-    return [EvmEncodeParam.fromValue('address[]', this.array), EvmEncodeParam.fromValue('address', this.next)]
+    return [
+      EvmEncodeParam.fromValues(
+        'address[]',
+        this.array.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0))
+      ),
+      EvmEncodeParam.fromValue('address', this.next),
+    ]
   }
 }
