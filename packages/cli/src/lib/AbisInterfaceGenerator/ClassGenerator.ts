@@ -55,7 +55,7 @@ export class ClassGenerator {
       lines.push(`    const parts = changetype<string[]>(parseCSV(data))`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
-      lines.push(...this._generateTupleParseMethodBody(def))
+      lines.push(...this.generateTupleParseMethodBody(def))
 
       const constructorArgs = def.components.map((comp, index) => `${comp.name || `field${index}`}`).join(', ')
       lines.push(`    return new ${def.className}(${constructorArgs})`)
@@ -65,7 +65,7 @@ export class ClassGenerator {
       lines.push(`  toEvmEncodeParams(): EvmEncodeParam[] {`)
       this.importManager.addType('EvmEncodeParam')
       lines.push(`    return [`)
-      lines.push(...this._generateTupleToEvmParamsMethodBody(def))
+      lines.push(...this.generateTupleToEvmParamsMethodBody(def))
       lines.push(`    ]`)
       lines.push(`  }`)
       lines.push(`}`)
@@ -82,7 +82,7 @@ export class ClassGenerator {
     return lines.join('\n')
   }
 
-  private _generateParseArrayOfCustomObjectsCode(
+  private generateParseArrayOfCustomObjectsCode(
     csvPartsVarName: string,
     itemIndex: number,
     fieldName: string,
@@ -115,7 +115,7 @@ export class ClassGenerator {
   private appendMethod(lines: string[], fn: AbiFunctionItem): void {
     const inputs: AbiParameter[] = fn.inputs || []
     const methodParams = this.generateMethodParams(inputs)
-    const returnType = this.determineReturnType(fn)
+    const returnType = this.getReturnType(fn)
     lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
     const callArgs = this.generateCallArguments(inputs)
     this.appendFunctionBody(lines, fn, returnType, callArgs)
@@ -133,7 +133,7 @@ export class ClassGenerator {
       .join(', ')
   }
 
-  private determineReturnType(fn: AbiFunctionItem): string {
+  private getReturnType(fn: AbiFunctionItem): string {
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
     if (fn.outputs.length === 1) return this.abiTypeConverter.mapAbiType(fn.outputs[0])
@@ -157,7 +157,7 @@ export class ClassGenerator {
     return 'unknown'
   }
 
-  private generateEvmParam(input: AbiParameter, index: number): string {
+  private generateEvmEncodeParam(input: AbiParameter, index: number): string {
     const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
     const paramType = this.abiTypeConverter.mapAbiType(input)
     this.importManager.addType('EvmEncodeParam')
@@ -174,7 +174,7 @@ export class ClassGenerator {
         internalType: input.internalType ? ArrayHandler.getArrayAbiType(input.internalType) : undefined,
       }
 
-      const nestedEvmParam = this.generateEvmParam(elementAbiParam, 0)
+      const nestedEvmParam = this.generateEvmEncodeParam(elementAbiParam, 0)
       return `EvmEncodeParam.fromValues('${abiType}', ${paramName}.map<EvmEncodeParam>((${elementAbiParam.name}) => ${nestedEvmParam}))`
     }
 
@@ -186,7 +186,7 @@ export class ClassGenerator {
   private generateCallArguments(inputs: AbiParameter[]): string {
     return inputs
       .map((input, index) => {
-        return this.generateEvmParam(input, index)
+        return this.generateEvmEncodeParam(input, index)
       })
       .join(', ')
   }
@@ -257,7 +257,7 @@ export class ClassGenerator {
     }
   }
 
-  private _generateTupleParseMethodBody(def: TupleDefinition): string[] {
+  private generateTupleParseMethodBody(def: TupleDefinition): string[] {
     const parseLines = def.components.map((comp: AbiParameter, index: number) => {
       const fieldName = comp.name || `field${index}`
       const componentType = this.abiTypeConverter.mapAbiType(comp)
@@ -268,7 +268,7 @@ export class ClassGenerator {
       if (isAbiArray && this.tupleHandler.isTupleType(abiBaseType)) {
         const mappedComponentTypeStr = componentType
         const baseMappedType = mappedComponentTypeStr.substring(0, mappedComponentTypeStr.lastIndexOf('['))
-        return this._generateParseArrayOfCustomObjectsCode(
+        return this.generateParseArrayOfCustomObjectsCode(
           'parts',
           index,
           fieldName,
@@ -307,7 +307,7 @@ export class ClassGenerator {
     return parseLines
   }
 
-  private _generateTupleToEvmParamsMethodBody(def: TupleDefinition): string[] {
+  private generateTupleToEvmParamsMethodBody(def: TupleDefinition): string[] {
     const paramLines: string[] = []
     def.components.forEach((comp: AbiParameter, index: number) => {
       const fieldName = comp.name || `field${index}`
