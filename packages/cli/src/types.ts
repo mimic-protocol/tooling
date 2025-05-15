@@ -8,7 +8,7 @@ export type AbiParameter = {
   name?: string
   type: string
   internalType?: string
-  components?: Array<{ name?: string; type: string; internalType?: string; components?: AbiParameter[] }>
+  components?: AbiParameter[]
 }
 
 export type AbiFunctionItem = {
@@ -26,7 +26,7 @@ export enum LibTypes {
   Bytes = 'Bytes',
 }
 
-export enum AssemblyTypes {
+export enum AssemblyPrimitiveTypes {
   u8 = 'u8',
   u16 = 'u16',
   u32 = 'u32',
@@ -40,4 +40,4 @@ export enum AssemblyTypes {
   Date = 'Date',
 }
 
-export type InputType = `${LibTypes}` | `${AssemblyTypes}` | 'unknown'
+export type AssemblyTypes = `${LibTypes}` | `${AssemblyPrimitiveTypes}` | 'unknown'

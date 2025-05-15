@@ -1,3 +1,4 @@
+import { pascalCase } from '../../helpers'
 import { AbiFunctionItem, AbiParameter } from '../../types'
 
 import { AbiTypeConverter } from './AbiTypeConverter'
@@ -16,7 +17,7 @@ export class TupleHandler {
    * Checks if the given ABI type string ultimately represents a tuple.
    * E.g., 'tuple', 'tuple[]', 'tuple[2]' would all return true.
    */
-  public static isTupleType(abiType: string): boolean {
+  public static isBaseTypeATuple(abiType: string): boolean {
     const ultimateBaseAbiType = ArrayHandler.getBaseAbiType(abiType)
     return ultimateBaseAbiType === 'tuple'
   }
@@ -36,7 +37,7 @@ export class TupleHandler {
     param: AbiParameter,
     tupleDefinitions: TupleDefinitionsMap
   ): string | undefined {
-    if (!this.isTupleType(param.type)) return undefined
+    if (!this.isBaseTypeATuple(param.type)) return undefined
 
     const baseInternalType = param.internalType ? ArrayHandler.getBaseAbiType(param.internalType) : undefined
 
@@ -58,8 +59,8 @@ export class TupleHandler {
     let tupleCounter = 0
 
     const processParam = (param: AbiParameter): string | undefined => {
-      if (!this.isTupleType(param.type)) {
-        param.components?.forEach((subComp) => processParam(subComp))
+      if (!this.isBaseTypeATuple(param.type)) {
+        param.components?.forEach(processParam)
         return
       }
 
@@ -103,15 +104,12 @@ export class TupleHandler {
       item.outputs?.forEach((output) => processParam(output))
 
       if (item.outputs && item.outputs.length > 1) {
-        let fnNamePart = item.name.replace(/[^a-zA-Z0-9_]/g, '')
-        if (!fnNamePart) fnNamePart = 'UnnamedFunction'
-        fnNamePart = fnNamePart.charAt(0).toUpperCase() + fnNamePart.slice(1)
-        const preferredName = `${fnNamePart}Outputs`
+        const name = this.getOutputTupleClassName(item.name)
 
         const representativeOutputTuple: AbiParameter = {
-          name: preferredName,
+          name,
           type: 'tuple',
-          internalType: `struct ${preferredName}`,
+          internalType: `struct ${name}`,
           components: item.outputs,
         }
         processParam(representativeOutputTuple)
@@ -142,7 +140,7 @@ export class TupleHandler {
     if (!components || components.length === 0) return `()${arrayDepthString}`
 
     const typeStrings = components.map((comp) => {
-      if (this.isTupleType(comp.type) && comp.components)
+      if (this.isBaseTypeATuple(comp.type) && comp.components)
         return this.generateTupleTypeString(comp.type, comp.components)
       return comp.type
     })
@@ -150,7 +148,7 @@ export class TupleHandler {
   }
 
   public static mapTupleType(abiType: string): string {
-    if (!this.isTupleType(abiType)) throw new Error(`${abiType} is not a tuple type`)
+    if (!this.isBaseTypeATuple(abiType)) throw new Error(`${abiType} is not a tuple type`)
     const arrayDepthStr = ArrayHandler.getArrayDepthString(abiType)
     return `()${arrayDepthStr}`
   }
@@ -215,6 +213,12 @@ export class TupleHandler {
     return lines.join('\n')
   }
 
+  public static getOutputTupleClassName(functionName: string): string {
+    const fnNamePart = functionName.replace(/[^a-zA-Z0-9_]/g, '')
+    if (!fnNamePart) return 'UnnamedFunctionOutputs'
+    return `${pascalCase(fnNamePart)}Outputs`
+  }
+
   private static generateTupleParseMethodBody(
     def: TupleDefinition,
     abiTypeConverter: AbiTypeConverter,
@@ -227,7 +231,7 @@ export class TupleHandler {
       const isAbiArray = ArrayHandler.isArrayType(comp.type)
       const abiBaseType = isAbiArray ? ArrayHandler.getArrayAbiType(comp.type) : ''
 
-      if (isAbiArray && this.isTupleType(abiBaseType)) {
+      if (isAbiArray && this.isBaseTypeATuple(abiBaseType)) {
         const mappedComponentTypeStr = componentType
         const baseMappedType = ArrayHandler.getArrayAbiType(mappedComponentTypeStr)
         return this.generateParseArrayOfCustomObjectsCode(
@@ -287,7 +291,7 @@ export class TupleHandler {
       const componentType = abiTypeConverter.mapAbiType(comp)
       let paramCode: string
 
-      if (this.isTupleType(comp.type)) {
+      if (this.isBaseTypeATuple(comp.type)) {
         const tupleType = this.mapTupleType(comp.type)
         const isArray = ArrayHandler.isArrayType(tupleType)
         paramCode = `EvmEncodeParam.fromValues('${tupleType}', ${isArray ? `this.${fieldName}.map<EvmEncodeParam>((s) => EvmEncodeParam.fromValues('()', s.toEvmEncodeParams()))` : `this.${fieldName}.toEvmEncodeParams()`})`

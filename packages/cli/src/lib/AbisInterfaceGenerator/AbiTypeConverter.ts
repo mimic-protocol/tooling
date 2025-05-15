@@ -1,4 +1,6 @@
-import { AbiParameter, AssemblyTypes, InputType, LibTypes } from '../../types'
+import capitalize from 'lodash/capitalize'
+
+import { AbiParameter, AssemblyPrimitiveTypes, AssemblyTypes, LibTypes } from '../../types'
 
 import ArrayHandler from './ArrayHandler'
 import { ImportManager } from './ImportManager'
@@ -7,7 +9,7 @@ import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
 export class AbiTypeConverter {
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap
-  private readonly abiTypecastMap: Readonly<Record<string, InputType>>
+  private readonly abiTypecastMap: Readonly<Record<string, AssemblyTypes>>
 
   constructor(importManager: ImportManager, tupleDefinitions: TupleDefinitionsMap) {
     this.importManager = importManager
@@ -18,14 +20,12 @@ export class AbiTypeConverter {
   public mapAbiType(param: AbiParameter): string {
     const abiType = param.type
 
-    if (ArrayHandler.isArrayType(abiType)) {
-      const mapBaseTypeCallback = this.mapAbiType.bind(this)
-      return ArrayHandler.generateLibTypeArray(param, mapBaseTypeCallback)
-    }
+    if (ArrayHandler.isArrayType(abiType)) return ArrayHandler.generateLibTypeArray(param, this.mapAbiType.bind(this))
 
-    if (TupleHandler.isTupleType(abiType)) {
+    if (TupleHandler.isBaseTypeATuple(abiType)) {
       const existingClassName = TupleHandler.getClassNameForTupleDefinition(param, this.tupleDefinitions)
       if (existingClassName) return existingClassName
+
       console.warn(
         `Tuple class name not found by AbiTypeConverter for: ${param.type}, internal: ${param.internalType}. It might be an anonymous or unextracted tuple.`
       )
@@ -45,40 +45,25 @@ export class AbiTypeConverter {
     if (ArrayHandler.isArrayType(paramType)) return paramName
 
     switch (paramType) {
-      case AssemblyTypes.bool:
+      case AssemblyPrimitiveTypes.bool:
         this.importManager.addType(LibTypes.Bytes)
         return `${LibTypes.Bytes}.fromBool(${paramName})`
-      case AssemblyTypes.i8:
+      case AssemblyPrimitiveTypes.i8:
+      case AssemblyPrimitiveTypes.u8:
+      case AssemblyPrimitiveTypes.i16:
+      case AssemblyPrimitiveTypes.u16:
+      case AssemblyPrimitiveTypes.i32:
+      case AssemblyPrimitiveTypes.u32:
+      case AssemblyPrimitiveTypes.i64:
+      case AssemblyPrimitiveTypes.u64:
         this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromI8(${paramName})`
-      case AssemblyTypes.u8:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromU8(${paramName})`
-      case AssemblyTypes.i16:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromI16(${paramName})`
-      case AssemblyTypes.u16:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromU16(${paramName})`
-      case AssemblyTypes.i32:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromI32(${paramName})`
-      case AssemblyTypes.u32:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromU32(${paramName})`
-      case AssemblyTypes.i64:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromI64(${paramName})`
-      case AssemblyTypes.u64:
-        this.importManager.addType(LibTypes.BigInt)
-        return `${LibTypes.BigInt}.fromU64(${paramName})`
-      case AssemblyTypes.string:
+        return `${LibTypes.BigInt}.from${capitalize(paramType)}(${paramName})`
+      case AssemblyPrimitiveTypes.string:
         this.importManager.addType(LibTypes.Bytes)
         return `${LibTypes.Bytes}.fromUTF8(${paramName})`
       case LibTypes.BigInt:
       case LibTypes.Address:
       case LibTypes.Bytes:
-        return paramName
       default:
         return paramName
     }
@@ -99,18 +84,18 @@ export class AbiTypeConverter {
       case LibTypes.Bytes:
         conversion = `${type}.fromHexString(${valueVarName})`
         break
-      case AssemblyTypes.i8:
-      case AssemblyTypes.u8:
-      case AssemblyTypes.i16:
-      case AssemblyTypes.u16:
-      case AssemblyTypes.i32:
-      case AssemblyTypes.u32:
-      case AssemblyTypes.i64:
-      case AssemblyTypes.u64:
+      case AssemblyPrimitiveTypes.i8:
+      case AssemblyPrimitiveTypes.u8:
+      case AssemblyPrimitiveTypes.i16:
+      case AssemblyPrimitiveTypes.u16:
+      case AssemblyPrimitiveTypes.i32:
+      case AssemblyPrimitiveTypes.u32:
+      case AssemblyPrimitiveTypes.i64:
+      case AssemblyPrimitiveTypes.u64:
         conversion = `${type}.parse(${valueVarName})`
         break
-      case AssemblyTypes.bool:
-        conversion = `${AssemblyTypes.u8}.parse(${valueVarName}) as ${AssemblyTypes.bool}`
+      case AssemblyPrimitiveTypes.bool:
+        conversion = `${AssemblyPrimitiveTypes.u8}.parse(${valueVarName}) as ${AssemblyPrimitiveTypes.bool}`
         break
       default:
         conversion = TupleHandler.isTupleClassName(type, this.tupleDefinitions)
@@ -121,16 +106,16 @@ export class AbiTypeConverter {
     return isMapFunction ? `${valueVarName} => ${conversion}` : includeReturn ? `return ${conversion}` : conversion
   }
 
-  private generateIntegerTypeMappings(): Record<string, InputType> {
-    const mappings: Record<string, InputType> = {
-      int8: AssemblyTypes.i8,
-      uint8: AssemblyTypes.u8,
-      int16: AssemblyTypes.i16,
-      uint16: AssemblyTypes.u16,
-      int32: AssemblyTypes.i32,
-      uint32: AssemblyTypes.u32,
-      int64: AssemblyTypes.i64,
-      uint64: AssemblyTypes.u64,
+  private generateIntegerTypeMappings(): Record<string, AssemblyTypes> {
+    const mappings: Record<string, AssemblyTypes> = {
+      int8: AssemblyPrimitiveTypes.i8,
+      uint8: AssemblyPrimitiveTypes.u8,
+      int16: AssemblyPrimitiveTypes.i16,
+      uint16: AssemblyPrimitiveTypes.u16,
+      int32: AssemblyPrimitiveTypes.i32,
+      uint32: AssemblyPrimitiveTypes.u32,
+      int64: AssemblyPrimitiveTypes.i64,
+      uint64: AssemblyPrimitiveTypes.u64,
       int: LibTypes.BigInt,
       uint: LibTypes.BigInt,
     }
@@ -146,8 +131,8 @@ export class AbiTypeConverter {
     return mappings
   }
 
-  private generateBytesTypeMappings(): Record<string, InputType> {
-    const mappings: Record<string, InputType> = {
+  private generateBytesTypeMappings(): Record<string, AssemblyTypes> {
+    const mappings: Record<string, AssemblyTypes> = {
       bytes: LibTypes.Bytes,
     }
     const MAX_SIZE = 32
@@ -157,13 +142,13 @@ export class AbiTypeConverter {
     return mappings
   }
 
-  private generateAbiTypecastMap(): Readonly<Record<string, InputType>> {
+  private generateAbiTypecastMap(): Readonly<Record<string, AssemblyTypes>> {
     return {
       ...this.generateIntegerTypeMappings(),
       ...this.generateBytesTypeMappings(),
       address: LibTypes.Address,
-      bool: AssemblyTypes.bool,
-      string: AssemblyTypes.string,
+      bool: AssemblyPrimitiveTypes.bool,
+      string: AssemblyPrimitiveTypes.string,
     } as const
   }
 }

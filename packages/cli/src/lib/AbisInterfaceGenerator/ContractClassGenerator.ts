@@ -1,4 +1,4 @@
-import { AbiFunctionItem, AssemblyTypes, LibTypes } from '../../types'
+import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
 import { AbiTypeConverter } from './AbiTypeConverter'
 import { FunctionHandler } from './FunctionHandler'
@@ -8,12 +8,26 @@ import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
 export class ContractClassGenerator {
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap
-  private abiTypeConverter: AbiTypeConverter
+  private abiTypeConverter!: AbiTypeConverter
 
   constructor(importManager: ImportManager) {
     this.importManager = importManager
     this.tupleDefinitions = new Map()
-    this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
+  }
+
+  public generateInterface(abi: AbiFunctionItem[], contractName: string): string {
+    const viewFunctions = this.filterViewFunctions(abi)
+    this.processAbi(abi)
+
+    const contractClassCode = this.generateContractClass(viewFunctions, contractName)
+    const tupleClassesCode = this.generateTupleClasses()
+    const importsCode = this.importManager.generateImportsCode() // Note: this should be generated after any other generation
+
+    const separator = '\n\n'
+    let result = importsCode + separator + contractClassCode
+    if (tupleClassesCode) result += separator + tupleClassesCode
+
+    return result.trim()
   }
 
   public generateContractClass(viewFunctions: AbiFunctionItem[], contractName: string): string {
@@ -40,17 +54,20 @@ export class ContractClassGenerator {
 
     lines.push(`export class ${contractName} {`)
     lines.push(`  private address: ${LibTypes.Address}`)
-    this.importManager.addType(LibTypes.Address)
-    lines.push(`  private chainId: ${AssemblyTypes.u64}`)
-    lines.push(`  private timestamp: ${AssemblyTypes.Date} | null`)
+    lines.push(`  private chainId: ${AssemblyPrimitiveTypes.u64}`)
+    lines.push(`  private timestamp: ${AssemblyPrimitiveTypes.Date} | null`)
     lines.push('')
     lines.push(
-      `  constructor(address: ${LibTypes.Address}, chainId: ${AssemblyTypes.u64}, timestamp: ${AssemblyTypes.Date} | null = null) {`
+      `  constructor(address: ${LibTypes.Address}, chainId: ${AssemblyPrimitiveTypes.u64}, timestamp: ${AssemblyPrimitiveTypes.Date} | null = null) {`
     )
     lines.push(`    this.address = address`)
     lines.push(`    this.chainId = chainId`)
     lines.push(`    this.timestamp = timestamp`)
     lines.push(`  }`)
     lines.push('')
+  }
+
+  private filterViewFunctions(abi: AbiFunctionItem[]): AbiFunctionItem[] {
+    return abi.filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability || ''))
   }
 }
