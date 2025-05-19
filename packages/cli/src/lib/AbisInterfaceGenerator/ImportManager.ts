@@ -1,8 +1,6 @@
-import { LibTypes } from '../../types'
+import type { ImportedTypes } from './types'
 
-export type ImportedTypes = LibTypes | 'environment' | 'EvmEncodeParam' | 'EvmDecodeParam' | 'parseCSVNotNullable'
-
-export class ImportManager {
+export default class ImportManager {
   private types: Set<ImportedTypes>
 
   constructor() {

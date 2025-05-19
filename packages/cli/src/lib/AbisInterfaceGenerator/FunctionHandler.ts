@@ -1,12 +1,13 @@
 import { getFunctionSelector } from '../../helpers'
-import { AbiFunctionItem, AbiParameter } from '../../types'
+import type { AbiFunctionItem, AbiParameter } from '../../types'
 
-import { AbiTypeConverter } from './AbiTypeConverter'
+import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
-import { ImportManager } from './ImportManager'
-import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
+import type ImportManager from './ImportManager'
+import TupleHandler from './TupleHandler'
+import { TUPLE_ABI_TYPE, type TupleDefinitionsMap } from './types'
 
-export class FunctionHandler {
+export default class FunctionHandler {
   public static appendMethod(
     lines: string[],
     fn: AbiFunctionItem,
@@ -40,7 +41,7 @@ export class FunctionHandler {
 
     const representativeOutputTuple: AbiParameter = {
       name,
-      type: 'tuple',
+      type: TUPLE_ABI_TYPE,
       internalType: `struct ${name}`,
       components: fn.outputs,
     }
@@ -130,7 +131,7 @@ export class FunctionHandler {
           return output.type
         }
       } else {
-        return TupleHandler.generateTupleTypeString('tuple', fn.outputs)
+        return TupleHandler.generateTupleTypeString(TUPLE_ABI_TYPE, fn.outputs)
       }
     }
     return '()'

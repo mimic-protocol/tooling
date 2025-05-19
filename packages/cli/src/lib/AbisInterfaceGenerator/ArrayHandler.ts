@@ -1,6 +1,6 @@
-import { AbiParameter } from '../../types'
+import type { AbiParameter } from '../../types'
 
-export type MapBaseTypeCallback = (param: AbiParameter) => string
+import { type MapBaseTypeCallback, TUPLE_ABI_TYPE } from './types'
 
 export default class ArrayHandler {
   static isArrayType(abiOrMappedType: string): boolean {
@@ -33,15 +33,6 @@ export default class ArrayHandler {
   }
 
   /**
-   * Returns the string representation of the array depth, e.g., "uint256[2][]" -> "[2][]".
-   */
-  static getArrayDepthString(abiType: string): string {
-    const idx = abiType.indexOf('[')
-    if (idx === -1) return ''
-    return abiType.substring(idx)
-  }
-
-  /**
    * Recursively finds the  base type of a potentially nested ABI array type string.
    * E.g., for "uint256[][]", it returns "uint256".
    */
@@ -59,7 +50,7 @@ export default class ArrayHandler {
     const baseParam: AbiParameter = {
       ...param,
       type: baseAbiType,
-      components: baseAbiType === 'tuple' ? param.components : undefined,
+      components: baseAbiType === TUPLE_ABI_TYPE ? param.components : undefined,
       internalType: param.internalType ? this.getBaseType(param.internalType) : undefined,
     }
     return mapBaseTypeFunc(baseParam)

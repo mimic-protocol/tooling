@@ -1,11 +1,12 @@
-import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { type AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
-import { AbiTypeConverter } from './AbiTypeConverter'
-import { FunctionHandler } from './FunctionHandler'
-import { ImportManager } from './ImportManager'
-import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
+import AbiTypeConverter from './AbiTypeConverter'
+import FunctionHandler from './FunctionHandler'
+import ImportManager from './ImportManager'
+import TupleHandler from './TupleHandler'
+import type { TupleDefinitionsMap } from './types'
 
-export class ContractClassGenerator {
+export default class ContractClassGenerator {
   private abi: AbiFunctionItem[]
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap

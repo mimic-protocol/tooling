@@ -1,26 +1,20 @@
 import { pascalCase } from '../../helpers'
-import { AbiFunctionItem, AbiParameter } from '../../types'
+import type { AbiFunctionItem, AbiParameter } from '../../types'
 
-import { AbiTypeConverter } from './AbiTypeConverter'
+import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
-import { FunctionHandler } from './FunctionHandler'
-import { ImportManager } from './ImportManager'
+import FunctionHandler from './FunctionHandler'
+import type ImportManager from './ImportManager'
+import type { TupleDefinition, TupleDefinitionsMap } from './types'
+import { TUPLE_ABI_TYPE } from './types'
 
-export type TupleDefinition = {
-  className: string
-  components: AbiParameter[]
-}
-
-export type TupleDefinitionsMap = Map<string, TupleDefinition>
-
-export class TupleHandler {
+export default class TupleHandler {
   /**
    * Checks if the given ABI type string ultimately represents a tuple.
    * E.g., 'tuple', 'tuple[]', 'tuple[2]' would all return true.
    */
   public static isBaseTypeATuple(abiType: string): boolean {
-    const ultimateBaseAbiType = ArrayHandler.getBaseType(abiType)
-    return ultimateBaseAbiType === 'tuple'
+    return ArrayHandler.getBaseType(abiType) === TUPLE_ABI_TYPE
   }
 
   /**
@@ -47,7 +41,7 @@ export class TupleHandler {
 
     const representativeParamForSearch: AbiParameter = {
       ...param,
-      type: 'tuple',
+      type: TUPLE_ABI_TYPE,
     }
     const existingByStructure = this.findMatchingDefinition(representativeParamForSearch, tupleDefinitions)
     if (existingByStructure) return existingByStructure.className
@@ -67,7 +61,7 @@ export class TupleHandler {
 
       const tupleToDefine: AbiParameter = {
         name: param.name,
-        type: 'tuple',
+        type: TUPLE_ABI_TYPE,
         internalType: param.internalType,
         components: param.components,
       }
@@ -109,7 +103,7 @@ export class TupleHandler {
 
         const representativeOutputTuple: AbiParameter = {
           name,
-          type: 'tuple',
+          type: TUPLE_ABI_TYPE,
           internalType: `struct ${name}`,
           components: item.outputs,
         }
@@ -124,7 +118,7 @@ export class TupleHandler {
     param: AbiParameter,
     definitions: TupleDefinitionsMap
   ): TupleDefinition | undefined {
-    if (!param.components || param.type !== 'tuple') return undefined
+    if (!param.components || param.type !== TUPLE_ABI_TYPE) return undefined
     return [...definitions.values()].find(
       (def) =>
         def.components.length === param.components!.length &&
@@ -137,21 +131,19 @@ export class TupleHandler {
   }
 
   public static generateTupleTypeString(type: string, components: AbiParameter[] | undefined): string {
-    const arrayDepthString = ArrayHandler.getArrayDepthString(type)
-    if (!components || components.length === 0) return `()${arrayDepthString}`
+    if (!components || components.length === 0) return this.mapTupleType(type)
 
     const typeStrings = components.map((comp) => {
       if (this.isBaseTypeATuple(comp.type) && comp.components)
         return this.generateTupleTypeString(comp.type, comp.components)
       return comp.type
     })
-    return `(${typeStrings.join(',')})${arrayDepthString}`
+    return this.mapTupleType(type, typeStrings.join(','))
   }
 
-  public static mapTupleType(abiType: string): string {
+  public static mapTupleType(abiType: string, tupleContent: string = ''): string {
     if (!this.isBaseTypeATuple(abiType)) throw new Error(`${abiType} is not a tuple type`)
-    const arrayDepthStr = ArrayHandler.getArrayDepthString(abiType)
-    return `()${arrayDepthStr}`
+    return abiType.replace(TUPLE_ABI_TYPE, `(${tupleContent})`)
   }
 
   public static generateTupleClassesCode(
@@ -261,7 +253,7 @@ export class TupleHandler {
         ...componentAbiParam,
         name: `${componentAbiParam.name || 'arrayElement'}_item${depth}`,
         type: ArrayHandler.getArrayType(componentAbiParam.type),
-        components: baseAbiType === 'tuple' ? componentAbiParam.components : undefined,
+        components: baseAbiType === TUPLE_ABI_TYPE ? componentAbiParam.components : undefined,
         internalType: componentAbiParam.internalType
           ? ArrayHandler.getArrayType(componentAbiParam.internalType)
           : undefined,

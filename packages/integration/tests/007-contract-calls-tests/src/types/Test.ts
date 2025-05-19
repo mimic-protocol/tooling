@@ -1,4 +1,12 @@
-import { Address, BigInt, Bytes, environment, EvmDecodeParam, EvmEncodeParam, parseCSV } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  environment,
+  EvmDecodeParam,
+  EvmEncodeParam,
+  parseCSVNotNullable,
+} from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
@@ -39,7 +47,7 @@ export class Test {
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
-    return MyStruct._parse(decodedResponse)
+    return MyStruct.parse(decodedResponse)
   }
 
   echoNestedStruct(ns: NestedStruct): NestedStruct {
@@ -52,7 +60,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(
       new EvmDecodeParam('((uint256,string,int256),(uint256,string,int256)[])', response)
     )
-    return NestedStruct._parse(decodedResponse)
+    return NestedStruct.parse(decodedResponse)
   }
 
   echoStruct(s: MyStruct): MyStruct {
@@ -63,7 +71,7 @@ export class Test {
       '0x5b6a43af' + environment.evmEncode([EvmEncodeParam.fromValues('()', s.toEvmEncodeParams())])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)', response))
-    return MyStruct._parse(decodedResponse)
+    return MyStruct.parse(decodedResponse)
   }
 
   echoStructs(structs: MyStruct[]): MyStruct[] {
@@ -82,7 +90,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,string,int256)[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<MyStruct>((item0: string) => MyStruct._parse(item0))
+      : parseCSVNotNullable(decodedResponse).map<MyStruct>((item0: string) => MyStruct.parse(item0))
   }
 
   echoUint(value: BigInt): BigInt {
@@ -149,7 +157,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[3]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getInt(): BigInt {
@@ -168,13 +176,13 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('int256[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getMultipleValues(): GetMultipleValuesOutputs {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x650543a3')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(uint256,bool,string)', response))
-    return GetMultipleValuesOutputs._parse(decodedResponse)
+    return GetMultipleValuesOutputs.parse(decodedResponse)
   }
 
   getStatusName(status: u8): string {
@@ -197,9 +205,7 @@ export class Test {
   getStringArray(): string[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('string[]', response))
-    return decodedResponse === ''
-      ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<string>((item0: string) => item0)
+    return decodedResponse === '' ? [] : parseCSVNotNullable(decodedResponse).map<string>((item0: string) => item0)
   }
 
   getUint(): BigInt {
@@ -213,7 +219,7 @@ export class Test {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
@@ -374,8 +380,8 @@ export class MyStruct {
     this.value = value
   }
 
-  static _parse(data: string): MyStruct {
-    const parts = changetype<string[]>(parseCSV(data))
+  static parse(data: string): MyStruct {
+    const parts = parseCSVNotNullable(data)
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const id: BigInt = BigInt.fromString(parts[0])
     const name: string = parts[1]
@@ -401,14 +407,12 @@ export class NestedStruct {
     this.list = list
   }
 
-  static _parse(data: string): NestedStruct {
-    const parts = changetype<string[]>(parseCSV(data))
+  static parse(data: string): NestedStruct {
+    const parts = parseCSVNotNullable(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
-    const single: MyStruct = MyStruct._parse(parts[0])
+    const single: MyStruct = MyStruct.parse(parts[0])
     const list: MyStruct[] =
-      parts[1] === ''
-        ? []
-        : changetype<string[]>(parseCSV(parts[1])).map<MyStruct>((item0: string) => MyStruct._parse(item0))
+      parts[1] === '' ? [] : parseCSVNotNullable(parts[1]).map<MyStruct>((item0: string) => MyStruct.parse(item0))
     return new NestedStruct(single, list)
   }
 
@@ -434,8 +438,8 @@ export class GetMultipleValuesOutputs {
     this.field2 = field2
   }
 
-  static _parse(data: string): GetMultipleValuesOutputs {
-    const parts = changetype<string[]>(parseCSV(data))
+  static parse(data: string): GetMultipleValuesOutputs {
+    const parts = parseCSVNotNullable(data)
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const field0: BigInt = BigInt.fromString(parts[0])
     const field1: bool = u8.parse(parts[1]) as bool

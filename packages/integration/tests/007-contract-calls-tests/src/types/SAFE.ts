@@ -1,4 +1,12 @@
-import { Address, BigInt, Bytes, environment, EvmDecodeParam, EvmEncodeParam, parseCSV } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  environment,
+  EvmDecodeParam,
+  EvmEncodeParam,
+  parseCSVNotNullable,
+} from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
@@ -119,7 +127,7 @@ export class SAFE {
         ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('(address[],address)', response))
-    return GetModulesPaginatedOutputs._parse(decodedResponse)
+    return GetModulesPaginatedOutputs.parse(decodedResponse)
   }
 
   getOwners(): Address[] {
@@ -127,7 +135,7 @@ export class SAFE {
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('address[]', response))
     return decodedResponse === ''
       ? []
-      : changetype<string[]>(parseCSV(decodedResponse)).map<Address>((item0: string) => Address.fromString(item0))
+      : parseCSVNotNullable(decodedResponse).map<Address>((item0: string) => Address.fromString(item0))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
@@ -234,8 +242,8 @@ export class ExecTransactionFromModuleReturnDataOutputs {
     this.returnData = returnData
   }
 
-  static _parse(data: string): ExecTransactionFromModuleReturnDataOutputs {
-    const parts = changetype<string[]>(parseCSV(data))
+  static parse(data: string): ExecTransactionFromModuleReturnDataOutputs {
+    const parts = parseCSVNotNullable(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const success: bool = u8.parse(parts[0]) as bool
     const returnData: Bytes = Bytes.fromHexString(parts[1])
@@ -259,13 +267,11 @@ export class GetModulesPaginatedOutputs {
     this.next = next
   }
 
-  static _parse(data: string): GetModulesPaginatedOutputs {
-    const parts = changetype<string[]>(parseCSV(data))
+  static parse(data: string): GetModulesPaginatedOutputs {
+    const parts = parseCSVNotNullable(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const array: Address[] =
-      parts[0] === ''
-        ? []
-        : changetype<string[]>(parseCSV(parts[0])).map<Address>((item0: string) => Address.fromString(item0))
+      parts[0] === '' ? [] : parseCSVNotNullable(parts[0]).map<Address>((item0: string) => Address.fromString(item0))
     const next: Address = Address.fromString(parts[1])
     return new GetModulesPaginatedOutputs(array, next)
   }
