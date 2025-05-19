@@ -99,7 +99,7 @@ export class AbiTypeConverter {
         break
       default:
         conversion = TupleHandler.isTupleClassName(type, this.tupleDefinitions)
-          ? `${type}._parse(${valueVarName})`
+          ? `${type}.parse(${valueVarName})`
           : valueVarName
         break
     }

@@ -191,7 +191,7 @@ export class TupleHandler {
       lines.push(`  }`)
       lines.push('')
 
-      lines.push(`  static _parse(data: string): ${def.className} {`)
+      lines.push(`  static parse(data: string): ${def.className} {`)
       lines.push(`    const parts = changetype<string[]>(parseCSV(data))`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 

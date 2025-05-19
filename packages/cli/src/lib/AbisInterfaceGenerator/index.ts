@@ -6,8 +6,8 @@ import { ImportManager } from './ImportManager'
 export default {
   generate(abi: AbiFunctionItem[], contractName: string): string {
     const importManager = new ImportManager()
-    const contractClassGenerator = new ContractClassGenerator(importManager)
+    const contractClassGenerator = new ContractClassGenerator(abi, importManager)
 
-    return contractClassGenerator.generateInterface(abi, contractName)
+    return contractClassGenerator.generate(contractName)
   },
 }

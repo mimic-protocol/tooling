@@ -120,26 +120,6 @@ export class FunctionHandler {
       .join(', ')
   }
 
-  private static buildArrayParseLogic(
-    dataAccessString: string,
-    currentType: string,
-    importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter,
-    depth: number = 0
-  ): string {
-    importManager.addType('parseCSV')
-
-    if (!ArrayHandler.isArrayType(currentType))
-      return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
-
-    const elementType = ArrayHandler.getArrayType(currentType)
-    const itemVar = `item${depth}`
-
-    const subLogic = this.buildArrayParseLogic(itemVar, elementType, importManager, abiTypeConverter, depth + 1)
-
-    return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
-  }
-
   private static getDecodeAbiType(fn: AbiFunctionItem): string {
     if (fn.outputs && fn.outputs.length > 0) {
       if (fn.outputs.length === 1) {
@@ -156,26 +136,22 @@ export class FunctionHandler {
     return '()'
   }
 
-  private static getReturnParsingLogic(
-    lines: string[],
-    returnType: string,
-    decodedResponseVarName: string,
+  private static getReturnExpression(
+    currentType: string,
+    dataAccessString: string,
     importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter
-  ): void {
-    const isArray = ArrayHandler.isArrayType(returnType)
+    abiTypeConverter: AbiTypeConverter,
+    depth: number = 0
+  ): string {
+    if (ArrayHandler.isArrayType(currentType)) {
+      importManager.addType('parseCSV')
+      const elementType = ArrayHandler.getArrayType(currentType)
+      const itemVar = `item${depth}`
 
-    if (isArray) {
-      const parseExpression = this.buildArrayParseLogic(
-        decodedResponseVarName,
-        returnType,
-        importManager,
-        abiTypeConverter
-      )
-      lines.push(`    return ${parseExpression};`)
+      const subLogic = this.getReturnExpression(elementType, itemVar, importManager, abiTypeConverter, depth + 1)
+      return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
     } else {
-      const returnLine = abiTypeConverter.generateTypeConversion(returnType, decodedResponseVarName, false)
-      lines.push(`    ${returnLine}`)
+      return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
     }
   }
 
@@ -204,6 +180,7 @@ export class FunctionHandler {
     lines.push(`    const response = ${contractCallCode}`)
     lines.push(`    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeAbiType}', response))`)
 
-    this.getReturnParsingLogic(lines, returnType, 'decodedResponse', importManager, abiTypeConverter)
+    const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
+    lines.push(`    return ${returnExpression}`)
   }
 }

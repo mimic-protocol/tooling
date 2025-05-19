@@ -362,7 +362,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', this.amount)`)
     })
 
-    it('should generate proper _parse method for handling tuple data', () => {
+    it('should generate proper parse method for handling tuple data', () => {
       const abi = [
         createViewFunction(
           'getComplexData',
@@ -386,7 +386,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       // Check parse method existence and signature
-      expect(result).to.contain('static _parse(data: string): Tuple0 {')
+      expect(result).to.contain('static parse(data: string): Tuple0 {')
       expect(result).to.contain('const parts = changetype<string[]>(parseCSV(data))')
       expect(result).to.contain('if (parts.length !== 5) throw new Error("Invalid data for tuple parsing")')
 

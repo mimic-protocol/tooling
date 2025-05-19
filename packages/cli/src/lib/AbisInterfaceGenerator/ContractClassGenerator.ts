@@ -6,47 +6,43 @@ import { ImportManager } from './ImportManager'
 import { TupleDefinitionsMap, TupleHandler } from './TupleHandler'
 
 export class ContractClassGenerator {
+  private abi: AbiFunctionItem[]
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap
-  private abiTypeConverter!: AbiTypeConverter
+  private abiTypeConverter: AbiTypeConverter
 
-  constructor(importManager: ImportManager) {
+  constructor(abi: AbiFunctionItem[], importManager: ImportManager) {
+    this.abi = abi
     this.importManager = importManager
-    this.tupleDefinitions = new Map()
+    this.tupleDefinitions = TupleHandler.extractTupleDefinitions(this.abi)
+    this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
   }
 
-  public generateInterface(abi: AbiFunctionItem[], contractName: string): string {
-    const viewFunctions = this.filterViewFunctions(abi)
-    this.processAbi(abi)
-
-    const contractClassCode = this.generateContractClass(viewFunctions, contractName)
-    const tupleClassesCode = this.generateTupleClasses()
-    const importsCode = this.importManager.generateImportsCode() // Note: this should be generated after any other generation
+  public generate(contractName: string): string {
+    const mainClassCode = this.generateMainClass(contractName)
+    const tupleClassesCode = TupleHandler.generateTupleClassesCode(
+      this.tupleDefinitions,
+      this.importManager,
+      this.abiTypeConverter
+    )
+    // Note: this should be generated after any other generation
+    const importsCode = this.importManager.generateImportsCode()
 
     const separator = '\n\n'
-    let result = importsCode + separator + contractClassCode
+    let result = importsCode + separator + mainClassCode
     if (tupleClassesCode) result += separator + tupleClassesCode
 
     return result.trim()
   }
 
-  public generateContractClass(viewFunctions: AbiFunctionItem[], contractName: string): string {
+  private generateMainClass(contractName: string): string {
     const lines: string[] = []
     this.appendClassDefinition(lines, contractName)
-    viewFunctions.forEach((fn) =>
+    this.getViewFunctions().forEach((fn) =>
       FunctionHandler.appendMethod(lines, fn, this.importManager, this.tupleDefinitions, this.abiTypeConverter)
     )
     lines.push('}')
     return lines.join('\n')
-  }
-
-  public processAbi(abi: AbiFunctionItem[]): void {
-    this.tupleDefinitions = TupleHandler.extractTupleDefinitions(abi)
-    this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
-  }
-
-  public generateTupleClasses(): string {
-    return TupleHandler.generateTupleClassesCode(this.tupleDefinitions, this.importManager, this.abiTypeConverter)
   }
 
   private appendClassDefinition(lines: string[], contractName: string): void {
@@ -67,7 +63,7 @@ export class ContractClassGenerator {
     lines.push('')
   }
 
-  private filterViewFunctions(abi: AbiFunctionItem[]): AbiFunctionItem[] {
-    return abi.filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability || ''))
+  private getViewFunctions(): AbiFunctionItem[] {
+    return this.abi.filter((item) => item.type === 'function' && ['view', 'pure'].includes(item.stateMutability || ''))
   }
 }
