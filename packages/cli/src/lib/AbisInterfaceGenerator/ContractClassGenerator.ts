@@ -11,9 +11,9 @@ export class ContractClassGenerator {
   private tupleDefinitions: TupleDefinitionsMap
   private abiTypeConverter: AbiTypeConverter
 
-  constructor(abi: AbiFunctionItem[], importManager: ImportManager) {
+  constructor(abi: AbiFunctionItem[]) {
     this.abi = abi
-    this.importManager = importManager
+    this.importManager = new ImportManager()
     this.tupleDefinitions = TupleHandler.extractTupleDefinitions(this.abi)
     this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
   }
