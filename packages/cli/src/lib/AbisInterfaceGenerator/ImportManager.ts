@@ -1,6 +1,6 @@
 import { LibTypes } from '../../types'
 
-export type ImportedTypes = LibTypes | 'environment' | 'EvmEncodeParam' | 'EvmDecodeParam' | 'parseCSV'
+export type ImportedTypes = LibTypes | 'environment' | 'EvmEncodeParam' | 'EvmDecodeParam' | 'parseCSVNotNullable'
 
 export class ImportManager {
   private types: Set<ImportedTypes>

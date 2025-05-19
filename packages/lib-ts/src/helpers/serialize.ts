@@ -123,3 +123,18 @@ export function parseCSV(csvString: string): (string | null)[] {
 
   return tokens
 }
+
+/**
+ * Parses a CSV string into an array of strings, throwing an error if any null values are present.
+ *
+ * @param csvString - String containing comma-separated values
+ * @returns Array of strings
+ * @throws {Error} If null values are present
+ */
+
+export function parseCSVNotNullable(csvString: string): string[] {
+  const tokens = parseCSV(csvString)
+  if (tokens.some((token) => token === null)) throw new Error('Null value found in CSV string')
+
+  return changetype<string[]>(tokens)
+}

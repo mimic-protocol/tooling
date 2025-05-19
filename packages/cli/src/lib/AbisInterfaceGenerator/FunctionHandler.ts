@@ -144,12 +144,12 @@ export class FunctionHandler {
     depth: number = 0
   ): string {
     if (ArrayHandler.isArrayType(currentType)) {
-      importManager.addType('parseCSV')
+      importManager.addType('parseCSVNotNullable')
       const elementType = ArrayHandler.getArrayType(currentType)
       const itemVar = `item${depth}`
 
       const subLogic = this.getReturnExpression(elementType, itemVar, importManager, abiTypeConverter, depth + 1)
-      return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
+      return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
     } else {
       return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
     }

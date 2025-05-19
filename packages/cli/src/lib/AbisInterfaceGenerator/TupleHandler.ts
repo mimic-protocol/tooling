@@ -160,7 +160,7 @@ export class TupleHandler {
     abiTypeConverter: AbiTypeConverter
   ): string {
     if (tupleDefinitions.size === 0) return ''
-    importManager.addType('parseCSV')
+    importManager.addType('parseCSVNotNullable')
 
     const lines: string[] = []
 
@@ -192,7 +192,7 @@ export class TupleHandler {
       lines.push('')
 
       lines.push(`  static parse(data: string): ${def.className} {`)
-      lines.push(`    const parts = changetype<string[]>(parseCSV(data))`)
+      lines.push(`    const parts = parseCSVNotNullable(data)`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
       lines.push(...this.getTupleParseMethodBody(def, abiTypeConverter, importManager))
@@ -248,7 +248,7 @@ export class TupleHandler {
     importManager: ImportManager,
     depth: number = 0
   ): string {
-    importManager.addType('parseCSV')
+    importManager.addType('parseCSVNotNullable')
 
     const isAbiArray = ArrayHandler.isArrayType(componentAbiParam.type)
     const baseAbiType = ArrayHandler.getBaseType(componentAbiParam.type)
@@ -275,7 +275,7 @@ export class TupleHandler {
         importManager,
         depth + 1
       )
-      return `${dataAccessString} === '' ? [] : changetype<string[]>(parseCSV(${dataAccessString})).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
+      return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
     } else {
       return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
     }
