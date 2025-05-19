@@ -268,9 +268,9 @@ export default class TupleHandler {
         depth + 1
       )
       return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
-    } else {
-      return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
     }
+
+    return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
   }
 
   private static getTupleToEvmParamsMethodBody(

@@ -33,7 +33,7 @@ export default class ArrayHandler {
   }
 
   /**
-   * Recursively finds the  base type of a potentially nested ABI array type string.
+   * Returns the  base type of a potentially nested ABI array type string.
    * E.g., for "uint256[][]", it returns "uint256".
    */
   static getBaseType(type: string): string {

@@ -122,19 +122,21 @@ export default class FunctionHandler {
   }
 
   private static getDecodeAbiType(fn: AbiFunctionItem): string {
-    if (fn.outputs && fn.outputs.length > 0) {
-      if (fn.outputs.length === 1) {
-        const output = fn.outputs[0]
-        if (TupleHandler.isBaseTypeATuple(output.type) && output.components) {
-          return TupleHandler.generateTupleTypeString(output.type, output.components)
-        } else {
-          return output.type
-        }
-      } else {
-        return TupleHandler.generateTupleTypeString(TUPLE_ABI_TYPE, fn.outputs)
-      }
+    const outputs = fn.outputs ?? []
+
+    if (outputs.length === 0) return '()'
+
+    if (outputs.length === 1) {
+      const [output] = outputs
+      const { type, components } = output
+
+      if (TupleHandler.isBaseTypeATuple(type) && components)
+        return TupleHandler.generateTupleTypeString(type, components)
+
+      return type
     }
-    return '()'
+
+    return TupleHandler.generateTupleTypeString(TUPLE_ABI_TYPE, outputs)
   }
 
   private static getReturnExpression(
@@ -151,9 +153,9 @@ export default class FunctionHandler {
 
       const subLogic = this.getReturnExpression(elementType, itemVar, importManager, abiTypeConverter, depth + 1)
       return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
-    } else {
-      return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
     }
+
+    return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
   }
 
   private static appendFunctionBody(
