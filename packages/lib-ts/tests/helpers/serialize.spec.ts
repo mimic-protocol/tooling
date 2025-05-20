@@ -259,5 +259,37 @@ describe('serialize', () => {
         expect(result).toStrictEqual(list)
       })
     })
+
+    describe('when parsing parenthesized groups', () => {
+      it('handles empty parenthesized groups', () => {
+        const input = '()'
+        const result = parseCSV(input)
+        expect(result).toStrictEqual([null])
+      })
+
+      it('handles a simple parenthesized group', () => {
+        const input = '(1,test,-20)'
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(['1', 'test', '-20'])
+      })
+
+      it('handles two parenthesized groups in sequence', () => {
+        const input = '(1,test,-20),(1,test,-20)'
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(['(1,test,-20)', '(1,test,-20)'])
+      })
+
+      it('handles a nested parenthesized group within parentheses', () => {
+        const input = '((1,test,-20),(1,test,-20))'
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(['(1,test,-20)', '(1,test,-20)'])
+      })
+
+      it('handles a mix of a simple parenthesized group and a nested one', () => {
+        const input = '(1,test,-20),((1,test,-20),(1,test,-20))'
+        const result = parseCSV(input)
+        expect(result).toStrictEqual(['(1,test,-20)', '((1,test,-20),(1,test,-20))'])
+      })
+    })
   })
 })

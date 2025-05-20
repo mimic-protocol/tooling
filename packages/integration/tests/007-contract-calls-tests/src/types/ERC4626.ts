@@ -1,4 +1,4 @@
-import { Address, BigInt, environment, EvmCallParam, EvmDecodeParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
 
 export class ERC4626 {
   private address: Address
@@ -17,7 +17,10 @@ export class ERC4626 {
       this.chainId,
       this.timestamp,
       '0xdd62ed3e' +
-        environment.evmEncode([EvmCallParam.fromValue('address', owner), EvmCallParam.fromValue('address', spender)])
+        environment.evmEncode([
+          EvmEncodeParam.fromValue('address', owner),
+          EvmEncodeParam.fromValue('address', spender),
+        ])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -34,7 +37,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x70a08231' + environment.evmEncode([EvmCallParam.fromValue('address', account)])
+      '0x70a08231' + environment.evmEncode([EvmEncodeParam.fromValue('address', account)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -45,7 +48,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x07a2d13a' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
+      '0x07a2d13a' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', shares)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -56,7 +59,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xc6e6f592' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
+      '0xc6e6f592' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', assets)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -73,7 +76,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x402d267d' + environment.evmEncode([EvmCallParam.fromValue('address', param0)])
+      '0x402d267d' + environment.evmEncode([EvmEncodeParam.fromValue('address', param0)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -84,7 +87,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xc63d75b6' + environment.evmEncode([EvmCallParam.fromValue('address', param0)])
+      '0xc63d75b6' + environment.evmEncode([EvmEncodeParam.fromValue('address', param0)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -95,7 +98,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xd905777e' + environment.evmEncode([EvmCallParam.fromValue('address', owner)])
+      '0xd905777e' + environment.evmEncode([EvmEncodeParam.fromValue('address', owner)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -106,7 +109,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xce96cb77' + environment.evmEncode([EvmCallParam.fromValue('address', owner)])
+      '0xce96cb77' + environment.evmEncode([EvmEncodeParam.fromValue('address', owner)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -123,7 +126,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xef8b30f7' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
+      '0xef8b30f7' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', assets)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -134,7 +137,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0xb3d7f6b9' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
+      '0xb3d7f6b9' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', shares)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -145,7 +148,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x4cdad506' + environment.evmEncode([EvmCallParam.fromValue('uint256', shares)])
+      '0x4cdad506' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', shares)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
@@ -156,7 +159,7 @@ export class ERC4626 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x0a28a477' + environment.evmEncode([EvmCallParam.fromValue('uint256', assets)])
+      '0x0a28a477' + environment.evmEncode([EvmEncodeParam.fromValue('uint256', assets)])
     )
     const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)

@@ -1,16 +1,16 @@
 {
   "_contractCall": {
     "log": true,
-    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541"
+    "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
   },
   "_evmEncode": {
     "log": true,
     "default": "00"
   },
   "_evmDecode": {
-    "default": "0x99605430cf9259456dd7a8024c3da8c03e319541",
+    "default": "0x047be3bb46f9416732fe39a05134f20235c19334",
     "paramResponse": {
-      "EvmDecodeParam((uint256,string,int256),0x99605430cf9259456dd7a8024c3da8c03e319541)": "1,test,-20"
+      "EvmDecodeParam((uint256,string,int256),0x047be3bb46f9416732fe39a05134f20235c19334)": "1,test,-20"
     }
   }
 }

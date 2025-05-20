@@ -3,9 +3,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
-import AbisInterfaceGenerator from '../lib/AbisInterfaceGenerator'
-import InputsInterfaceGenerator from '../lib/InputsInterfaceGenerator'
-import ManifestHandler from '../lib/ManifestHandler'
+import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } from '../lib'
 import log from '../log'
 import { Manifest } from '../types'
 
