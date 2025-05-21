@@ -42,6 +42,8 @@ export default class Compile extends Command {
       watPath,
       '--optimize',
       '--exportRuntime',
+      '--transform',
+      'json-as/transform'
     ]
 
     const result = spawnSync('yarn', ascArgs, { stdio: 'inherit' })

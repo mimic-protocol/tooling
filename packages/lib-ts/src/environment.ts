@@ -1,7 +1,8 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, Bytes, EvmEncodeParam } from './types'
-import { EvmDecodeParam } from './types/EvmDecodeParam'
+import { Address, BigInt, EvmEncodeParam, EvmDecodeParam } from './types'
+import { Swap, TokenIn, TokenOut, Transfer, TransferData, Call, CallData } from "./intents";
+import { JSON } from 'json-as/assembly'
 
 export namespace environment {
   @external('environment', '_call')
@@ -29,64 +30,36 @@ export namespace environment {
   declare function _evmDecode(params: string): string
 
   export function call(
-    settler: Address,
-    chainId: u64,
-    target: Address,
+    calls: CallData[],
     feeToken: Address,
     feeAmount: BigInt,
-    data: Bytes | null = null
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
   ): void {
     _call(
-      join([
-        serialize(settler),
-        serialize(chainId),
-        serialize(target),
-        serialize(feeToken),
-        serialize(feeAmount),
-        data ? serialize(data as Bytes) : null,
-      ])
+      JSON.stringify(new Call(calls, feeToken, feeAmount, settler, deadline))
     )
   }
 
   export function swap(
-    settler: Address,
     chainId: u64,
-    tokenIn: Address,
-    amountIn: BigInt,
-    tokenOut: Address,
-    minAmountOut: BigInt,
-    destinationChainId: u64 = chainId
+    tokensIn: TokenIn[],
+    tokensOut: TokenOut[],
+    destinationChainId: u64 = chainId,
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
   ): void {
-    _swap(
-      join([
-        serialize(settler),
-        serialize(chainId),
-        serialize(tokenIn),
-        serialize(amountIn),
-        serialize(tokenOut),
-        serialize(minAmountOut),
-        serialize(destinationChainId),
-      ])
-    )
+    _swap(JSON.stringify(new Swap(chainId, tokensIn, tokensOut, destinationChainId, settler, deadline)))
   }
 
   export function transfer(
-    settler: Address,
-    chainId: u64,
-    token: Address,
-    amount: BigInt,
-    recipient: Address,
-    feeAmount: BigInt
+    transfers: TransferData[],
+    feeToken: Address,
+    feeAmount: BigInt,
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
   ): void {
-    _transfer(
-      join([
-        serialize(settler),
-        serialize(chainId),
-        serialize(token),
-        serialize(amount),
-        serialize(recipient),
-        serialize(feeAmount),
-      ])
+    _transfer(JSON.stringify(new Transfer(transfers, feeToken, feeAmount, settler, deadline))
     )
   }
 
