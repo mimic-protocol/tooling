@@ -1,24 +1,25 @@
-import { Intent, OperationType } from "./Intent";
-import { Address, BigInt, Bytes } from "../types";
+import { Address, BigInt, Bytes } from '../types'
+
+import { Intent, OperationType } from './Intent'
 
 @json
 export class CallData {
-  public target: string;
-  public data: string;
-  public value: string;
+  public target: string
+  public data: string
+  public value: string
 
-  constructor(target: Address, data: Bytes, value: BigInt) {
-    this.target = target.toString();
-    this.data = data.toHexString();
-    this.value = value.toString();
+  constructor(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()) {
+    this.target = target.toString()
+    this.data = data.toHexString()
+    this.value = value.toString()
   }
 }
 
 @json
 export class Call extends Intent {
-  public calls: CallData[];
-  public feeToken: string;
-  public feeAmount: string;
+  public calls: CallData[]
+  public feeToken: string
+  public feeAmount: string
 
   constructor(
     calls: CallData[],
@@ -27,14 +28,14 @@ export class Call extends Intent {
     settler: Address | null = null,
     deadline: BigInt | null = null
   ) {
-    super(OperationType.Call, settler, deadline);
+    super(OperationType.Call, settler, deadline)
 
     if (calls.length === 0) {
-      throw new Error("Call list cannot be empty");
+      throw new Error('Call list cannot be empty')
     }
 
-    this.calls = calls;
-    this.feeToken = feeToken.toString();
-    this.feeAmount = feeAmount.toString();
+    this.calls = calls
+    this.feeToken = feeToken.toString()
+    this.feeAmount = feeAmount.toString()
   }
 }

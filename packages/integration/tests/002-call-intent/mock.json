@@ -4,6 +4,7 @@
     "chainId": 1,
     "feeToken": "0xA000000000000000000000000000000000000024",
     "data": "0xabcdef0123456789",
-    "feeAmountStringDecimal": "10"
+    "feeAmountStringDecimal": "10",
+    "value": "123456789"
   }
 }
