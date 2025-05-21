@@ -4,7 +4,7 @@
   "_swap": "log",
   "inputs": {
     "chainId": 1,
-    "amount": 10000,
+    "amount": "100000000000000000000",
     "slippage": 95
   },
   "_contractCall": {

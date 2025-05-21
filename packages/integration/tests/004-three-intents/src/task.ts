@@ -22,24 +22,23 @@ export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
   const chainId = inputs.chainId
-  const amount = BigInt.fromI32(inputs.amount)
-  environment.call([new CallData(target)], USDC.address, amount, settler)
+  environment.call([new CallData(target)], USDC.address, inputs.amount, settler)
 
   // Call with bytes
   const bytes = Bytes.fromI32(123)
-  environment.call([new CallData(target, bytes)], USDC.address, amount, settler)
+  environment.call([new CallData(target, bytes)], USDC.address, inputs.amount, settler)
 
   // Cross-chain swap
-  const minAmountOut = amount.times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
+  const minAmountOut = inputs.amount.times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
   const destChain = 10
   environment.swap(
     chainId,
-    [new TokenIn(USDC.address, amount)],
+    [new TokenIn(USDC.address, inputs.amount)],
     [new TokenOut(WBTC.address, minAmountOut, target)],
     destChain,
     settler
   )
 
   // Normal Transfer
-  environment.transfer([new TransferData(USDC.address, amount, target)], USDC.address, amount, settler)
+  environment.transfer([new TransferData(USDC.address, inputs.amount, target)], USDC.address, inputs.amount, settler)
 }
