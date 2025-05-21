@@ -43,7 +43,7 @@ export default class Compile extends Command {
       '--optimize',
       '--exportRuntime',
       '--transform',
-      'json-as/transform'
+      'json-as/transform',
     ]
 
     const result = spawnSync('yarn', ascArgs, { stdio: 'inherit' })

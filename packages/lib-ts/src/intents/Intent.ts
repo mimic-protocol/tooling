@@ -1,4 +1,4 @@
-import { Address, BigInt } from "../types";
+import { Address, BigInt } from '../types'
 
 export enum OperationType {
   Swap,
@@ -8,7 +8,7 @@ export enum OperationType {
 
 @json
 export abstract class Intent {
-  public op: OperationType;
+  public op: OperationType
   public settler: string | null
   public deadline: string | null
   protected constructor(op: OperationType, settler: Address | null, deadline: BigInt | null) {

@@ -1,5 +1,5 @@
 export * from './src/environment'
 export * from './src/helpers'
+export * from './src/intents'
 export * from './src/tokens'
 export * from './src/types'
-export * from './src/intents'

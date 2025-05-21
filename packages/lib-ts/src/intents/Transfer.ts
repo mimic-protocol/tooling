@@ -1,5 +1,6 @@
-import { Intent, OperationType } from "./Intent";
-import { Address, BigInt } from "../types";
+import { Address, BigInt } from '../types'
+
+import { Intent, OperationType } from './Intent'
 
 @json
 export class TransferData {
@@ -7,11 +8,7 @@ export class TransferData {
   public amount: string
   public recipient: string
 
-  constructor(
-    token: Address,
-    amount: BigInt,
-    recipient: Address,
-  ) {
+  constructor(token: Address, amount: BigInt, recipient: Address) {
     this.token = token.toString()
     this.amount = amount.toString()
     this.recipient = recipient.toString()
@@ -31,15 +28,14 @@ export class Transfer extends Intent {
     settler: Address | null,
     deadline: BigInt | null
   ) {
-    super(OperationType.Transfer, settler, deadline);
+    super(OperationType.Transfer, settler, deadline)
 
-    if(transfers.length === 0) {
-      throw new Error("Transfer list cannot be empty");
+    if (transfers.length === 0) {
+      throw new Error('Transfer list cannot be empty')
     }
 
     this.transfers = transfers
     this.feeToken = feeToken.toString()
     this.feeAmount = feeAmount.toString()
   }
-
 }
