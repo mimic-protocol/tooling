@@ -66,10 +66,16 @@ describe('InputsInterfaceGenerator', () => {
       })
 
       context('when there are big solidity types', () => {
-        it('reduces the size', () => {
-          const inputs = { first: 'int256' }
+        it('generates a BigInt', () => {
+          const inputs = { first: 'int256', second: 'uint128' }
           const result = InputsInterfaceGenerator.generate(inputs)
-          expectItIncludes(result, 'const first: i64', 'static get first(): i64')
+          expectItIncludes(
+            result,
+            'var first: string | null',
+            'static get first(): BigInt',
+            'var second: string | null',
+            'static get second(): BigInt'
+          )
         })
       })
     })
