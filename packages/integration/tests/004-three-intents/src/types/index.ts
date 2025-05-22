@@ -1,6 +1,8 @@
+import { BigInt } from '@mimicprotocol/lib-ts'
+
 declare namespace input {
   const chainId: i32
-  const amount: i32
+  var amount: string | null
   const slippage: i32
 }
 
@@ -10,8 +12,8 @@ export class inputs {
     return input.chainId
   }
 
-  static get amount(): i32 {
-    return input.amount
+  static get amount(): BigInt {
+    return BigInt.fromString(input.amount!)
   }
 
   static get slippage(): i32 {

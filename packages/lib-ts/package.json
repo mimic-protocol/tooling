@@ -5,15 +5,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit",
+    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit  --transform json-as/transform",
     "test": "asp",
     "lint": "eslint . --ignore-pattern 'src/environment.ts'"
   },
   "devDependencies": {
     "@as-pect/cli": "^8.1.0",
-    "assemblyscript": "^0.27.31"
+    "assemblyscript": "^0.27.35"
   },
   "dependencies": {
-    "eslint-config-mimic": "^0.0.3"
+    "eslint-config-mimic": "^0.0.3",
+    "json-as": "^1.0.7",
+    "visitor-as": "^0.11.4"
   }
 }

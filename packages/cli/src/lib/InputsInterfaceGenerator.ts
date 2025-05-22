@@ -27,15 +27,17 @@ function convertInputs(inputs: Record<string, string>): Record<string, string> {
 }
 
 function generateImports(inputs: Record<string, string>): string {
-  const importedTypes = Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes')
-  if (importedTypes.length == 0) return ''
-  return `import { ${[...importedTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+  const typesToImport = new Set(Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt'))
+
+  if (typesToImport.size === 0) return ''
+
+  return `import { ${[...typesToImport].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
 function generateInputsMapping(inputs: Record<string, string>): string {
   return Object.entries(inputs)
     .map(([name, type]) =>
-      type === 'string' || type === 'Address' || type === 'Bytes'
+      type === 'string' || type === 'Address' || type === 'Bytes' || type === 'BigInt'
         ? `var ${name}: string | null`
         : `const ${name}: ${type}`
     )
@@ -49,11 +51,24 @@ function generateInputsClass(inputs: Record<string, string>): string {
 }
 
 function convertType(type: string): string {
-  if (type.includes('uint')) type = type.replace('int', '')
-  if (type.includes('int')) type = type.replace('nt', '')
-  if (type.includes('address')) type = 'Address'
-  if (type.includes('bytes')) type = 'Bytes'
-  type = type.replace(/128|256/gm, '64')
+  const match = type.match(/^(u?)int(\d+)?$/)
+  if (match) {
+    const isUnsigned = match[1] === 'u'
+    const size = parseInt(match[2] || '256')
+
+    const prefix = isUnsigned ? 'u' : 'i'
+
+    if (size <= 8) return `${prefix}8`
+    if (size <= 16) return `${prefix}16`
+    if (size <= 32) return `${prefix}32`
+    if (size <= 64) return `${prefix}64`
+
+    return 'BigInt' // 128 and 256 go here
+  }
+
+  if (type.includes('address')) return 'Address'
+  if (type.includes('bytes')) return 'Bytes'
+
   return type
 }
 
@@ -64,6 +79,7 @@ function generateGetter(name: string, type: string): string {
   if (type === 'string') returnStr = `${str}!`
   else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
   else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
+  else if (type === 'BigInt') returnStr = `BigInt.fromString(${str}!)`
   else returnStr = str
 
   return `static get ${name}(): ${type} {

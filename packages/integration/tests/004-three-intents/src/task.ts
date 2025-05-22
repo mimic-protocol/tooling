@@ -1,4 +1,15 @@
-import { Address, BigInt, Bytes, environment, NULL_ADDRESS, Token } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  CallData,
+  environment,
+  NULL_ADDRESS,
+  Token,
+  TokenIn,
+  TokenOut,
+} from '@mimicprotocol/lib-ts'
+import { TransferData } from '@mimicprotocol/lib-ts/src/intents/Transfer'
 
 import { inputs } from './types'
 
@@ -11,18 +22,23 @@ export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
   const chainId = inputs.chainId
-  const amount = BigInt.fromI32(inputs.amount)
-  environment.call(settler, chainId, target, USDC.address, amount)
+  environment.call([new CallData(target)], USDC.address, inputs.amount, settler)
 
   // Call with bytes
   const bytes = Bytes.fromI32(123)
-  environment.call(settler, chainId, target, USDC.address, amount, bytes)
+  environment.call([new CallData(target, bytes)], USDC.address, inputs.amount, settler)
 
   // Cross-chain swap
-  const minAmountOut = amount.times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
+  const minAmountOut = inputs.amount.times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
   const destChain = 10
-  environment.swap(settler, chainId, USDC.address, amount, WBTC.address, minAmountOut, destChain)
+  environment.swap(
+    chainId,
+    [new TokenIn(USDC.address, inputs.amount)],
+    [new TokenOut(WBTC.address, minAmountOut, target)],
+    destChain,
+    settler
+  )
 
   // Normal Transfer
-  environment.transfer(settler, chainId, USDC.address, amount, target, amount)
+  environment.transfer([new TransferData(USDC.address, inputs.amount, target)], USDC.address, inputs.amount, settler)
 }

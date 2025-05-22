@@ -4,6 +4,9 @@
     "chainId": 1,
     "feeToken": "0xA000000000000000000000000000000000000024",
     "data": "0xabcdef0123456789",
-    "feeAmountStringDecimal": "10"
-  }
+    "feeAmountStringDecimal": "10",
+    "value": "1000000000000000000"
+  },
+  "_getContext": "{ \"timestamp\": 1438223173000, \"user\": \"0x756F45E3FA69347A9A973A725E3C98bC4db0b5a0\", \"configId\": \"682ec8210b1ce912da4d2952\"}",
+  "_evmKeccak": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"
 }
