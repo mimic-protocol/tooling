@@ -34,7 +34,7 @@ export namespace environment {
   declare function _evmKeccak(params: string): string
 
   @external('environment', '_getContext')
-  declare function _getContext(_: string): string
+  declare function _getContext(): string
 
   export function call(
     calls: CallData[],
@@ -130,6 +130,6 @@ export namespace environment {
   }
 
   export function getContext(): Context {
-    return JSON.parse<Context>(_getContext(""));
+    return JSON.parse<Context>(_getContext());
   }
 }
