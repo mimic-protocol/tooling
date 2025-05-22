@@ -3,6 +3,7 @@ import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, EvmEncodeParam, EvmDecodeParam } from './types'
 import { Swap, TokenIn, TokenOut, Transfer, TransferData, Call, CallData } from "./intents";
 import { JSON } from 'json-as/assembly'
+import { Context } from "./context";
 
 export namespace environment {
   @external('environment', '_call')
@@ -28,6 +29,12 @@ export namespace environment {
 
   @external('environment', '_evmDecode')
   declare function _evmDecode(params: string): string
+
+  @external('environment', '_evmKeccak')
+  declare function _evmKeccak(params: string): string
+
+  @external('environment', '_getContext')
+  declare function _getContext(_: string): string
 
   export function call(
     calls: CallData[],
@@ -116,5 +123,13 @@ export namespace environment {
 
   export function evmDecode(encodedData: EvmDecodeParam): string {
     return _evmDecode(serialize(encodedData))
+  }
+
+  export function evmKeccak(data: string): string {
+    return _evmKeccak(data)
+  }
+
+  export function getContext(): Context {
+    return JSON.parse<Context>(_getContext(""));
   }
 }
