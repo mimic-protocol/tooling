@@ -27,9 +27,11 @@ function convertInputs(inputs: Record<string, string>): Record<string, string> {
 }
 
 function generateImports(inputs: Record<string, string>): string {
-  const importedTypes = Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt')
-  if (importedTypes.length == 0) return ''
-  return `import { ${[...importedTypes].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+  const typesToImport = new Set(Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt'))
+
+  if (typesToImport.size === 0) return ''
+
+  return `import { ${[...typesToImport].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
 function generateInputsMapping(inputs: Record<string, string>): string {
@@ -49,11 +51,24 @@ function generateInputsClass(inputs: Record<string, string>): string {
 }
 
 function convertType(type: string): string {
-  if (type.includes('128') || type.includes('256')) type = 'BigInt'
-  if (type.includes('uint')) type = type.replace('int', '')
-  if (type.includes('int')) type = type.replace('nt', '')
-  if (type.includes('address')) type = 'Address'
-  if (type.includes('bytes')) type = 'Bytes'
+  const match = type.match(/^(u?)int(\d+)?$/)
+  if (match) {
+    const isUnsigned = match[1] === 'u'
+    const size = parseInt(match[2] || '256')
+
+    const prefix = isUnsigned ? 'u' : 'i'
+
+    if (size <= 8) return `${prefix}8`
+    if (size <= 16) return `${prefix}16`
+    if (size <= 32) return `${prefix}32`
+    if (size <= 64) return `${prefix}64`
+
+    return 'BigInt' // 128 and 256 go here
+  }
+
+  if (type.includes('address')) return 'Address'
+  if (type.includes('bytes')) return 'Bytes'
+
   return type
 }
 
