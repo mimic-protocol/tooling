@@ -1,16 +1,20 @@
 {
-  "_contractCall": {
-    "log": true,
-    "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
+  "environment": {
+    "_contractCall": {
+      "log": true,
+      "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
+    }
   },
-  "_evmEncode": {
-    "log": true,
-    "default": "00"
-  },
-  "_evmDecode": {
-    "default": "0x047be3bb46f9416732fe39a05134f20235c19334",
-    "paramResponse": {
-      "EvmDecodeParam((uint256,string,int256),0x047be3bb46f9416732fe39a05134f20235c19334)": "1,test,-20"
+  "evm": {
+    "_encode": {
+      "log": true,
+      "default": "00"
+    },
+    "_decode": {
+      "default": "0x047be3bb46f9416732fe39a05134f20235c19334",
+      "paramResponse": {
+        "EvmDecodeParam((uint256,string,int256),0x047be3bb46f9416732fe39a05134f20235c19334)": "1,test,-20"
+      }
     }
   }
 }

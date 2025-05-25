@@ -168,8 +168,9 @@ export default class FunctionHandler {
   ): void {
     const selector = getFunctionSelector(fn)
     importManager.addType('environment')
+    importManager.addType('evm')
     const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${
-      callArgs ? `+ environment.evmEncode([${callArgs}])` : ''
+      callArgs ? `+ evm.encode([${callArgs}])` : ''
     })`
 
     if (returnType === 'void') {
@@ -181,7 +182,7 @@ export default class FunctionHandler {
     const decodeAbiType = this.getDecodeAbiType(fn)
 
     lines.push(`    const response = ${contractCallCode}`)
-    lines.push(`    const decodedResponse = environment.evmDecode(new EvmDecodeParam('${decodeAbiType}', response))`)
+    lines.push(`    const decodedResponse = evm.decode(new EvmDecodeParam('${decodeAbiType}', response))`)
 
     const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
     lines.push(`    return ${returnExpression}`)

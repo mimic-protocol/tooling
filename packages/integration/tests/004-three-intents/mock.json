@@ -1,18 +1,22 @@
 {
-  "_call": "log",
-  "_transfer": "log",
-  "_swap": "log",
+  "environment": {
+    "_call": "log",
+    "_transfer": "log",
+    "_swap": "log",
+    "_getContext": "{ \"timestamp\": 1438223173000, \"user\": \"0x756F45E3FA69347A9A973A725E3C98bC4db0b5a0\", \"configId\": \"682ec8210b1ce912da4d2952\"}",
+    "_contractCall": {
+      "default": ""
+    }
+  },
   "inputs": {
     "chainId": 1,
     "amount": "100000000000000000000",
     "slippage": 95
   },
-  "_contractCall": {
-    "default": ""
-  },
-  "_evmDecode": {
-    "default": ""
-  },
-  "_getContext": "{ \"timestamp\": 1438223173000, \"user\": \"0x756F45E3FA69347A9A973A725E3C98bC4db0b5a0\", \"configId\": \"682ec8210b1ce912da4d2952\"}",
-  "_evmKeccak": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"
+  "evm": {
+    "_decode": {
+      "default": ""
+    },
+    "_keccak": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"
+  }
 }
