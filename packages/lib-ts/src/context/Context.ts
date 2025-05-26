@@ -2,7 +2,8 @@
 export class Context {
   constructor(
     public readonly timestamp: u64,
-    public user: string,
-    public configId: string
+    public readonly consensusThreshold: u64,
+    public readonly user: string,
+    public readonly configId: string
   ) {}
 }
