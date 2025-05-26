@@ -1,4 +1,5 @@
 import { environment } from '../environment'
+import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
 import { Address, BigInt } from '../types'
 
@@ -22,6 +23,6 @@ export abstract class Intent {
     this.settler = settler ? settler.toString() : NULL_ADDRESS
     this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
     this.user = context.user
-    this.nonce = environment.evmKeccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
+    this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
 }

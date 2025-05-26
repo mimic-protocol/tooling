@@ -1,4 +1,4 @@
-import { Address, BigInt, environment, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment, evm, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
@@ -13,19 +13,19 @@ export class ERC20 {
 
   name(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x06fdde03')
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('string', response))
     return decodedResponse
   }
 
   totalSupply(): BigInt {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x18160ddd')
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
   }
 
   decimals(): u8 {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x313ce567')
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint8', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint8', response))
     return u8.parse(decodedResponse)
   }
 
@@ -34,15 +34,15 @@ export class ERC20 {
       this.address,
       this.chainId,
       this.timestamp,
-      '0x70a08231' + environment.evmEncode([EvmEncodeParam.fromValue('address', _owner)])
+      '0x70a08231' + evm.encode([EvmEncodeParam.fromValue('address', _owner)])
     )
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
   }
 
   symbol(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x95d89b41')
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('string', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('string', response))
     return decodedResponse
   }
 
@@ -52,12 +52,9 @@ export class ERC20 {
       this.chainId,
       this.timestamp,
       '0xdd62ed3e' +
-        environment.evmEncode([
-          EvmEncodeParam.fromValue('address', _owner),
-          EvmEncodeParam.fromValue('address', _spender),
-        ])
+        evm.encode([EvmEncodeParam.fromValue('address', _owner), EvmEncodeParam.fromValue('address', _spender)])
     )
-    const decodedResponse = environment.evmDecode(new EvmDecodeParam('uint256', response))
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
   }
 }

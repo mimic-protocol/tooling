@@ -12,9 +12,14 @@ export const ParameterizedResponseValidator = z
 
 const InputsValidator = z.record(z.string(), z.union([z.number(), z.string()]))
 
-export const MockResponseValueValidator = z.union([z.string(), ParameterizedResponseValidator, InputsValidator])
-export const MockConfigValidator = z.record(MockResponseValueValidator)
+// Function mocks
+const MockFunctionResponseValidator = z.union([z.string(), ParameterizedResponseValidator, z.literal('log')])
 
-export type MockResponseValue = z.infer<typeof MockResponseValueValidator>
+export const MockSectionValidator = z.record(MockFunctionResponseValidator)
+
+// The full config: a record of dynamic namespaces → sections (function mocks or inputs)
+export const MockConfigValidator = z.record(z.union([MockSectionValidator, InputsValidator]))
+
+export type MockResponseValue = z.infer<typeof MockFunctionResponseValidator>
 export type ParameterizedResponse = z.infer<typeof ParameterizedResponseValidator>
-export type MockConfig = z.infer<typeof MockConfigValidator>
+export type MockConfig = z.output<typeof MockConfigValidator>

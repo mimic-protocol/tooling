@@ -7,7 +7,7 @@
   "scripts": {
     "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit  --transform json-as/transform",
     "test": "asp",
-    "lint": "eslint . --ignore-pattern 'src/environment.ts'"
+    "lint": "eslint . --ignore-pattern 'src/environment.ts' --ignore-pattern 'src/evm.ts'"
   },
   "devDependencies": {
     "@as-pect/cli": "^8.1.0",

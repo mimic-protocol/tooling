@@ -1,6 +1,12 @@
 import { AbiParameter, LibTypes } from '../../types'
 
-export type ImportedTypes = LibTypes | 'environment' | 'EvmEncodeParam' | 'EvmDecodeParam' | 'parseCSVNotNullable'
+export type ImportedTypes =
+  | LibTypes
+  | 'environment'
+  | 'evm'
+  | 'EvmEncodeParam'
+  | 'EvmDecodeParam'
+  | 'parseCSVNotNullable'
 export type MapBaseTypeCallback = (param: AbiParameter) => string
 export type TupleDefinition = {
   className: string

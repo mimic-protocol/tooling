@@ -1,12 +1,16 @@
 {
-  "_getRelevantTokens": {
-    "log": true,
-    "default": "TokenAmount(Token(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1),BigInt(1000000000))\nTokenAmount(Token(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,1),BigInt(1000000000000000000))\nTokenAmount(Token(0xc2132d05d31c914a87c6611c10748aeb04b58e8f,137),BigInt(20000000))"
+  "environment": {
+    "_getRelevantTokens": {
+      "log": true,
+      "default": "TokenAmount(Token(0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48,1),BigInt(1000000000))\nTokenAmount(Token(0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,1),BigInt(1000000000000000000))\nTokenAmount(Token(0xc2132d05d31c914a87c6611c10748aeb04b58e8f,137),BigInt(20000000))"
+    },
+    "_contractCall": {
+      "default": ""
+    }
   },
-  "_contractCall": {
-    "default": ""
-  },
-  "_evmDecode": {
-    "default": ""
+  "evm": {
+    "_decode": {
+      "default": ""
+    }
   }
 }

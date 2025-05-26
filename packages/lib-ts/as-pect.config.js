@@ -27,6 +27,17 @@ export default {
           console.log(string)
         },
       },
+      evm: {
+        _decode: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = paramsStr.split('(')[1].split(')')[0].split(',')
+          const abiType = params[0]
+          const hex = params[1]
+          const key = `_evmDecode:${abiType}:${hex}`
+          const decoded = store.has(key) ? store.get(key) : ''
+          return exports.__newString(decoded)
+        },
+      },
       environment: {
         _getPrice: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
@@ -50,15 +61,6 @@ export default {
           const result = store.has(key) ? store.get(key) : '0x00'
 
           return exports.__newString(result)
-        },
-        _evmDecode: (paramsPtr) => {
-          const paramsStr = exports.__getString(paramsPtr)
-          const params = paramsStr.split('(')[1].split(')')[0].split(',')
-          const abiType = params[0]
-          const hex = params[1]
-          const key = `_evmDecode:${abiType}:${hex}`
-          const decoded = store.has(key) ? store.get(key) : ''
-          return exports.__newString(decoded)
         },
       },
       helpers: {

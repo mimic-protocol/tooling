@@ -172,7 +172,7 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(
-        ` environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' + environment.evmEncode([EvmEncodeParam.fromValue('address', owner)]))`
+        ` environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' + evm.encode([EvmEncodeParam.fromValue('address', owner)]))`
       )
     })
 

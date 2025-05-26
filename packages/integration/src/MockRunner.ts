@@ -104,11 +104,18 @@ export default class MockRunner {
   }
 
   private generateImports(mock: MockConfig, inputs: WebAssembly.ModuleImports): WebAssembly.Imports {
-    const environmentImports: WebAssembly.ModuleImports = {}
-    const variableImports: WebAssembly.ModuleImports = {}
+    const importModules: Record<string, WebAssembly.ModuleImports> = {}
 
-    for (const [functionName, mockValue] of Object.entries(mock)) {
-      environmentImports[functionName] = this.createMockFunction(functionName, mockValue)
+    const variableImports: WebAssembly.ModuleImports = {}
+    for (const moduleName of ['environment', 'evm'] as const) {
+      const moduleMocks = mock[moduleName] ?? {}
+      const moduleImports: WebAssembly.ModuleImports = {}
+
+      for (const [functionName, mockValue] of Object.entries(moduleMocks)) {
+        moduleImports[functionName] = this.createMockFunction(functionName, mockValue)
+      }
+
+      importModules[moduleName] = moduleImports
     }
 
     for (const [key, value] of Object.entries(inputs)) {
@@ -117,7 +124,7 @@ export default class MockRunner {
     }
 
     return {
-      environment: environmentImports,
+      ...importModules,
       env: this.ENV_IMPORTS,
       index: variableImports,
     }

@@ -1,4 +1,5 @@
 import { environment } from '../environment'
+import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize, STANDARD_DECIMALS } from '../helpers'
 import { Address, EvmDecodeParam } from '../types'
 
@@ -63,7 +64,7 @@ export class Token implements Serializable {
   get symbol(): string {
     if (this._symbol === Token.EMPTY_SYMBOL) {
       const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
-      this._symbol = environment.evmDecode(new EvmDecodeParam('string', response))
+      this._symbol = evm.decode(new EvmDecodeParam('string', response))
     }
     return this._symbol
   }
@@ -79,7 +80,7 @@ export class Token implements Serializable {
   get decimals(): u8 {
     if (this._decimals == Token.EMPTY_DECIMALS) {
       const result = environment.contractCall(this.address, this.chainId, this._timestamp, '0x313ce567')
-      this._decimals = u8.parse(environment.evmDecode(new EvmDecodeParam('uint8', result)))
+      this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
     }
     return this._decimals
   }
