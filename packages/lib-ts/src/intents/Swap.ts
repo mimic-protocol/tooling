@@ -29,10 +29,10 @@ export class TokenOut {
 @json
 export class Swap extends Intent {
   constructor(
-    public sourceChainId: u64,
+    public sourceChain: u64,
     public tokensIn: TokenIn[],
     public tokensOut: TokenOut[],
-    public destinationChainId: u64,
+    public destinationChain: u64,
     settler: Address | null,
     deadline: BigInt | null
   ) {
