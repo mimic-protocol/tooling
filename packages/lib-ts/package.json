@@ -10,12 +10,12 @@
     "lint": "eslint . --ignore-pattern 'src/environment.ts' --ignore-pattern 'src/evm.ts'"
   },
   "devDependencies": {
-    "@as-pect/cli": "^8.1.0",
-    "assemblyscript": "^0.27.35"
+    "@as-pect/cli": "8.1.0",
+    "assemblyscript": "0.27.36"
   },
   "dependencies": {
     "eslint-config-mimic": "^0.0.3",
-    "json-as": "^1.0.7",
-    "visitor-as": "^0.11.4"
+    "json-as": "1.0.7",
+    "visitor-as": "0.11.4"
   }
 }
