@@ -10,6 +10,7 @@ export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
+  const chainId = 1
   const feeToken = Address.fromString(NULL_ADDRESS)
   const feeAmount = BigInt.zero()
 
@@ -17,6 +18,6 @@ export default function main(): void {
   const fee2 = feeAmount.times(BigInt.fromI32(input.secondStaticNumber))
 
   // Replace this with your task code
-  environment.call([new CallData(target, data, BigInt.zero())], feeToken, fee1, settler)
-  environment.call([new CallData(target, data, BigInt.zero())], feeToken, fee2, settler)
+  environment.call([new CallData(target, data, BigInt.zero())], feeToken, fee1, chainId, settler)
+  environment.call([new CallData(target, data, BigInt.zero())], feeToken, fee2, chainId, settler)
 }
