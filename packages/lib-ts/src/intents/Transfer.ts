@@ -20,11 +20,12 @@ export class Transfer extends Intent {
   public transfers: TransferData[]
   public feeToken: string
   public feeAmount: string
-
+  public chainId: u64
   constructor(
     transfers: TransferData[],
     feeToken: Address,
     feeAmount: BigInt,
+    chainId: u64,
     settler: Address | null,
     deadline: BigInt | null
   ) {
@@ -37,5 +38,6 @@ export class Transfer extends Intent {
     this.transfers = transfers
     this.feeToken = feeToken.toString()
     this.feeAmount = feeAmount.toString()
+    this.chainId = chainId
   }
 }

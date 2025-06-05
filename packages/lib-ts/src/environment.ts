@@ -31,11 +31,12 @@ export namespace environment {
     calls: CallData[],
     feeToken: Address,
     feeAmount: BigInt,
+    chainId: u64,
     settler: Address | null = null,
     deadline: BigInt | null = null,
   ): void {
     _call(
-      JSON.stringify(new Call(calls, feeToken, feeAmount, settler, deadline))
+      JSON.stringify(new Call(calls, feeToken, feeAmount, chainId, settler, deadline))
     )
   }
 
@@ -54,10 +55,11 @@ export namespace environment {
     transfers: TransferData[],
     feeToken: Address,
     feeAmount: BigInt,
+    chainId: u64,
     settler: Address | null = null,
     deadline: BigInt | null = null,
   ): void {
-    _transfer(JSON.stringify(new Transfer(transfers, feeToken, feeAmount, settler, deadline))
+    _transfer(JSON.stringify(new Transfer(transfers, feeToken, feeAmount, chainId, settler, deadline))
     )
   }
 
