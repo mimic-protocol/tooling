@@ -1,5 +1,6 @@
 import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
-import { inputs } from "./types";
+
+import { inputs } from './types'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)

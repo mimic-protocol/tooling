@@ -40,5 +40,11 @@ export default function main(): void {
   )
 
   // Normal Transfer
-  environment.transfer([new TransferData(USDC.address, inputs.amount, target)], USDC.address, inputs.amount, chainId, settler)
+  environment.transfer(
+    [new TransferData(USDC.address, inputs.amount, target)],
+    USDC.address,
+    inputs.amount,
+    chainId,
+    settler
+  )
 }
