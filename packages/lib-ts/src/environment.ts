@@ -2,6 +2,7 @@ import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt } from './types'
 import { Swap, TokenIn, TokenOut, Transfer, TransferData, Call, CallData } from "./intents";
+import { Call as CallQuery } from "./queries";
 import { JSON } from 'json-as/assembly'
 import { Context } from "./context";
 
@@ -95,18 +96,13 @@ export namespace environment {
   }
 
   export function contractCall(
-    target: Address,
+    to: Address,
     chainId: u64,
     timestamp: Date | null,
-    callData: string
+    data: string
   ): string {
     return _contractCall(
-      join([
-        serialize(target),
-        serialize(chainId),
-        serialize(timestamp ? timestamp.getTime().toString() : ''),
-        serialize(callData),
-      ])
+      JSON.stringify(new CallQuery(to, chainId, timestamp, data))
     )
   }
 
