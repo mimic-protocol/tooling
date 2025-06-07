@@ -1,4 +1,4 @@
-import { Address } from "../types";
+import { Address } from '../types'
 
 @json
 export class Call {
@@ -7,15 +7,10 @@ export class Call {
   public timestamp: Date | null
   public data: string
 
-  constructor(
-    to: Address,
-    chainId: u64,
-    timestamp: Date | null,
-    data: string,
-  ) {
-    this.to = to.toString();
-    this.chainId = chainId;
-    this.data = data;
-    this.timestamp = timestamp;
+  constructor(to: Address, chainId: u64, timestamp: Date | null, data: string) {
+    this.to = to.toString()
+    this.chainId = chainId
+    this.data = data
+    this.timestamp = timestamp
   }
 }
