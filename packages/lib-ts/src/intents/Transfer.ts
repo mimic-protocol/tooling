@@ -1,3 +1,4 @@
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt } from '../types'
 
 import { Intent, OperationType } from './Intent'
@@ -7,6 +8,14 @@ export class TransferData {
   public token: string
   public amount: string
   public recipient: string
+
+  static fromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferData {
+    return new TransferData(tokenAmount.token.address, tokenAmount.amount, recipient)
+  }
+
+  static fromStringDecimal(token: Token, amount: string, recipient: Address): TransferData {
+    return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount), recipient)
+  }
 
   constructor(token: Address, amount: BigInt, recipient: Address) {
     this.token = token.toString()

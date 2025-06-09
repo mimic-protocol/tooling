@@ -1,3 +1,4 @@
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt } from '../types'
 
 import { Intent, OperationType } from './Intent'
@@ -6,6 +7,14 @@ import { Intent, OperationType } from './Intent'
 export class TokenIn {
   token: string
   amount: string
+
+  static fromTokenAmount(tokenAmount: TokenAmount): TokenIn {
+    return new TokenIn(tokenAmount.token.address, tokenAmount.amount)
+  }
+
+  static fromStringDecimal(token: Token, amount: string): TokenIn {
+    return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount))
+  }
 
   constructor(token: Address, amount: BigInt) {
     this.token = token.toString()
@@ -18,6 +27,14 @@ export class TokenOut {
   token: string
   minAmount: string
   recipient: string
+
+  static fromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TokenOut {
+    return new TokenOut(tokenAmount.token.address, tokenAmount.amount, recipient)
+  }
+
+  static fromStringDecimal(token: Token, amount: string, recipient: Address): TokenOut {
+    return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount), recipient)
+  }
 
   constructor(token: Address, minAmount: BigInt, recipient: Address) {
     this.token = token.toString()
