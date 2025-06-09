@@ -1,5 +1,6 @@
 import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace input {
   const firstStaticNumber: i32
   const secondStaticNumber: i32
