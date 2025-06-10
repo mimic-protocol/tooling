@@ -10,7 +10,7 @@ export default function main(): void {
   const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromI32(2))
   const feeTokenAmount1 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(1)))
   const feeTokenAmount2 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(2)))
-  environment.call([new CallData(target, data)], feeTokenAmount, settler)
-  environment.call([new CallData(target, data)], feeTokenAmount1, settler)
-  environment.call([new CallData(target, data)], feeTokenAmount2, settler)
+  environment.call([new CallData(target, data)], feeTokenAmount, inputs.chainId, settler)
+  environment.call([new CallData(target, data)], feeTokenAmount1, inputs.chainId, settler)
+  environment.call([new CallData(target, data)], feeTokenAmount2, inputs.chainId, settler)
 }

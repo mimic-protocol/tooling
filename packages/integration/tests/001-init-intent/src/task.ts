@@ -10,5 +10,5 @@ export default function main(): void {
   const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('10'))
 
   // Replace this with your task code
-  environment.call([new CallData(target, data, value)], feeTokenAmount, settler)
+  environment.call([new CallData(target, data, value)], feeTokenAmount, chainId, settler)
 }

@@ -12,11 +12,11 @@ export default function main(): void {
   // Call without bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
-  environment.call([new CallData(target)], feeTokenAmount, settler)
+  environment.call([new CallData(target)], feeTokenAmount, chainId, settler)
 
   // Call with bytes
   const bytes = Bytes.fromI32(123)
-  environment.call([new CallData(target, bytes)], feeTokenAmount, settler)
+  environment.call([new CallData(target, bytes)], feeTokenAmount, chainId, settler)
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount)
@@ -25,9 +25,9 @@ export default function main(): void {
     .toString()
   const tokenIn = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
   const tokenOut = TokenAmount.fromStringDecimal(WBTC, minAmountOut)
-  environment.swap([tokenIn], [tokenOut], target, settler)
+  environment.swap([tokenIn], [tokenOut], target, chainId, settler)
 
   // Normal Transfer
   const tokenAmounts = [TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())]
-  environment.transfer(tokenAmounts, target, feeTokenAmount, settler)
+  environment.transfer(tokenAmounts, target, feeTokenAmount, chainId, settler)
 }

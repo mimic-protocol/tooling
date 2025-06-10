@@ -1,6 +1,5 @@
 import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace input {
   const firstStaticNumber: i32
   const secondStaticNumber: i32
@@ -21,6 +20,6 @@ export default function main(): void {
   const feeTokenAmount2 = new TokenAmount(feeToken, fee2)
 
   // Replace this with your task code
-  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount1, settler)
-  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount2, settler)
+  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount1, chainId, settler)
+  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount2, chainId, settler)
 }
