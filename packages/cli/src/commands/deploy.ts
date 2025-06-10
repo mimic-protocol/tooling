@@ -7,7 +7,7 @@ import { join, resolve } from 'path'
 import { GENERIC_SUGGESTION, RegistryPartialError } from '../errors'
 import log from '../log'
 
-const MIMIC_REGISTRY = 'http://localhost:4001'
+const MIMIC_REGISTRY = 'https://api-protocol.mimic.fi'
 
 export default class Deploy extends Command {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
