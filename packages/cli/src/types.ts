@@ -6,6 +6,7 @@ export type Manifest = z.infer<typeof ManifestValidator>
 
 export type AbiParameter = {
   name?: string
+  escapedName?: string
   type: string
   internalType?: string
   components?: AbiParameter[]
