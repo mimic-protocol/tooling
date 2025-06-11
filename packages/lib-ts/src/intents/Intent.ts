@@ -14,24 +14,27 @@ export abstract class IntentBuilder {
   protected settler: Address | null = null
   protected deadline: BigInt | null = null
 
-  setSettler(settler: Address): IntentBuilder {
+  addSettler(settler: Address): IntentBuilder {
     this.settler = settler
     return this
   }
 
-  setSettlerAsString(settler: string): IntentBuilder {
-    this.settler = Address.fromString(settler)
-    return this
+  addSettlerAsString(settler: string): IntentBuilder {
+    return this.addSettler(Address.fromString(settler))
   }
 
-  setDeadline(deadline: BigInt): IntentBuilder {
+  addDeadline(deadline: BigInt): IntentBuilder {
     this.deadline = deadline
     return this
   }
 
-  setUser(user: Address): IntentBuilder {
+  addUser(user: Address): IntentBuilder {
     this.user = user
     return this
+  }
+
+  addUserAsString(user: string): IntentBuilder {
+    return this.addUser(Address.fromString(user))
   }
 
   abstract build(): Intent
@@ -54,5 +57,5 @@ export abstract class Intent {
     this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
 
-  abstract send(): void;
+  abstract send(): void
 }

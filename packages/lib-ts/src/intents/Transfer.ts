@@ -1,7 +1,61 @@
+import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt } from '../types'
 
-import { Intent, OperationType } from './Intent'
+import { Intent, IntentBuilder, OperationType } from './Intent'
+
+export class TransferBuilder extends IntentBuilder {
+  private transfers: TransferData[] = []
+  private feeTokenAmount: TokenAmount
+  private chainId: u64
+
+  static fromTokenAmountAndChain(feeTokenAmount: TokenAmount, chainId: u64): TransferBuilder {
+    return new TransferBuilder(feeTokenAmount, chainId)
+  }
+
+  constructor(feeTokenAmount: TokenAmount, chainId: u64) {
+    super()
+    this.feeTokenAmount = feeTokenAmount
+    this.chainId = chainId
+  }
+
+  addTransfer(transfer: TransferData): TransferBuilder {
+    this.transfers.push(transfer)
+    return this
+  }
+  addTransfers(transfers: TransferData[]): TransferBuilder {
+    for (let i = 0; i < transfers.length; i++) {
+      this.transfers.push(transfers[i])
+    }
+    return this
+  }
+
+  addTransferFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferBuilder {
+    return this.addTransfer(TransferData.fromTokenAmount(tokenAmount, recipient))
+  }
+
+  addTransferFromStringDecimal(token: Token, amount: string, recipient: Address): TransferBuilder {
+    return this.addTransfer(TransferData.fromStringDecimal(token, amount, recipient))
+  }
+
+  addTransfersFromTokenAmounts(tokenAmounts: TokenAmount[], recipient: Address): TransferBuilder {
+    for (let i = 0; i < tokenAmounts.length; i++) {
+      this.addTransferFromTokenAmount(tokenAmounts[i], recipient)
+    }
+    return this
+  }
+
+  build(): Transfer {
+    return new Transfer(
+      this.transfers,
+      this.feeTokenAmount.token.address,
+      this.feeTokenAmount.amount,
+      this.chainId,
+      this.settler,
+      this.deadline
+    )
+  }
+}
 
 @json
 export class TransferData {
@@ -48,5 +102,9 @@ export class Transfer extends Intent {
     this.feeToken = feeToken.toString()
     this.feeAmount = feeAmount.toString()
     this.chainId = chainId
+  }
+
+  send(): void {
+    environment.transfer(this)
   }
 }

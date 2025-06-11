@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
@@ -10,7 +10,10 @@ export default function main(): void {
   const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromI32(2))
   const feeTokenAmount1 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(1)))
   const feeTokenAmount2 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(2)))
-  environment.call([new CallData(target, data)], feeTokenAmount, inputs.chainId, settler)
-  environment.call([new CallData(target, data)], feeTokenAmount1, inputs.chainId, settler)
-  environment.call([new CallData(target, data)], feeTokenAmount2, inputs.chainId, settler)
+  const baseCallBuilder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount, inputs.chainId)
+    .addCall(target, data)
+    .addSettler(settler) as CallBuilder
+  baseCallBuilder.build().send()
+  baseCallBuilder.addFeeTokenAmount(feeTokenAmount1).build().send()
+  baseCallBuilder.addFeeTokenAmount(feeTokenAmount2).build().send()
 }

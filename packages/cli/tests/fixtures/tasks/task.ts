@@ -1,6 +1,6 @@
-import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
+/* eslint-disable @typescript-eslint/no-namespace */
 declare namespace input {
   const firstStaticNumber: i32
   const secondStaticNumber: i32
@@ -21,6 +21,9 @@ export default function main(): void {
   const feeTokenAmount2 = new TokenAmount(feeToken, fee2)
 
   // Replace this with your task code
-  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount1, chainId, settler)
-  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount2, chainId, settler)
+  const builder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount1, chainId)
+    .addCall(target, data)
+    .addSettler(settler) as CallBuilder
+  builder.build().send()
+  builder.addFeeTokenAmount(feeTokenAmount2).build().send()
 }

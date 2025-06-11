@@ -1,4 +1,14 @@
-import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  CallBuilder,
+  NULL_ADDRESS,
+  SwapBuilder,
+  Token,
+  TokenAmount,
+  TransferBuilder,
+} from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
@@ -12,11 +22,14 @@ export default function main(): void {
   // Call without bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
-  environment.call([new CallData(target)], feeTokenAmount, chainId, settler)
-
-  // Call with bytes
   const bytes = Bytes.fromI32(123)
-  environment.call([new CallData(target, bytes)], feeTokenAmount, chainId, settler)
+
+  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
+    .addCall(target)
+    .addCall(target, bytes)
+    .addSettler(settler)
+    .build()
+    .send()
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount)
@@ -25,9 +38,19 @@ export default function main(): void {
     .toString()
   const tokenIn = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
   const tokenOut = TokenAmount.fromStringDecimal(WBTC, minAmountOut)
-  environment.swap([tokenIn], [tokenOut], target, chainId, settler)
+
+  SwapBuilder.fromChains(chainId, chainId)
+    .addTokenInFromTokenAmount(tokenIn)
+    .addTokenOutFromTokenAmount(tokenOut, target)
+    .addSettler(settler)
+    .build()
+    .send()
 
   // Normal Transfer
   const tokenAmounts = [TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())]
-  environment.transfer(tokenAmounts, target, feeTokenAmount, chainId, settler)
+  TransferBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
+    .addTransfersFromTokenAmounts(tokenAmounts, target)
+    .addSettler(settler)
+    .build()
+    .send()
 }

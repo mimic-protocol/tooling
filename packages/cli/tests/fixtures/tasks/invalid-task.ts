@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, CallData, environment, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -12,5 +12,5 @@ export default function main(): void {
   feeAmount = feeAmount.plus(BigInt.fromI32(undeclaredVariable))
 
   // Replace this with your task code
-  environment.call([new CallData(target, data, BigInt.zero())], feeTokenAmount, settler)
+  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId).addCall(target, data).addSettler(settler).build().send()
 }
