@@ -75,20 +75,30 @@ describe('deploy', () => {
             const CID = '123'
 
             beforeEach('mock response', () => {
-              axiosMock.onPost(/.*\/tasks/gm).reply(200, { CID, errorMessage: `Failed to register task: ${CID}` })
+              axiosMock
+                .onPost(/.*\/tasks/gm)
+                .reply(200, { CID, errorMessage: 'Task with same name and version already exists' })
             })
 
-            itThrowsACliError(command, `Failed to upload to registry`, 'RegistrationError', 1)
+            itThrowsACliError(command, 'Task with same name and version already exists', 'Registration Error', 1)
           })
         })
 
         context('when uploading to registry is not successful', () => {
-          context('when there is an auth failure', () => {
+          context('when there is an authorization failure', () => {
             beforeEach('mock response', () => {
               axiosMock.onPost(/.*/).reply(401)
             })
 
             itThrowsACliError(command, 'Failed to upload to registry', 'Unauthorized', 1)
+          })
+
+          context('when there is an authentication failure', () => {
+            beforeEach('mock response', () => {
+              axiosMock.onPost(/.*/).reply(403)
+            })
+
+            itThrowsACliError(command, 'Failed to upload to registry', 'Invalid api key', 1)
           })
 
           context('when there is a generic error', () => {
@@ -99,7 +109,7 @@ describe('deploy', () => {
             itThrowsACliError(
               command,
               'Failed to upload to registry - Request failed with status code 501',
-              '501Error',
+              '501 Error',
               1
             )
           })
@@ -108,7 +118,7 @@ describe('deploy', () => {
 
       context('when the directory does not contain the necessary files', () => {
         context('when the directory contains no files', () => {
-          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'File Not Found', 1)
         })
 
         context('when the directory contains only one file', () => {
@@ -116,13 +126,13 @@ describe('deploy', () => {
             createFile('manifest.json')
           })
 
-          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'File Not Found', 1)
         })
       })
     })
 
     context('when input directory does not exist', () => {
-      itThrowsACliError(command, `Directory ${inputDir} does not exist`, 'DirectoryNotFound', 1)
+      itThrowsACliError(command, `Directory ${inputDir} does not exist`, 'Directory Not Found', 1)
     })
   })
 
