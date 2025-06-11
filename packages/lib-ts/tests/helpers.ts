@@ -42,6 +42,6 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }
 
-export declare function setContractCall(target: string, chainId: u64, data: string, result: string): void
+export declare function setContractCall(to: string, chainId: u64, data: string, result: string): void
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void

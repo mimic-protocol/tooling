@@ -53,11 +53,8 @@ export default {
         },
         _contractCall: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
-          const params = paramsStr.split(',')
-          const target = params[0]
-          const chainId = params[1]
-          const data = params[3]
-          const key = `_contractCall:${target}:${chainId}:${data}`
+          const params = JSON.parse(paramsStr)
+          const key = `_contractCall:${params.to}:${params.chainId}:${params.data}`
           const result = store.has(key) ? store.get(key) : '0x00'
 
           return exports.__newString(result)
@@ -70,11 +67,11 @@ export default {
           const key = `_getPrice:${address}:${chainId}`
           store.set(key, price)
         },
-        setContractCall: (targetPtr, chainId, dataPtr, resultPtr) => {
-          const target = exports.__getString(targetPtr)
+        setContractCall: (toPtr, chainId, dataPtr, resultPtr) => {
+          const to = exports.__getString(toPtr)
           const data = exports.__getString(dataPtr)
           const result = exports.__getString(resultPtr)
-          const key = `_contractCall:${target}:${chainId}:${data}`
+          const key = `_contractCall:${to}:${chainId}:${data}`
           store.set(key, result)
         },
         setEvmDecode: (abiTypePtr, hexPtr, decodedPtr) => {
