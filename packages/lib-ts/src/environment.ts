@@ -28,18 +28,8 @@ export namespace environment {
   @external('environment', '_getContext')
   declare function _getContext(): string
 
-  export function call(
-    calls: CallData[],
-    feeTokenAmount: TokenAmount,
-    chainId: u64,
-    settler: Address | null = null,
-    deadline: BigInt | null = null,
-  ): void {
-    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the calls')
-
-    _call(
-      JSON.stringify(new Call(calls, feeTokenAmount.token.address, feeTokenAmount.amount, chainId, settler, deadline))
-    )
+  export function call(intent: Call): void {
+    _call(JSON.stringify(intent))
   }
 
   export function swap(

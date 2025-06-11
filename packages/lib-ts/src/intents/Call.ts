@@ -1,6 +1,8 @@
+import { environment } from '../environment'
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt, Bytes } from '../types'
 
-import { Intent, OperationType } from './Intent'
+import { Intent, IntentBuilder, OperationType } from './Intent'
 
 @json
 export class CallData {
@@ -12,6 +14,29 @@ export class CallData {
     this.target = target.toString()
     this.data = data.toHexString()
     this.value = value.toString()
+  }
+}
+
+export class CallBuilder extends IntentBuilder {
+  private calls: CallData[] = []
+  private feeToken: Address
+  private feeAmount: BigInt
+  private chainId: u64
+
+  constructor(feeTokenAmount: TokenAmount, chainId: u64) {
+    super()
+    this.feeToken = feeTokenAmount.token.address
+    this.feeAmount = feeTokenAmount.amount
+    this.chainId = chainId
+  }
+
+  addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
+    this.calls.push(new CallData(target, data, value))
+    return this
+  }
+
+  build(): Call {
+    return new Call(this.calls, this.feeToken, this.feeAmount, this.chainId, this.settler, this.deadline)
   }
 }
 
@@ -40,5 +65,9 @@ export class Call extends Intent {
     this.feeToken = feeToken.toString()
     this.feeAmount = feeAmount.toString()
     this.chainId = chainId
+  }
+
+  public send(): void {
+    environment.call(this)
   }
 }

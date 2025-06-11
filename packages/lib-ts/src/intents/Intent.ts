@@ -9,6 +9,34 @@ export enum OperationType {
   Call,
 }
 
+export abstract class IntentBuilder {
+  protected user: Address | null = null
+  protected settler: Address | null = null
+  protected deadline: BigInt | null = null
+
+  setSettler(settler: Address): IntentBuilder {
+    this.settler = settler
+    return this
+  }
+
+  setSettlerAsString(settler: string): IntentBuilder {
+    this.settler = Address.fromString(settler)
+    return this
+  }
+
+  setDeadline(deadline: BigInt): IntentBuilder {
+    this.deadline = deadline
+    return this
+  }
+
+  setUser(user: Address): IntentBuilder {
+    this.user = user
+    return this
+  }
+
+  abstract build(): Intent
+}
+
 let INTENT_INDEX: u32 = 0
 @json
 export abstract class Intent {
@@ -25,4 +53,6 @@ export abstract class Intent {
     this.user = context.user.toString()
     this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
+
+  abstract send(): void;
 }
