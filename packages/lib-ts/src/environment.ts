@@ -4,7 +4,7 @@ import { Address, BigInt } from './types'
 import { Swap, TokenIn, TokenOut, Transfer, TransferData, Call, CallData } from "./intents";
 import { Call as CallQuery } from "./queries";
 import { JSON } from 'json-as/assembly'
-import { Context } from "./context";
+import { Context, SerializableContext } from "./context";
 
 export namespace environment {
   @external('environment', '_call')
@@ -133,6 +133,7 @@ export namespace environment {
   }
 
   export function getContext(): Context {
-    return JSON.parse<Context>(_getContext());
+    const context = JSON.parse<SerializableContext>(_getContext())
+    return Context.fromSerializable(context)
   }
 }

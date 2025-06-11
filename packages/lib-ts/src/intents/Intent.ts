@@ -22,7 +22,7 @@ export abstract class Intent {
     this.op = op
     this.settler = settler ? settler.toString() : NULL_ADDRESS
     this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
-    this.user = context.user
+    this.user = context.user.toString()
     this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
 }
