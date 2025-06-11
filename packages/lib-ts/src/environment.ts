@@ -30,37 +30,63 @@ export namespace environment {
 
   export function call(
     calls: CallData[],
-    feeToken: Address,
-    feeAmount: BigInt,
+    feeTokenAmount: TokenAmount,
     chainId: u64,
     settler: Address | null = null,
     deadline: BigInt | null = null,
   ): void {
+    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the calls')
+
     _call(
-      JSON.stringify(new Call(calls, feeToken, feeAmount, chainId, settler, deadline))
+      JSON.stringify(new Call(calls, feeTokenAmount.token.address, feeTokenAmount.amount, chainId, settler, deadline))
     )
   }
 
   export function swap(
+    tokensIn: TokenAmount[],
+    tokensOut: TokenAmount[],
+    recipient: Address,
     chainId: u64,
-    tokensIn: TokenIn[],
-    tokensOut: TokenOut[],
-    destinationChainId: u64 = chainId,
     settler: Address | null = null,
     deadline: BigInt | null = null,
   ): void {
-    _swap(JSON.stringify(new Swap(chainId, tokensIn, tokensOut, destinationChainId, settler, deadline)))
+    if(tokensIn.length === 0 || tokensOut.length === 0) throw new Error('Tokens in and out are required')
+
+    const sourceChainId = tokensIn[0].token.chainId
+
+    for(let i = 1; i < tokensIn.length; i++) {
+      if(tokensIn[i].token.chainId !== sourceChainId) throw new Error('All tokens in must be on the same chain')
+    }
+
+    for(let i = 1; i < tokensOut.length; i++) {
+      if(tokensOut[i].token.chainId !== chainId) throw new Error('All tokens out must be on the same chain')
+    }
+    
+    const _tokensIn = tokensIn.map<TokenIn>(tokenIn => TokenIn.fromTokenAmount(tokenIn))
+    const _tokensOut: TokenOut[] = []
+    for(let i = 0; i < tokensOut.length; i++) _tokensOut.push(TokenOut.fromTokenAmount(tokensOut[i], recipient))
+
+    _swap(JSON.stringify(new Swap(sourceChainId, _tokensIn, _tokensOut, chainId, settler, deadline)))
   }
 
   export function transfer(
-    transfers: TransferData[],
-    feeToken: Address,
-    feeAmount: BigInt,
+    tokenAmounts: TokenAmount[],
+    recipient: Address,
+    feeTokenAmount: TokenAmount,
     chainId: u64,
     settler: Address | null = null,
     deadline: BigInt | null = null,
   ): void {
-    _transfer(JSON.stringify(new Transfer(transfers, feeToken, feeAmount, chainId, settler, deadline))
+    for(let i = 1; i < tokenAmounts.length; i++) {
+      if(tokenAmounts[i].token.chainId !== chainId) throw new Error('All tokens must be on the same chain')
+    }
+
+    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the tokens')
+
+    const transfers: TransferData[] = []
+    for(let i = 0; i < tokenAmounts.length; i++) transfers.push(TransferData.fromTokenAmount(tokenAmounts[i], recipient))
+
+    _transfer(JSON.stringify(new Transfer(transfers, feeTokenAmount.token.address, feeTokenAmount.amount, feeTokenAmount.token.chainId, settler, deadline))
     )
   }
 
