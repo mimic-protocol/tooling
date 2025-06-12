@@ -68,6 +68,7 @@ function convertType(type: string): string {
 
   if (type.includes('address')) return 'Address'
   if (type.includes('bytes')) return 'Bytes'
+  if (type.includes('float')) return 'string'
 
   return type
 }

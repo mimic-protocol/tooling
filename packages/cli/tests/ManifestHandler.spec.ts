@@ -6,7 +6,7 @@ describe('ManifestHandler', () => {
   const manifest = {
     version: '1.0.0',
     name: 'sample task',
-    inputs: [{ firstStaticNumber: 'uint8' }, { secondStaticNumber: 'uint8' }],
+    inputs: [{ firstStaticNumber: 'uint8' }, { secondStaticNumber: 'uint8' }, { float: 'float' }, { number: 'uint24' }],
     abis: [{ ERC20: './abis/ERC20.json' }],
   }
 

@@ -48,19 +48,33 @@ describe('InputsInterfaceGenerator', () => {
 
       context('when there is a mix of inputs', () => {
         it('generates correctly', () => {
-          const inputs = { first: 'int32', someAddress: 'address', isTrue: 'bool', s: 'string' }
+          const inputs = {
+            first: 'int16',
+            second: 'uint24',
+            third: 'uint128',
+            someAddress: 'address',
+            isTrue: 'bool',
+            s: 'string',
+            value: 'float',
+          }
           const result = InputsInterfaceGenerator.generate(inputs)
           expectItIncludes(
             result,
-            `import { Address } from '@mimicprotocol/lib-ts'`,
-            'const first: i32',
+            `import { Address, BigInt } from '@mimicprotocol/lib-ts'`,
+            'const first: i16',
+            'const second: u32',
+            'var third: string',
             'var someAddress: string',
             'const isTrue: bool',
             'var s: string',
-            'static get first(): i32',
+            'var value: string',
+            'static get first(): i16',
+            'static get second(): u32',
+            'static get third(): BigInt',
             'static get someAddress(): Address',
             'static get isTrue(): bool',
-            'static get s(): string'
+            'static get s(): string',
+            'static get value(): string'
           )
         })
       })
