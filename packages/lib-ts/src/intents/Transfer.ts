@@ -15,6 +15,9 @@ export class TransferBuilder extends IntentBuilder {
 
   constructor(feeTokenAmount: TokenAmount, chainId: u64) {
     super()
+    if (feeTokenAmount.token.chainId !== chainId) {
+      throw new Error('Fee token must be on the same chain as the intent')
+    }
     this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
   }
@@ -23,6 +26,7 @@ export class TransferBuilder extends IntentBuilder {
     this.transfers.push(transfer)
     return this
   }
+
   addTransfers(transfers: TransferData[]): TransferBuilder {
     for (let i = 0; i < transfers.length; i++) {
       this.transfers.push(transfers[i])
@@ -31,10 +35,16 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   addTransferFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferBuilder {
+    if (tokenAmount.token.chainId !== this.chainId) {
+      throw new Error('All tokens must be on the same chain')
+    }
     return this.addTransfer(TransferData.fromTokenAmount(tokenAmount, recipient))
   }
 
   addTransferFromStringDecimal(token: Token, amount: string, recipient: Address): TransferBuilder {
+    if (token.chainId !== this.chainId) {
+      throw new Error('All tokens must be on the same chain')
+    }
     return this.addTransfer(TransferData.fromStringDecimal(token, amount, recipient))
   }
 

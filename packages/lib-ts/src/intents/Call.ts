@@ -17,6 +17,8 @@ export class CallBuilder extends IntentBuilder {
     super()
     this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
+    if (feeTokenAmount.token.chainId !== this.chainId)
+      throw new Error('Fee token must be on the same chain as the intent')
   }
 
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
@@ -25,14 +27,13 @@ export class CallBuilder extends IntentBuilder {
   }
 
   addFeeTokenAmount(feeTokenAmount: TokenAmount): CallBuilder {
+    if (feeTokenAmount.token.chainId !== this.chainId)
+      throw new Error('Fee token must be on the same chain as the intent')
     this.feeTokenAmount = feeTokenAmount
     return this
   }
 
   build(): Call {
-    if (this.feeTokenAmount.token.chainId !== this.chainId)
-      throw new Error('Fee token must be on the same chain as the calls')
-
     return new Call(
       this.calls,
       this.feeTokenAmount.token.address,
