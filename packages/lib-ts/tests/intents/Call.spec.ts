@@ -1,9 +1,11 @@
+import { JSON } from 'json-as'
+
 import { Call, CallData, OperationType } from '../../src/intents'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { setContext } from '../helpers'
 
 describe('Call', () => {
-  it('creates a Call intent with valid parameters', () => {
+  it('creates a Call intent with valid parameters and stringifies it', () => {
     const callData1Address = Address.fromString('0x0000000000000000000000000000000000000001')
     const callData2Address = Address.fromString('0x0000000000000000000000000000000000000002')
     const intentUserAddress = Address.fromString('0x0000000000000000000000000000000000000003')
@@ -28,6 +30,9 @@ describe('Call', () => {
     expect(callIntent.feeAmount).toBe('3')
     expect(callIntent.chainId).toBe(1)
     expect(callIntent.op).toBe(OperationType.Call)
+    expect(JSON.stringify(callIntent)).toBe(
+      '{"op":2,"settler":"0x0000000000000000000000000000000000000000","deadline":"300001","user":"0x0000000000000000000000000000000000000003","nonce":"0x","calls":[{"target":"0x0000000000000000000000000000000000000001","data":"0x01","value":"1"},{"target":"0x0000000000000000000000000000000000000002","data":"0x02","value":"2"}],"feeToken":"0x0000000000000000000000000000000000000004","feeAmount":"3","chainId":1}'
+    )
   })
 
   it('throws an error when there is not Call Data', () => {

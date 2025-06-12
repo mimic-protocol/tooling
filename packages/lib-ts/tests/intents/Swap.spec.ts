@@ -1,10 +1,12 @@
+import { JSON } from 'json-as'
+
 import { OperationType, Swap, TokenIn, TokenOut } from '../../src/intents'
 import { Token } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
 import { setContext } from '../helpers'
 
 describe('Swap Intent', () => {
-  it('creates a Swap intent with valid parameters', () => {
+  it('creates a Swap intent with valid parameters and stringifies it', () => {
     const tokenInAddress = Address.fromString('0x0000000000000000000000000000000000000001')
     const tokenOutAddress = Address.fromString('0x0000000000000000000000000000000000000002')
     const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000003')
@@ -31,6 +33,9 @@ describe('Swap Intent', () => {
     expect(swapIntent.tokensIn[0].token).toBe(tokenInAddress.toString())
     expect(swapIntent.tokensOut[0].token).toBe(tokenOutAddress.toString())
     expect(swapIntent.tokensOut[0].recipient).toBe(recipientAddress.toString())
+    expect(JSON.stringify(swapIntent)).toBe(
+      '{"op":0,"settler":"0x0000000000000000000000000000000000000004","deadline":"123456789","user":"0x0000000000000000000000000000000000000003","nonce":"0x","sourceChain":1,"tokensIn":[{"token":"0x0000000000000000000000000000000000000001","amount":"1"}],"tokensOut":[{"token":"0x0000000000000000000000000000000000000002","minAmount":"1","recipient":"0x0000000000000000000000000000000000000003"}],"destinationChain":10}'
+    )
   })
 
   it('throws an error when TokenIn list is empty', () => {
