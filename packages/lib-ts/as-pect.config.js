@@ -37,6 +37,9 @@ export default {
           const decoded = store.has(key) ? store.get(key) : ''
           return exports.__newString(decoded)
         },
+        _keccak: () => {
+          return exports.__newString('0x')
+        },
       },
       environment: {
         _getPrice: (paramsPtr) => {
@@ -56,6 +59,12 @@ export default {
           const params = JSON.parse(paramsStr)
           const key = `_contractCall:${params.to}:${params.chainId}:${params.data}`
           const result = store.has(key) ? store.get(key) : '0x00'
+
+          return exports.__newString(result)
+        },
+        _getContext: () => {
+          const key = `_getContext`
+          const result = store.has(key) ? store.get(key) : '{}'
 
           return exports.__newString(result)
         },
@@ -80,6 +89,12 @@ export default {
           const key = `_evmDecode:${abiType}:${hex}`
           const decoded = exports.__getString(decodedPtr)
           store.set(key, decoded)
+        },
+        setContext: (timestamp, userPtr, configIdPtr) => {
+          const user = exports.__getString(userPtr)
+          const configId = exports.__getString(configIdPtr)
+          const key = `_getContext`
+          store.set(key, `{"timestamp":${timestamp},"user":"${user}","configId":"${configId}"}`)
         },
       },
     }

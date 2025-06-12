@@ -1,6 +1,6 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { NULL_ADDRESS } from '../helpers'
+import { SETTLER } from '../helpers'
 import { Address, BigInt } from '../types'
 
 export enum OperationType {
@@ -51,7 +51,7 @@ export abstract class Intent {
   protected constructor(op: OperationType, settler: Address | null, deadline: BigInt | null) {
     const context = environment.getContext()
     this.op = op
-    this.settler = settler ? settler.toString() : NULL_ADDRESS
+    this.settler = settler ? settler.toString() : SETTLER
     this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
     this.user = context.user.toString()
     this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
