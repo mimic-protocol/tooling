@@ -1,6 +1,7 @@
 import { JSON } from 'json-as'
 
-import { Call, CallData, OperationType } from '../../src/intents'
+import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
+import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { setContext } from '../helpers'
 
@@ -39,5 +40,70 @@ describe('Call', () => {
     expect(() => {
       new Call([], Address.fromString('0x0000000000000000000000000000000000000004'), BigInt.fromString('3'), 1)
     }).toThrow('Call list cannot be empty')
+  })
+})
+
+describe('CallBuilder', () => {
+  const chainId = 1
+  const target1Str = '0x0000000000000000000000000000000000000001'
+  const target2Str = '0x0000000000000000000000000000000000000002'
+  const feeTokenAddressStr = '0x00000000000000000000000000000000000000fe'
+
+  it('adds multiple calls and builds intent', () => {
+    const target1 = Address.fromString(target1Str)
+    const target2 = Address.fromString(target2Str)
+    const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+
+    const feeToken = new Token(feeTokenAddress.toString(), chainId)
+    const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('9'))
+
+    const builder = new CallBuilder(feeTokenAmount, chainId)
+    builder.addCall(target1, Bytes.fromHexString('0x01'), BigInt.fromString('1'))
+    builder.addCall(target2, Bytes.fromHexString('0x02'), BigInt.fromString('2'))
+
+    const intent = builder.build()
+    expect(intent.calls.length).toBe(2)
+    expect(intent.calls[0].target).toBe(target1Str)
+    expect(intent.calls[1].target).toBe(target2Str)
+  })
+
+  it('adds call with default data and value', () => {
+    const target = Address.fromString(target1Str)
+    const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+
+    const feeToken = new Token(feeTokenAddress.toString(), chainId)
+    const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('5'))
+
+    const builder = new CallBuilder(feeTokenAmount, chainId)
+    builder.addCall(target) // default Bytes.empty and BigInt.zero
+
+    const intent = builder.build()
+    expect(intent.calls[0].data).toBe(Bytes.empty().toHexString())
+    expect(intent.calls[0].value).toBe('0')
+  })
+
+  it('throws if fee token chainId mismatches constructor chainId', () => {
+    expect(() => {
+      const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+      const feeToken = new Token(feeTokenAddress.toString(), 2)
+      const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('1'))
+
+      new CallBuilder(feeTokenAmount, chainId)
+    }).toThrow('Fee token must be on the same chain as the intent')
+  })
+
+  it('throws if fee token chainId mismatches in addFeeTokenAmount', () => {
+    expect(() => {
+      const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+      const correctFeeToken = new Token(feeTokenAddress.toString(), chainId)
+      const feeTokenAmount = new TokenAmount(correctFeeToken, BigInt.fromString('1'))
+
+      const builder = new CallBuilder(feeTokenAmount, chainId)
+
+      const wrongChainToken = new Token(feeTokenAddress.toString(), 1337)
+      const wrongFeeTokenAmount = new TokenAmount(wrongChainToken, BigInt.fromString('1'))
+
+      builder.addFeeTokenAmount(wrongFeeTokenAmount)
+    }).toThrow('Fee token must be on the same chain as the intent')
   })
 })
