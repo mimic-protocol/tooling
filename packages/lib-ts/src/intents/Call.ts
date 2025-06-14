@@ -39,8 +39,10 @@ export class CallBuilder extends IntentBuilder {
       this.feeTokenAmount.token.address,
       this.feeTokenAmount.amount,
       this.chainId,
+      this.user,
       this.settler,
-      this.deadline
+      this.deadline,
+      this.nonce
     )
   }
 }
@@ -70,10 +72,12 @@ export class Call extends Intent {
     feeToken: Address,
     feeAmount: BigInt,
     chainId: u64,
+    user: Address | null = null,
     settler: Address | null = null,
-    deadline: BigInt | null = null
+    deadline: BigInt | null = null,
+    nonce: string = ''
   ) {
-    super(OperationType.Call, settler, deadline)
+    super(OperationType.Call, user, settler, deadline, nonce)
 
     if (calls.length === 0) {
       throw new Error('Call list cannot be empty')

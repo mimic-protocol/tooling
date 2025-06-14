@@ -91,7 +91,16 @@ export class SwapBuilder extends IntentBuilder {
       throw new Error('Tokens in and out are required')
     }
 
-    return new Swap(this.sourceChain, this.tokensIn, this.tokensOut, this.destinationChain, this.settler, this.deadline)
+    return new Swap(
+      this.sourceChain,
+      this.tokensIn,
+      this.tokensOut,
+      this.destinationChain,
+      this.user,
+      this.settler,
+      this.deadline,
+      this.nonce
+    )
   }
 }
 
@@ -142,10 +151,12 @@ export class Swap extends Intent {
     public tokensIn: TokenIn[],
     public tokensOut: TokenOut[],
     public destinationChain: u64,
-    settler: Address | null,
-    deadline: BigInt | null
+    user: Address | null = null,
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
+    nonce: string = ''
   ) {
-    super(OperationType.Swap, settler, deadline)
+    super(OperationType.Swap, user, settler, deadline, nonce)
     if (tokensIn.length === 0) {
       throw new Error('TokenIn list cannot be empty')
     }

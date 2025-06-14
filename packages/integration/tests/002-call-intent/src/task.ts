@@ -8,6 +8,7 @@ export default function main(): void {
   const feeTokenAmount = TokenAmount.fromStringDecimal(feeToken, inputs.feeAmountStringDecimal)
   CallBuilder.fromTokenAmountAndChain(feeTokenAmount, inputs.chainId)
     .addCall(target, inputs.data, inputs.value)
+    .addUser(inputs.smartAccount)
     .build()
     .send()
 }

@@ -22,7 +22,7 @@ describe('Swap Intent', () => {
     const tokenOut = new Token(tokenOutAddress.toString(), 18)
     const tokensIn = [TokenIn.fromStringDecimal(tokenIn, '1')]
     const tokensOut = [TokenOut.fromStringDecimal(tokenOut, '1', recipientAddress)]
-    const swapIntent = new Swap(sourceChain, tokensIn, tokensOut, destinationChain, settlerAddress, deadline)
+    const swapIntent = new Swap(sourceChain, tokensIn, tokensOut, destinationChain, null, settlerAddress, deadline)
 
     expect(swapIntent.sourceChain).toBe(sourceChain)
     expect(swapIntent.destinationChain).toBe(destinationChain)

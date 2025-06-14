@@ -61,8 +61,10 @@ export class TransferBuilder extends IntentBuilder {
       this.feeTokenAmount.token.address,
       this.feeTokenAmount.amount,
       this.chainId,
+      this.user,
       this.settler,
-      this.deadline
+      this.deadline,
+      this.nonce
     )
   }
 }
@@ -99,10 +101,12 @@ export class Transfer extends Intent {
     feeToken: Address,
     feeAmount: BigInt,
     chainId: u64,
-    settler: Address | null,
-    deadline: BigInt | null
+    user: Address | null = null,
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
+    nonce: string = ''
   ) {
-    super(OperationType.Transfer, settler, deadline)
+    super(OperationType.Transfer, user, settler, deadline, nonce)
 
     if (transfers.length === 0) {
       throw new Error('Transfer list cannot be empty')

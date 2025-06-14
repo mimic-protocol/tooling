@@ -13,6 +13,7 @@ export abstract class IntentBuilder {
   protected user: Address | null = null
   protected settler: Address | null = null
   protected deadline: BigInt | null = null
+  protected nonce: string = ''
 
   addSettler(settler: Address): IntentBuilder {
     this.settler = settler
@@ -37,6 +38,11 @@ export abstract class IntentBuilder {
     return this.addUser(Address.fromString(user))
   }
 
+  addNonce(nonce: string): IntentBuilder {
+    this.nonce = nonce
+    return this
+  }
+
   abstract build(): Intent
 }
 
@@ -48,13 +54,22 @@ export abstract class Intent {
   public deadline: string
   public user: string
   public nonce: string
-  protected constructor(op: OperationType, settler: Address | null, deadline: BigInt | null) {
-    const context = environment.getContext()
+
+  protected constructor(
+    op: OperationType,
+    user: Address | null,
+    settler: Address | null,
+    deadline: BigInt | null,
+    nonce: string = ''
+  ) {
     this.op = op
     this.settler = settler ? settler.toString() : SETTLER
-    this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
-    this.user = context.user.toString()
-    this.nonce = evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
+    this.deadline = deadline ? deadline.toString() : (environment.getContext().timestamp + 5 * 60 * 1000).toString()
+    this.user = user ? user.toString() : environment.getContext().user.toString()
+    this.nonce =
+      nonce != ''
+        ? nonce
+        : evm.keccak(`${environment.getContext().configId}${environment.getContext().timestamp}${++INTENT_INDEX}`)
   }
 
   abstract send(): void

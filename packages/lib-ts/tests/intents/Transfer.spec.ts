@@ -11,6 +11,7 @@ describe('Transfer Intent', () => {
     const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000012')
     const settlerAddress = Address.fromString('0x0000000000000000000000000000000000000013')
     const feeTokenAddress = Address.fromString('0x0000000000000000000000000000000000000014')
+    const userAddress = Address.fromString('0x0000000000000000000000000000000000000015')
 
     const chainId = 1
     const feeAmount = BigInt.fromString('1000')
@@ -22,7 +23,15 @@ describe('Transfer Intent', () => {
 
     setContext(chainId, recipientAddress.toString(), 'config-transfer')
 
-    const transferIntent = new Transfer(transfers, feeTokenAddress, feeAmount, chainId, settlerAddress, deadline)
+    const transferIntent = new Transfer(
+      transfers,
+      feeTokenAddress,
+      feeAmount,
+      chainId,
+      userAddress,
+      settlerAddress,
+      deadline
+    )
 
     expect(transferIntent.op).toBe(OperationType.Transfer)
     expect(transferIntent.transfers.length).toBe(1)
@@ -33,7 +42,7 @@ describe('Transfer Intent', () => {
     expect(transferIntent.feeAmount).toBe('1000')
     expect(transferIntent.chainId).toBe(chainId)
     expect(JSON.stringify(transferIntent)).toBe(
-      '{"op":1,"settler":"0x0000000000000000000000000000000000000013","deadline":"99999999","user":"0x0000000000000000000000000000000000000012","nonce":"0x","transfers":[{"token":"0x0000000000000000000000000000000000000011","amount":"5000","recipient":"0x0000000000000000000000000000000000000012"}],"feeToken":"0x0000000000000000000000000000000000000014","feeAmount":"1000","chainId":1}'
+      '{"op":1,"settler":"0x0000000000000000000000000000000000000013","deadline":"99999999","user":"0x0000000000000000000000000000000000000015","nonce":"0x","transfers":[{"token":"0x0000000000000000000000000000000000000011","amount":"5000","recipient":"0x0000000000000000000000000000000000000012"}],"feeToken":"0x0000000000000000000000000000000000000014","feeAmount":"1000","chainId":1}'
     )
   })
 

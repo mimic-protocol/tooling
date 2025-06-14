@@ -6,6 +6,7 @@ declare namespace input {
   var data: string | null
   var feeAmountStringDecimal: string | null
   var value: string | null
+  var smartAccount: string | null
 }
 
 // The class name is intentionally lowercase and plural to resemble a namespace when used in a task
@@ -28,5 +29,9 @@ export class inputs {
 
   static get value(): BigInt {
     return BigInt.fromString(input.value!)
+  }
+
+  static get smartAccount(): Address {
+    return Address.fromString(input.smartAccount!)
   }
 }
