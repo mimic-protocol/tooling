@@ -1,3 +1,5 @@
+import type { AbiParameter } from '../../types'
+
 export enum NameContext {
   FUNCTION_PARAMETER = 'function_parameter',
   LOCAL_VARIABLE = 'local_variable',
@@ -46,6 +48,21 @@ export default class NameManager {
       usedNames.add(escapedName)
       return escapedName
     })
+  }
+
+  public static resolveParameterNames(
+    parameters: AbiParameter[],
+    context: NameContext,
+    defaultPrefix: string = 'param'
+  ): AbiParameter[] {
+    const originalNames = parameters.map((param, index) =>
+      param.name && param.name.length > 0 ? param.name : `${defaultPrefix}${index}`
+    )
+    const resolvedNames = this.resolveNameConflicts(originalNames, context)
+    return parameters.map((param, index) => ({
+      ...param,
+      escapedName: resolvedNames[index],
+    }))
   }
 
   private static hasConflict(name: string, context: NameContext): boolean {

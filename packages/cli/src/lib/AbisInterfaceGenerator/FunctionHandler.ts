@@ -16,7 +16,7 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): void {
-    const inputs = this.resolveInputNames(fn.inputs || [])
+    const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
     const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
 
@@ -52,17 +52,6 @@ export default class FunctionHandler {
 
     console.error(`Could not determine tuple class name for outputs of function ${fn.name}`)
     return 'unknown'
-  }
-
-  private static resolveInputNames(inputs: AbiParameter[]): AbiParameter[] {
-    const originalNames = inputs.map((input, index) =>
-      input.name && input.name.length > 0 ? input.name : `param${index}`
-    )
-    const resolvedNames = NameManager.resolveNameConflicts(originalNames, NameContext.FUNCTION_PARAMETER)
-    return inputs.map((input, index) => ({
-      ...input,
-      escapedName: resolvedNames[index],
-    }))
   }
 
   private static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {

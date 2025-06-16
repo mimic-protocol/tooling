@@ -295,11 +295,6 @@ export default class TupleHandler {
   }
 
   private static resolveComponentNames(components: AbiParameter[], context: NameContext): AbiParameter[] {
-    const originalFieldNames = components.map((comp, index) => comp.name || `field${index}`)
-    const resolvedNames = NameManager.resolveNameConflicts(originalFieldNames, context)
-    return components.map((comp, index) => ({
-      ...comp,
-      escapedName: resolvedNames[index],
-    }))
+    return NameManager.resolveParameterNames(components, context, 'field')
   }
 }
