@@ -81,11 +81,33 @@ function handleValidationError(command: Command, err: unknown): never {
 }
 
 function getLibVersion(): string {
+  const libPackageDir = ['node_modules', '@mimicprotocol', 'lib-ts', 'package.json']
   try {
-    const packagePath = path.resolve(process.cwd(), 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'))
-    return packageJson.version
+    // Strategy 1: Look for lib-ts from current working directory (external projects)
+    const packagePath = path.resolve(process.cwd(), ...libPackageDir)
+    if (fs.existsSync(packagePath)) return getVersionFromPackage(packagePath)
+
+    // Strategy 2: Look for workspace root (development environment)
+    let currentDir = __dirname
+    while (currentDir !== path.dirname(currentDir)) {
+      const packageJsonPath = path.join(currentDir, 'package.json')
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+        if (packageJson.workspaces) {
+          const libPackagePath = path.join(currentDir, ...libPackageDir)
+          if (fs.existsSync(libPackagePath)) return getVersionFromPackage(libPackagePath)
+        }
+      }
+      currentDir = path.dirname(currentDir)
+    }
+
+    throw new Error('Could not find @mimicprotocol/lib-ts package')
   } catch (error) {
     throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
   }
+}
+
+function getVersionFromPackage(packagePath: string): string {
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'))
+  return packageJson.version
 }

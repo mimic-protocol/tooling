@@ -20,6 +20,21 @@ describe('ManifestHandler', () => {
           expect(Array.isArray(parsedManifest.inputs)).to.be.false
           expect(Array.isArray(parsedManifest.abis)).to.be.false
         })
+
+        it('automatically adds libVersion to the manifest', () => {
+          const parsedManifest = ManifestHandler.validate(manifest)
+
+          expect(parsedManifest.libVersion).to.not.be.undefined
+          expect(typeof parsedManifest.libVersion).to.equal('string')
+          expect(parsedManifest.libVersion).to.match(/^\d+\.\d+\.\d+$/)
+        })
+
+        it('overrides user-provided libVersion with automatic detection', () => {
+          const manifestWithLibVersion = { ...manifest, libVersion: '999.9.9' }
+          const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
+
+          expect(parsedManifest.libVersion).to.not.equal('999.9.9')
+        })
       })
 
       context('when inputs is missing', () => {
