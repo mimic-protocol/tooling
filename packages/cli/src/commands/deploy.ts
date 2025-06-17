@@ -4,7 +4,7 @@ import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 
-import { GENERIC_SUGGESTION, RegistryPartialError } from '../errors'
+import { GENERIC_SUGGESTION } from '../errors'
 import log from '../log'
 
 const MIMIC_REGISTRY = 'https://api-protocol.mimic.fi'
@@ -63,7 +63,6 @@ export default class Deploy extends Command {
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })
-      if (data.errorMessage) throw new RegistryPartialError(data.errorMessage)
       return data.CID
     } catch (err) {
       this.handleError(err, 'Failed to upload to registry')
@@ -71,16 +70,15 @@ export default class Deploy extends Command {
   }
 
   private handleError(err: unknown, message: string): never {
-    if (err instanceof RegistryPartialError)
-      this.error(err.message, { code: 'Registration Error', suggestions: ['Consider updating the name or version'] })
     if (!(err instanceof AxiosError)) this.error(err as Error)
     const statusCode = err.response?.status
-    if (statusCode === 401) this.error(`${message}`, { code: 'Unauthorized', suggestions: ['Review your key'] })
-    if (statusCode === 403) this.error(`${message}`, { code: 'Invalid api key', suggestions: ['Review your key'] })
-    this.error(`${message} - ${err.message}`, {
-      code: `${err.response?.status} Error`,
-      suggestions: GENERIC_SUGGESTION,
-    })
+    if (statusCode === 400) {
+      const errMessage = err.response?.data?.content?.message || message
+      this.error(errMessage, { code: 'Bad Request', suggestions: ['Review the uploaded files'] })
+    }
+    if (statusCode === 401) this.error(message, { code: 'Unauthorized', suggestions: ['Review your key'] })
+    if (statusCode === 403) this.error(message, { code: 'Invalid api key', suggestions: ['Review your key'] })
+    this.error(`${message} - ${err.message}`, { code: `${statusCode} Error`, suggestions: GENERIC_SUGGESTION })
   }
 }
 

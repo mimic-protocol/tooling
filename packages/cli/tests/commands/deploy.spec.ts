@@ -70,21 +70,27 @@ describe('deploy', () => {
           })
         })
 
-        context('when uploading to registry is partially successful', () => {
-          context('when there is a partial error', () => {
-            const CID = '123'
+        context('when uploading to registry is not successful', () => {
+          context('when there is a bad request failure', () => {
+            context('when the error message is present', () => {
+              const message = 'Task with same name and version already exists'
 
-            beforeEach('mock response', () => {
-              axiosMock
-                .onPost(/.*\/tasks/gm)
-                .reply(200, { CID, errorMessage: 'Task with same name and version already exists' })
+              beforeEach('mock response', () => {
+                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { message } })
+              })
+
+              itThrowsACliError(command, message, 'Bad Request', 1)
             })
 
-            itThrowsACliError(command, 'Task with same name and version already exists', 'Registration Error', 1)
-          })
-        })
+            context('when the error message is not present', () => {
+              beforeEach('mock response', () => {
+                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { errors: ['some error'] } })
+              })
 
-        context('when uploading to registry is not successful', () => {
+              itThrowsACliError(command, 'Failed to upload to registry', 'Bad Request', 1)
+            })
+          })
+
           context('when there is an authorization failure', () => {
             beforeEach('mock response', () => {
               axiosMock.onPost(/.*/).reply(401)
