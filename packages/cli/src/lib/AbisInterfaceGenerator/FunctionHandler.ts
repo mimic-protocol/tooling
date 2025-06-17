@@ -4,6 +4,7 @@ import type { AbiFunctionItem, AbiParameter } from '../../types'
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
 import type ImportManager from './ImportManager'
+import NameManager, { NameContext } from './NameManager'
 import TupleHandler from './TupleHandler'
 import { TUPLE_ABI_TYPE, type TupleDefinitionsMap } from './types'
 
@@ -15,7 +16,7 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): void {
-    const inputs: AbiParameter[] = fn.inputs || []
+    const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
     const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
 
@@ -55,8 +56,8 @@ export default class FunctionHandler {
 
   private static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {
     return inputs
-      .map((input, index) => {
-        const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+      .map((input) => {
+        const paramName = input.escapedName!
         const type = abiTypeConverter.mapAbiType(input)
         return `${paramName}: ${type}`
       })
@@ -114,8 +115,8 @@ export default class FunctionHandler {
     abiTypeConverter: AbiTypeConverter
   ): string {
     return inputs
-      .map((input, index) => {
-        const paramName = input.name && input.name.length > 0 ? input.name : `param${index}`
+      .map((input) => {
+        const paramName = input.escapedName!
         return FunctionHandler.buildEvmEncodeParamCode(paramName, input, abiTypeConverter, importManager, 0)
       })
       .join(', ')

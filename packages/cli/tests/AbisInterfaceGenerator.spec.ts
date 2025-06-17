@@ -396,11 +396,11 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(
         `active: ${AssemblyPrimitiveTypes.bool} = ${AssemblyPrimitiveTypes.u8}.parse(parts[2]) as ${AssemblyPrimitiveTypes.bool}`
       )
-      expect(result).to.contain(`data: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
+      expect(result).to.contain(`data_var: ${LibTypes.Bytes} = Bytes.fromHexString(parts[3])`)
       expect(result).to.contain(`description: ${AssemblyPrimitiveTypes.string} = parts[4]`)
 
       // Check constructor call
-      expect(result).to.contain('return new Tuple0(id, account, active, data, description)')
+      expect(result).to.contain('return new Tuple0(id, account, active, data_var, description)')
     })
   })
 })

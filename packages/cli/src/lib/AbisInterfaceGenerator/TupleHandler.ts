@@ -5,6 +5,7 @@ import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
 import FunctionHandler from './FunctionHandler'
 import type ImportManager from './ImportManager'
+import NameManager, { NameContext } from './NameManager'
 import type { TupleDefinition, TupleDefinitionsMap } from './types'
 import { TUPLE_ABI_TYPE } from './types'
 
@@ -82,10 +83,11 @@ export default class TupleHandler {
       }
 
       const key = baseInternalType || className
+      const components = this.resolveComponentNames(tupleToDefine.components, NameContext.CLASS_PROPERTY)
 
       tupleDefinitions.set(key, {
         className,
-        components: tupleToDefine.components,
+        components,
       })
 
       tupleToDefine.components.forEach((subComp) => processParam(subComp))
@@ -159,25 +161,27 @@ export default class TupleHandler {
     tupleDefinitions.forEach((def) => {
       lines.push(`export class ${def.className} {`)
 
-      def.components.forEach((comp, index) => {
-        const fieldName = comp.name || `field${index}`
+      const components = def.components
+
+      components.forEach((comp) => {
+        const fieldName = comp.escapedName!
         const componentType = abiTypeConverter.mapAbiType(comp)
         lines.push(`  readonly ${fieldName}: ${componentType}`)
       })
 
       lines.push('')
 
-      const constructorParams = def.components
-        .map((comp, index) => {
-          const fieldName = comp.name || `field${index}`
+      const constructorParams = components
+        .map((comp) => {
+          const fieldName = comp.escapedName!
           const componentType = abiTypeConverter.mapAbiType(comp)
           return `${fieldName}: ${componentType}`
         })
         .join(', ')
 
       lines.push(`  constructor(${constructorParams}) {`)
-      def.components.forEach((comp, index) => {
-        const fieldName = comp.name || `field${index}`
+      components.forEach((comp) => {
+        const fieldName = comp.escapedName!
         lines.push(`    this.${fieldName} = ${fieldName}`)
       })
       lines.push(`  }`)
@@ -187,9 +191,13 @@ export default class TupleHandler {
       lines.push(`    const parts = parseCSVNotNullable(data)`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
-      lines.push(...this.getTupleParseMethodBody(def, abiTypeConverter, importManager))
+      const componentsWithVarNames = this.resolveComponentNames(def.components, NameContext.LOCAL_VARIABLE)
 
-      const constructorArgs = def.components.map((comp, index) => `${comp.name || `field${index}`}`).join(', ')
+      lines.push(
+        ...this.getTupleParseMethodBody({ ...def, components: componentsWithVarNames }, abiTypeConverter, importManager)
+      )
+
+      const constructorArgs = componentsWithVarNames.map((r) => r.escapedName!).join(', ')
       lines.push(`    return new ${def.className}(${constructorArgs})`)
       lines.push(`  }`)
       lines.push('')
@@ -218,7 +226,7 @@ export default class TupleHandler {
     importManager: ImportManager
   ): string[] {
     return def.components.map((comp: AbiParameter, index: number) => {
-      const fieldName = comp.name || `field${index}`
+      const fieldName = comp.escapedName!
       const mappedComponentType = abiTypeConverter.mapAbiType(comp)
       const dataAccess = `parts[${index}]`
       const parseLogic = this.buildFieldParseLogic(
@@ -251,7 +259,7 @@ export default class TupleHandler {
 
       const elementAbiParam: AbiParameter = {
         ...componentAbiParam,
-        name: `${componentAbiParam.name || 'arrayElement'}_item${depth}`,
+        name: `${componentAbiParam.name || 'arrayElement'}_${itemVar}`,
         type: ArrayHandler.getArrayType(componentAbiParam.type),
         components: baseAbiType === TUPLE_ABI_TYPE ? componentAbiParam.components : undefined,
         internalType: componentAbiParam.internalType
@@ -278,17 +286,15 @@ export default class TupleHandler {
     abiTypeConverter: AbiTypeConverter,
     importManager: ImportManager
   ): string[] {
-    return def.components.map((comp: AbiParameter, index: number) => {
-      const fieldName = comp.name || `field${index}`
+    return def.components.map((comp: AbiParameter) => {
+      const fieldName = comp.escapedName!
       const valueAccessPath = `this.${fieldName}`
-      const paramCode = FunctionHandler.buildEvmEncodeParamCode(
-        valueAccessPath,
-        comp,
-        abiTypeConverter,
-        importManager,
-        0
-      )
+      const paramCode = FunctionHandler.buildEvmEncodeParamCode(valueAccessPath, comp, abiTypeConverter, importManager)
       return `      ${paramCode},`
     })
+  }
+
+  private static resolveComponentNames(components: AbiParameter[], context: NameContext): AbiParameter[] {
+    return NameManager.resolveParameterNames(components, context, 'field')
   }
 }
