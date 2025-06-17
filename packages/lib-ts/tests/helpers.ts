@@ -45,3 +45,5 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
 export declare function setContractCall(to: string, chainId: u64, data: string, result: string): void
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
+
+export declare function setContext(timestamp: u64, user: string, configId: string): void

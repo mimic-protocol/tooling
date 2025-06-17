@@ -7,3 +7,4 @@ inputs:
   - data: "bytes"
   - feeAmountStringDecimal: "string"
   - value: "uint256"
+  - smartAccount: "address"

@@ -28,66 +28,16 @@ export namespace environment {
   @external('environment', '_getContext')
   declare function _getContext(): string
 
-  export function call(
-    calls: CallData[],
-    feeTokenAmount: TokenAmount,
-    chainId: u64,
-    settler: Address | null = null,
-    deadline: BigInt | null = null,
-  ): void {
-    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the calls')
-
-    _call(
-      JSON.stringify(new Call(calls, feeTokenAmount.token.address, feeTokenAmount.amount, chainId, settler, deadline))
-    )
+  export function call(intent: Call): void {
+    _call(JSON.stringify(intent))
   }
 
-  export function swap(
-    tokensIn: TokenAmount[],
-    tokensOut: TokenAmount[],
-    recipient: Address,
-    chainId: u64,
-    settler: Address | null = null,
-    deadline: BigInt | null = null,
-  ): void {
-    if(tokensIn.length === 0 || tokensOut.length === 0) throw new Error('Tokens in and out are required')
-
-    const sourceChainId = tokensIn[0].token.chainId
-
-    for(let i = 1; i < tokensIn.length; i++) {
-      if(tokensIn[i].token.chainId !== sourceChainId) throw new Error('All tokens in must be on the same chain')
-    }
-
-    for(let i = 1; i < tokensOut.length; i++) {
-      if(tokensOut[i].token.chainId !== chainId) throw new Error('All tokens out must be on the same chain')
-    }
-    
-    const _tokensIn = tokensIn.map<TokenIn>(tokenIn => TokenIn.fromTokenAmount(tokenIn))
-    const _tokensOut: TokenOut[] = []
-    for(let i = 0; i < tokensOut.length; i++) _tokensOut.push(TokenOut.fromTokenAmount(tokensOut[i], recipient))
-
-    _swap(JSON.stringify(new Swap(sourceChainId, _tokensIn, _tokensOut, chainId, settler, deadline)))
+  export function swap(swap: Swap): void {
+    _swap(JSON.stringify(swap))
   }
 
-  export function transfer(
-    tokenAmounts: TokenAmount[],
-    recipient: Address,
-    feeTokenAmount: TokenAmount,
-    chainId: u64,
-    settler: Address | null = null,
-    deadline: BigInt | null = null,
-  ): void {
-    for(let i = 1; i < tokenAmounts.length; i++) {
-      if(tokenAmounts[i].token.chainId !== chainId) throw new Error('All tokens must be on the same chain')
-    }
-
-    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the tokens')
-
-    const transfers: TransferData[] = []
-    for(let i = 0; i < tokenAmounts.length; i++) transfers.push(TransferData.fromTokenAmount(tokenAmounts[i], recipient))
-
-    _transfer(JSON.stringify(new Transfer(transfers, feeTokenAmount.token.address, feeTokenAmount.amount, feeTokenAmount.token.chainId, settler, deadline))
-    )
+  export function transfer(transfer: Transfer): void {
+    _transfer(JSON.stringify(transfer))
   }
 
   // Returns the price of a token in USD expressed in 18 decimal places
