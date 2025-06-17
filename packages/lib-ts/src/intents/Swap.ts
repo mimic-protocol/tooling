@@ -86,6 +86,30 @@ export class SwapBuilder extends IntentBuilder {
     return this.addTokenOut(TokenOut.fromStringDecimal(token, amount, recipient))
   }
 
+  addSettler(settler: Address): SwapBuilder {
+    return changetype<SwapBuilder>(super.addSettler(settler))
+  }
+
+  addSettlerAsString(settler: string): SwapBuilder {
+    return changetype<SwapBuilder>(super.addSettlerAsString(settler))
+  }
+
+  addDeadline(deadline: BigInt): SwapBuilder {
+    return changetype<SwapBuilder>(super.addDeadline(deadline))
+  }
+
+  addUser(user: Address): SwapBuilder {
+    return changetype<SwapBuilder>(super.addUser(user))
+  }
+
+  addUserAsString(user: string): SwapBuilder {
+    return changetype<SwapBuilder>(super.addUserAsString(user))
+  }
+
+  addNonce(nonce: string): SwapBuilder {
+    return changetype<SwapBuilder>(super.addNonce(nonce))
+  }
+
   build(): Swap {
     if (this.tokensIn.length === 0 || this.tokensOut.length === 0) {
       throw new Error('Tokens in and out are required')

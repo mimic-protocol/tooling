@@ -55,6 +55,30 @@ export class TransferBuilder extends IntentBuilder {
     return this
   }
 
+  addSettler(settler: Address): TransferBuilder {
+    return changetype<TransferBuilder>(super.addSettler(settler))
+  }
+
+  addSettlerAsString(settler: string): TransferBuilder {
+    return changetype<TransferBuilder>(super.addSettlerAsString(settler))
+  }
+
+  addDeadline(deadline: BigInt): TransferBuilder {
+    return changetype<TransferBuilder>(super.addDeadline(deadline))
+  }
+
+  addUser(user: Address): TransferBuilder {
+    return changetype<TransferBuilder>(super.addUser(user))
+  }
+
+  addUserAsString(user: string): TransferBuilder {
+    return changetype<TransferBuilder>(super.addUserAsString(user))
+  }
+
+  addNonce(nonce: string): TransferBuilder {
+    return changetype<TransferBuilder>(super.addNonce(nonce))
+  }
+
   build(): Transfer {
     return new Transfer(
       this.transfers,

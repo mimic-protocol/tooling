@@ -23,7 +23,7 @@ export default function main(): void {
   // Replace this with your task code
   const builder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount1, chainId)
     .addCall(target, data)
-    .addSettler(settler) as CallBuilder
+    .addSettler(settler)
   builder.build().send()
   builder.addFeeTokenAmount(feeTokenAmount2).build().send()
 }

@@ -12,7 +12,7 @@ export default function main(): void {
   const feeTokenAmount2 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(2)))
   const baseCallBuilder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount, inputs.chainId)
     .addCall(target, data)
-    .addSettler(settler) as CallBuilder
+    .addSettler(settler)
   baseCallBuilder.build().send()
   baseCallBuilder.addFeeTokenAmount(feeTokenAmount1).build().send()
   baseCallBuilder.addFeeTokenAmount(feeTokenAmount2).build().send()

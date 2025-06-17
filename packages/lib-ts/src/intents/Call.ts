@@ -33,6 +33,30 @@ export class CallBuilder extends IntentBuilder {
     return this
   }
 
+  addSettler(settler: Address): CallBuilder {
+    return changetype<CallBuilder>(super.addSettler(settler))
+  }
+
+  addSettlerAsString(settler: string): CallBuilder {
+    return changetype<CallBuilder>(super.addSettlerAsString(settler))
+  }
+
+  addDeadline(deadline: BigInt): CallBuilder {
+    return changetype<CallBuilder>(super.addDeadline(deadline))
+  }
+
+  addUser(user: Address): CallBuilder {
+    return changetype<CallBuilder>(super.addUser(user))
+  }
+
+  addUserAsString(user: string): CallBuilder {
+    return changetype<CallBuilder>(super.addUserAsString(user))
+  }
+
+  addNonce(nonce: string): CallBuilder {
+    return changetype<CallBuilder>(super.addNonce(nonce))
+  }
+
   build(): Call {
     return new Call(
       this.calls,
