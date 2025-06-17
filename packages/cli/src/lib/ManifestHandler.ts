@@ -1,6 +1,7 @@
 import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
+import * as path from 'path'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
@@ -14,6 +15,7 @@ export default {
 
     const mergedManifest = {
       ...manifest,
+      libVersion: getLibVersion(),
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
     }
@@ -76,4 +78,14 @@ function handleValidationError(command: Command, err: unknown): never {
   }
 
   command.error(message, { code, suggestions })
+}
+
+function getLibVersion(): string {
+  try {
+    const packagePath = path.resolve(process.cwd(), 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
+    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'))
+    return packageJson.version
+  } catch (error) {
+    throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+  }
 }
