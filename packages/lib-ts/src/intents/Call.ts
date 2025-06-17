@@ -79,9 +79,7 @@ export class Call extends Intent {
   ) {
     super(OperationType.Call, user, settler, deadline, nonce)
 
-    if (calls.length === 0) {
-      throw new Error('Call list cannot be empty')
-    }
+    if (calls.length === 0) throw new Error('Call list cannot be empty')
 
     this.calls = calls
     this.feeToken = feeToken.toString()

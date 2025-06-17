@@ -157,12 +157,8 @@ export class Swap extends Intent {
     nonce: string = ''
   ) {
     super(OperationType.Swap, user, settler, deadline, nonce)
-    if (tokensIn.length === 0) {
-      throw new Error('TokenIn list cannot be empty')
-    }
-    if (tokensOut.length === 0) {
-      throw new Error('TokenOut list cannot be empty')
-    }
+    if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
+    if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }
 
   send(): void {

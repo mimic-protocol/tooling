@@ -108,9 +108,7 @@ export class Transfer extends Intent {
   ) {
     super(OperationType.Transfer, user, settler, deadline, nonce)
 
-    if (transfers.length === 0) {
-      throw new Error('Transfer list cannot be empty')
-    }
+    if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
 
     this.transfers = transfers
     this.feeToken = feeToken.toString()
