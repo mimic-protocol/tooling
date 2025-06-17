@@ -64,12 +64,10 @@ export abstract class Intent {
   ) {
     this.op = op
     this.settler = settler ? settler.toString() : SETTLER
-    this.deadline = deadline ? deadline.toString() : (environment.getContext().timestamp + 5 * 60 * 1000).toString()
-    this.user = user ? user.toString() : environment.getContext().user.toString()
-    this.nonce =
-      nonce != ''
-        ? nonce
-        : evm.keccak(`${environment.getContext().configId}${environment.getContext().timestamp}${++INTENT_INDEX}`)
+    const context = environment.getContext()
+    this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
+    this.user = user ? user.toString() : context.user.toString()
+    this.nonce = nonce != '' ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
 
   abstract send(): void
