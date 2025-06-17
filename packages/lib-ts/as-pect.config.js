@@ -64,7 +64,9 @@ export default {
         },
         _getContext: () => {
           const key = `_getContext`
-          const result = store.has(key) ? store.get(key) : '{}'
+          const result = store.has(key)
+            ? store.get(key)
+            : '{"timestamp": 0,"user":"0x0000000000000000000000000000000000000000","configId":"1"}'
 
           return exports.__newString(result)
         },

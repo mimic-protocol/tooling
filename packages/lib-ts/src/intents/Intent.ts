@@ -62,10 +62,6 @@ export abstract class Intent {
     deadline: BigInt | null,
     nonce: string = ''
   ) {
-    if(user) {
-      console.log(`Intent created by user: ${user.toString()}`)
-    }
-     
     this.op = op
     this.settler = settler ? settler.toString() : SETTLER
     const context = environment.getContext()
