@@ -1,4 +1,4 @@
-import { Address, environment, ListType, Token, USD } from '@mimicprotocol/lib-ts'
+import { Address, ChainId, environment, ListType, Token, USD } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   // Token definitions
@@ -9,7 +9,7 @@ export default function main(): void {
   const DAI = new Token('0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', 137, 18)
 
   const userAddress = Address.zero()
-  const expectedChainIds: u64[] = [1, 137]
+  const expectedChainIds: ChainId[] = [ChainId.ETHEREUM, ChainId.POLYGON]
 
   // Case 1: just the expected chains
   environment.getRelevantTokens(userAddress, expectedChainIds)

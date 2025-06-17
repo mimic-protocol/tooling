@@ -1,11 +1,11 @@
-import { Address, BigInt, environment, evm, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, ChainId, environment, evm, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
 
 export class ERC4626 {
   private address: Address
-  private chainId: u64
+  private chainId: ChainId
   private timestamp: Date | null
 
-  constructor(address: Address, chainId: u64, timestamp: Date | null = null) {
+  constructor(address: Address, chainId: ChainId, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
     this.timestamp = timestamp

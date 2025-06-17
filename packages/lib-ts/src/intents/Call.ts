@@ -1,3 +1,4 @@
+import { ChainId } from '../chains'
 import { environment } from '../environment'
 import { TokenAmount } from '../tokens'
 import { Address, BigInt, Bytes } from '../types'
@@ -7,13 +8,13 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 export class CallBuilder extends IntentBuilder {
   private calls: CallData[] = []
   private feeTokenAmount: TokenAmount
-  private chainId: u64
+  private chainId: ChainId
 
-  static fromTokenAmountAndChain(feeTokenAmount: TokenAmount, chainId: u64): CallBuilder {
+  static fromTokenAmountAndChain(feeTokenAmount: TokenAmount, chainId: ChainId): CallBuilder {
     return new CallBuilder(feeTokenAmount, chainId)
   }
 
-  constructor(feeTokenAmount: TokenAmount, chainId: u64) {
+  constructor(feeTokenAmount: TokenAmount, chainId: ChainId) {
     super()
     this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
@@ -89,13 +90,13 @@ export class Call extends Intent {
   public calls: CallData[]
   public feeToken: string
   public feeAmount: string
-  public chainId: u64
+  public chainId: ChainId
 
   constructor(
     calls: CallData[],
     feeToken: Address,
     feeAmount: BigInt,
-    chainId: u64,
+    chainId: ChainId,
     user: Address | null = null,
     settler: Address | null = null,
     deadline: BigInt | null = null,

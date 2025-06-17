@@ -1,3 +1,4 @@
+import { ChainId } from '../chains'
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize, STANDARD_DECIMALS } from '../helpers'
@@ -9,12 +10,12 @@ export class Token implements Serializable {
   private static readonly SERIALIZED_PREFIX: string = 'Token'
   private _symbol: string
   private _address: Address
-  private _chainId: u64
+  private _chainId: ChainId
   private _decimals: u8
   private _timestamp: Date | null = null
 
-  static native(chainId: u64): Token {
-    if (chainId === 1) return new Token(NATIVE_ADDRESS, chainId, STANDARD_DECIMALS, 'ETH')
+  static native(chainId: ChainId): Token {
+    if (chainId === ChainId.ETHEREUM) return new Token(NATIVE_ADDRESS, chainId, STANDARD_DECIMALS, 'ETH')
     throw new Error(`Unsupported chainId: ${chainId}`)
   }
 
@@ -27,14 +28,14 @@ export class Token implements Serializable {
     if (areNull) throw new Error('Invalid serialized token')
 
     const address = elements[0]!
-    const chainId = u64.parse(elements[1]!)
+    const chainId = i32.parse(elements[1]!)
 
     return new Token(address, chainId)
   }
 
   constructor(
     address: string,
-    chainId: u64,
+    chainId: ChainId,
     decimals: u8 = Token.EMPTY_DECIMALS,
     symbol: string = Token.EMPTY_SYMBOL,
     timestamp: Date | null = null
@@ -73,7 +74,7 @@ export class Token implements Serializable {
     return this._address.clone()
   }
 
-  get chainId(): u64 {
+  get chainId(): ChainId {
     return this._chainId
   }
 

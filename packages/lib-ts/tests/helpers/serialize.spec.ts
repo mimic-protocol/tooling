@@ -1,3 +1,4 @@
+import { ChainId } from '../../src/chains'
 import { join, NULL_ADDRESS, parseCSV, serialize, serializeArray } from '../../src/helpers'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
@@ -149,7 +150,7 @@ describe('serialize', () => {
     describe('when parsing a CSV string with parentheses', () => {
       it('correctly handles nested structures', () => {
         const address = Address.fromString(randomAddress())
-        const chainIds: u64[] = [1, 137]
+        const chainIds: ChainId[] = [ChainId.ETHEREUM, ChainId.POLYGON]
         const bigInt = BigInt.fromI32(0)
         const zero = '0'
 

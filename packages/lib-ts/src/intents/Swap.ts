@@ -1,3 +1,4 @@
+import { ChainId } from '../chains'
 import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt } from '../types'
@@ -5,16 +6,16 @@ import { Address, BigInt } from '../types'
 import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class SwapBuilder extends IntentBuilder {
-  private sourceChain: u64
+  private sourceChain: ChainId
   private tokensIn: TokenIn[] = []
   private tokensOut: TokenOut[] = []
-  private destinationChain: u64
+  private destinationChain: ChainId
 
-  static fromChains(sourceChain: u64, destinationChain: u64): SwapBuilder {
+  static fromChains(sourceChain: ChainId, destinationChain: ChainId): SwapBuilder {
     return new SwapBuilder(sourceChain, destinationChain)
   }
 
-  constructor(sourceChain: u64, destinationChain: u64) {
+  constructor(sourceChain: ChainId, destinationChain: ChainId) {
     super()
     this.sourceChain = sourceChain
     this.destinationChain = destinationChain
@@ -171,10 +172,10 @@ export class TokenOut {
 @json
 export class Swap extends Intent {
   constructor(
-    public sourceChain: u64,
+    public sourceChain: ChainId,
     public tokensIn: TokenIn[],
     public tokensOut: TokenOut[],
-    public destinationChain: u64,
+    public destinationChain: ChainId,
     user: Address | null = null,
     settler: Address | null = null,
     deadline: BigInt | null = null,

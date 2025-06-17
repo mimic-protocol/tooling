@@ -1,3 +1,4 @@
+export * from './src/chains'
 export * from './src/environment'
 export * from './src/evm'
 export * from './src/helpers'

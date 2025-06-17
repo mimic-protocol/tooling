@@ -1,15 +1,15 @@
-import { Address, BigInt, Bytes, Token } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, ChainId, Token } from '@mimicprotocol/lib-ts'
 
 import { ERC20 } from './types/ERC20'
 import { ERC4626 } from './types/ERC4626'
 import { SAFE } from './types/SAFE'
 import { MyStruct, Test } from './types/Test'
 
-const MAINNET_CHAIN_ID = 1
-const POLYGON_CHAIN_ID = 137
+const MAINNET_CHAIN_ID = ChainId.ETHEREUM
+const POLYGON_CHAIN_ID = ChainId.POLYGON
 
 const TEST_ADDRESS = Address.fromString('0x047be3bb46f9416732fe39a05134f20235c19334')
-const TEST_CHAIN_ID = 11155111
+const TEST_CHAIN_ID = ChainId.OPTIMISM
 const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
 export default function main(): void {

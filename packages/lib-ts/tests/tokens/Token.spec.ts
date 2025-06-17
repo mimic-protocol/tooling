@@ -1,3 +1,4 @@
+import { ChainId } from '../../src/chains'
 import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
@@ -97,7 +98,7 @@ describe('Token', () => {
     describe('when comparing two tokens', () => {
       it('returns true for tokens with the same address and chainId', () => {
         const address = randomAddress()
-        const chainId: u64 = 1
+        const chainId: ChainId = ChainId.ETHEREUM
         const token1 = new Token(address, chainId, 18, 'TOKEN1')
         const token2 = new Token(address, chainId, 6, 'TOKEN2')
 
@@ -105,7 +106,7 @@ describe('Token', () => {
       })
 
       it('returns false for tokens with different addresses', () => {
-        const chainId: u64 = 1
+        const chainId: ChainId = ChainId.ETHEREUM
         const token1 = new Token(randomAddress(), chainId, 18, 'TOKEN')
         const token2 = new Token(randomAddress(), chainId, 18, 'TOKEN')
 
