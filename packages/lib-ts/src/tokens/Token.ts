@@ -1,4 +1,4 @@
-import { ChainId, Ethereum, Optimism, Polygon } from '../chains'
+import { ChainId } from '../chains'
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../helpers'
@@ -15,9 +15,9 @@ export class Token implements Serializable {
   private _timestamp: Date | null = null
 
   static native(chainId: ChainId): Token {
-    if (chainId === Ethereum.CHAIN_ID) return Ethereum.ETH
-    if (chainId === Optimism.CHAIN_ID) return Optimism.ETH
-    if (chainId === Polygon.CHAIN_ID) return Polygon.POL
+    if (chainId === ChainId.ETHEREUM) return new Token(NATIVE_ADDRESS, ChainId.ETHEREUM, 18, 'ETH')
+    if (chainId === ChainId.OPTIMISM) return new Token(NATIVE_ADDRESS, ChainId.OPTIMISM, 18, 'ETH')
+    if (chainId === ChainId.POLYGON) return new Token(NATIVE_ADDRESS, ChainId.POLYGON, 18, 'POL')
     throw new Error(`Unsupported chainId: ${chainId}`)
   }
 

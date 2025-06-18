@@ -1,11 +1,10 @@
-import { NATIVE_ADDRESS } from '../helpers'
 import { Token } from '../tokens/Token'
 
 import { ChainId } from '.'
 
 export namespace Polygon {
   export const CHAIN_ID = ChainId.POLYGON
-  export const POL = new Token(NATIVE_ADDRESS, ChainId.POLYGON, 18, 'POL')
+  export const POL = Token.native(ChainId.POLYGON)
   export const USDC = new Token('0x3c499c542cef5e3811e1192ce70d8cc03d5c3359', ChainId.POLYGON, 6, 'USDC')
   export const USDT = new Token('0xc2132d05d31c914a87c6611c10748aeb04b58e8f', ChainId.POLYGON, 6, 'USDT')
   export const DAI = new Token('0x8f3cf7ad23cd3cadbd9735aff958023239c6a063', ChainId.POLYGON, 18, 'DAI')
