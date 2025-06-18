@@ -70,25 +70,41 @@ describe('deploy', () => {
           })
         })
 
-        context('when uploading to registry is partially successful', () => {
-          context('when there is a partial error', () => {
-            const CID = '123'
+        context('when uploading to registry is not successful', () => {
+          context('when there is a bad request failure', () => {
+            context('when the error message is present', () => {
+              const message = 'Task with same name and version already exists'
 
-            beforeEach('mock response', () => {
-              axiosMock.onPost(/.*\/tasks/gm).reply(200, { CID, errorMessage: `Failed to register task: ${CID}` })
+              beforeEach('mock response', () => {
+                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { message } })
+              })
+
+              itThrowsACliError(command, message, 'Bad Request', 1)
             })
 
-            itThrowsACliError(command, `Failed to upload to registry`, 'RegistrationError', 1)
-          })
-        })
+            context('when the error message is not present', () => {
+              beforeEach('mock response', () => {
+                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { errors: ['some error'] } })
+              })
 
-        context('when uploading to registry is not successful', () => {
-          context('when there is an auth failure', () => {
+              itThrowsACliError(command, 'Failed to upload to registry', 'Bad Request', 1)
+            })
+          })
+
+          context('when there is an authorization failure', () => {
             beforeEach('mock response', () => {
               axiosMock.onPost(/.*/).reply(401)
             })
 
             itThrowsACliError(command, 'Failed to upload to registry', 'Unauthorized', 1)
+          })
+
+          context('when there is an authentication failure', () => {
+            beforeEach('mock response', () => {
+              axiosMock.onPost(/.*/).reply(403)
+            })
+
+            itThrowsACliError(command, 'Failed to upload to registry', 'Invalid api key', 1)
           })
 
           context('when there is a generic error', () => {
@@ -99,7 +115,7 @@ describe('deploy', () => {
             itThrowsACliError(
               command,
               'Failed to upload to registry - Request failed with status code 501',
-              '501Error',
+              '501 Error',
               1
             )
           })
@@ -108,7 +124,7 @@ describe('deploy', () => {
 
       context('when the directory does not contain the necessary files', () => {
         context('when the directory contains no files', () => {
-          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'File Not Found', 1)
         })
 
         context('when the directory contains only one file', () => {
@@ -116,13 +132,13 @@ describe('deploy', () => {
             createFile('manifest.json')
           })
 
-          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'FileNotFound', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'File Not Found', 1)
         })
       })
     })
 
     context('when input directory does not exist', () => {
-      itThrowsACliError(command, `Directory ${inputDir} does not exist`, 'DirectoryNotFound', 1)
+      itThrowsACliError(command, `Directory ${inputDir} does not exist`, 'Directory Not Found', 1)
     })
   })
 
