@@ -7,9 +7,11 @@ const SOLIDITY_TYPE_REGEX = /^(u?int(8|16|32|64|128|256)?|bool|address|bytes([1-
 
 export const ManifestValidator = z.object({
   version: String.regex(VERSION_REGEX, 'Must be a valid semver'),
-  libVersion: String.regex(VERSION_REGEX, 'Must be a valid semver'),
   name: String,
   description: String.optional(),
   inputs: z.record(String, String.regex(SOLIDITY_TYPE_REGEX, 'Must be a valid solidity type')),
   abis: z.record(String, String),
+  metadata: z.object({
+    libVersion: String.regex(VERSION_REGEX, 'Must be a valid semver'),
+  }),
 })

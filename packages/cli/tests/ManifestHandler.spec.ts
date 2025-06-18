@@ -24,16 +24,16 @@ describe('ManifestHandler', () => {
         it('automatically adds libVersion to the manifest', () => {
           const parsedManifest = ManifestHandler.validate(manifest)
 
-          expect(parsedManifest.libVersion).to.not.be.undefined
-          expect(typeof parsedManifest.libVersion).to.equal('string')
-          expect(parsedManifest.libVersion).to.match(/^\d+\.\d+\.\d+$/)
+          expect(parsedManifest.metadata.libVersion).to.not.be.undefined
+          expect(typeof parsedManifest.metadata.libVersion).to.equal('string')
+          expect(parsedManifest.metadata.libVersion).to.match(/^\d+\.\d+\.\d+$/)
         })
 
         it('overrides user-provided libVersion with automatic detection', () => {
-          const manifestWithLibVersion = { ...manifest, libVersion: '999.9.9' }
+          const manifestWithLibVersion = { ...manifest, metadata: { libVersion: '999.9.9' } }
           const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
 
-          expect(parsedManifest.libVersion).to.not.equal('999.9.9')
+          expect(parsedManifest.metadata.libVersion).to.not.equal('999.9.9')
         })
       })
 

@@ -15,9 +15,9 @@ export default {
 
     const mergedManifest = {
       ...manifest,
-      libVersion: getLibVersion(),
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
+      metadata: { ...manifest.metadata, libVersion: getLibVersion() },
     }
     return ManifestValidator.parse(mergedManifest)
   },
@@ -81,20 +81,14 @@ function handleValidationError(command: Command, err: unknown): never {
 }
 
 function getLibVersion(): string {
-  const libPackageDir = ['node_modules', '@mimicprotocol', 'lib-ts', 'package.json']
   try {
-    // Strategy 1: Look for lib-ts from current working directory (external projects)
-    const packagePath = path.resolve(process.cwd(), ...libPackageDir)
-    if (fs.existsSync(packagePath)) return getVersionFromPackage(packagePath)
-
-    // Strategy 2: Look for workspace root (development environment)
     let currentDir = __dirname
     while (currentDir !== path.dirname(currentDir)) {
       const packageJsonPath = path.join(currentDir, 'package.json')
       if (fs.existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
         if (packageJson.workspaces) {
-          const libPackagePath = path.join(currentDir, ...libPackageDir)
+          const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
           if (fs.existsSync(libPackagePath)) return getVersionFromPackage(libPackagePath)
         }
       }
