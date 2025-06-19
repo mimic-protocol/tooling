@@ -42,7 +42,10 @@ export class SAFE {
       '0x0d582f13' +
         evm.encode([EvmEncodeParam.fromValue('address', owner), EvmEncodeParam.fromValue('uint256', _threshold)])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   approveHash(hashToApprove: Bytes): CallBuilder {
@@ -50,7 +53,10 @@ export class SAFE {
     const encodedData = Bytes.fromHexString(
       '0xd4d9bdcd' + evm.encode([EvmEncodeParam.fromValue('bytes32', hashToApprove)])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   approvedHashes(param0: Address, param1: Bytes): BigInt {
@@ -70,7 +76,10 @@ export class SAFE {
     const encodedData = Bytes.fromHexString(
       '0x694e80c3' + evm.encode([EvmEncodeParam.fromValue('uint256', _threshold)])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
@@ -108,7 +117,10 @@ export class SAFE {
       '0xe009cfde' +
         evm.encode([EvmEncodeParam.fromValue('address', prevModule), EvmEncodeParam.fromValue('address', module)])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   domainSeparator(): Bytes {
@@ -120,7 +132,10 @@ export class SAFE {
   enableModule(module: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x610b5925' + evm.encode([EvmEncodeParam.fromValue('address', module)]))
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   encodeTransactionData(
@@ -185,7 +200,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('bytes', signatures),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   execTransactionFromModule(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
@@ -199,7 +217,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   execTransactionFromModuleReturnData(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
@@ -213,7 +234,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   getChainId(): BigInt {
@@ -332,7 +356,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint256', _threshold),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   requiredTxGas(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
@@ -346,19 +373,28 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   setFallbackHandler(handler: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xf08a0323' + evm.encode([EvmEncodeParam.fromValue('address', handler)]))
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   setGuard(guard: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xe19a9dd9' + evm.encode([EvmEncodeParam.fromValue('address', guard)]))
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   setup(
@@ -388,7 +424,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('address', paymentReceiver),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   signedMessages(param0: Bytes): BigInt {
@@ -411,7 +450,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('bytes', calldataPayload),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 
   swapOwner(prevOwner: Address, oldOwner: Address, newOwner: Address): CallBuilder {
@@ -424,7 +466,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('address', newOwner),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+      this.address,
+      encodedData
+    )
   }
 }
 
