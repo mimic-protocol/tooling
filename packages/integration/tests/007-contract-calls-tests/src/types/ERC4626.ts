@@ -1,14 +1,32 @@
-import { Address, BigInt, ChainId, environment, evm, EvmDecodeParam, EvmEncodeParam } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  CallBuilder,
+  ChainId,
+  environment,
+  evm,
+  EvmDecodeParam,
+  EvmEncodeParam,
+  TokenAmount,
+} from '@mimicprotocol/lib-ts'
 
 export class ERC4626 {
   private address: Address
   private chainId: ChainId
   private timestamp: Date | null
+  private feeTokenAmount: TokenAmount | null
 
-  constructor(address: Address, chainId: ChainId, timestamp: Date | null = null) {
+  constructor(
+    address: Address,
+    chainId: ChainId,
+    timestamp: Date | null = null,
+    feeTokenAmount: TokenAmount | null = null
+  ) {
     this.address = address
     this.chainId = chainId
     this.timestamp = timestamp
+    this.feeTokenAmount = feeTokenAmount
   }
 
   allowance(owner: Address, spender: Address): BigInt {
@@ -21,6 +39,15 @@ export class ERC4626 {
     )
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+
+  approve(spender: Address, value: BigInt): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0x095ea7b3' +
+        evm.encode([EvmEncodeParam.fromValue('address', spender), EvmEncodeParam.fromValue('uint256', value)])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
   }
 
   asset(): Address {
@@ -68,6 +95,15 @@ export class ERC4626 {
     return u8.parse(decodedResponse)
   }
 
+  deposit(assets: BigInt, receiver: Address): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0x6e553f65' +
+        evm.encode([EvmEncodeParam.fromValue('uint256', assets), EvmEncodeParam.fromValue('address', receiver)])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+  }
+
   maxDeposit(param0: Address): BigInt {
     const response = environment.contractCall(
       this.address,
@@ -110,6 +146,15 @@ export class ERC4626 {
     )
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+
+  mint(shares: BigInt, receiver: Address): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0x94bf804d' +
+        evm.encode([EvmEncodeParam.fromValue('uint256', shares), EvmEncodeParam.fromValue('address', receiver)])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
   }
 
   name(): string {
@@ -162,6 +207,19 @@ export class ERC4626 {
     return BigInt.fromString(decodedResponse)
   }
 
+  redeem(shares: BigInt, receiver: Address, owner: Address): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0xba087652' +
+        evm.encode([
+          EvmEncodeParam.fromValue('uint256', shares),
+          EvmEncodeParam.fromValue('address', receiver),
+          EvmEncodeParam.fromValue('address', owner),
+        ])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+  }
+
   symbol(): string {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x95d89b41')
     const decodedResponse = evm.decode(new EvmDecodeParam('string', response))
@@ -178,5 +236,39 @@ export class ERC4626 {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x18160ddd')
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+
+  transfer(to: Address, value: BigInt): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0xa9059cbb' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', value)])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+  }
+
+  transferFrom(from: Address, to: Address, value: BigInt): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0x23b872dd' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', from),
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+        ])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
+  }
+
+  withdraw(assets: BigInt, receiver: Address, owner: Address): CallBuilder {
+    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
+    const encodedData = Bytes.fromHexString(
+      '0xb460af94' +
+        evm.encode([
+          EvmEncodeParam.fromValue('uint256', assets),
+          EvmEncodeParam.fromValue('address', receiver),
+          EvmEncodeParam.fromValue('address', owner),
+        ])
+    )
+    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)
   }
 }

@@ -1,5 +1,5 @@
 import { getFunctionSelector } from '../../helpers'
-import type { AbiFunctionItem, AbiParameter } from '../../types'
+import { type AbiFunctionItem, type AbiParameter, LibTypes } from '../../types'
 
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
@@ -34,6 +34,8 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): string {
+    if (this.isWriteFunction(fn)) return 'CallBuilder'
+
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
     if (fn.outputs.length === 1) return abiTypeConverter.mapAbiType(fn.outputs[0])
@@ -168,8 +170,22 @@ export default class FunctionHandler {
     abiTypeConverter: AbiTypeConverter
   ): void {
     const selector = getFunctionSelector(fn)
+    if (callArgs) importManager.addType('evm')
+
+    if (this.isWriteFunction(fn)) {
+      importManager.addType(LibTypes.Bytes)
+      importManager.addType('CallBuilder')
+      lines.push(`    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')`)
+      lines.push(
+        `    const encodedData = Bytes.fromHexString('${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''})`
+      )
+      lines.push(
+        `    return CallBuilder.fromTokenAmountAndChain(this.feeTokenAmount, this.chainId).addCall(this.address, encodedData)`
+      )
+      return
+    }
+
     importManager.addType('environment')
-    importManager.addType('evm')
     const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${
       callArgs ? `+ evm.encode([${callArgs}])` : ''
     })`
@@ -187,5 +203,9 @@ export default class FunctionHandler {
 
     const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
     lines.push(`    return ${returnExpression}`)
+  }
+
+  private static isWriteFunction(fn: AbiFunctionItem): boolean {
+    return ['nonpayable', 'payable'].includes(fn.stateMutability || '')
   }
 }

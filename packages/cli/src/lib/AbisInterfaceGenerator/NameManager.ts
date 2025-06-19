@@ -19,7 +19,7 @@ export default class NameManager {
       'returnType',
       'lines',
     ]),
-    [NameContext.LOCAL_VARIABLE]: new Set(['data', 'parts', 'response', 'decodedResponse', 'selector']),
+    [NameContext.LOCAL_VARIABLE]: new Set(['data', 'parts', 'response', 'decodedResponse', 'selector', 'encodedData']),
     [NameContext.CLASS_PROPERTY]: new Set([
       'constructor',
       'parse',

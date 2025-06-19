@@ -8,17 +8,25 @@ import {
   EvmDecodeParam,
   EvmEncodeParam,
   parseCSVNotNullable,
+  TokenAmount,
 } from '@mimicprotocol/lib-ts'
 
 export class Test {
   private address: Address
   private chainId: ChainId
   private timestamp: Date | null
+  private feeTokenAmount: TokenAmount | null
 
-  constructor(address: Address, chainId: ChainId, timestamp: Date | null = null) {
+  constructor(
+    address: Address,
+    chainId: ChainId,
+    timestamp: Date | null = null,
+    feeTokenAmount: TokenAmount | null = null
+  ) {
     this.address = address
     this.chainId = chainId
     this.timestamp = timestamp
+    this.feeTokenAmount = feeTokenAmount
   }
 
   concatStrings(a: string, b: string): string {
