@@ -32,10 +32,11 @@ describe('ManifestHandler', () => {
 
         context('when the lib version is present', () => {
           it('overrides the lib version', () => {
-            const manifestWithLibVersion = { ...manifest, metadata: { libVersion: '999.9.9' } }
+            const libVersion = '999.9.9'
+            const manifestWithLibVersion = { ...manifest, metadata: { libVersion } }
             const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
 
-            expect(parsedManifest.metadata.libVersion).to.not.equal('999.9.9')
+            expect(parsedManifest.metadata.libVersion).to.not.equal(libVersion)
           })
         })
       })
