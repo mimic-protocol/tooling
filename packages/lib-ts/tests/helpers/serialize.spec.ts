@@ -1,4 +1,4 @@
-import { ChainId } from '../../src/chains'
+import { ChainId } from '../../src/common'
 import { join, NULL_ADDRESS, parseCSV, serialize, serializeArray } from '../../src/helpers'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'

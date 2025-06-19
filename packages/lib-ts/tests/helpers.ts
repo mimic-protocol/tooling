@@ -1,4 +1,4 @@
-import { ChainId } from '../src/chains'
+import { ChainId } from '../src/common'
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
 import { BigInt } from '../src/types'

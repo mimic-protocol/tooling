@@ -1,4 +1,4 @@
-import { ChainId } from '../chains'
+import { ChainId } from '../common'
 import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt } from '../types'

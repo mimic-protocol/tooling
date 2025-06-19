@@ -1,4 +1,4 @@
-import { ChainId } from '../../src/chains'
+import { ChainId } from '../../src/common'
 import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'

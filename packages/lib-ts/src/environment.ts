@@ -5,7 +5,7 @@ import { Swap, Transfer, Call } from './intents'
 import { Call as CallQuery } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
-import { ChainId } from './chains'
+import { ChainId } from './common'
 
 export namespace environment {
   @external('environment', '_call')

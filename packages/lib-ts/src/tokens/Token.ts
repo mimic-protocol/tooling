@@ -1,4 +1,4 @@
-import { ChainId } from '../chains'
+import { ChainId } from '../common'
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../helpers'
