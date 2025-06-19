@@ -1,7 +1,7 @@
 {
   "name": "@mimicprotocol/cli",
   "version": "0.0.1",
-  "license": "Unlicensed",
+  "license": "GPL-3.0",
   "private": true,
   "type": "commonjs",
   "bin": {

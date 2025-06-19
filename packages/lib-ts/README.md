@@ -16,6 +16,7 @@
 <p align="center">
   <a href="#content">Content</a> •
   <a href="#setup">Setup</a> •
+  <a href="#usage">Usage</a> •
   <a href="#security">Security</a> •
   <a href="#license">License</a>
 </p>
@@ -24,12 +25,17 @@
 
 ## Content 
 
-This repo includes all development tools required to build automated tasks for Mimic Protocol
+This package provides a lightweight standard library for writing Mimic Protocol tasks in AssemblyScript. It includes:
+
+- Typed primitives to interact with oracles and contracts
+- Safe and minimal bindings for blockchain-specific operations
+- Utility helpers for developing deterministic, deployable task logic
 
 ## Setup
 
 To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed. 
-From your command line:
+
+Install the library from the root of the monorepo:
 
 ```bash
 # Clone this repository
@@ -42,6 +48,20 @@ $ cd tooling
 $ yarn
 ```
 
+## Usage
+
+Here’s an example of how to use the library in a Mimic task:
+
+```ts
+import { environment, Token } from '@mimicprotocol/lib-ts'
+
+const USDC = new Token('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1)
+
+environment.getPrice(USDC, new Date(1744818017000))
+```
+
+For full task development guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
+
 ## Security
 
 To read more about our auditing and related security processes please refer to the [security section](https://docs.mimic.fi/miscellaneous/security) of our docs site.
@@ -52,7 +72,7 @@ for the safety of the protocol, please contact us through <a href="mailto:securi
 ## License
 
 This project is licensed under the GNU General Public License v3.0.  
-See the [LICENSE](./LICENSE) file for details.
+See the [LICENSE](../../LICENSE) file for details.
 
 ### Third-Party Code
 
@@ -60,9 +80,11 @@ This project includes code from [The Graph Tooling](https://github.com/graphprot
 See the [LICENSE-MIT](https://github.com/graphprotocol/graph-tooling/blob/27659e56adfa3ef395ceaf39053dc4a31e6d86b7/LICENSE-MIT) file for details.
 Their original license and attribution are preserved.
 
+
 ---
 
 > Website [mimic.fi](https://mimic.fi) &nbsp;&middot;&nbsp;
+> Docs [docs.mimic.fi](https://docs.mimic.fi) &nbsp;&middot;&nbsp;
 > GitHub [@mimic-fi](https://github.com/mimic-fi) &nbsp;&middot;&nbsp;
 > Twitter [@mimicfi](https://twitter.com/mimicfi) &nbsp;&middot;&nbsp;
 > Discord [mimic](https://discord.mimic.fi)
