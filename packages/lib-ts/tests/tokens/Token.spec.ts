@@ -38,6 +38,20 @@ describe('Token', () => {
       const token = new Token(NATIVE_ADDRESS, 1, Token.EMPTY_DECIMALS, 'ETH')
       expect(18).toBe(token.decimals)
     })
+
+    it('returns the native token for the chain', () => {
+      const token = Token.native(ChainId.ETHEREUM)
+      expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+      expect(token.chainId).toBe(ChainId.ETHEREUM)
+      expect(token.symbol).toBe('ETH')
+      expect(token.decimals).toBe(18)
+    })
+
+    it('throws an error if the chainId is not supported', () => {
+      expect(() => {
+        Token.native(changetype<ChainId>(9999))
+      }).toThrow()
+    })
   })
 
   describe("when token doesn't have decimals or symbol", () => {
