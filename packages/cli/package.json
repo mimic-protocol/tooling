@@ -8,7 +8,7 @@
     "mimic": "./bin/run.js"
   },
   "scripts": {
-    "postinstall": "yarn build",
+    "prepare": "yarn build",
     "build": "rm -rf dist && tsc && cp -r src/templates dist/templates",
     "start": "yarn build && node ./bin/run.js",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
