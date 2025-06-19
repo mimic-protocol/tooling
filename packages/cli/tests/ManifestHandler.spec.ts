@@ -22,19 +22,21 @@ describe('ManifestHandler', () => {
           expect(Array.isArray(parsedManifest.abis)).to.be.false
         })
 
-        it('automatically adds libVersion to the manifest', () => {
-          const parsedManifest = ManifestHandler.validate(manifest)
+        context('when the lib version is not present', () => {
+          it('adds the lib version to the manifest', () => {
+            const parsedManifest = ManifestHandler.validate(manifest)
 
-          expect(parsedManifest.metadata.libVersion).to.not.be.undefined
-          expect(typeof parsedManifest.metadata.libVersion).to.equal('string')
-          expect(parsedManifest.metadata.libVersion).to.match(/^\d+\.\d+\.\d+$/)
+            expect(parsedManifest.metadata.libVersion).to.match(/^\d+\.\d+\.\d+$/)
+          })
         })
 
-        it('overrides user-provided libVersion with automatic detection', () => {
-          const manifestWithLibVersion = { ...manifest, metadata: { libVersion: '999.9.9' } }
-          const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
+        context('when the lib version is present', () => {
+          it('overrides the lib version', () => {
+            const manifestWithLibVersion = { ...manifest, metadata: { libVersion: '999.9.9' } }
+            const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
 
-          expect(parsedManifest.metadata.libVersion).to.not.equal('999.9.9')
+            expect(parsedManifest.metadata.libVersion).to.not.equal('999.9.9')
+          })
         })
       })
 

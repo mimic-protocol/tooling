@@ -17,7 +17,7 @@ export default {
       ...manifest,
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
-      metadata: { ...manifest.metadata, libVersion: getLibVersion() },
+      metadata: { libVersion: getLibVersion() },
     }
     return ManifestValidator.parse(mergedManifest)
   },
