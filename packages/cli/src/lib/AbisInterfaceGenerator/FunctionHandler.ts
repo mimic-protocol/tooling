@@ -20,7 +20,8 @@ export default class FunctionHandler {
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
     const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
 
-    lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
+    const methodName = fn.escapedName || fn.name
+    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
 
     const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
     this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, abiTypeConverter)

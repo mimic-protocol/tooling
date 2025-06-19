@@ -3,6 +3,7 @@ import { type AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../ty
 import AbiTypeConverter from './AbiTypeConverter'
 import FunctionHandler from './FunctionHandler'
 import ImportManager from './ImportManager'
+import NameManager from './NameManager'
 import TupleHandler from './TupleHandler'
 import type { TupleDefinitionsMap } from './types'
 
@@ -39,7 +40,10 @@ export default class ContractClassGenerator {
   private generateMainClass(contractName: string): string {
     const lines: string[] = []
     this.appendClassDefinition(lines, contractName)
-    this.getFunctions().forEach((fn) =>
+
+    const functions = NameManager.resolveMethodNames(this.getFunctions())
+
+    functions.forEach((fn) =>
       FunctionHandler.appendMethod(lines, fn, this.importManager, this.tupleDefinitions, this.abiTypeConverter)
     )
     lines.push('}')
