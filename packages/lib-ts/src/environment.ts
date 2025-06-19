@@ -36,7 +36,26 @@ export namespace environment {
     _swap(JSON.stringify(swap))
   }
 
-  export function transfer(transfer: Transfer): void {
+  export function transfer(
+    tokenAmounts: TokenAmount[],
+    recipient: Address,
+    feeTokenAmount: TokenAmount,
+    chainId: u64,
+    user: Address | null = null,
+  ): void {
+    for(let i = 1; i < tokenAmounts.length; i++) {
+      if(tokenAmounts[i].token.chainId !== chainId) throw new Error('All tokens must be on the same chain')
+    }
+
+    if(feeTokenAmount.token.chainId !== chainId) throw new Error('Fee token must be on the same chain as the tokens')
+
+    const transfers: TransferData[] = []
+    for(let i = 0; i < tokenAmounts.length; i++) transfers.push(TransferData.fromTokenAmount(tokenAmounts[i], recipient))
+
+    sendTransferIntent(new Transfer(transfers, feeTokenAmount.token.address, feeTokenAmount.amount, feeTokenAmount.token.chainId, user))
+  }
+
+  export function sendTransferIntent(transfer: Transfer): void {
     _transfer(JSON.stringify(transfer))
   }
 
