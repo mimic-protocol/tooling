@@ -40,11 +40,24 @@ describe('Token', () => {
     })
 
     it('returns the native token for the chain', () => {
-      const token = Token.native(ChainId.ETHEREUM)
-      expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
-      expect(token.chainId).toBe(ChainId.ETHEREUM)
-      expect(token.symbol).toBe('ETH')
-      expect(token.decimals).toBe(18)
+      const nativeMainnet = Token.native(ChainId.ETHEREUM)
+      const nativePolygon = Token.native(ChainId.POLYGON)
+      const nativeOptimism = Token.native(ChainId.OPTIMISM)
+
+      expect(nativeMainnet.address.toHexString()).toBe(NATIVE_ADDRESS)
+      expect(nativeMainnet.chainId).toBe(ChainId.ETHEREUM)
+      expect(nativeMainnet.symbol).toBe('ETH')
+      expect(nativeMainnet.decimals).toBe(18)
+
+      expect(nativePolygon.address.toHexString()).toBe(NATIVE_ADDRESS)
+      expect(nativePolygon.chainId).toBe(ChainId.POLYGON)
+      expect(nativePolygon.symbol).toBe('POL')
+      expect(nativePolygon.decimals).toBe(18)
+
+      expect(nativeOptimism.address.toHexString()).toBe(NATIVE_ADDRESS)
+      expect(nativeOptimism.chainId).toBe(ChainId.OPTIMISM)
+      expect(nativeOptimism.symbol).toBe('ETH')
+      expect(nativeOptimism.decimals).toBe(18)
     })
 
     it('throws an error if the chainId is not supported', () => {
