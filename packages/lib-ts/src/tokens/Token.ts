@@ -15,10 +15,15 @@ export class Token implements Serializable {
   private _timestamp: Date | null = null
 
   static native(chainId: ChainId): Token {
-    if (chainId === ChainId.ETHEREUM) return new Token(NATIVE_ADDRESS, ChainId.ETHEREUM, 18, 'ETH')
-    if (chainId === ChainId.OPTIMISM) return new Token(NATIVE_ADDRESS, ChainId.OPTIMISM, 18, 'ETH')
-    if (chainId === ChainId.POLYGON) return new Token(NATIVE_ADDRESS, ChainId.POLYGON, 18, 'POL')
-    throw new Error(`Unsupported chainId: ${chainId}`)
+    switch (chainId) {
+      case ChainId.ETHEREUM:
+      case ChainId.OPTIMISM:
+        return new Token(NATIVE_ADDRESS, chainId, 18, 'ETH')
+      case ChainId.POLYGON:
+        return new Token(NATIVE_ADDRESS, chainId, 18, 'POL')
+      default:
+        throw new Error(`Unsupported chainId: ${chainId}`)
+    }
   }
 
   static parse(serialized: string): Token {
