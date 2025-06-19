@@ -1,8 +1,8 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "0.0.1",
+  "version": "0.0.1-rc.1",
   "license": "GPL-3.0",
-  "private": true,
+  "private": false,
   "type": "commonjs",
   "bin": {
     "mimic": "./bin/run.js"
@@ -14,6 +14,11 @@
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
     "lint": "eslint ."
   },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "dependencies": {
     "@inquirer/prompts": "^7.2.4",
     "@oclif/core": "^4.2.2",
