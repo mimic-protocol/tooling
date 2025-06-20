@@ -32,11 +32,11 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
-      expect(result).to.contain(`private chainId: ${AssemblyPrimitiveTypes.u64}`)
+      expect(result).to.contain(`private chainId: ${LibTypes.ChainId}`)
       expect(result).to.contain(`private timestamp: Date | null`)
 
       expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${AssemblyPrimitiveTypes.u64}, timestamp: Date | null = null) {`
+        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
       )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
@@ -91,10 +91,10 @@ describe('AbisInterfaceGenerator', () => {
       const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      expect(result).to.contain(`import { ${LibTypes.Address} } from '@mimicprotocol/lib-ts'`)
+      expect(result).to.contain(`import { ${LibTypes.Address}, ${LibTypes.ChainId} } from '@mimicprotocol/lib-ts'`)
       expect(result).to.contain(`export class ${CONTRACT_NAME} {`)
       expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: u64, timestamp: Date | null = null) {`
+        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
       )
     })
   })

@@ -1,3 +1,4 @@
+import { ChainId } from '../../src/common'
 import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
@@ -39,7 +40,7 @@ describe('Token', () => {
     })
   })
 
-  describe("when token doesn't have decimals or symbol", () => {
+  describe('when token does not have decimals or symbol', () => {
     it('looks for the symbol on chain', () => {
       const token = new Token(randomAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
@@ -83,6 +84,55 @@ describe('Token', () => {
     })
   })
 
+  describe('native', () => {
+    describe('when the chain id is ethereum', () => {
+      const chainId = ChainId.ETHEREUM
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is polygon', () => {
+      const chainId = ChainId.POLYGON
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('POL')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is optimism', () => {
+      const chainId = ChainId.OPTIMISM
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is unknown', () => {
+      it('throws an error', () => {
+        expect(() => {
+          Token.native(changetype<ChainId>(9999))
+        }).toThrow()
+      })
+    })
+  })
+
   describe('parse', () => {
     it('parses a token', () => {
       const token = randomToken()
@@ -97,7 +147,7 @@ describe('Token', () => {
     describe('when comparing two tokens', () => {
       it('returns true for tokens with the same address and chainId', () => {
         const address = randomAddress()
-        const chainId: u64 = 1
+        const chainId: ChainId = ChainId.ETHEREUM
         const token1 = new Token(address, chainId, 18, 'TOKEN1')
         const token2 = new Token(address, chainId, 6, 'TOKEN2')
 
@@ -105,7 +155,7 @@ describe('Token', () => {
       })
 
       it('returns false for tokens with different addresses', () => {
-        const chainId: u64 = 1
+        const chainId: ChainId = ChainId.ETHEREUM
         const token1 = new Token(randomAddress(), chainId, 18, 'TOKEN')
         const token2 = new Token(randomAddress(), chainId, 18, 'TOKEN')
 

@@ -1,10 +1,11 @@
+import { ChainId } from '../src/common'
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
 import { BigInt } from '../src/types'
 
 /* eslint-disable no-secrets/no-secrets */
 
-const CHAIN_IDS: u64[] = [1, 137, 8453, 10, 11155111]
+const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.POLYGON, ChainId.OPTIMISM]
 
 export function zeroPadded(val: BigInt, length: u8): string {
   return val.toString() + '0'.repeat(length)
@@ -35,14 +36,14 @@ export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
   return token
 }
 
-declare function _setTokenPrice(address: string, chainId: u64, price: string): void
+declare function _setTokenPrice(address: string, chainId: ChainId, price: string): void
 
 export function setTokenPrice(token: Token, priceUsd: number): void {
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }
 
-export declare function setContractCall(to: string, chainId: u64, data: string, result: string): void
+export declare function setContractCall(to: string, chainId: ChainId, data: string, result: string): void
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 

@@ -1,10 +1,11 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt } from './types'
-import { Swap, TokenIn, TokenOut, Transfer, TransferData, Call, CallData } from "./intents";
-import { Call as CallQuery } from "./queries";
+import { Swap, Transfer, Call } from './intents'
+import { Call as CallQuery } from './queries'
 import { JSON } from 'json-as/assembly'
-import { Context, SerializableContext } from "./context";
+import { Context, SerializableContext } from './context'
+import { ChainId } from './common'
 
 export namespace environment {
   @external('environment', '_call')
@@ -48,7 +49,7 @@ export namespace environment {
 
   export function getRelevantTokens(
     address: Address,
-    chainIds: u64[],
+    chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: Token[] = [],
     listType: ListType = ListType.DenyList
@@ -73,7 +74,7 @@ export namespace environment {
 
   export function contractCall(
     to: Address,
-    chainId: u64,
+    chainId: ChainId,
     timestamp: Date | null,
     data: string
   ): string {

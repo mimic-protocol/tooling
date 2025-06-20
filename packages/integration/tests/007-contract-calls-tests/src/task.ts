@@ -1,20 +1,17 @@
-import { Address, BigInt, Bytes, Token } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, ChainId, Polygon } from '@mimicprotocol/lib-ts'
+import { Ethereum } from '@mimicprotocol/lib-ts'
 
 import { ERC20 } from './types/ERC20'
 import { ERC4626 } from './types/ERC4626'
 import { SAFE } from './types/SAFE'
 import { MyStruct, Test } from './types/Test'
 
-const MAINNET_CHAIN_ID = 1
-const POLYGON_CHAIN_ID = 137
-
 const TEST_ADDRESS = Address.fromString('0x047be3bb46f9416732fe39a05134f20235c19334')
-const TEST_CHAIN_ID = 11155111
+const TEST_CHAIN_ID = ChainId.OPTIMISM
 const TEST_BYTES = Bytes.fromHexString('0x0102030405')
 
 export default function main(): void {
-  const USDC = new Token('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', MAINNET_CHAIN_ID, 6)
-  const usdcContract = new ERC20(USDC.address, USDC.chainId)
+  const usdcContract = new ERC20(Ethereum.USDC.address, Ethereum.CHAIN_ID)
   usdcContract.name()
   usdcContract.totalSupply()
   usdcContract.decimals()
@@ -23,10 +20,10 @@ export default function main(): void {
   usdcContract.allowance(Address.zero(), Address.zero())
 
   const customTimestamp = Date.fromString('2025-04-04T16:35:57-03:00')
-  const erc4626Contract = new ERC4626(Address.zero(), POLYGON_CHAIN_ID, customTimestamp)
+  const erc4626Contract = new ERC4626(Address.zero(), Polygon.CHAIN_ID, customTimestamp)
   erc4626Contract.convertToAssets(BigInt.fromI32(1234))
 
-  const safeContract = new SAFE(Address.zero(), MAINNET_CHAIN_ID)
+  const safeContract = new SAFE(Address.zero(), Ethereum.CHAIN_ID)
   safeContract.encodeTransactionData(
     Address.zero(),
     BigInt.fromI32(1),

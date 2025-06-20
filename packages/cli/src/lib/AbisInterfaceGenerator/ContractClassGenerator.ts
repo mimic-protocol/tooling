@@ -48,14 +48,15 @@ export default class ContractClassGenerator {
 
   private appendClassDefinition(lines: string[], contractName: string): void {
     this.importManager.addType(LibTypes.Address)
+    this.importManager.addType(LibTypes.ChainId)
 
     lines.push(`export class ${contractName} {`)
     lines.push(`  private address: ${LibTypes.Address}`)
-    lines.push(`  private chainId: ${AssemblyPrimitiveTypes.u64}`)
+    lines.push(`  private chainId: ${LibTypes.ChainId}`)
     lines.push(`  private timestamp: ${AssemblyPrimitiveTypes.Date} | null`)
     lines.push('')
     lines.push(
-      `  constructor(address: ${LibTypes.Address}, chainId: ${AssemblyPrimitiveTypes.u64}, timestamp: ${AssemblyPrimitiveTypes.Date} | null = null) {`
+      `  constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: ${AssemblyPrimitiveTypes.Date} | null = null) {`
     )
     lines.push(`    this.address = address`)
     lines.push(`    this.chainId = chainId`)

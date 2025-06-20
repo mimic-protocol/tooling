@@ -25,6 +25,7 @@ export enum LibTypes {
   BigInt = 'BigInt',
   Address = 'Address',
   Bytes = 'Bytes',
+  ChainId = 'ChainId',
 }
 
 export enum AssemblyPrimitiveTypes {
