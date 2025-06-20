@@ -38,36 +38,9 @@ describe('Token', () => {
       const token = new Token(NATIVE_ADDRESS, 1, Token.EMPTY_DECIMALS, 'ETH')
       expect(18).toBe(token.decimals)
     })
-
-    it('returns the native token for the chain', () => {
-      const nativeMainnet = Token.native(ChainId.ETHEREUM)
-      const nativePolygon = Token.native(ChainId.POLYGON)
-      const nativeOptimism = Token.native(ChainId.OPTIMISM)
-
-      expect(nativeMainnet.address.toHexString()).toBe(NATIVE_ADDRESS)
-      expect(nativeMainnet.chainId).toBe(ChainId.ETHEREUM)
-      expect(nativeMainnet.symbol).toBe('ETH')
-      expect(nativeMainnet.decimals).toBe(18)
-
-      expect(nativePolygon.address.toHexString()).toBe(NATIVE_ADDRESS)
-      expect(nativePolygon.chainId).toBe(ChainId.POLYGON)
-      expect(nativePolygon.symbol).toBe('POL')
-      expect(nativePolygon.decimals).toBe(18)
-
-      expect(nativeOptimism.address.toHexString()).toBe(NATIVE_ADDRESS)
-      expect(nativeOptimism.chainId).toBe(ChainId.OPTIMISM)
-      expect(nativeOptimism.symbol).toBe('ETH')
-      expect(nativeOptimism.decimals).toBe(18)
-    })
-
-    it('throws an error if the chainId is not supported', () => {
-      expect(() => {
-        Token.native(changetype<ChainId>(9999))
-      }).toThrow()
-    })
   })
 
-  describe("when token doesn't have decimals or symbol", () => {
+  describe('when token does not have decimals or symbol', () => {
     it('looks for the symbol on chain', () => {
       const token = new Token(randomAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
@@ -108,6 +81,55 @@ describe('Token', () => {
     it('uses the cache if it was created with decimals', () => {
       const token = new Token(randomAddress(), 1, 6)
       expect(6).toBe(token.decimals)
+    })
+  })
+
+  describe('native', () => {
+    describe('when the chain id is ethereum', () => {
+      const chainId = ChainId.ETHEREUM
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is polygon', () => {
+      const chainId = ChainId.POLYGON
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('POL')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is optimism', () => {
+      const chainId = ChainId.OPTIMISM
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is unknown', () => {
+      it('throws an error', () => {
+        expect(() => {
+          Token.native(changetype<ChainId>(9999))
+        }).toThrow()
+      })
     })
   })
 
