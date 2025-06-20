@@ -1,6 +1,10 @@
 import { expect } from 'chai'
 
 import ManifestHandler from '../src/lib/ManifestHandler'
+import { SEM_VER_REGEX } from '../src/validators'
+
+import invalidSemVers from './fixtures/sem-vers/invalid-sem-vers.json'
+import validSemVers from './fixtures/sem-vers/valid-sem-vers.json'
 
 describe('ManifestHandler', () => {
   const manifest = {
@@ -15,20 +19,20 @@ describe('ManifestHandler', () => {
     context('when the manifest is valid', () => {
       context('when everything is present', () => {
         it('returns the parsed manifest', () => {
-          const parsedManifest = ManifestHandler.validate(manifest)
+          for (const version of validSemVers) {
+            const parsedManifest = ManifestHandler.validate({ ...manifest, version })
 
-          expect(parsedManifest).to.not.be.undefined
-          expect(Array.isArray(parsedManifest.inputs)).to.be.false
-          expect(Array.isArray(parsedManifest.abis)).to.be.false
+            expect(parsedManifest).to.not.be.undefined
+            expect(Array.isArray(parsedManifest.inputs)).to.be.false
+            expect(Array.isArray(parsedManifest.abis)).to.be.false
+          }
         })
 
         context('when the lib version is not present', () => {
           it('adds the lib version to the manifest', () => {
             const parsedManifest = ManifestHandler.validate(manifest)
 
-            expect(parsedManifest.metadata.libVersion).to.match(
-              /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
-            )
+            expect(parsedManifest.metadata.libVersion).to.match(SEM_VER_REGEX)
           })
         })
 
@@ -91,7 +95,10 @@ describe('ManifestHandler', () => {
       })
 
       context('when the version is invalid', () => {
-        itReturnsAnError({ ...manifest, version: '1.a' }, 'Must be a valid semver')
+        it('returns an error', () => {
+          for (const version of invalidSemVers)
+            expect(() => ManifestHandler.validate({ ...manifest, version })).to.throw('Must be a valid semver')
+        })
       })
 
       context('when an input is invalid', () => {
