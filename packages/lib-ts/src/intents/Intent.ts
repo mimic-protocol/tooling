@@ -9,11 +9,13 @@ export enum OperationType {
   Call,
 }
 
+const DEFAULT_DEADLINE = 5 * 60 * 1000 // 5 minutes
+
 export abstract class IntentBuilder {
   protected user: Address | null = null
   protected settler: Address | null = null
   protected deadline: BigInt | null = null
-  protected nonce: string = ''
+  protected nonce: string | null = null
 
   addSettler(settler: Address): IntentBuilder {
     this.settler = settler
@@ -57,17 +59,17 @@ export abstract class Intent {
 
   protected constructor(
     op: OperationType,
-    user: Address | null,
     settler: Address | null,
+    user: Address | null,
     deadline: BigInt | null,
-    nonce: string = ''
+    nonce: string | null
   ) {
+    const context = environment.getContext()
     this.op = op
     this.settler = settler ? settler.toString() : NULL_ADDRESS
-    const context = environment.getContext()
-    this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
+    this.deadline = deadline ? deadline.toString() : (context.timestamp + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
-    this.nonce = nonce != '' ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
+    this.nonce = nonce ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
   }
 
   abstract send(): void

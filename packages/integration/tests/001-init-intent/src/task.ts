@@ -1,17 +1,11 @@
 import { Address, BigInt, Bytes, CallBuilder, ChainId, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
-  const settler = Address.fromString(NULL_ADDRESS)
+  const chainId = ChainId.ETHEREUM
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
-  const value = BigInt.fromString('5')
-  const chainId = ChainId.ETHEREUM
-  const feeToken = new Token(NULL_ADDRESS, chainId, 18, 'TEST')
-  const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('10'))
+  const value = BigInt.fromI32(5)
+  const fee = TokenAmount.fromI32(Token.fromString(NULL_ADDRESS, chainId), 10)
 
-  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
-    .addCall(target, data, value)
-    .addSettler(settler)
-    .build()
-    .send()
+  CallBuilder.forChainWithFee(chainId, fee).addCall(target, data, value).build().send()
 }

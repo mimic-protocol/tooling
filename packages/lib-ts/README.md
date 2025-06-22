@@ -55,7 +55,7 @@ Here’s an example of how to use the library in a Mimic task:
 ```ts
 import { environment, Token } from '@mimicprotocol/lib-ts'
 
-const USDC = new Token('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1)
+const USDC = Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1)
 
 environment.getPrice(USDC, new Date(1744818017000))
 ```

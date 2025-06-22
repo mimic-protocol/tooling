@@ -7,23 +7,14 @@ declare namespace input {
 }
 
 export default function main(): void {
+  const chainId = 1
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
-  const chainId = 1
-  const feeAmount = BigInt.zero()
 
-  const feeToken = new Token(NULL_ADDRESS, chainId, 18, 'TEST')
+  const feeToken = Token.fromString(NULL_ADDRESS, chainId, 18, 'TEST')
+  const feeAmount = BigInt.fromI32(input.firstStaticNumber).times(BigInt.fromI32(input.secondStaticNumber))
+  const fee = TokenAmount.fromBigInt(feeToken, feeAmount)
 
-  const fee1 = feeAmount.times(BigInt.fromI32(input.firstStaticNumber))
-  const fee2 = feeAmount.times(BigInt.fromI32(input.secondStaticNumber))
-  const feeTokenAmount1 = new TokenAmount(feeToken, fee1)
-  const feeTokenAmount2 = new TokenAmount(feeToken, fee2)
-
-  // Replace this with your task code
-  const builder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount1, chainId)
-    .addCall(target, data)
-    .addSettler(settler)
-  builder.build().send()
-  builder.addFeeTokenAmount(feeTokenAmount2).build().send()
+  CallBuilder.forChainWithFee(chainId, fee).addCall(target, data).addSettler(settler).build().send()
 }

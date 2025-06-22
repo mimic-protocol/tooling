@@ -1,14 +1,14 @@
-import { Address, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { CallBuilder, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
 export default function main(): void {
-  const target = Address.fromString(NULL_ADDRESS)
-  const feeToken = new Token(inputs.feeToken.toString(), inputs.chainId, 6, 'TEST')
-  const feeTokenAmount = TokenAmount.fromStringDecimal(feeToken, inputs.feeAmountStringDecimal)
-  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, inputs.chainId)
-    .addCall(target, inputs.data, inputs.value)
-    .addUser(inputs.smartAccount)
+  const feeToken = Token.fromAddress(inputs.feeToken, inputs.chainId)
+  const fee = TokenAmount.fromBigInt(feeToken, inputs.feeAmount)
+
+  CallBuilder.forChainWithFee(inputs.chainId, fee)
+    .addCall(inputs.target, inputs.data, inputs.value)
+    .addUser(inputs.user)
     .build()
     .send()
 }

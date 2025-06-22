@@ -7,19 +7,40 @@ export class Token implements Serializable {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
   public static readonly EMPTY_SYMBOL: string = ''
   private static readonly SERIALIZED_PREFIX: string = 'Token'
+
   private _symbol: string
   private _address: Address
   private _chainId: ChainId
   private _decimals: u8
   private _timestamp: Date | null = null
 
+  static fromAddress(
+    address: Address,
+    chainId: ChainId,
+    decimals: u8 = Token.EMPTY_DECIMALS,
+    symbol: string = Token.EMPTY_SYMBOL,
+    timestamp: Date | null = null
+  ): Token {
+    return new Token(address, chainId, decimals, symbol, timestamp)
+  }
+
+  static fromString(
+    address: string,
+    chainId: ChainId,
+    decimals: u8 = Token.EMPTY_DECIMALS,
+    symbol: string = Token.EMPTY_SYMBOL,
+    timestamp: Date | null = null
+  ): Token {
+    return Token.fromAddress(Address.fromString(address), chainId, decimals, symbol, timestamp)
+  }
+
   static native(chainId: ChainId): Token {
     switch (chainId) {
       case ChainId.ETHEREUM:
       case ChainId.OPTIMISM:
-        return new Token(NATIVE_ADDRESS, chainId, 18, 'ETH')
+        return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'ETH')
       case ChainId.POLYGON:
-        return new Token(NATIVE_ADDRESS, chainId, 18, 'POL')
+        return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'POL')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
@@ -36,17 +57,17 @@ export class Token implements Serializable {
     const address = elements[0]!
     const chainId = i32.parse(elements[1]!)
 
-    return new Token(address, chainId)
+    return Token.fromString(address, chainId)
   }
 
   constructor(
-    address: string,
+    address: Address,
     chainId: ChainId,
     decimals: u8 = Token.EMPTY_DECIMALS,
     symbol: string = Token.EMPTY_SYMBOL,
     timestamp: Date | null = null
   ) {
-    this._address = Address.fromString(address)
+    this._address = address
     this._chainId = chainId
     this._timestamp = timestamp
     this._symbol = symbol
@@ -68,20 +89,20 @@ export class Token implements Serializable {
     }
   }
 
-  get symbol(): string {
-    if (this._symbol === Token.EMPTY_SYMBOL) {
-      const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
-      this._symbol = evm.decode(new EvmDecodeParam('string', response))
-    }
-    return this._symbol
-  }
-
   get address(): Address {
     return this._address.clone()
   }
 
   get chainId(): ChainId {
     return this._chainId
+  }
+
+  get symbol(): string {
+    if (this._symbol === Token.EMPTY_SYMBOL) {
+      const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
+      this._symbol = evm.decode(new EvmDecodeParam('string', response))
+    }
+    return this._symbol
   }
 
   get decimals(): u8 {

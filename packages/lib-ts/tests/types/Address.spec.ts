@@ -6,11 +6,11 @@ describe('Address', () => {
   describe('fromString', () => {
     describe('when the string is valid', () => {
       it('converts a valid string to an Address', () => {
-        const validAddress = randomAddress()
+        const validAddress = randomHex(40)
         const address = Address.fromString(validAddress)
 
         expect(address.length).toBe(20)
-        expect(address.toHexString()).toBe(validAddress)
+        expect(address.toHexString()).toBe(address.toString())
       })
     })
 
@@ -34,7 +34,7 @@ describe('Address', () => {
   describe('fromHexString', () => {
     describe('when the hex string is valid', () => {
       it('converts a valid hex string to an Address', () => {
-        const validAddress = randomAddress()
+        const validAddress = randomHex(40)
         const address = Address.fromHexString(validAddress)
 
         expect(address.length).toBe(20)
@@ -62,7 +62,7 @@ describe('Address', () => {
   describe('fromBytes', () => {
     describe('when the Bytes object has a valid length', () => {
       it('converts a valid Bytes object to an Address', () => {
-        const validBytes = Bytes.fromHexString(randomAddress())
+        const validBytes = Bytes.fromHexString(randomHex(40))
         const address = Address.fromBytes(validBytes)
 
         expect(address.length).toBe(20)
@@ -89,7 +89,7 @@ describe('Address', () => {
 
   describe('toString', () => {
     it('returns the hex representation', () => {
-      const validAddress = randomAddress()
+      const validAddress = randomHex(40)
       const address = Address.fromHexString(validAddress)
       expect(address.toString()).toBe(validAddress)
     })
@@ -115,7 +115,7 @@ describe('Address', () => {
   describe('clone', () => {
     describe('when cloning an address', () => {
       it('returns a new address with the same bytes', () => {
-        const originalAddress = Address.fromString(randomAddress())
+        const originalAddress = randomAddress()
         const clonedAddress = originalAddress.clone()
 
         expect(clonedAddress.length).toBe(originalAddress.length)
@@ -123,7 +123,7 @@ describe('Address', () => {
       })
 
       it('creates an independent copy', () => {
-        const originalAddress = Address.fromString(randomAddress())
+        const originalAddress = randomAddress()
         const clonedAddress = originalAddress.clone()
 
         originalAddress[0] = 255

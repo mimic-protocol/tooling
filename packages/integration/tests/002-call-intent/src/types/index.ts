@@ -2,11 +2,12 @@ import { Address, BigInt, Bytes } from '@mimicprotocol/lib-ts'
 
 declare namespace input {
   const chainId: i32
-  var feeToken: string | null
+  var user: string | null
+  var target: string | null
   var data: string | null
-  var feeAmountStringDecimal: string | null
   var value: string | null
-  var smartAccount: string | null
+  var feeToken: string | null
+  var feeAmount: string | null
 }
 
 // The class name is intentionally lowercase and plural to resemble a namespace when used in a task
@@ -15,23 +16,27 @@ export class inputs {
     return input.chainId
   }
 
-  static get feeToken(): Address {
-    return Address.fromString(input.feeToken!)
+  static get user(): Address {
+    return Address.fromString(input.user!)
+  }
+
+  static get target(): Address {
+    return Address.fromString(input.target!)
   }
 
   static get data(): Bytes {
     return Bytes.fromHexString(input.data!)
   }
 
-  static get feeAmountStringDecimal(): string {
-    return input.feeAmountStringDecimal!
-  }
-
   static get value(): BigInt {
     return BigInt.fromString(input.value!)
   }
 
-  static get smartAccount(): Address {
-    return Address.fromString(input.smartAccount!)
+  static get feeToken(): Address {
+    return Address.fromString(input.feeToken!)
+  }
+
+  static get feeAmount(): BigInt {
+    return BigInt.fromString(input.feeAmount!)
   }
 }

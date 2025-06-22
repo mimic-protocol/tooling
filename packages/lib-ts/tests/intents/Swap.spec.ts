@@ -1,56 +1,121 @@
 import { JSON } from 'json-as'
 
+import { NULL_ADDRESS } from '../../src/helpers'
 import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
-import { setContext } from '../helpers'
+import { randomAddress, randomToken, setContext } from '../helpers'
 
 describe('Swap', () => {
-  it('creates a Swap with valid parameters and stringifies it', () => {
-    const tokenInAddress = Address.fromString('0x0000000000000000000000000000000000000001')
-    const tokenOutAddress = Address.fromString('0x0000000000000000000000000000000000000002')
-    const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000003')
-    const settlerAddress = Address.fromString('0x0000000000000000000000000000000000000004')
+  it('creates a simple Swap with default values', () => {
+    const chainId = 1
+    const user = randomAddress()
+    const tokenIn = randomAddress()
+    const amountIn = BigInt.fromI32(10)
+    const tokenOut = randomAddress()
+    const minAmountOut = BigInt.fromI32(100)
 
+    setContext(1, user.toString(), 'config-456')
+
+    const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
+    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.user).toBe(user.toString())
+    expect(swap.settler).toBe(NULL_ADDRESS)
+    expect(swap.deadline).toBe('300001')
+    expect(swap.nonce).toBe('0x')
+
+    expect(swap.sourceChain).toBe(chainId)
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensIn[0].token).toBe(tokenIn.toString())
+    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
+
+    expect(swap.destinationChain).toBe(chainId)
+    expect(swap.tokensOut.length).toBe(1)
+    expect(swap.tokensOut[0].token).toBe(tokenOut.toString())
+    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
+    expect(swap.tokensOut[0].recipient).toBe(user.toString())
+    expect(JSON.stringify(swap)).toBe(
+      `{"op":0,"settler":"${NULL_ADDRESS}","deadline":"300001","user":"${user}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+    )
+  })
+
+  it('creates a simple Swap with valid parameters and stringifies it', () => {
+    const chainId = 1
+    const user = randomAddress()
+    const settler = randomAddress()
+    const deadline = BigInt.fromI32(999999)
+    const tokenIn = randomAddress()
+    const amountIn = BigInt.fromI32(10)
+    const tokenOut = randomAddress()
+    const minAmountOut = BigInt.fromI32(100)
+
+    setContext(1, user.toString(), 'config-456')
+
+    const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut, user, settler, deadline)
+    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.user).toBe(user.toString())
+    expect(swap.settler).toBe(settler.toString())
+    expect(swap.deadline).toBe(deadline.toString())
+    expect(swap.nonce).toBe('0x')
+
+    expect(swap.sourceChain).toBe(chainId)
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensIn[0].token).toBe(tokenIn.toString())
+    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
+
+    expect(swap.destinationChain).toBe(chainId)
+    expect(swap.tokensOut.length).toBe(1)
+    expect(swap.tokensOut[0].token).toBe(tokenOut.toString())
+    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
+    expect(swap.tokensOut[0].recipient).toBe(user.toString())
+    expect(JSON.stringify(swap)).toBe(
+      `{"op":0,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+    )
+  })
+
+  it('creates a complex Swap with valid parameters and stringifies it', () => {
     const sourceChain = 1
     const destinationChain = 10
-    const deadline = BigInt.fromString('123456789')
-    setContext(sourceChain, recipientAddress.toString(), 'config-456')
+    const user = randomAddress()
+    const settler = randomAddress()
+    const deadline = BigInt.fromI32(999999)
+    const tokenIn = TokenIn.fromI32(randomToken(sourceChain), 10)
+    const tokenOut = TokenOut.fromI32(randomToken(destinationChain), 100, randomAddress())
 
-    const tokenIn = new Token(tokenInAddress.toString(), 18)
-    const tokenOut = new Token(tokenOutAddress.toString(), 18)
-    const tokensIn = [TokenIn.fromStringDecimal(tokenIn, '1')]
-    const tokensOut = [TokenOut.fromStringDecimal(tokenOut, '1', recipientAddress)]
-    const swap = new Swap(sourceChain, tokensIn, tokensOut, destinationChain, null, settlerAddress, deadline)
+    setContext(1, user.toString(), 'config-456')
+
+    const swap = new Swap(sourceChain, [tokenIn], [tokenOut], destinationChain, settler, user, deadline)
+    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.user).toBe(user.toString())
+    expect(swap.settler).toBe(settler.toString())
+    expect(swap.deadline).toBe(deadline.toString())
+    expect(swap.nonce).toBe('0x')
 
     expect(swap.sourceChain).toBe(sourceChain)
-    expect(swap.destinationChain).toBe(destinationChain)
-    expect(swap.op).toBe(OperationType.Swap)
     expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensIn[0].token).toBe(tokenIn.token)
+    expect(swap.tokensIn[0].amount).toBe(tokenIn.amount)
+
+    expect(swap.destinationChain).toBe(destinationChain)
     expect(swap.tokensOut.length).toBe(1)
-    expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())
-    expect(swap.tokensOut[0].token).toBe(tokenOutAddress.toString())
-    expect(swap.tokensOut[0].recipient).toBe(recipientAddress.toString())
+    expect(swap.tokensOut[0].token).toBe(tokenOut.token)
+    expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
+    expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
     expect(JSON.stringify(swap)).toBe(
-      '{"op":0,"settler":"0x0000000000000000000000000000000000000004","deadline":"123456789","user":"0x0000000000000000000000000000000000000003","nonce":"0x","sourceChain":1,"tokensIn":[{"token":"0x0000000000000000000000000000000000000001","amount":"1"}],"tokensOut":[{"token":"0x0000000000000000000000000000000000000002","minAmount":"1","recipient":"0x0000000000000000000000000000000000000003"}],"destinationChain":10}'
+      `{"op":0,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 
   it('throws an error when TokenIn list is empty', () => {
     expect(() => {
-      const tokenOutAddress = Address.fromString('0x0000000000000000000000000000000000000002')
-      const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000003')
-      const tokenOut = new Token(tokenOutAddress.toString(), 18)
-      const tokensOut = [TokenOut.fromStringDecimal(tokenOut, '0.5', recipientAddress)]
+      const tokensOut = [TokenOut.fromI32(randomToken(), 10, randomAddress())]
       new Swap(1, [], tokensOut, 10, null, null)
     }).toThrow('TokenIn list cannot be empty')
   })
 
   it('throws an error when TokenOut list is empty', () => {
     expect(() => {
-      const tokenInAddress = Address.fromString('0x0000000000000000000000000000000000000001')
-      const tokenIn = new Token(tokenInAddress.toString(), 18)
-      const tokensIn: TokenIn[] = [TokenIn.fromStringDecimal(tokenIn, '1.0')]
+      const tokensIn = [TokenIn.fromI32(randomToken(), 10)]
       new Swap(1, tokensIn, [], 10, null, null)
     }).toThrow('TokenOut list cannot be empty')
   })
@@ -68,13 +133,13 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = new Token(tokenInAddress.toString(), sourceChain)
-    const tokenOut = new Token(tokenOutAddress.toString(), destinationChain)
+    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
 
-    const tokenInAmount = new TokenAmount(tokenIn, BigInt.fromString('1000'))
-    const tokenOutAmount = new TokenAmount(tokenOut, BigInt.fromString('950'))
+    const tokenInAmount = TokenAmount.fromI32(tokenIn, 1000)
+    const tokenOutAmount = TokenAmount.fromI32(tokenOut, 950)
 
-    const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+    const builder = SwapBuilder.forChains(sourceChain, destinationChain)
     builder.addTokenInFromTokenAmount(tokenInAmount)
     builder.addTokenOutFromTokenAmount(tokenOutAmount, recipientAddress)
 
@@ -91,10 +156,10 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = new Token(tokenInAddress.toString(), sourceChain)
-    const tokenOut = new Token(tokenOutAddress.toString(), destinationChain)
+    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
 
-    const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+    const builder = SwapBuilder.forChains(sourceChain, destinationChain)
     builder.addTokenInFromStringDecimal(tokenIn, '1')
     builder.addTokenOutFromStringDecimal(tokenOut, '1', recipientAddress)
 
@@ -107,8 +172,8 @@ describe('SwapBuilder', () => {
 
   it('throws if TokenIn chainId does not match sourceChain', () => {
     expect(() => {
-      const token = new Token(tokenInAddressStr, 999) // wrong chain
-      const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+      const token = Token.fromString(tokenInAddressStr, 999) // wrong chain
+      const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenInFromStringDecimal(token, '1')
     }).toThrow('All tokens in must be on the same chain')
   })
@@ -116,8 +181,8 @@ describe('SwapBuilder', () => {
   it('throws if TokenOut chainId does not match destinationChain', () => {
     expect(() => {
       const recipient = Address.fromString(recipientAddressStr)
-      const token = new Token(tokenOutAddressStr, 5) // wrong chain
-      const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+      const token = Token.fromString(tokenOutAddressStr, 5) // wrong chain
+      const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenOutFromStringDecimal(token, '1', recipient)
     }).toThrow('All tokens out must be on the same chain')
   })
@@ -127,13 +192,13 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = new Token(tokenInAddress.toString(), sourceChain)
-    const tokenOut = new Token(tokenOutAddress.toString(), destinationChain)
+    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
 
     const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
     const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '2')
 
-    const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+    const builder = SwapBuilder.forChains(sourceChain, destinationChain)
     builder.addTokensInFromTokenAmounts([tokenInAmount])
     builder.addTokensOutFromTokenAmounts([tokenOutAmount], recipientAddress)
 
@@ -144,11 +209,11 @@ describe('SwapBuilder', () => {
 
   it('throws if no TokenIn is added before build', () => {
     expect(() => {
-      const tokenOut = new Token(tokenOutAddressStr, destinationChain)
+      const tokenOut = Token.fromString(tokenOutAddressStr, destinationChain)
       const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '1')
       const recipient = Address.fromString(recipientAddressStr)
 
-      const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+      const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenOutFromTokenAmount(tokenOutAmount, recipient)
 
       builder.build()
@@ -157,10 +222,10 @@ describe('SwapBuilder', () => {
 
   it('throws if no TokenOut is added before build', () => {
     expect(() => {
-      const tokenIn = new Token(tokenInAddressStr, sourceChain)
+      const tokenIn = Token.fromString(tokenInAddressStr, sourceChain)
       const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
 
-      const builder = SwapBuilder.fromChains(sourceChain, destinationChain)
+      const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenInFromTokenAmount(tokenInAmount)
 
       builder.build()

@@ -7,6 +7,7 @@ import { USD } from './USD'
 
 export class TokenAmount implements Serializable {
   private static readonly SERIALIZED_PREFIX: string = 'TokenAmount'
+
   private _token: Token
   private _amount: BigInt
 

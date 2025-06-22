@@ -6,11 +6,15 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class SwapBuilder extends IntentBuilder {
   private sourceChain: ChainId
+  private destinationChain: ChainId
   private tokensIn: TokenIn[] = []
   private tokensOut: TokenOut[] = []
-  private destinationChain: ChainId
 
-  static fromChains(sourceChain: ChainId, destinationChain: ChainId): SwapBuilder {
+  static forChain(chainId: ChainId): SwapBuilder {
+    return new SwapBuilder(chainId, chainId)
+  }
+
+  static forChains(sourceChain: ChainId, destinationChain: ChainId): SwapBuilder {
     return new SwapBuilder(sourceChain, destinationChain)
   }
 
@@ -120,8 +124,8 @@ export class SwapBuilder extends IntentBuilder {
       this.tokensIn,
       this.tokensOut,
       this.destinationChain,
-      this.user,
       this.settler,
+      this.user,
       this.deadline,
       this.nonce
     )
@@ -135,6 +139,14 @@ export class TokenIn {
 
   static fromTokenAmount(tokenAmount: TokenAmount): TokenIn {
     return new TokenIn(tokenAmount.token.address, tokenAmount.amount)
+  }
+
+  static fromI32(token: Token, amount: i32): TokenIn {
+    return this.fromTokenAmount(TokenAmount.fromI32(token, amount))
+  }
+
+  static fromBigInt(token: Token, amount: BigInt): TokenIn {
+    return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount))
   }
 
   static fromStringDecimal(token: Token, amount: string): TokenIn {
@@ -157,6 +169,14 @@ export class TokenOut {
     return new TokenOut(tokenAmount.token.address, tokenAmount.amount, recipient)
   }
 
+  static fromI32(token: Token, amount: i32, recipient: Address): TokenOut {
+    return this.fromTokenAmount(TokenAmount.fromI32(token, amount), recipient)
+  }
+
+  static fromBigInt(token: Token, amount: BigInt, recipient: Address): TokenOut {
+    return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount), recipient)
+  }
+
   static fromStringDecimal(token: Token, amount: string, recipient: Address): TokenOut {
     return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount), recipient)
   }
@@ -170,6 +190,24 @@ export class TokenOut {
 
 @json
 export class Swap extends Intent {
+  static create(
+    chainId: ChainId,
+    tokenIn: Address,
+    amountIn: BigInt,
+    tokenOut: Address,
+    minAmountOut: BigInt,
+    user: Address | null = null,
+    settler: Address | null = null,
+    deadline: BigInt | null = null,
+    nonce: string | null = null
+  ): Swap {
+    const context = environment.getContext()
+    const recipient = user || context.user
+    const swapIn = TokenIn.fromBigInt(Token.fromAddress(tokenIn, chainId), amountIn)
+    const swapOut = TokenOut.fromBigInt(Token.fromAddress(tokenOut, chainId), minAmountOut, recipient)
+    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce)
+  }
+
   constructor(
     public sourceChain: ChainId,
     public tokensIn: TokenIn[],
@@ -178,7 +216,7 @@ export class Swap extends Intent {
     user: Address | null = null,
     settler: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string = ''
+    nonce: string | null = null
   ) {
     super(OperationType.Swap, user, settler, deadline, nonce)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')

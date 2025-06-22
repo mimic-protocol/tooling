@@ -1,6 +1,6 @@
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
-import { BigInt, ChainId } from '../src/types'
+import { Address, BigInt, Bytes, ChainId } from '../src/types'
 
 /* eslint-disable no-secrets/no-secrets */
 
@@ -8,6 +8,14 @@ const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.POLYGON, ChainId.OPTIMIS
 
 export function zeroPadded(val: BigInt, length: u8): string {
   return val.toString() + '0'.repeat(length)
+}
+
+export function randomAddress(): Address {
+  return Address.fromString(randomHex(40))
+}
+
+export function randomBytes(length: i32): Bytes {
+  return Bytes.fromHexString(randomHex(length))
 }
 
 export function randomHex(length: i32): string {
@@ -20,17 +28,14 @@ export function randomHex(length: i32): string {
   return result
 }
 
-export function randomAddress(): string {
-  return randomHex(40)
-}
-
-export function randomToken(decimals: u8 = STANDARD_DECIMALS): Token {
-  const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
-  return new Token(randomAddress(), chainId, decimals, 'TEST')
+export function randomToken(chainId: ChainId = 0, decimals: u8 = STANDARD_DECIMALS): Token {
+  chainId = chainId || CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+  return Token.fromAddress(randomAddress(), chainId, decimals, 'TEST')
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
-  const token = randomToken(decimals)
+  const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+  const token = randomToken(chainId, decimals)
   setTokenPrice(token, priceUsd)
   return token
 }

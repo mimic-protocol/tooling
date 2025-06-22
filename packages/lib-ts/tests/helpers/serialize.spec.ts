@@ -58,7 +58,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const token = randomToken()
         const amount = BigInt.fromI32(5)
-        const tokenAmount = new TokenAmount(token, amount)
+        const tokenAmount = TokenAmount.fromBigInt(token, amount)
         const serialized = serialize(tokenAmount)
 
         const serializedToken = serialize(token)
@@ -148,8 +148,8 @@ describe('serialize', () => {
 
     describe('when parsing a CSV string with parentheses', () => {
       it('correctly handles nested structures', () => {
-        const address = Address.fromString(randomAddress())
-        const chainIds: ChainId[] = [ChainId.ETHEREUM, ChainId.POLYGON]
+        const address = randomAddress()
+        const chainIds = [ChainId.ETHEREUM, ChainId.POLYGON]
         const bigInt = BigInt.fromI32(0)
         const zero = '0'
 
@@ -173,7 +173,7 @@ describe('serialize', () => {
       it('preserves the nested commas', () => {
         const token = randomToken()
         const amount = BigInt.fromI32(100)
-        const tokenAmount = new TokenAmount(token, amount)
+        const tokenAmount = TokenAmount.fromBigInt(token, amount)
         const list: (string | null)[] = [serialize(token), serialize(amount), serialize(tokenAmount)]
         const input = join(list)
         const result = parseCSV(input)

@@ -15,16 +15,16 @@ import { inputs } from './types'
 export default function main(): void {
   // Token definitions
   const chainId = inputs.chainId
-  const USDC = new Token('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', chainId, 6, 'USDC')
-  const WBTC = new Token('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', chainId, 8, 'WBTC')
-  const feeTokenAmount = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
+  const USDC = Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', chainId, 6, 'USDC')
+  const WBTC = Token.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', chainId, 8, 'WBTC')
 
   // Call without bytes (optional field)
   const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
   const bytes = Bytes.fromI32(123)
+  const callFee = TokenAmount.fromI32(USDC, 10)
 
-  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
+  CallBuilder.forChainWithFee(chainId, callFee)
     .addCall(target)
     .addCall(target, bytes)
     .addSettler(settler)
@@ -32,14 +32,11 @@ export default function main(): void {
     .send()
 
   // Normal swap
-  const minAmountOut = BigInt.fromI32(inputs.amount)
-    .times(BigInt.fromI32(inputs.slippage))
-    .div(BigInt.fromI32(100))
-    .toString()
-  const tokenIn = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
-  const tokenOut = TokenAmount.fromStringDecimal(WBTC, minAmountOut)
+  const minAmountOut = BigInt.fromI32(inputs.amount).times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
+  const tokenIn = TokenAmount.fromI32(USDC, inputs.amount)
+  const tokenOut = TokenAmount.fromStringDecimal(WBTC, minAmountOut.toString())
 
-  SwapBuilder.fromChains(chainId, chainId)
+  SwapBuilder.forChains(chainId, chainId)
     .addTokenInFromTokenAmount(tokenIn)
     .addTokenOutFromTokenAmount(tokenOut, target)
     .addSettler(settler)
@@ -47,8 +44,10 @@ export default function main(): void {
     .send()
 
   // Normal Transfer
-  const tokenAmount = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
-  TransferBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
+  const tokenAmount = TokenAmount.fromI32(USDC, inputs.amount)
+  const transferFee = TokenAmount.fromI32(USDC, 10)
+
+  TransferBuilder.forChainWithFee(chainId, transferFee)
     .addTransferFromTokenAmount(tokenAmount, target)
     .addSettler(settler)
     .build()
