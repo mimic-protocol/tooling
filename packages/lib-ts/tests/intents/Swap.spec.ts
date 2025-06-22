@@ -5,8 +5,8 @@ import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
 import { setContext } from '../helpers'
 
-describe('Swap Intent', () => {
-  it('creates a Swap intent with valid parameters and stringifies it', () => {
+describe('Swap', () => {
+  it('creates a Swap with valid parameters and stringifies it', () => {
     const tokenInAddress = Address.fromString('0x0000000000000000000000000000000000000001')
     const tokenOutAddress = Address.fromString('0x0000000000000000000000000000000000000002')
     const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000003')
@@ -15,24 +15,23 @@ describe('Swap Intent', () => {
     const sourceChain = 1
     const destinationChain = 10
     const deadline = BigInt.fromString('123456789')
-
     setContext(sourceChain, recipientAddress.toString(), 'config-456')
 
     const tokenIn = new Token(tokenInAddress.toString(), 18)
     const tokenOut = new Token(tokenOutAddress.toString(), 18)
     const tokensIn = [TokenIn.fromStringDecimal(tokenIn, '1')]
     const tokensOut = [TokenOut.fromStringDecimal(tokenOut, '1', recipientAddress)]
-    const swapIntent = new Swap(sourceChain, tokensIn, tokensOut, destinationChain, null, settlerAddress, deadline)
+    const swap = new Swap(sourceChain, tokensIn, tokensOut, destinationChain, null, settlerAddress, deadline)
 
-    expect(swapIntent.sourceChain).toBe(sourceChain)
-    expect(swapIntent.destinationChain).toBe(destinationChain)
-    expect(swapIntent.op).toBe(OperationType.Swap)
-    expect(swapIntent.tokensIn.length).toBe(1)
-    expect(swapIntent.tokensOut.length).toBe(1)
-    expect(swapIntent.tokensIn[0].token).toBe(tokenInAddress.toString())
-    expect(swapIntent.tokensOut[0].token).toBe(tokenOutAddress.toString())
-    expect(swapIntent.tokensOut[0].recipient).toBe(recipientAddress.toString())
-    expect(JSON.stringify(swapIntent)).toBe(
+    expect(swap.sourceChain).toBe(sourceChain)
+    expect(swap.destinationChain).toBe(destinationChain)
+    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensOut.length).toBe(1)
+    expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())
+    expect(swap.tokensOut[0].token).toBe(tokenOutAddress.toString())
+    expect(swap.tokensOut[0].recipient).toBe(recipientAddress.toString())
+    expect(JSON.stringify(swap)).toBe(
       '{"op":0,"settler":"0x0000000000000000000000000000000000000004","deadline":"123456789","user":"0x0000000000000000000000000000000000000003","nonce":"0x","sourceChain":1,"tokensIn":[{"token":"0x0000000000000000000000000000000000000001","amount":"1"}],"tokensOut":[{"token":"0x0000000000000000000000000000000000000002","minAmount":"1","recipient":"0x0000000000000000000000000000000000000003"}],"destinationChain":10}'
     )
   })
@@ -64,7 +63,7 @@ describe('SwapBuilder', () => {
   const tokenOutAddressStr = '0x0000000000000000000000000000000000000002'
   const recipientAddressStr = '0x0000000000000000000000000000000000000003'
 
-  it('builds a Swap intent with token amounts', () => {
+  it('builds a Swap with token amounts', () => {
     const tokenInAddress = Address.fromString(tokenInAddressStr)
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
@@ -79,13 +78,12 @@ describe('SwapBuilder', () => {
     builder.addTokenInFromTokenAmount(tokenInAmount)
     builder.addTokenOutFromTokenAmount(tokenOutAmount, recipientAddress)
 
-    const intent = builder.build()
-
-    expect(intent.op).toBe(OperationType.Swap)
-    expect(intent.sourceChain).toBe(sourceChain)
-    expect(intent.destinationChain).toBe(destinationChain)
-    expect(intent.tokensIn[0].token).toBe(tokenInAddress.toString())
-    expect(intent.tokensOut[0].recipient).toBe(recipientAddress.toString())
+    const swap = builder.build()
+    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.sourceChain).toBe(sourceChain)
+    expect(swap.destinationChain).toBe(destinationChain)
+    expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())
+    expect(swap.tokensOut[0].recipient).toBe(recipientAddress.toString())
   })
 
   it('adds multiple TokenIn/Out with fromStringDecimal', () => {
@@ -100,12 +98,11 @@ describe('SwapBuilder', () => {
     builder.addTokenInFromStringDecimal(tokenIn, '1')
     builder.addTokenOutFromStringDecimal(tokenOut, '1', recipientAddress)
 
-    const intent = builder.build()
-
-    expect(intent.tokensIn.length).toBe(1)
-    expect(intent.tokensOut.length).toBe(1)
-    expect(intent.tokensIn[0].amount).toBe('1')
-    expect(intent.tokensOut[0].minAmount).toBe('1')
+    const swap = builder.build()
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensOut.length).toBe(1)
+    expect(swap.tokensIn[0].amount).toBe('1')
+    expect(swap.tokensOut[0].minAmount).toBe('1')
   })
 
   it('throws if TokenIn chainId does not match sourceChain', () => {
@@ -140,10 +137,9 @@ describe('SwapBuilder', () => {
     builder.addTokensInFromTokenAmounts([tokenInAmount])
     builder.addTokensOutFromTokenAmounts([tokenOutAmount], recipientAddress)
 
-    const intent = builder.build()
-
-    expect(intent.tokensIn.length).toBe(1)
-    expect(intent.tokensOut.length).toBe(1)
+    const swap = builder.build()
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensOut.length).toBe(1)
   })
 
   it('throws if no TokenIn is added before build', () => {

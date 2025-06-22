@@ -47,9 +47,9 @@ export default function main(): void {
     .send()
 
   // Normal Transfer
-  const tokenAmounts = [TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())]
+  const tokenAmount = TokenAmount.fromStringDecimal(USDC, inputs.amount.toString())
   TransferBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
-    .addTransfersFromTokenAmounts(tokenAmounts, target)
+    .addTransferFromTokenAmount(tokenAmount, target)
     .addSettler(settler)
     .build()
     .send()

@@ -1,7 +1,6 @@
-import { ChainId } from '../common'
 import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
-import { Address, BigInt } from '../types'
+import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, OperationType } from './Intent'
 

@@ -1,6 +1,6 @@
-import { ChainId } from '../../src/common'
 import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
+import { ChainId } from '../../src/types'
 import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
 
 describe('Token', () => {

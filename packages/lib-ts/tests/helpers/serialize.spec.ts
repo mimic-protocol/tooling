@@ -1,7 +1,6 @@
-import { ChainId } from '../../src/common'
 import { join, NULL_ADDRESS, parseCSV, serialize, serializeArray } from '../../src/helpers'
 import { TokenAmount } from '../../src/tokens'
-import { Address, BigInt, Bytes } from '../../src/types'
+import { Address, BigInt, Bytes, ChainId } from '../../src/types'
 import { randomAddress, randomToken } from '../helpers'
 
 describe('serialize', () => {

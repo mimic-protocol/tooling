@@ -1,11 +1,10 @@
 import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt } from './types'
+import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
 import { Call as CallQuery } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
-import { ChainId } from './common'
 
 export namespace environment {
   @external('environment', '_call')
@@ -29,8 +28,8 @@ export namespace environment {
   @external('environment', '_getContext')
   declare function _getContext(): string
 
-  export function call(intent: Call): void {
-    _call(JSON.stringify(intent))
+  export function call(call: Call): void {
+    _call(JSON.stringify(call))
   }
 
   export function swap(swap: Swap): void {
@@ -65,7 +64,6 @@ export namespace environment {
 
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].length === 0) continue
-
       tokenAmounts.push(TokenAmount.parse(rows[i]))
     }
 

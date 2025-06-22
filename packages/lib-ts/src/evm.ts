@@ -1,5 +1,5 @@
-import { EvmDecodeParam, EvmEncodeParam } from "./types";
-import { join, serialize, serializeArray } from "./helpers";
+import { EvmDecodeParam, EvmEncodeParam } from './types'
+import { join, serialize, serializeArray } from './helpers'
 
 export namespace evm {
   @external('evm', '_encode')
@@ -21,5 +21,4 @@ export namespace evm {
   export function keccak(data: string): string {
     return _keccak(data)
   }
-
 }

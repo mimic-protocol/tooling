@@ -1,8 +1,7 @@
-import { ChainId } from '../common'
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../helpers'
-import { Address, EvmDecodeParam } from '../types'
+import { Address, ChainId, EvmDecodeParam } from '../types'
 
 export class Token implements Serializable {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE

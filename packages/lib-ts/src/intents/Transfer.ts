@@ -1,7 +1,6 @@
-import { ChainId } from '../common'
 import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
-import { Address, BigInt } from '../types'
+import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, OperationType } from './Intent'
 
@@ -17,7 +16,7 @@ export class TransferBuilder extends IntentBuilder {
   constructor(feeTokenAmount: TokenAmount, chainId: ChainId) {
     super()
     if (feeTokenAmount.token.chainId !== chainId) {
-      throw new Error('Fee token must be on the same chain as the intent')
+      throw new Error('Fee token must be on the same chain as the one requested for the transfer')
     }
     this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
@@ -121,6 +120,7 @@ export class Transfer extends Intent {
   public feeToken: string
   public feeAmount: string
   public chainId: ChainId
+
   constructor(
     transfers: TransferData[],
     feeToken: Address,
