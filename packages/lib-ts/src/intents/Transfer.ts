@@ -5,20 +5,20 @@ import { Address, BigInt, ChainId } from '../types'
 import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class TransferBuilder extends IntentBuilder {
-  private transfers: TransferData[] = []
-  private feeTokenAmount: TokenAmount
   private chainId: ChainId
+  private fee: TokenAmount
+  private transfers: TransferData[] = []
 
-  static fromTokenAmountAndChain(feeTokenAmount: TokenAmount, chainId: ChainId): TransferBuilder {
-    return new TransferBuilder(feeTokenAmount, chainId)
+  static forChainWithFee(chainId: ChainId, fee: TokenAmount): TransferBuilder {
+    return new TransferBuilder(chainId, fee)
   }
 
-  constructor(feeTokenAmount: TokenAmount, chainId: ChainId) {
+  constructor(chainId: ChainId, fee: TokenAmount) {
     super()
-    if (feeTokenAmount.token.chainId !== chainId) {
+    if (fee.token.chainId !== chainId) {
       throw new Error('Fee token must be on the same chain as the one requested for the transfer')
     }
-    this.feeTokenAmount = feeTokenAmount
+    this.fee = fee
     this.chainId = chainId
   }
 
@@ -80,16 +80,7 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   build(): Transfer {
-    return new Transfer(
-      this.transfers,
-      this.feeTokenAmount.token.address,
-      this.feeTokenAmount.amount,
-      this.chainId,
-      this.user,
-      this.settler,
-      this.deadline,
-      this.nonce
-    )
+    return new Transfer(this.transfers, this.fee, this.chainId, this.settler, this.user, this.deadline, this.nonce)
   }
 }
 
@@ -101,6 +92,14 @@ export class TransferData {
 
   static fromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferData {
     return new TransferData(tokenAmount.token.address, tokenAmount.amount, recipient)
+  }
+
+  static fromI32(token: Token, amount: i32, recipient: Address): TransferData {
+    return this.fromTokenAmount(TokenAmount.fromI32(token, amount), recipient)
+  }
+
+  static fromBigInt(token: Token, amount: BigInt, recipient: Address): TransferData {
+    return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount), recipient)
   }
 
   static fromStringDecimal(token: Token, amount: string, recipient: Address): TransferData {
@@ -121,23 +120,40 @@ export class Transfer extends Intent {
   public feeAmount: string
   public chainId: ChainId
 
+  static create(
+    chainId: ChainId,
+    token: Address,
+    amount: BigInt,
+    recipient: Address,
+    fee: BigInt,
+    settler: Address | null = null,
+    user: Address | null = null,
+    deadline: BigInt | null = null,
+    nonce: string | null = null
+  ): Transfer {
+    const transferToken = Token.fromAddress(token, chainId)
+    const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
+    const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
+    const feeAmount = TokenAmount.fromBigInt(transferToken, fee)
+    return new Transfer([transferData], feeAmount, chainId, settler, user, deadline, nonce)
+  }
+
   constructor(
     transfers: TransferData[],
-    feeToken: Address,
-    feeAmount: BigInt,
+    fee: TokenAmount,
     chainId: ChainId,
-    user: Address | null = null,
     settler: Address | null = null,
+    user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string = ''
+    nonce: string | null = null
   ) {
-    super(OperationType.Transfer, user, settler, deadline, nonce)
+    super(OperationType.Transfer, settler, user, deadline, nonce)
 
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
 
     this.transfers = transfers
-    this.feeToken = feeToken.toString()
-    this.feeAmount = feeAmount.toString()
+    this.feeToken = fee.token.address.toString()
+    this.feeAmount = fee.amount.toString()
     this.chainId = chainId
   }
 

@@ -6,33 +6,25 @@ import { Address, BigInt, Bytes } from '../types'
 import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class CallBuilder extends IntentBuilder {
-  private calls: CallData[] = []
-  private feeTokenAmount: TokenAmount
   private chainId: ChainId
+  private fee: TokenAmount
+  private calls: CallData[] = []
 
-  static fromTokenAmountAndChain(feeTokenAmount: TokenAmount, chainId: ChainId): CallBuilder {
-    return new CallBuilder(feeTokenAmount, chainId)
+  static forChainWithFee(chainId: ChainId, fee: TokenAmount): CallBuilder {
+    return new CallBuilder(chainId, fee)
   }
 
-  constructor(feeTokenAmount: TokenAmount, chainId: ChainId) {
+  constructor(chainId: ChainId, fee: TokenAmount) {
     super()
-    if (feeTokenAmount.token.chainId !== chainId) {
+    if (fee.token.chainId !== chainId) {
       throw new Error('Fee token must be on the same chain as the one requested for the call')
     }
-    this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
+    this.fee = fee
   }
 
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
     this.calls.push(new CallData(target, data, value))
-    return this
-  }
-
-  addFeeTokenAmount(feeTokenAmount: TokenAmount): CallBuilder {
-    if (feeTokenAmount.token.chainId !== this.chainId) {
-      throw new Error('Fee token must be on the same chain as the one requested for the transfer')
-    }
-    this.feeTokenAmount = feeTokenAmount
     return this
   }
 
@@ -61,16 +53,7 @@ export class CallBuilder extends IntentBuilder {
   }
 
   build(): Call {
-    return new Call(
-      this.calls,
-      this.feeTokenAmount.token.address,
-      this.feeTokenAmount.amount,
-      this.chainId,
-      this.user,
-      this.settler,
-      this.deadline,
-      this.nonce
-    )
+    return new Call(this.calls, this.fee, this.chainId, this.settler, this.user, this.deadline, this.nonce)
   }
 }
 
@@ -94,23 +77,37 @@ export class Call extends Intent {
   public feeAmount: string
   public chainId: ChainId
 
+  static create(
+    chainId: ChainId,
+    target: Address,
+    data: Bytes,
+    fee: TokenAmount,
+    value: BigInt = BigInt.zero(),
+    settler: Address | null = null,
+    user: Address | null = null,
+    deadline: BigInt | null = null,
+    nonce: string | null = null
+  ): Call {
+    const callData = new CallData(target, data, value)
+    return new Call([callData], fee, chainId, settler, user, deadline, nonce)
+  }
+
   constructor(
     calls: CallData[],
-    feeToken: Address,
-    feeAmount: BigInt,
+    fee: TokenAmount,
     chainId: ChainId,
-    user: Address | null = null,
     settler: Address | null = null,
+    user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string = ''
+    nonce: string | null = null
   ) {
-    super(OperationType.Call, user, settler, deadline, nonce)
+    super(OperationType.Call, settler, user, deadline, nonce)
 
     if (calls.length === 0) throw new Error('Call list cannot be empty')
 
     this.calls = calls
-    this.feeToken = feeToken.toString()
-    this.feeAmount = feeAmount.toString()
+    this.feeToken = fee.token.address.toString()
+    this.feeAmount = fee.amount.toString()
     this.chainId = chainId
   }
 

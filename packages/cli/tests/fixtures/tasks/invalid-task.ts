@@ -5,12 +5,10 @@ export default function main(): void {
   const chainId = 1
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
-  const feeToken = new Token(NULL_ADDRESS, chainId, 18, 'TEST')
-  let feeAmount = BigInt.zero()
+  const feeToken = Token.fromString(NULL_ADDRESS, chainId, 18, 'TEST')
+  const feeAmount = BigInt.zero().plus(BigInt.fromI32(undeclaredVariable))
   const feeTokenAmount = new TokenAmount(feeToken, feeAmount)
 
-  feeAmount = feeAmount.plus(BigInt.fromI32(undeclaredVariable))
-
   // Replace this with your task code
-  CallBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId).addCall(target, data).addSettler(settler).build().send()
+  CallBuilder.forChainWithFee(chainId, feeTokenAmount).addCall(target, data).addSettler(settler).build().send()
 }

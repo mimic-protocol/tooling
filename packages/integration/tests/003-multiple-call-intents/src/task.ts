@@ -1,19 +1,19 @@
-import { Address, BigInt, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
 export default function main(): void {
-  const settler = Address.fromString(NULL_ADDRESS)
+  const token = Token.fromString(NULL_ADDRESS, inputs.chainId)
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
-  const feeToken = new Token(NULL_ADDRESS, inputs.chainId, 18, 'TEST')
-  const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromI32(2))
-  const feeTokenAmount1 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(1)))
-  const feeTokenAmount2 = feeTokenAmount.minus(new TokenAmount(feeToken, BigInt.fromI32(2)))
-  const baseCallBuilder = CallBuilder.fromTokenAmountAndChain(feeTokenAmount, inputs.chainId)
-    .addCall(target, data)
-    .addSettler(settler)
-  baseCallBuilder.build().send()
-  baseCallBuilder.addFeeTokenAmount(feeTokenAmount1).build().send()
-  baseCallBuilder.addFeeTokenAmount(feeTokenAmount2).build().send()
+  const settler = Address.fromString(NULL_ADDRESS)
+
+  const fee1 = TokenAmount.fromI32(token, 10)
+  CallBuilder.forChainWithFee(inputs.chainId, fee1).addCall(target, data).addSettler(settler).build().send()
+
+  const fee2 = fee1.minus(TokenAmount.fromI32(token, 1))
+  CallBuilder.forChainWithFee(inputs.chainId, fee2).addCall(target, data).addSettler(settler).build().send()
+
+  const fee3 = fee1.minus(TokenAmount.fromI32(token, 2))
+  CallBuilder.forChainWithFee(inputs.chainId, fee3).addCall(target, data).addSettler(settler).build().send()
 }

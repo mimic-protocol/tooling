@@ -1,45 +1,112 @@
 import { JSON } from 'json-as'
 
+import { NULL_ADDRESS } from '../../src/helpers'
 import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
-import { Token, TokenAmount } from '../../src/tokens'
+import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
-import { setContext } from '../helpers'
+import { randomAddress, randomBytes, randomToken, setContext } from '../helpers'
 
 describe('Call', () => {
-  it('creates a Call with valid parameters and stringifies it', () => {
-    const userAddress = Address.fromString('0x0000000000000000000000000000000000000003')
-    setContext(1, userAddress.toString(), 'config-123')
+  it('creates a simple Call with default values and stringifies it', () => {
+    const chainId = 1
+    const user = randomAddress()
+    const target = randomAddress()
+    const calldata = randomBytes(32)
+    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
 
-    const callData1Address = Address.fromString('0x0000000000000000000000000000000000000001')
-    const callData1 = new CallData(callData1Address, Bytes.fromHexString('0x01'), BigInt.fromString('1'))
+    setContext(1, user.toString(), 'config-123')
 
-    const callData2Address = Address.fromString('0x0000000000000000000000000000000000000002')
-    const callData2 = new CallData(callData2Address, Bytes.fromHexString('0x02'), BigInt.fromString('2'))
+    const call = Call.create(chainId, target, calldata, fee)
+    expect(call.op).toBe(OperationType.Call)
+    expect(call.user).toBe(user.toString())
+    expect(call.settler).toBe(NULL_ADDRESS)
+    expect(call.chainId).toBe(chainId)
+    expect(call.deadline).toBe('300001')
+    expect(call.nonce).toBe('0x')
 
-    const feeTokenAddress = Address.fromString('0x0000000000000000000000000000000000000004')
-    const call = new Call([callData1, callData2], feeTokenAddress, BigInt.fromString('3'), 1)
+    expect(call.calls.length).toBe(1)
+    expect(call.calls[0].target).toBe(target.toString())
+    expect(call.calls[0].data).toBe(calldata.toHexString())
+    expect(call.calls[0].value).toBe('0')
+
+    expect(call.feeToken).toBe(fee.token.address.toString())
+    expect(call.feeAmount).toBe(fee.amount.toString())
+
+    expect(JSON.stringify(call)).toBe(
+      `{"op":2,"settler":"${NULL_ADDRESS}","deadline":"${300001}","user":"${user}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+    )
+  })
+
+  it('creates a simple Call with valid parameters and stringifies it', () => {
+    const chainId = 1
+    const user = randomAddress()
+    const settler = randomAddress()
+    const deadline = BigInt.fromI32(9999999)
+    const target = randomAddress()
+    const calldata = randomBytes(32)
+    const value = BigInt.fromI32(10)
+    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+
+    setContext(1, user.toString(), 'config-123')
+
+    const call = Call.create(chainId, target, calldata, fee, value, settler, user, deadline)
+    expect(call.op).toBe(OperationType.Call)
+    expect(call.user).toBe(user.toString())
+    expect(call.settler).toBe(settler.toString())
+    expect(call.chainId).toBe(chainId)
+    expect(call.deadline).toBe(deadline.toString())
+    expect(call.nonce).toBe('0x')
+
+    expect(call.calls.length).toBe(1)
+    expect(call.calls[0].target).toBe(target.toString())
+    expect(call.calls[0].data).toBe(calldata.toHexString())
+    expect(call.calls[0].value).toBe(value.toString())
+
+    expect(call.feeToken).toBe(fee.token.address.toString())
+    expect(call.feeAmount).toBe(fee.amount.toString())
+
+    expect(JSON.stringify(call)).toBe(
+      `{"op":2,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+    )
+  })
+
+  it('creates a complex Call with valid parameters and stringifies it', () => {
+    const chainId = 1
+    const user = randomAddress()
+    const settler = randomAddress()
+    const deadline = BigInt.fromI32(9999999)
+    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+    const callData1 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
+    const callData2 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(2))
+
+    const call = new Call([callData1, callData2], fee, chainId, settler, user, deadline)
+    expect(call.op).toBe(OperationType.Call)
+    expect(call.user).toBe(user.toString())
+    expect(call.settler).toBe(settler.toString())
+    expect(call.chainId).toBe(chainId)
+    expect(call.deadline).toBe(deadline.toString())
+    expect(call.nonce).toBe('0x')
 
     expect(call.calls.length).toBe(2)
-    expect(call.calls[0].target).toBe(callData1Address.toString())
-    expect(call.calls[0].data).toBe('0x01')
-    expect(call.calls[0].value).toBe('1')
+    expect(call.calls[0].target).toBe(callData1.target)
+    expect(call.calls[0].data).toBe(callData1.data)
+    expect(call.calls[0].value).toBe(callData1.value)
 
-    expect(call.calls[1].target).toBe(callData2Address.toString())
-    expect(call.calls[1].data).toBe('0x02')
-    expect(call.calls[1].value).toBe('2')
+    expect(call.calls[1].target).toBe(callData2.target)
+    expect(call.calls[1].data).toBe(callData2.data)
+    expect(call.calls[1].value).toBe(callData2.value)
 
-    expect(call.feeToken).toBe(feeTokenAddress.toString())
-    expect(call.feeAmount).toBe('3')
-    expect(call.chainId).toBe(1)
-    expect(call.op).toBe(OperationType.Call)
+    expect(call.feeToken).toBe(fee.token.address.toString())
+    expect(call.feeAmount).toBe(fee.amount.toString())
     expect(JSON.stringify(call)).toBe(
-      '{"op":2,"settler":"0x0000000000000000000000000000000000000000","deadline":"300001","user":"0x0000000000000000000000000000000000000003","nonce":"0x","calls":[{"target":"0x0000000000000000000000000000000000000001","data":"0x01","value":"1"},{"target":"0x0000000000000000000000000000000000000002","data":"0x02","value":"2"}],"feeToken":"0x0000000000000000000000000000000000000004","feeAmount":"3","chainId":1}'
+      `{"op":2,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}","chainId":${chainId}}`
     )
   })
 
   it('throws an error when there is not Call Data', () => {
     expect(() => {
-      new Call([], Address.fromString('0x0000000000000000000000000000000000000004'), BigInt.fromString('3'), 1)
+      const feeTokenAmount = TokenAmount.fromI32(randomToken(), 10)
+      new Call([], feeTokenAmount, 1)
     }).toThrow('Call list cannot be empty')
   })
 })
@@ -48,19 +115,15 @@ describe('CallBuilder', () => {
   const chainId = 1
   const target1Str = '0x0000000000000000000000000000000000000001'
   const target2Str = '0x0000000000000000000000000000000000000002'
-  const feeTokenAddressStr = '0x00000000000000000000000000000000000000fe'
 
   it('adds multiple calls and builds call', () => {
     const target1 = Address.fromString(target1Str)
     const target2 = Address.fromString(target2Str)
-    const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    const feeToken = new Token(feeTokenAddress.toString(), chainId)
-    const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('9'))
-
-    const builder = new CallBuilder(feeTokenAmount, chainId)
-    builder.addCall(target1, Bytes.fromHexString('0x01'), BigInt.fromString('1'))
-    builder.addCall(target2, Bytes.fromHexString('0x02'), BigInt.fromString('2'))
+    const builder = CallBuilder.forChainWithFee(chainId, fee)
+    builder.addCall(target1, randomBytes(2), BigInt.fromString('1'))
+    builder.addCall(target2, randomBytes(2), BigInt.fromString('2'))
 
     const call = builder.build()
     expect(call.calls.length).toBe(2)
@@ -70,12 +133,9 @@ describe('CallBuilder', () => {
 
   it('adds call with default data and value', () => {
     const target = Address.fromString(target1Str)
-    const feeTokenAddress = Address.fromString(feeTokenAddressStr)
+    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    const feeToken = new Token(feeTokenAddress.toString(), chainId)
-    const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('5'))
-
-    const builder = new CallBuilder(feeTokenAmount, chainId)
+    const builder = CallBuilder.forChainWithFee(chainId, fee)
     builder.addCall(target) // default Bytes.empty and BigInt.zero
 
     const call = builder.build()
@@ -85,26 +145,8 @@ describe('CallBuilder', () => {
 
   it('throws if fee token chainId mismatches constructor chainId', () => {
     expect(() => {
-      const feeTokenAddress = Address.fromString(feeTokenAddressStr)
-      const feeToken = new Token(feeTokenAddress.toString(), 2)
-      const feeTokenAmount = new TokenAmount(feeToken, BigInt.fromString('1'))
-
-      new CallBuilder(feeTokenAmount, chainId)
-    }).toThrow('Fee token must be on the same chain as the one requested for the call')
-  })
-
-  it('throws if fee token chainId mismatches in addFeeTokenAmount', () => {
-    expect(() => {
-      const feeTokenAddress = Address.fromString(feeTokenAddressStr)
-      const correctFeeToken = new Token(feeTokenAddress.toString(), chainId)
-      const feeTokenAmount = new TokenAmount(correctFeeToken, BigInt.fromString('1'))
-
-      const builder = new CallBuilder(feeTokenAmount, chainId)
-
-      const wrongChainToken = new Token(feeTokenAddress.toString(), 1337)
-      const wrongFeeTokenAmount = new TokenAmount(wrongChainToken, BigInt.fromString('1'))
-
-      builder.addFeeTokenAmount(wrongFeeTokenAmount)
+      const fee = TokenAmount.fromI32(randomToken(2), 9)
+      CallBuilder.forChainWithFee(chainId, fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the call')
   })
 })
