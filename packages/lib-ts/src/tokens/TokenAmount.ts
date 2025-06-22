@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { join, parseCSV, Serializable, serialize } from '../helpers/serialize'
+import { join, parseCSV, Serializable, serialize } from '../helpers'
 import { BigInt } from '../types'
 
 import { Token } from './Token'

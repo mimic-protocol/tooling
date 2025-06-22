@@ -1,6 +1,6 @@
-import { ChainId } from '../common'
 import { environment } from '../environment'
 import { TokenAmount } from '../tokens'
+import { ChainId } from '../types'
 import { Address, BigInt, Bytes } from '../types'
 
 import { Intent, IntentBuilder, OperationType } from './Intent'
@@ -16,10 +16,11 @@ export class CallBuilder extends IntentBuilder {
 
   constructor(feeTokenAmount: TokenAmount, chainId: ChainId) {
     super()
+    if (feeTokenAmount.token.chainId !== chainId) {
+      throw new Error('Fee token must be on the same chain as the one requested for the call')
+    }
     this.feeTokenAmount = feeTokenAmount
     this.chainId = chainId
-    if (feeTokenAmount.token.chainId !== this.chainId)
-      throw new Error('Fee token must be on the same chain as the intent')
   }
 
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
@@ -28,8 +29,9 @@ export class CallBuilder extends IntentBuilder {
   }
 
   addFeeTokenAmount(feeTokenAmount: TokenAmount): CallBuilder {
-    if (feeTokenAmount.token.chainId !== this.chainId)
-      throw new Error('Fee token must be on the same chain as the intent')
+    if (feeTokenAmount.token.chainId !== this.chainId) {
+      throw new Error('Fee token must be on the same chain as the one requested for the transfer')
+    }
     this.feeTokenAmount = feeTokenAmount
     return this
   }

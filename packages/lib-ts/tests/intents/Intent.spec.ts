@@ -1,4 +1,4 @@
-import { SETTLER } from '../../src/helpers'
+import { NULL_ADDRESS } from '../../src/helpers'
 import { CallBuilder } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
@@ -53,6 +53,6 @@ describe('IntentBuilder', () => {
     expect(call.user).toBe(userAddressStr)
     expect(call.deadline).toBe('300000')
     expect(call.nonce).toBe('0x')
-    expect(call.settler).toBe(SETTLER)
+    expect(call.settler).toBe(NULL_ADDRESS)
   })
 })

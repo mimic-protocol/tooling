@@ -5,8 +5,8 @@ import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
 import { setContext } from '../helpers'
 
-describe('Transfer Intent', () => {
-  it('creates a Transfer intent with valid parameters and stringifies it', () => {
+describe('Transfer', () => {
+  it('creates a Transfer with valid parameters and stringifies it', () => {
     const tokenAddress = Address.fromString('0x0000000000000000000000000000000000000011')
     const recipientAddress = Address.fromString('0x0000000000000000000000000000000000000012')
     const settlerAddress = Address.fromString('0x0000000000000000000000000000000000000013')
@@ -23,25 +23,17 @@ describe('Transfer Intent', () => {
 
     setContext(chainId, recipientAddress.toString(), 'config-transfer')
 
-    const transferIntent = new Transfer(
-      transfers,
-      feeTokenAddress,
-      feeAmount,
-      chainId,
-      userAddress,
-      settlerAddress,
-      deadline
-    )
+    const transfer = new Transfer(transfers, feeTokenAddress, feeAmount, chainId, userAddress, settlerAddress, deadline)
 
-    expect(transferIntent.op).toBe(OperationType.Transfer)
-    expect(transferIntent.transfers.length).toBe(1)
-    expect(transferIntent.transfers[0].token).toBe(tokenAddress.toString())
-    expect(transferIntent.transfers[0].recipient).toBe(recipientAddress.toString())
-    expect(transferIntent.transfers[0].amount).toBe('5000')
-    expect(transferIntent.feeToken).toBe(feeTokenAddress.toString())
-    expect(transferIntent.feeAmount).toBe('1000')
-    expect(transferIntent.chainId).toBe(chainId)
-    expect(JSON.stringify(transferIntent)).toBe(
+    expect(transfer.op).toBe(OperationType.Transfer)
+    expect(transfer.transfers.length).toBe(1)
+    expect(transfer.transfers[0].token).toBe(tokenAddress.toString())
+    expect(transfer.transfers[0].recipient).toBe(recipientAddress.toString())
+    expect(transfer.transfers[0].amount).toBe('5000')
+    expect(transfer.feeToken).toBe(feeTokenAddress.toString())
+    expect(transfer.feeAmount).toBe('1000')
+    expect(transfer.chainId).toBe(chainId)
+    expect(JSON.stringify(transfer)).toBe(
       '{"op":1,"settler":"0x0000000000000000000000000000000000000013","deadline":"99999999","user":"0x0000000000000000000000000000000000000015","nonce":"0x","transfers":[{"token":"0x0000000000000000000000000000000000000011","amount":"5000","recipient":"0x0000000000000000000000000000000000000012"}],"feeToken":"0x0000000000000000000000000000000000000014","feeAmount":"1000","chainId":1}'
     )
   })
@@ -61,7 +53,7 @@ describe('TransferBuilder', () => {
   const recipientAddressStr = '0x0000000000000000000000000000000000000012'
   const feeTokenAddressStr = '0x00000000000000000000000000000000000000fe'
 
-  it('builds a Transfer intent from token amounts', () => {
+  it('builds a Transfer from token amounts', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
     const feeTokenAddress = Address.fromString(feeTokenAddressStr)
@@ -75,17 +67,16 @@ describe('TransferBuilder', () => {
     const builder = TransferBuilder.fromTokenAmountAndChain(feeTokenAmount, chainId)
     builder.addTransferFromTokenAmount(tokenAmount, recipientAddress)
 
-    const transferIntent = builder.build()
-
-    expect(transferIntent.op).toBe(OperationType.Transfer)
-    expect(transferIntent.chainId).toBe(chainId)
-    expect(transferIntent.transfers.length).toBe(1)
-    expect(transferIntent.transfers[0].amount).toBe('5000')
-    expect(transferIntent.transfers[0].recipient).toBe(recipientAddressStr)
-    expect(transferIntent.transfers[0].token).toBe(tokenAddressStr)
+    const transfer = builder.build()
+    expect(transfer.op).toBe(OperationType.Transfer)
+    expect(transfer.chainId).toBe(chainId)
+    expect(transfer.transfers.length).toBe(1)
+    expect(transfer.transfers[0].amount).toBe('5000')
+    expect(transfer.transfers[0].recipient).toBe(recipientAddressStr)
+    expect(transfer.transfers[0].token).toBe(tokenAddressStr)
   })
 
-  it('builds a Transfer intent from string decimals', () => {
+  it('builds a Transfer from string decimals', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
     const feeTokenAddress = Address.fromString(feeTokenAddressStr)
@@ -97,10 +88,10 @@ describe('TransferBuilder', () => {
     const builder = new TransferBuilder(feeTokenAmount, chainId)
     builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
 
-    const transferIntent = builder.build()
-    expect(transferIntent.transfers[0].amount).toBe('3000')
-    expect(transferIntent.transfers[0].recipient).toBe(recipientAddress.toString())
-    expect(transferIntent.transfers[0].token).toBe(token.address.toString())
+    const transfer = builder.build()
+    expect(transfer.transfers[0].amount).toBe('3000')
+    expect(transfer.transfers[0].recipient).toBe(recipientAddress.toString())
+    expect(transfer.transfers[0].token).toBe(token.address.toString())
   })
 
   it('adds multiple TransferData via addTransfers', () => {
@@ -120,10 +111,10 @@ describe('TransferBuilder', () => {
     const builder = new TransferBuilder(feeTokenAmount, chainId)
     builder.addTransfers([transfer1, transfer2])
 
-    const transferIntent = builder.build()
-    expect(transferIntent.transfers.length).toBe(2)
-    expect(transferIntent.transfers[0].amount).toBe('5000')
-    expect(transferIntent.transfers[1].amount).toBe('1000')
+    const transfer = builder.build()
+    expect(transfer.transfers.length).toBe(2)
+    expect(transfer.transfers[0].amount).toBe('5000')
+    expect(transfer.transfers[1].amount).toBe('1000')
   })
 
   it('adds multiple TokenAmounts via addTransfersFromTokenAmounts', () => {
@@ -140,12 +131,12 @@ describe('TransferBuilder', () => {
     const builder = new TransferBuilder(feeTokenAmount, chainId)
     builder.addTransfersFromTokenAmounts(tokenAmounts, recipientAddress)
 
-    const transferIntent = builder.build()
-    expect(transferIntent.transfers.length).toBe(2)
-    expect(transferIntent.transfers[1].amount).toBe('200')
+    const transfer = builder.build()
+    expect(transfer.transfers.length).toBe(2)
+    expect(transfer.transfers[1].amount).toBe('200')
   })
 
-  it('throws if fee token chainId mismatches intent chainId', () => {
+  it('throws if fee token chainId mismatches the transfer chainId', () => {
     expect(() => {
       const feeTokenAddress = Address.fromString(feeTokenAddressStr)
       const invalidFeeToken = new TokenAmount(
@@ -154,7 +145,7 @@ describe('TransferBuilder', () => {
       )
 
       new TransferBuilder(invalidFeeToken, chainId)
-    }).toThrow('Fee token must be on the same chain as the intent')
+    }).toThrow('Fee token must be on the same chain as the one requested for the transfer')
   })
 
   it('throws if addTransferFromStringDecimal has different chainId', () => {

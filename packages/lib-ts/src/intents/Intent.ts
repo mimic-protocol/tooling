@@ -1,6 +1,6 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { SETTLER } from '../helpers'
+import { NULL_ADDRESS } from '../helpers'
 import { Address, BigInt } from '../types'
 
 export enum OperationType {
@@ -63,7 +63,7 @@ export abstract class Intent {
     nonce: string = ''
   ) {
     this.op = op
-    this.settler = settler ? settler.toString() : SETTLER
+    this.settler = settler ? settler.toString() : NULL_ADDRESS
     const context = environment.getContext()
     this.deadline = deadline ? deadline.toString() : (context.timestamp + 5 * 60 * 1000).toString()
     this.user = user ? user.toString() : context.user.toString()

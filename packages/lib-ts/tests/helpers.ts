@@ -1,7 +1,6 @@
-import { ChainId } from '../src/common'
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
-import { BigInt } from '../src/types'
+import { BigInt, ChainId } from '../src/types'
 
 /* eslint-disable no-secrets/no-secrets */
 

@@ -1,5 +1,4 @@
-import { ChainId } from '../common'
-import { Address } from '../types'
+import { Address, ChainId } from '../types'
 
 @json
 export class Call {

@@ -1,5 +1,5 @@
-import { ChainId } from '../common'
-import { Token } from '../tokens/Token'
+import { Token } from '../tokens'
+import { ChainId } from '../types'
 
 export namespace Polygon {
   export const CHAIN_ID = ChainId.POLYGON
