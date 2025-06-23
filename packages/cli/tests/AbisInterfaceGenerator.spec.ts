@@ -559,5 +559,201 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
       expect(importMatch).to.contain(`${LibTypes.TokenAmount}`)
     })
+
+    it('should handle write functions with array parameters', () => {
+      const abi = [
+        createNonViewFunction('batchTransfer', [
+          { name: 'recipients', type: 'address[]' },
+          { name: 'amounts', type: 'uint256[]' },
+          { name: 'flags', type: 'bool[]' },
+        ]),
+        createPayableFunction('depositMultiple', [
+          { name: 'tokens', type: 'address[]' },
+          { name: 'values', type: 'uint256[]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `batchTransfer(recipients: ${LibTypes.Address}[], amounts: ${LibTypes.BigInt}[], flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+      )
+      expect(result).to.contain(
+        `depositMultiple(tokens: ${LibTypes.Address}[], values: ${LibTypes.BigInt}[]): CallBuilder {`
+      )
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[]', recipients.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
+      )
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `EvmEncodeParam.fromValues('uint256[]', amounts.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('uint256', s0)))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[]', flags.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s0))))`
+      )
+    })
+
+    it('should handle write functions with tuple/struct parameters', () => {
+      const abi = [
+        createNonViewFunction('createUser', [
+          {
+            name: 'userData',
+            type: 'tuple',
+            internalType: 'struct UserInfo',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'name', type: 'string' },
+              { name: 'active', type: 'bool' },
+            ],
+          },
+        ]),
+        createPayableFunction('updateProfile', [
+          {
+            name: 'profile',
+            type: 'tuple',
+            components: [
+              { name: 'email', type: 'string' },
+              { name: 'age', type: 'uint8' },
+              { name: 'wallet', type: 'address' },
+            ],
+          },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('createUser(userData: UserInfo): CallBuilder {')
+      expect(result).to.contain('updateProfile(profile: Tuple1): CallBuilder {')
+
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', userData.toEvmEncodeParams())`)
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', profile.toEvmEncodeParams())`)
+
+      expect(result).to.contain('export class UserInfo {')
+      expect(result).to.contain('export class Tuple1 {')
+    })
+
+    it('should handle write functions with nested complex types', () => {
+      const abi = [
+        createNonViewFunction('processOrders', [
+          {
+            name: 'orders',
+            type: 'tuple[]',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'items', type: 'address[]' },
+              { name: 'quantities', type: 'uint256[]' },
+              { name: 'buyer', type: 'address' },
+            ],
+          },
+        ]),
+        createPayableFunction('complexOperation', [
+          {
+            name: 'data',
+            type: 'tuple',
+            components: [
+              { name: 'values', type: 'uint256[]' },
+              { name: 'addresses', type: 'address[]' },
+              {
+                name: 'config',
+                type: 'tuple',
+                components: [
+                  { name: 'enabled', type: 'bool' },
+                  { name: 'threshold', type: 'uint256' },
+                ],
+              },
+            ],
+          },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('processOrders(orders: Tuple0[]): CallBuilder {')
+      expect(result).to.contain('complexOperation(data: Tuple1): CallBuilder {')
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('()[]', orders.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('()', s0.toEvmEncodeParams())))`
+      )
+
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', data.toEvmEncodeParams())`)
+
+      expect(result).to.contain('export class Tuple0 {')
+      expect(result).to.contain('export class Tuple1 {')
+    })
+
+    it('should handle write functions with mixed parameter complexity', () => {
+      const abi = [
+        createNonViewFunction('mixedFunction', [
+          { name: 'simpleAddress', type: 'address' },
+          { name: 'simpleAmount', type: 'uint256' },
+          { name: 'addressArray', type: 'address[]' },
+          {
+            name: 'userInfo',
+            type: 'tuple',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'roles', type: 'uint8[]' },
+            ],
+          },
+          { name: 'flags', type: 'bool[]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `mixedFunction(simpleAddress: ${LibTypes.Address}, simpleAmount: ${LibTypes.BigInt}, addressArray: ${LibTypes.Address}[], userInfo: Tuple0, flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+      )
+
+      expect(result).to.contain(`EvmEncodeParam.fromValue('address', simpleAddress)`)
+      // eslint-disable-next-line no-secrets/no-secrets
+      expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', simpleAmount)`)
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[]', addressArray.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
+      )
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', userInfo.toEvmEncodeParams())`)
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[]', flags.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s0))))`
+      )
+    })
+
+    it('should handle write functions with array of arrays', () => {
+      const abi = [
+        createNonViewFunction('batchOperations', [
+          { name: 'addressMatrix', type: 'address[][]' },
+          { name: 'valueMatrix', type: 'uint256[][]' },
+          { name: 'flagMatrix', type: 'bool[][]' },
+        ]),
+        createPayableFunction('processMatrix', [
+          { name: 'data', type: 'bytes[][]' },
+          { name: 'ids', type: 'uint256[][]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `batchOperations(addressMatrix: ${LibTypes.Address}[][], valueMatrix: ${LibTypes.BigInt}[][], flagMatrix: ${AssemblyPrimitiveTypes.bool}[][]): CallBuilder {`
+      )
+      expect(result).to.contain(
+        `processMatrix(data: ${LibTypes.Bytes}[][], ids: ${LibTypes.BigInt}[][]): CallBuilder {`
+      )
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[][]', addressMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('address[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('address', s1)))))`
+      )
+
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `EvmEncodeParam.fromValues('uint256[][]', valueMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('uint256[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('uint256', s1)))))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[][]', flagMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('bool[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s1))))))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bytes[][]', data.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('bytes[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('bytes', s1)))))`
+      )
+    })
   })
 })
