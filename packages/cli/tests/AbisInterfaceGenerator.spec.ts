@@ -489,11 +489,11 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain("EvmEncodeParam.fromValue('address', to)")
+      expect(result).to.contain(`EvmEncodeParam.fromValue('address', to)`)
       // eslint-disable-next-line no-secrets/no-secrets
-      expect(result).to.contain("EvmEncodeParam.fromValue('uint256', amount)")
-      expect(result).to.contain("EvmEncodeParam.fromValue('bytes', data)")
-      expect(result).to.contain("EvmEncodeParam.fromValue('bool', Bytes.fromBool(flag))")
+      expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', amount)`)
+      expect(result).to.contain(`EvmEncodeParam.fromValue('bytes', data)`)
+      expect(result).to.contain(`EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(flag))`)
     })
 
     it('should generate proper imports for write functions', () => {
