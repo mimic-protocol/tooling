@@ -76,7 +76,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint256', fee),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -100,7 +100,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('address', onBehalfOf),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -109,7 +109,7 @@ export class AAVE {
   borrow_1(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xd5eed868' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -124,7 +124,7 @@ export class AAVE {
           EvmEncodeParam.fromValues('()', category.toEvmEncodeParams()),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -139,7 +139,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint128', borrowableBitmap),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -154,7 +154,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint128', collateralBitmap),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -171,7 +171,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint16', BigInt.fromU16(referralCode)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -180,7 +180,7 @@ export class AAVE {
   dropReserve(asset: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x63c9b860' + evm.encode([EvmEncodeParam.fromValue('address', asset)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -206,7 +206,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint256', balanceToBefore),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -243,7 +243,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint16', BigInt.fromU16(referralCode)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -267,7 +267,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint16', BigInt.fromU16(referralCode)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -366,7 +366,7 @@ export class AAVE {
   getLiquidationGracePeriod(asset: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x5c9a8b18' + evm.encode([EvmEncodeParam.fromValue('address', asset)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -531,7 +531,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('address', interestRateStrategyAddress),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -540,7 +540,7 @@ export class AAVE {
   initialize(provider: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xc4d66de8' + evm.encode([EvmEncodeParam.fromValue('address', provider)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -564,7 +564,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bool', Bytes.fromBool(receiveAToken)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -576,7 +576,7 @@ export class AAVE {
       '0xfd21ecff' +
         evm.encode([EvmEncodeParam.fromValue('bytes32', args1), EvmEncodeParam.fromValue('bytes32', args2)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -593,7 +593,7 @@ export class AAVE {
           ),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -610,7 +610,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint16', BigInt.fromU16(referralCode)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -619,7 +619,7 @@ export class AAVE {
   repay(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x563dd613' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -636,7 +636,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('address', onBehalfOf),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -652,7 +652,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint256', interestRateMode),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -661,7 +661,7 @@ export class AAVE {
   repayWithATokens_1(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xdc7c0bff' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -677,7 +677,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bytes32', s),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -707,7 +707,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bytes32', permitS),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -723,7 +723,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint256', amount),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -732,7 +732,7 @@ export class AAVE {
   resetIsolationModeTotalDebt(asset: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xe43e88a1' + evm.encode([EvmEncodeParam.fromValue('address', asset)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -747,7 +747,7 @@ export class AAVE {
           EvmEncodeParam.fromValues('()', configuration.toEvmEncodeParams()),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -758,7 +758,7 @@ export class AAVE {
     const encodedData = Bytes.fromHexString(
       '0xb1a99e26' + evm.encode([EvmEncodeParam.fromValue('address', asset), EvmEncodeParam.fromValue('uint40', until)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -773,7 +773,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('address', rateStrategyAddress),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -784,7 +784,7 @@ export class AAVE {
     const encodedData = Bytes.fromHexString(
       '0x28530a47' + evm.encode([EvmEncodeParam.fromValue('uint8', BigInt.fromU8(categoryId))])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -793,7 +793,7 @@ export class AAVE {
   setUserUseReserveAsCollateral(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x4d013f03' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -808,7 +808,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bool', Bytes.fromBool(useAsCollateral)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -825,7 +825,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint16', BigInt.fromU16(referralCode)),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -834,7 +834,7 @@ export class AAVE {
   supply_1(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xf7a73840' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -864,7 +864,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bytes32', permitS),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -880,7 +880,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('bytes32', s),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -889,7 +889,7 @@ export class AAVE {
   syncIndexesState(asset: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xab2b51f6' + evm.encode([EvmEncodeParam.fromValue('address', asset)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -898,7 +898,7 @@ export class AAVE {
   syncRatesState(asset: Address): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x98c7da4e' + evm.encode([EvmEncodeParam.fromValue('address', asset)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -909,7 +909,7 @@ export class AAVE {
     const encodedData = Bytes.fromHexString(
       '0x3036b439' + evm.encode([EvmEncodeParam.fromValue('uint256', protocolFee)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -924,7 +924,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('uint128', flashLoanPremiumToProtocol),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -940,7 +940,7 @@ export class AAVE {
           EvmEncodeParam.fromValue('address', to),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -949,7 +949,7 @@ export class AAVE {
   withdraw_1(args: Bytes): CallBuilder {
     if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x8e19899e' + evm.encode([EvmEncodeParam.fromValue('bytes32', args)]))
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )

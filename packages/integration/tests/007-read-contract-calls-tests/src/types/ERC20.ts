@@ -41,7 +41,7 @@ export class ERC20 {
       '0x095ea7b3' +
         evm.encode([EvmEncodeParam.fromValue('address', _spender), EvmEncodeParam.fromValue('uint256', _value)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -63,7 +63,7 @@ export class ERC20 {
           EvmEncodeParam.fromValue('uint256', _value),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -97,7 +97,7 @@ export class ERC20 {
     const encodedData = Bytes.fromHexString(
       '0xa9059cbb' + evm.encode([EvmEncodeParam.fromValue('address', _to), EvmEncodeParam.fromValue('uint256', _value)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )

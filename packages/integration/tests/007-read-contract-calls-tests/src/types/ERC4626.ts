@@ -47,7 +47,7 @@ export class ERC4626 {
       '0x095ea7b3' +
         evm.encode([EvmEncodeParam.fromValue('address', spender), EvmEncodeParam.fromValue('uint256', value)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -104,7 +104,7 @@ export class ERC4626 {
       '0x6e553f65' +
         evm.encode([EvmEncodeParam.fromValue('uint256', assets), EvmEncodeParam.fromValue('address', receiver)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -160,7 +160,7 @@ export class ERC4626 {
       '0x94bf804d' +
         evm.encode([EvmEncodeParam.fromValue('uint256', shares), EvmEncodeParam.fromValue('address', receiver)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -226,7 +226,7 @@ export class ERC4626 {
           EvmEncodeParam.fromValue('address', owner),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -255,7 +255,7 @@ export class ERC4626 {
     const encodedData = Bytes.fromHexString(
       '0xa9059cbb' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', value)])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -271,7 +271,7 @@ export class ERC4626 {
           EvmEncodeParam.fromValue('uint256', value),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )
@@ -287,7 +287,7 @@ export class ERC4626 {
           EvmEncodeParam.fromValue('address', owner),
         ])
     )
-    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(
+    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
       this.address,
       encodedData
     )

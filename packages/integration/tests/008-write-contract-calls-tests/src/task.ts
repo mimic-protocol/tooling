@@ -7,8 +7,8 @@ export default function main(): void {
   const chainId = Optimism.CHAIN_ID
   const settler = Address.fromString('0xdcf1d9d12a0488dfb70a8696f44d6d3bc303963d')
 
-  const USDCe = new Token('0x7f5c764cbc14f9669b88837ca1490cca17c31607', chainId)
-  const aUSDC = new Token('0x625e7708f30ca75bfd92586e17077590c60eb4cd', chainId)
+  const USDCe = Token.fromString('0x7f5c764cbc14f9669b88837ca1490cca17c31607', chainId)
+  const aUSDC = Token.fromString('0x625e7708f30ca75bfd92586e17077590c60eb4cd', chainId)
   const USDT = Optimism.USDT
 
   const context = environment.getContext()

@@ -34,9 +34,10 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
       expect(result).to.contain(`private chainId: ${LibTypes.ChainId}`)
       expect(result).to.contain(`private timestamp: Date | null`)
+      expect(result).to.contain(`private feeTokenAmount: ${LibTypes.TokenAmount} | null`)
 
       expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
+        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null, feeTokenAmount: ${LibTypes.TokenAmount} | null = null) {`
       )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
@@ -65,7 +66,7 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when filtering functions', () => {
-    it('should include only view and pure functions', () => {
+    it('should include read and write functions', () => {
       const viewFunctionNames = ['getBalance', 'getName']
       const pureFunctionNames = ['calculateTotal', 'formatAddress']
       const nonViewFunctionNames = ['transfer', 'mint', 'burn']
@@ -78,24 +79,12 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      viewFunctionNames.concat(pureFunctionNames).forEach((name) => {
-        expect(result).to.contain(`${name}()`)
-      })
-
-      nonViewFunctionNames.forEach((name) => {
-        expect(result).not.to.contain(`${name}()`)
-      })
-    })
-
-    it('should return a class with no methods if there are no view/pure functions', () => {
-      const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
-
-      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      expect(result).to.contain(`import { ${LibTypes.Address}, ${LibTypes.ChainId} } from '@mimicprotocol/lib-ts'`)
-      expect(result).to.contain(`export class ${CONTRACT_NAME} {`)
-      expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
-      )
+      viewFunctionNames
+        .concat(pureFunctionNames)
+        .concat(nonViewFunctionNames)
+        .forEach((name) => {
+          expect(result).to.contain(`${name}()`)
+        })
     })
   })
 

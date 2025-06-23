@@ -181,8 +181,7 @@ export default class FunctionHandler {
         `    const encodedData = Bytes.fromHexString('${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''})`
       )
       lines.push(
-        // eslint-disable-next-line no-secrets/no-secrets
-        `    return CallBuilder.fromTokenAmountAndChain(changetype<TokenAmount>(this.feeTokenAmount), this.chainId).addCall(this.address, encodedData)`
+        `    return CallBuilder.forChainWithFee(this.chainId, changetype<${LibTypes.TokenAmount}>(this.feeTokenAmount)).addCall(this.address, encodedData)`
       )
       return
     }
