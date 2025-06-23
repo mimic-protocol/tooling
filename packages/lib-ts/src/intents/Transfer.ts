@@ -158,6 +158,6 @@ export class Transfer extends Intent {
   }
 
   send(): void {
-    environment.transfer(this)
+    environment.sendTransferIntent(this)
   }
 }

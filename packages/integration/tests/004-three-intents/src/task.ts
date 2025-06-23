@@ -3,6 +3,7 @@ import {
   BigInt,
   Bytes,
   CallBuilder,
+  environment,
   NULL_ADDRESS,
   SwapBuilder,
   Token,
@@ -52,4 +53,5 @@ export default function main(): void {
     .addSettler(settler)
     .build()
     .send()
+  environment.transfer(tokenAmounts, target, feeTokenAmount, 1)
 }
