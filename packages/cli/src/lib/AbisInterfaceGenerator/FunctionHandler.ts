@@ -173,13 +173,13 @@ export default class FunctionHandler {
     const selector = getFunctionSelector(fn)
     if (callArgs) importManager.addType('evm')
 
+    const encodedCall = `'${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''}`
+
     if (this.isWriteFunction(fn)) {
       importManager.addType(LibTypes.Bytes)
       importManager.addType('CallBuilder')
       lines.push(`    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')`)
-      lines.push(
-        `    const encodedData = Bytes.fromHexString('${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''})`
-      )
+      lines.push(`    const encodedData = Bytes.fromHexString(${encodedCall})`)
       lines.push(
         `    return CallBuilder.forChainWithFee(this.chainId, changetype<${LibTypes.TokenAmount}>(this.feeTokenAmount)).addCall(this.address, encodedData)`
       )
@@ -187,9 +187,7 @@ export default class FunctionHandler {
     }
 
     importManager.addType('environment')
-    const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${
-      callArgs ? `+ evm.encode([${callArgs}])` : ''
-    })`
+    const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, ${encodedCall})`
 
     if (returnType === 'void') {
       lines.push(`    ${contractCallCode}`)
