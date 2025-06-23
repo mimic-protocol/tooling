@@ -63,6 +63,58 @@ describe('AbisInterfaceGenerator', () => {
 
       functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
     })
+
+    it('should handle duplicate method names', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('getData', [], [{ type: 'uint256' }]),
+        createNonViewFunction('getData', [{ name: 'id', type: 'uint256' }]),
+        createPayableFunction('getData', [
+          { name: 'id', type: 'uint256' },
+          { name: 'flag', type: 'bool' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`getData(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getData_1(id: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(
+        `getData_2(id: ${LibTypes.BigInt}, flag: ${AssemblyPrimitiveTypes.bool}): CallBuilder {`
+      )
+    })
+
+    it('should handle mixed duplicate and unique method names', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('getBalance', [], [{ type: 'uint256' }]),
+        createNonViewFunction('transfer', [{ name: 'to', type: 'address' }]),
+        createViewFunction('getBalance', [{ name: 'owner', type: 'address' }], [{ type: 'uint256' }]),
+        createViewFunction('getName', [], [{ type: 'string' }]),
+        createPayableFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`getBalance(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
+      expect(result).to.contain(`getBalance_1(owner: ${LibTypes.Address}): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getName(): ${AssemblyPrimitiveTypes.string} {`)
+      expect(result).to.contain(`transfer_1(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
+    })
+
+    it('should handle duplicate method names with reserved word conflicts', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('constructor', [], [{ type: 'uint256' }]),
+        createNonViewFunction('constructor', [{ name: 'value', type: 'uint256' }]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`constructor_(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`constructor_1(value: ${LibTypes.BigInt}): CallBuilder {`)
+    })
   })
 
   describe('when filtering functions', () => {
