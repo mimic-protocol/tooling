@@ -4,7 +4,7 @@ import { getFunctionSelector } from '../src/helpers'
 import { AbisInterfaceGenerator } from '../src/lib'
 import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../src/types'
 
-import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'
+import { createNonViewFunction, createPayableFunction, createPureFunction, createViewFunction } from './helpers'
 
 const CONTRACT_NAME = 'TestContract'
 
@@ -390,6 +390,122 @@ describe('AbisInterfaceGenerator', () => {
 
       // Check constructor call
       expect(result).to.contain('return new Tuple0(id, account, active, data_var, description)')
+    })
+  })
+
+  describe('when handling write functions', () => {
+    it('should generate methods that return CallBuilder type', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+        createPayableFunction('deposit', []),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`deposit(): CallBuilder {`)
+    })
+
+    it('should include fee token amount validation', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain("if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')")
+    })
+
+    it('should generate proper encoded data for write functions', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const selector = getFunctionSelector(abi[0])
+
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', amount)]))`
+      )
+    })
+
+    it('should generate CallBuilder with proper chain and fee configuration', () => {
+      const abi = [
+        createNonViewFunction('approve', [
+          { name: 'spender', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `return CallBuilder.forChainWithFee(this.chainId, changetype<${LibTypes.TokenAmount}>(this.feeTokenAmount)).addCall(this.address, encodedData)`
+      )
+    })
+
+    it('should handle write functions without parameters', () => {
+      const abi = [createPayableFunction('deposit', [])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const selector = getFunctionSelector(abi[0])
+
+      expect(result).to.contain('deposit(): CallBuilder {')
+      expect(result).to.contain(`const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}')`)
+      expect(result).not.to.contain('evm.encode')
+    })
+
+    it('should handle both payable and nonpayable write functions', () => {
+      const abi = [
+        createNonViewFunction('transfer', [{ name: 'to', type: 'address' }]),
+        createPayableFunction('deposit', [{ name: 'amount', type: 'uint256' }]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
+      expect(result).to.contain(`deposit(amount: ${LibTypes.BigInt}): CallBuilder {`)
+    })
+
+    it('should apply correct parameter conversions for write functions', () => {
+      const abi = [
+        createNonViewFunction('complexTransfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'data', type: 'bytes' },
+          { name: 'flag', type: 'bool' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain("EvmEncodeParam.fromValue('address', to)")
+      // eslint-disable-next-line no-secrets/no-secrets
+      expect(result).to.contain("EvmEncodeParam.fromValue('uint256', amount)")
+      expect(result).to.contain("EvmEncodeParam.fromValue('bytes', data)")
+      expect(result).to.contain("EvmEncodeParam.fromValue('bool', Bytes.fromBool(flag))")
+    })
+
+    it('should generate proper imports for write functions', () => {
+      const abi = [createPayableFunction('deposit', [{ name: 'amount', type: 'uint256' }])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
+
+      expect(importMatch).not.to.be.undefined
+      expect(importMatch).to.contain('CallBuilder')
+      expect(importMatch).to.contain(`${LibTypes.Bytes}`)
+      expect(importMatch).to.contain(`${LibTypes.TokenAmount}`)
     })
   })
 })
