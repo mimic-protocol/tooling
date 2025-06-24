@@ -44,9 +44,9 @@ export class TransferBuilder extends IntentBuilder {
     return this.addTransfer(TransferData.fromI32(token, amount, recipient))
   }
 
-  addTransferFromBigInt(token: Token, amount: i32, recipient: Address): TransferBuilder {
+  addTransferFromBigInt(token: Token, amount: BigInt, recipient: Address): TransferBuilder {
     if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
-    return this.addTransfer(TransferData.fromI32(token, amount, recipient))
+    return this.addTransfer(TransferData.fromBigInt(token, amount, recipient))
   }
 
   addTransferFromStringDecimal(token: Token, amount: string, recipient: Address): TransferBuilder {
