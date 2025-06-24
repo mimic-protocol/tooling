@@ -61,7 +61,7 @@ export class CallBuilder extends IntentBuilder {
   }
 
   build(): Call {
-    if (!this.fee) throw new Error('Transfer fee must be specified')
+    if (!this.fee) throw new Error('Call fee must be specified')
     return new Call(
       this.chainId,
       this.calls,

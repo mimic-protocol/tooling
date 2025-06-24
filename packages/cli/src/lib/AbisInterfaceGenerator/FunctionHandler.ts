@@ -178,11 +178,8 @@ export default class FunctionHandler {
     if (this.isWriteFunction(fn)) {
       importManager.addType(LibTypes.Bytes)
       importManager.addType('CallBuilder')
-      lines.push(`    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')`)
       lines.push(`    const encodedData = Bytes.fromHexString(${encodedCall})`)
-      lines.push(
-        `    return CallBuilder.forChainWithFee(this.chainId, changetype<${LibTypes.TokenAmount}>(this.feeTokenAmount)).addCall(this.address, encodedData)`
-      )
+      lines.push(`    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
       return
     }
 
