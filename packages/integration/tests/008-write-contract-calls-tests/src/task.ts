@@ -22,7 +22,6 @@ export default function main(): void {
     .withdraw(USDCe.address, userTokens[0].amount, context.user)
     .addFee(feeUsdt)
     .addUser(inputs.smartAccount)
-    .addSettler(context.settler)
     .build()
     .send()
 }
