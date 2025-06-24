@@ -51,4 +51,4 @@ export declare function setContractCall(to: string, chainId: ChainId, data: stri
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
-export declare function setContext(timestamp: u64, user: string, configId: string): void
+export declare function setContext(timestamp: u64, user: string, settler: string, configId: string): void

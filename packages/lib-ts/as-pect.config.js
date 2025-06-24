@@ -66,7 +66,7 @@ export default {
           const key = `_getContext`
           const result = store.has(key)
             ? store.get(key)
-            : '{"timestamp": 0,"user":"0x0000000000000000000000000000000000000000","configId":"1"}'
+            : '{"timestamp": 0,"user":"0x0000000000000000000000000000000000000000","settler":"0x0000000000000000000000000000000000000000","configId":"1"}'
 
           return exports.__newString(result)
         },
@@ -92,11 +92,12 @@ export default {
           const decoded = exports.__getString(decodedPtr)
           store.set(key, decoded)
         },
-        setContext: (timestamp, userPtr, configIdPtr) => {
+        setContext: (timestamp, userPtr, settlerPtr, configIdPtr) => {
           const user = exports.__getString(userPtr)
+          const settler = exports.__getString(settlerPtr)
           const configId = exports.__getString(configIdPtr)
           const key = `_getContext`
-          store.set(key, `{"timestamp":${timestamp},"user":"${user}","configId":"${configId}"}`)
+          store.set(key, `{"timestamp":${timestamp},"user":"${user}","settler":"${settler}","configId":"${configId}"}`)
         },
       },
     }
