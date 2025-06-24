@@ -6,19 +6,21 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class TransferBuilder extends IntentBuilder {
   private chainId: ChainId
-  private fee: TokenAmount
   private transfers: TransferData[] = []
+  private fee: TokenAmount | null = null
 
-  static forChainWithFee(chainId: ChainId, fee: TokenAmount): TransferBuilder {
-    return new TransferBuilder(chainId, fee)
+  static forChain(chainId: ChainId): TransferBuilder {
+    return new TransferBuilder(chainId)
   }
 
-  constructor(chainId: ChainId, fee: TokenAmount) {
+  static forChainWithFee(chainId: ChainId, fee: TokenAmount): TransferBuilder {
+    const builder = new TransferBuilder(chainId)
+    builder.addFee(fee)
+    return builder
+  }
+
+  constructor(chainId: ChainId) {
     super()
-    if (fee.token.chainId !== chainId) {
-      throw new Error('Fee token must be on the same chain as the one requested for the transfer')
-    }
-    this.fee = fee
     this.chainId = chainId
   }
 
@@ -28,30 +30,38 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   addTransfers(transfers: TransferData[]): TransferBuilder {
-    for (let i = 0; i < transfers.length; i++) {
-      this.transfers.push(transfers[i])
-    }
+    for (let i = 0; i < transfers.length; i++) this.transfers.push(transfers[i])
     return this
   }
 
   addTransferFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferBuilder {
-    if (tokenAmount.token.chainId !== this.chainId) {
-      throw new Error('All tokens must be on the same chain')
-    }
+    if (tokenAmount.token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromTokenAmount(tokenAmount, recipient))
   }
 
+  addTransferFromI32(token: Token, amount: i32, recipient: Address): TransferBuilder {
+    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    return this.addTransfer(TransferData.fromI32(token, amount, recipient))
+  }
+
+  addTransferFromBigInt(token: Token, amount: i32, recipient: Address): TransferBuilder {
+    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    return this.addTransfer(TransferData.fromI32(token, amount, recipient))
+  }
+
   addTransferFromStringDecimal(token: Token, amount: string, recipient: Address): TransferBuilder {
-    if (token.chainId !== this.chainId) {
-      throw new Error('All tokens must be on the same chain')
-    }
+    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromStringDecimal(token, amount, recipient))
   }
 
   addTransfersFromTokenAmounts(tokenAmounts: TokenAmount[], recipient: Address): TransferBuilder {
-    for (let i = 0; i < tokenAmounts.length; i++) {
-      this.addTransferFromTokenAmount(tokenAmounts[i], recipient)
-    }
+    for (let i = 0; i < tokenAmounts.length; i++) this.addTransferFromTokenAmount(tokenAmounts[i], recipient)
+    return this
+  }
+
+  addFee(fee: TokenAmount): TransferBuilder {
+    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    this.fee = fee
     return this
   }
 
@@ -80,7 +90,16 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   build(): Transfer {
-    return new Transfer(this.transfers, this.fee, this.chainId, this.settler, this.user, this.deadline, this.nonce)
+    if (!this.fee) throw new Error('Transfer fee must be specified')
+    return new Transfer(
+      this.chainId,
+      this.transfers,
+      this.fee as TokenAmount,
+      this.settler,
+      this.user,
+      this.deadline,
+      this.nonce
+    )
   }
 }
 
@@ -115,10 +134,10 @@ export class TransferData {
 
 @json
 export class Transfer extends Intent {
+  public chainId: ChainId
   public transfers: TransferData[]
   public feeToken: string
   public feeAmount: string
-  public chainId: ChainId
 
   static create(
     chainId: ChainId,
@@ -135,13 +154,13 @@ export class Transfer extends Intent {
     const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
     const feeAmount = TokenAmount.fromBigInt(transferToken, fee)
-    return new Transfer([transferData], feeAmount, chainId, settler, user, deadline, nonce)
+    return new Transfer(chainId, [transferData], feeAmount, settler, user, deadline, nonce)
   }
 
   constructor(
+    chainId: ChainId,
     transfers: TransferData[],
     fee: TokenAmount,
-    chainId: ChainId,
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,

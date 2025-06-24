@@ -33,7 +33,7 @@ describe('Call', () => {
     expect(call.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
     )
   })
 
@@ -66,7 +66,7 @@ describe('Call', () => {
     expect(call.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
     )
   })
 
@@ -79,7 +79,7 @@ describe('Call', () => {
     const callData1 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
     const callData2 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(2))
 
-    const call = new Call([callData1, callData2], fee, chainId, settler, user, deadline)
+    const call = new Call(chainId, [callData1, callData2], fee, settler, user, deadline)
     expect(call.op).toBe(OperationType.Call)
     expect(call.user).toBe(user.toString())
     expect(call.settler).toBe(settler.toString())
@@ -99,14 +99,14 @@ describe('Call', () => {
     expect(call.feeToken).toBe(fee.token.address.toString())
     expect(call.feeAmount).toBe(fee.amount.toString())
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}"}`
     )
   })
 
   it('throws an error when there is not Call Data', () => {
     expect(() => {
-      const feeTokenAmount = TokenAmount.fromI32(randomToken(), 10)
-      new Call([], feeTokenAmount, 1)
+      const fee = TokenAmount.fromI32(randomToken(), 10)
+      new Call(1, [], fee)
     }).toThrow('Call list cannot be empty')
   })
 })
