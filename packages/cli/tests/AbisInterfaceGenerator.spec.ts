@@ -34,10 +34,9 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`private address: ${LibTypes.Address}`)
       expect(result).to.contain(`private chainId: ${LibTypes.ChainId}`)
       expect(result).to.contain(`private timestamp: Date | null`)
-      expect(result).to.contain(`private feeTokenAmount: ${LibTypes.TokenAmount} | null`)
 
       expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null, feeTokenAmount: ${LibTypes.TokenAmount} | null = null) {`
+        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
       )
       expect(result).to.contain('this.address = address')
       expect(result).to.contain('this.chainId = chainId')
@@ -461,19 +460,6 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`deposit(): CallBuilder {`)
     })
 
-    it('should include fee token amount validation', () => {
-      const abi = [
-        createNonViewFunction('transfer', [
-          { name: 'to', type: 'address' },
-          { name: 'amount', type: 'uint256' },
-        ]),
-      ]
-
-      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-
-      expect(result).to.contain("if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')")
-    })
-
     it('should generate proper encoded data for write functions', () => {
       const abi = [
         createNonViewFunction('transfer', [
@@ -501,9 +487,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(
-        `return CallBuilder.forChainWithFee(this.chainId, changetype<${LibTypes.TokenAmount}>(this.feeTokenAmount)).addCall(this.address, encodedData)`
-      )
+      expect(result).to.contain(`return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
     })
 
     it('should handle write functions without parameters', () => {
@@ -557,7 +541,6 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).not.to.be.undefined
       expect(importMatch).to.contain('CallBuilder')
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
-      expect(importMatch).to.contain(`${LibTypes.TokenAmount}`)
     })
 
     it('should handle write functions with array parameters', () => {
