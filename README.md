@@ -63,6 +63,7 @@ Their original license and attribution are preserved.
 ---
 
 > Website [mimic.fi](https://mimic.fi) &nbsp;&middot;&nbsp;
+> Docs [docs.mimic.fi](https://docs.mimic.fi) &nbsp;&middot;&nbsp;
 > GitHub [@mimic-fi](https://github.com/mimic-fi) &nbsp;&middot;&nbsp;
 > Twitter [@mimicfi](https://twitter.com/mimicfi) &nbsp;&middot;&nbsp;
 > Discord [mimic](https://discord.mimic.fi)

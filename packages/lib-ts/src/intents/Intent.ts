@@ -53,8 +53,8 @@ let INTENT_INDEX: u32 = 0
 export abstract class Intent {
   public op: OperationType
   public settler: string
-  public deadline: string
   public user: string
+  public deadline: string
   public nonce: string
 
   protected constructor(
@@ -66,10 +66,13 @@ export abstract class Intent {
   ) {
     const context = environment.getContext()
     this.op = op
-    this.settler = settler ? settler.toString() : NULL_ADDRESS
+    this.settler = settler ? settler.toString() : context.settler.toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
+
+    if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
+    if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')
   }
 
   abstract send(): void

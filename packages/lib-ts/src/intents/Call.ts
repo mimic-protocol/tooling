@@ -7,24 +7,32 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 
 export class CallBuilder extends IntentBuilder {
   private chainId: ChainId
-  private fee: TokenAmount
   private calls: CallData[] = []
+  private fee: TokenAmount | null = null
 
-  static forChainWithFee(chainId: ChainId, fee: TokenAmount): CallBuilder {
-    return new CallBuilder(chainId, fee)
+  static forChain(chainId: ChainId): CallBuilder {
+    return new CallBuilder(chainId)
   }
 
-  constructor(chainId: ChainId, fee: TokenAmount) {
+  static forChainWithFee(chainId: ChainId, fee: TokenAmount): CallBuilder {
+    const builder = new CallBuilder(chainId)
+    builder.addFee(fee)
+    return builder
+  }
+
+  constructor(chainId: ChainId) {
     super()
-    if (fee.token.chainId !== chainId) {
-      throw new Error('Fee token must be on the same chain as the one requested for the call')
-    }
     this.chainId = chainId
-    this.fee = fee
   }
 
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
     this.calls.push(new CallData(target, data, value))
+    return this
+  }
+
+  addFee(fee: TokenAmount): CallBuilder {
+    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    this.fee = fee
     return this
   }
 
@@ -53,7 +61,16 @@ export class CallBuilder extends IntentBuilder {
   }
 
   build(): Call {
-    return new Call(this.calls, this.fee, this.chainId, this.settler, this.user, this.deadline, this.nonce)
+    if (!this.fee) throw new Error('Transfer fee must be specified')
+    return new Call(
+      this.chainId,
+      this.calls,
+      this.fee as TokenAmount,
+      this.settler,
+      this.user,
+      this.deadline,
+      this.nonce
+    )
   }
 }
 
@@ -72,10 +89,10 @@ export class CallData {
 
 @json
 export class Call extends Intent {
+  public chainId: ChainId
   public calls: CallData[]
   public feeToken: string
   public feeAmount: string
-  public chainId: ChainId
 
   static create(
     chainId: ChainId,
@@ -89,13 +106,13 @@ export class Call extends Intent {
     nonce: string | null = null
   ): Call {
     const callData = new CallData(target, data, value)
-    return new Call([callData], fee, chainId, settler, user, deadline, nonce)
+    return new Call(chainId, [callData], fee, settler, user, deadline, nonce)
   }
 
   constructor(
+    chainId: ChainId,
     calls: CallData[],
     fee: TokenAmount,
-    chainId: ChainId,
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,

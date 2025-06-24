@@ -2,6 +2,7 @@
   "name": "@mimicprotocol/tooling",
   "private": true,
   "version": "0.0.1",
+  "description": "Mimic Protocol Tooling",
   "license": "GPL-3.0",
   "scripts": {
     "prepare": "yarn build",

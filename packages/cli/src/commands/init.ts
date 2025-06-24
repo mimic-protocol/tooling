@@ -50,14 +50,22 @@ export default class Init extends Command {
 
     fs.cpSync(templateDirectory, fullDirectory, { recursive: true })
 
-    this.installDependancies(fullDirectory)
+    this.installDependencies(fullDirectory)
+    this.runCodegen(fullDirectory)
     log.stopAction()
     console.log('New project initialized!')
   }
 
-  installDependancies(fullDirectory: string) {
+  installDependencies(fullDirectory: string) {
     if (process.env.NODE_ENV === 'test') return
     spawnSync('yarn', ['install'], {
+      cwd: fullDirectory,
+      stdio: 'inherit',
+    })
+  }
+
+  runCodegen(fullDirectory: string) {
+    spawnSync('yarn', ['codegen'], {
       cwd: fullDirectory,
       stdio: 'inherit',
     })
