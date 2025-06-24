@@ -1,4 +1,3 @@
-import { NULL_ADDRESS } from '../../src/helpers'
 import { CallBuilder } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
@@ -36,15 +35,15 @@ describe('IntentBuilder', () => {
     const target = Address.fromString(targetAddressStr)
     const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    setContext(0, userAddressStr, 'config-transfer')
+    setContext(0, userAddressStr, settlerAddressStr, 'config-transfer')
 
     const builder = CallBuilder.forChainWithFee(chainId, fee)
     builder.addCall(target)
 
     const call = builder.build()
     expect(call.user).toBe(userAddressStr)
+    expect(call.settler).toBe(settlerAddressStr)
     expect(call.deadline).toBe('300000')
     expect(call.nonce).toBe('0x')
-    expect(call.settler).toBe(NULL_ADDRESS)
   })
 })

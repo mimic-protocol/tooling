@@ -1,6 +1,5 @@
 import { JSON } from 'json-as'
 
-import { NULL_ADDRESS } from '../../src/helpers'
 import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
@@ -13,13 +12,14 @@ describe('Call', () => {
     const target = randomAddress()
     const calldata = randomBytes(32)
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+    const settler = randomAddress()
 
-    setContext(1, user.toString(), 'config-123')
+    setContext(1, user.toString(), settler.toString(), 'config-123')
 
     const call = Call.create(chainId, target, calldata, fee)
     expect(call.op).toBe(OperationType.Call)
     expect(call.user).toBe(user.toString())
-    expect(call.settler).toBe(NULL_ADDRESS)
+    expect(call.settler).toBe(settler.toString())
     expect(call.chainId).toBe(chainId)
     expect(call.deadline).toBe('300001')
     expect(call.nonce).toBe('0x')
@@ -33,7 +33,7 @@ describe('Call', () => {
     expect(call.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${NULL_ADDRESS}","deadline":"${300001}","user":"${user}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
     )
   })
 
@@ -47,7 +47,7 @@ describe('Call', () => {
     const value = BigInt.fromI32(10)
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
 
-    setContext(1, user.toString(), 'config-123')
+    setContext(1, user.toString(), settler.toString(), 'config-123')
 
     const call = Call.create(chainId, target, calldata, fee, value, settler, user, deadline)
     expect(call.op).toBe(OperationType.Call)
@@ -66,7 +66,7 @@ describe('Call', () => {
     expect(call.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
     )
   })
 
@@ -99,7 +99,7 @@ describe('Call', () => {
     expect(call.feeToken).toBe(fee.token.address.toString())
     expect(call.feeAmount).toBe(fee.amount.toString())
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}","chainId":${chainId}}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}","chainId":${chainId}}`
     )
   })
 

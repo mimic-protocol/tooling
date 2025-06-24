@@ -1,6 +1,5 @@
 import { JSON } from 'json-as'
 
-import { NULL_ADDRESS } from '../../src/helpers'
 import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
@@ -14,13 +13,14 @@ describe('Swap', () => {
     const amountIn = BigInt.fromI32(10)
     const tokenOut = randomAddress()
     const minAmountOut = BigInt.fromI32(100)
+    const settler = randomAddress()
 
-    setContext(1, user.toString(), 'config-456')
+    setContext(1, user.toString(), settler.toString(), 'config-456')
 
     const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
     expect(swap.op).toBe(OperationType.Swap)
     expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(NULL_ADDRESS)
+    expect(swap.settler).toBe(settler.toString())
     expect(swap.deadline).toBe('300001')
     expect(swap.nonce).toBe('0x')
 
@@ -35,7 +35,7 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${NULL_ADDRESS}","deadline":"300001","user":"${user}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -49,7 +49,7 @@ describe('Swap', () => {
     const tokenOut = randomAddress()
     const minAmountOut = BigInt.fromI32(100)
 
-    setContext(1, user.toString(), 'config-456')
+    setContext(1, user.toString(), settler.toString(), 'config-456')
 
     const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut, settler, user, deadline)
     expect(swap.op).toBe(OperationType.Swap)
@@ -69,7 +69,7 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -82,7 +82,7 @@ describe('Swap', () => {
     const tokenIn = TokenIn.fromI32(randomToken(sourceChain), 10)
     const tokenOut = TokenOut.fromI32(randomToken(destinationChain), 100, randomAddress())
 
-    setContext(1, user.toString(), 'config-456')
+    setContext(1, user.toString(), settler.toString(), 'config-456')
 
     const swap = new Swap(sourceChain, [tokenIn], [tokenOut], destinationChain, settler, user, deadline)
     expect(swap.op).toBe(OperationType.Swap)
@@ -102,7 +102,7 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
     expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"op":0,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 

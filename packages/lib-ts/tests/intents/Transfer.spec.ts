@@ -1,6 +1,5 @@
 import { JSON } from 'json-as'
 
-import { NULL_ADDRESS } from '../../src/helpers'
 import { OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
@@ -14,13 +13,14 @@ describe('Transfer', () => {
     const amount = BigInt.fromI32(1000)
     const fee = BigInt.fromI32(10)
     const recipient = randomAddress()
+    const settler = randomAddress()
 
-    setContext(1, user.toString(), 'config-transfer')
+    setContext(1, user.toString(), settler.toString(), 'config-transfer')
 
     const transfer = Transfer.create(chainId, token, amount, recipient, fee)
     expect(transfer.op).toBe(OperationType.Transfer)
     expect(transfer.user).toBe(user.toString())
-    expect(transfer.settler).toBe(NULL_ADDRESS)
+    expect(transfer.settler).toBe(settler.toString())
     expect(transfer.chainId).toBe(chainId)
     expect(transfer.deadline).toBe('300001')
     expect(transfer.nonce).toBe('0x')
@@ -34,7 +34,7 @@ describe('Transfer', () => {
     expect(transfer.feeAmount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${NULL_ADDRESS}","deadline":"300001","user":"${user}","nonce":"0x","transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}","chainId":${chainId}}`
+      `{"op":1,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}","chainId":${chainId}}`
     )
   })
 
@@ -48,7 +48,7 @@ describe('Transfer', () => {
     const settler = randomAddress()
     const deadline = BigInt.fromI32(9999999)
 
-    setContext(1, recipient.toString(), 'config-transfer')
+    setContext(1, user.toString(), settler.toString(), 'config-transfer')
 
     const transfer = Transfer.create(chainId, token, amount, recipient, fee, settler, user, deadline)
 
@@ -68,7 +68,7 @@ describe('Transfer', () => {
     expect(transfer.feeAmount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}","chainId":${chainId}}`
+      `{"op":1,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}","chainId":${chainId}}`
     )
   })
 
@@ -80,7 +80,7 @@ describe('Transfer', () => {
     const settler = randomAddress()
     const deadline = BigInt.fromI32(9999999)
 
-    setContext(1, user.toString(), 'config-transfer')
+    setContext(1, user.toString(), settler.toString(), 'config-transfer')
 
     const transfer = new Transfer([transferData], fee, chainId, settler, user, deadline)
 
@@ -100,7 +100,7 @@ describe('Transfer', () => {
     expect(transfer.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler}","deadline":"${deadline}","user":"${user}","nonce":"0x","transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
+      `{"op":1,"settler":"${settler}","user":"${user}","deadline":"${deadline}","nonce":"0x","transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}","chainId":${chainId}}`
     )
   })
 

@@ -3,7 +3,6 @@ import {
   BigInt,
   Bytes,
   CallBuilder,
-  NULL_ADDRESS,
   SwapBuilder,
   Token,
   TokenAmount,
@@ -19,17 +18,11 @@ export default function main(): void {
   const WBTC = Token.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', chainId, 8, 'WBTC')
 
   // Call without bytes (optional field)
-  const settler = Address.fromString(NULL_ADDRESS)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')
   const bytes = Bytes.fromI32(123)
   const callFee = TokenAmount.fromI32(USDC, 10)
 
-  CallBuilder.forChainWithFee(chainId, callFee)
-    .addCall(target)
-    .addCall(target, bytes)
-    .addSettler(settler)
-    .build()
-    .send()
+  CallBuilder.forChainWithFee(chainId, callFee).addCall(target).addCall(target, bytes).build().send()
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount).times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
@@ -39,7 +32,6 @@ export default function main(): void {
   SwapBuilder.forChains(chainId, chainId)
     .addTokenInFromTokenAmount(tokenIn)
     .addTokenOutFromTokenAmount(tokenOut, target)
-    .addSettler(settler)
     .build()
     .send()
 
@@ -47,9 +39,5 @@ export default function main(): void {
   const tokenAmount = TokenAmount.fromI32(USDC, inputs.amount)
   const transferFee = TokenAmount.fromI32(USDC, 10)
 
-  TransferBuilder.forChainWithFee(chainId, transferFee)
-    .addTransferFromTokenAmount(tokenAmount, target)
-    .addSettler(settler)
-    .build()
-    .send()
+  TransferBuilder.forChainWithFee(chainId, transferFee).addTransferFromTokenAmount(tokenAmount, target).build().send()
 }
