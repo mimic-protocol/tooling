@@ -1,5 +1,5 @@
 import { getFunctionSelector } from '../../helpers'
-import type { AbiFunctionItem, AbiParameter } from '../../types'
+import { type AbiFunctionItem, type AbiParameter, LibTypes } from '../../types'
 
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
@@ -20,7 +20,8 @@ export default class FunctionHandler {
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
     const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
 
-    lines.push(`  ${fn.name}(${methodParams}): ${returnType} {`)
+    const methodName = fn.escapedName || fn.name
+    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
 
     const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
     this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, abiTypeConverter)
@@ -34,6 +35,8 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): string {
+    if (this.isWriteFunction(fn)) return 'CallBuilder'
+
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
     if (fn.outputs.length === 1) return abiTypeConverter.mapAbiType(fn.outputs[0])
@@ -168,11 +171,20 @@ export default class FunctionHandler {
     abiTypeConverter: AbiTypeConverter
   ): void {
     const selector = getFunctionSelector(fn)
+    if (callArgs) importManager.addType('evm')
+
+    const encodedCall = `'${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''}`
+
+    if (this.isWriteFunction(fn)) {
+      importManager.addType(LibTypes.Bytes)
+      importManager.addType('CallBuilder')
+      lines.push(`    const encodedData = Bytes.fromHexString(${encodedCall})`)
+      lines.push(`    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
+      return
+    }
+
     importManager.addType('environment')
-    importManager.addType('evm')
-    const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' ${
-      callArgs ? `+ evm.encode([${callArgs}])` : ''
-    })`
+    const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, ${encodedCall})`
 
     if (returnType === 'void') {
       lines.push(`    ${contractCallCode}`)
@@ -187,5 +199,9 @@ export default class FunctionHandler {
 
     const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
     lines.push(`    return ${returnExpression}`)
+  }
+
+  private static isWriteFunction(fn: AbiFunctionItem): boolean {
+    return ['nonpayable', 'payable'].includes(fn.stateMutability || '')
   }
 }

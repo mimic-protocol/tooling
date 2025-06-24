@@ -1,9 +1,10 @@
-import type { AbiParameter } from '../../types'
+import type { AbiFunctionItem, AbiParameter } from '../../types'
 
 export enum NameContext {
   FUNCTION_PARAMETER = 'function_parameter',
   LOCAL_VARIABLE = 'local_variable',
   CLASS_PROPERTY = 'class_property',
+  METHOD_NAME = 'method_name',
 }
 
 export default class NameManager {
@@ -19,7 +20,7 @@ export default class NameManager {
       'returnType',
       'lines',
     ]),
-    [NameContext.LOCAL_VARIABLE]: new Set(['data', 'parts', 'response', 'decodedResponse', 'selector']),
+    [NameContext.LOCAL_VARIABLE]: new Set(['data', 'parts', 'response', 'decodedResponse', 'selector', 'encodedData']),
     [NameContext.CLASS_PROPERTY]: new Set([
       'constructor',
       'parse',
@@ -28,6 +29,7 @@ export default class NameManager {
       'chainId',
       'timestamp',
     ]),
+    [NameContext.METHOD_NAME]: new Set(['constructor']),
   }
 
   private static readonly INTERNAL_NAME_PATTERNS = [/^item\d+$/, /^s\d+$/]
@@ -65,6 +67,16 @@ export default class NameManager {
     }))
   }
 
+  public static resolveMethodNames(functions: AbiFunctionItem[]): AbiFunctionItem[] {
+    const methodNames = functions.map((fn) => fn.name)
+    const resolvedNames = this.resolveNameConflicts(methodNames, NameContext.METHOD_NAME)
+
+    return functions.map((fn, index) => ({
+      ...fn,
+      escapedName: resolvedNames[index],
+    }))
+  }
+
   private static hasConflict(name: string, context: NameContext): boolean {
     if (this.RESERVED_BY_CONTEXT[context]?.has(name)) return true
 
@@ -94,6 +106,8 @@ export default class NameManager {
         return '_var'
       case NameContext.CLASS_PROPERTY:
         return '_prop'
+      case NameContext.METHOD_NAME:
+        return '_'
       default:
         return '_safe'
     }

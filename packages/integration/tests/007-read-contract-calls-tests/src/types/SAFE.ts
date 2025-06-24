@@ -2,6 +2,7 @@ import {
   Address,
   BigInt,
   Bytes,
+  CallBuilder,
   ChainId,
   environment,
   evm,
@@ -27,6 +28,21 @@ export class SAFE {
     return decodedResponse
   }
 
+  addOwnerWithThreshold(owner: Address, _threshold: BigInt): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0x0d582f13' +
+        evm.encode([EvmEncodeParam.fromValue('address', owner), EvmEncodeParam.fromValue('uint256', _threshold)])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  approveHash(hashToApprove: Bytes): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xd4d9bdcd' + evm.encode([EvmEncodeParam.fromValue('bytes32', hashToApprove)])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
   approvedHashes(param0: Address, param1: Bytes): BigInt {
     const response = environment.contractCall(
       this.address,
@@ -37,6 +53,13 @@ export class SAFE {
     )
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+
+  changeThreshold(_threshold: BigInt): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0x694e80c3' + evm.encode([EvmEncodeParam.fromValue('uint256', _threshold)])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
@@ -68,10 +91,23 @@ export class SAFE {
     )
   }
 
+  disableModule(prevModule: Address, module: Address): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xe009cfde' +
+        evm.encode([EvmEncodeParam.fromValue('address', prevModule), EvmEncodeParam.fromValue('address', module)])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
   domainSeparator(): Bytes {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0xf698da25')
     const decodedResponse = evm.decode(new EvmDecodeParam('bytes32', response))
     return Bytes.fromHexString(decodedResponse)
+  }
+
+  enableModule(module: Address): CallBuilder {
+    const encodedData = Bytes.fromHexString('0x610b5925' + evm.encode([EvmEncodeParam.fromValue('address', module)]))
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   encodeTransactionData(
@@ -106,6 +142,62 @@ export class SAFE {
     )
     const decodedResponse = evm.decode(new EvmDecodeParam('bytes', response))
     return Bytes.fromHexString(decodedResponse)
+  }
+
+  execTransaction(
+    to: Address,
+    value: BigInt,
+    data: Bytes,
+    operation: u8,
+    safeTxGas: BigInt,
+    baseGas: BigInt,
+    gasPrice: BigInt,
+    gasToken: Address,
+    refundReceiver: Address,
+    signatures: Bytes
+  ): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0x6a761202' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+          EvmEncodeParam.fromValue('uint256', safeTxGas),
+          EvmEncodeParam.fromValue('uint256', baseGas),
+          EvmEncodeParam.fromValue('uint256', gasPrice),
+          EvmEncodeParam.fromValue('address', gasToken),
+          EvmEncodeParam.fromValue('address', refundReceiver),
+          EvmEncodeParam.fromValue('bytes', signatures),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  execTransactionFromModule(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0x468721a7' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  execTransactionFromModuleReturnData(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0x5229073f' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   getChainId(): BigInt {
@@ -214,6 +306,70 @@ export class SAFE {
     return BigInt.fromString(decodedResponse)
   }
 
+  removeOwner(prevOwner: Address, owner: Address, _threshold: BigInt): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xf8dc5dd9' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', prevOwner),
+          EvmEncodeParam.fromValue('address', owner),
+          EvmEncodeParam.fromValue('uint256', _threshold),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  requiredTxGas(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xc4ca3a9c' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('uint256', value),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  setFallbackHandler(handler: Address): CallBuilder {
+    const encodedData = Bytes.fromHexString('0xf08a0323' + evm.encode([EvmEncodeParam.fromValue('address', handler)]))
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  setGuard(guard: Address): CallBuilder {
+    const encodedData = Bytes.fromHexString('0xe19a9dd9' + evm.encode([EvmEncodeParam.fromValue('address', guard)]))
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  setup(
+    _owners: Address[],
+    _threshold: BigInt,
+    to: Address,
+    data: Bytes,
+    fallbackHandler: Address,
+    paymentToken: Address,
+    payment: BigInt,
+    paymentReceiver: Address
+  ): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xb63e800d' +
+        evm.encode([
+          EvmEncodeParam.fromValues(
+            'address[]',
+            _owners.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0))
+          ),
+          EvmEncodeParam.fromValue('uint256', _threshold),
+          EvmEncodeParam.fromValue('address', to),
+          EvmEncodeParam.fromValue('bytes', data),
+          EvmEncodeParam.fromValue('address', fallbackHandler),
+          EvmEncodeParam.fromValue('address', paymentToken),
+          EvmEncodeParam.fromValue('uint256', payment),
+          EvmEncodeParam.fromValue('address', paymentReceiver),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
   signedMessages(param0: Bytes): BigInt {
     const response = environment.contractCall(
       this.address,
@@ -223,6 +379,29 @@ export class SAFE {
     )
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response))
     return BigInt.fromString(decodedResponse)
+  }
+
+  simulateAndRevert(targetContract: Address, calldataPayload: Bytes): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xb4faba09' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', targetContract),
+          EvmEncodeParam.fromValue('bytes', calldataPayload),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
+  }
+
+  swapOwner(prevOwner: Address, oldOwner: Address, newOwner: Address): CallBuilder {
+    const encodedData = Bytes.fromHexString(
+      '0xe318b52b' +
+        evm.encode([
+          EvmEncodeParam.fromValue('address', prevOwner),
+          EvmEncodeParam.fromValue('address', oldOwner),
+          EvmEncodeParam.fromValue('address', newOwner),
+        ])
+    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 }
 

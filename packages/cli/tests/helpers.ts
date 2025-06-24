@@ -35,3 +35,6 @@ export const createPureFunction = (name: string, inputs: AbiParameter[] = [], ou
 
 export const createNonViewFunction = (name: string, inputs: AbiParameter[] = [], outputs: AbiParameter[] = []) =>
   createAbiFunctionItem(name, inputs, outputs, 'nonpayable')
+
+export const createPayableFunction = (name: string, inputs: AbiParameter[] = [], outputs: AbiParameter[] = []) =>
+  createAbiFunctionItem(name, inputs, outputs, 'payable')

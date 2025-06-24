@@ -4,7 +4,7 @@ import { getFunctionSelector } from '../src/helpers'
 import { AbisInterfaceGenerator } from '../src/lib'
 import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../src/types'
 
-import { createNonViewFunction, createPureFunction, createViewFunction } from './helpers'
+import { createNonViewFunction, createPayableFunction, createPureFunction, createViewFunction } from './helpers'
 
 const CONTRACT_NAME = 'TestContract'
 
@@ -62,10 +62,62 @@ describe('AbisInterfaceGenerator', () => {
 
       functionNames.forEach((name) => expect(result).to.contain(`${name}()`))
     })
+
+    it('should handle duplicate method names', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('getData', [], [{ type: 'uint256' }]),
+        createNonViewFunction('getData', [{ name: 'id', type: 'uint256' }]),
+        createPayableFunction('getData', [
+          { name: 'id', type: 'uint256' },
+          { name: 'flag', type: 'bool' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`getData(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getData_1(id: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(
+        `getData_2(id: ${LibTypes.BigInt}, flag: ${AssemblyPrimitiveTypes.bool}): CallBuilder {`
+      )
+    })
+
+    it('should handle mixed duplicate and unique method names', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('getBalance', [], [{ type: 'uint256' }]),
+        createNonViewFunction('transfer', [{ name: 'to', type: 'address' }]),
+        createViewFunction('getBalance', [{ name: 'owner', type: 'address' }], [{ type: 'uint256' }]),
+        createViewFunction('getName', [], [{ type: 'string' }]),
+        createPayableFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`getBalance(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
+      expect(result).to.contain(`getBalance_1(owner: ${LibTypes.Address}): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getName(): ${AssemblyPrimitiveTypes.string} {`)
+      expect(result).to.contain(`transfer_1(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
+    })
+
+    it('should handle duplicate method names with reserved word conflicts', () => {
+      const abi: AbiFunctionItem[] = [
+        createViewFunction('constructor', [], [{ type: 'uint256' }]),
+        createNonViewFunction('constructor', [{ name: 'value', type: 'uint256' }]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`constructor_(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`constructor_1(value: ${LibTypes.BigInt}): CallBuilder {`)
+    })
   })
 
   describe('when filtering functions', () => {
-    it('should include only view and pure functions', () => {
+    it('should include read and write functions', () => {
       const viewFunctionNames = ['getBalance', 'getName']
       const pureFunctionNames = ['calculateTotal', 'formatAddress']
       const nonViewFunctionNames = ['transfer', 'mint', 'burn']
@@ -78,24 +130,12 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      viewFunctionNames.concat(pureFunctionNames).forEach((name) => {
-        expect(result).to.contain(`${name}()`)
-      })
-
-      nonViewFunctionNames.forEach((name) => {
-        expect(result).not.to.contain(`${name}()`)
-      })
-    })
-
-    it('should return a class with no methods if there are no view/pure functions', () => {
-      const abi = [createNonViewFunction('transfer'), createNonViewFunction('mint')]
-
-      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      expect(result).to.contain(`import { ${LibTypes.Address}, ${LibTypes.ChainId} } from '@mimicprotocol/lib-ts'`)
-      expect(result).to.contain(`export class ${CONTRACT_NAME} {`)
-      expect(result).to.contain(
-        `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
-      )
+      viewFunctionNames
+        .concat(pureFunctionNames)
+        .concat(nonViewFunctionNames)
+        .forEach((name) => {
+          expect(result).to.contain(`${name}()`)
+        })
     })
   })
 
@@ -235,7 +275,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`${functionName}(): void {`)
 
-      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' )`)
+      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}')`)
       expect(result).not.to.contain('return')
     })
   })
@@ -401,6 +441,302 @@ describe('AbisInterfaceGenerator', () => {
 
       // Check constructor call
       expect(result).to.contain('return new Tuple0(id, account, active, data_var, description)')
+    })
+  })
+
+  describe('when handling write functions', () => {
+    it('should generate methods that return CallBuilder type', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+        createPayableFunction('deposit', []),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`deposit(): CallBuilder {`)
+    })
+
+    it('should generate proper encoded data for write functions', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const selector = getFunctionSelector(abi[0])
+
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', amount)]))`
+      )
+    })
+
+    it('should generate CallBuilder with proper chain and fee configuration', () => {
+      const abi = [
+        createNonViewFunction('approve', [
+          { name: 'spender', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
+    })
+
+    it('should handle write functions without parameters', () => {
+      const abi = [createPayableFunction('deposit', [])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const selector = getFunctionSelector(abi[0])
+
+      expect(result).to.contain('deposit(): CallBuilder {')
+      expect(result).to.contain(`const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}')`)
+      expect(result).not.to.contain('evm.encode')
+    })
+
+    it('should handle both payable and nonpayable write functions', () => {
+      const abi = [
+        createNonViewFunction('transfer', [{ name: 'to', type: 'address' }]),
+        createPayableFunction('deposit', [{ name: 'amount', type: 'uint256' }]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
+      expect(result).to.contain(`deposit(amount: ${LibTypes.BigInt}): CallBuilder {`)
+    })
+
+    it('should apply correct parameter conversions for write functions', () => {
+      const abi = [
+        createNonViewFunction('complexTransfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+          { name: 'data', type: 'bytes' },
+          { name: 'flag', type: 'bool' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`EvmEncodeParam.fromValue('address', to)`)
+      // eslint-disable-next-line no-secrets/no-secrets
+      expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', amount)`)
+      expect(result).to.contain(`EvmEncodeParam.fromValue('bytes', data)`)
+      expect(result).to.contain(`EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(flag))`)
+    })
+
+    it('should generate proper imports for write functions', () => {
+      const abi = [createPayableFunction('deposit', [{ name: 'amount', type: 'uint256' }])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
+
+      expect(importMatch).not.to.be.undefined
+      expect(importMatch).to.contain('CallBuilder')
+      expect(importMatch).to.contain(`${LibTypes.Bytes}`)
+    })
+
+    it('should handle write functions with array parameters', () => {
+      const abi = [
+        createNonViewFunction('batchTransfer', [
+          { name: 'recipients', type: 'address[]' },
+          { name: 'amounts', type: 'uint256[]' },
+          { name: 'flags', type: 'bool[]' },
+        ]),
+        createPayableFunction('depositMultiple', [
+          { name: 'tokens', type: 'address[]' },
+          { name: 'values', type: 'uint256[]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `batchTransfer(recipients: ${LibTypes.Address}[], amounts: ${LibTypes.BigInt}[], flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+      )
+      expect(result).to.contain(
+        `depositMultiple(tokens: ${LibTypes.Address}[], values: ${LibTypes.BigInt}[]): CallBuilder {`
+      )
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[]', recipients.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
+      )
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `EvmEncodeParam.fromValues('uint256[]', amounts.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('uint256', s0)))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[]', flags.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s0))))`
+      )
+    })
+
+    it('should handle write functions with tuple/struct parameters', () => {
+      const abi = [
+        createNonViewFunction('createUser', [
+          {
+            name: 'userData',
+            type: 'tuple',
+            internalType: 'struct UserInfo',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'name', type: 'string' },
+              { name: 'active', type: 'bool' },
+            ],
+          },
+        ]),
+        createPayableFunction('updateProfile', [
+          {
+            name: 'profile',
+            type: 'tuple',
+            components: [
+              { name: 'email', type: 'string' },
+              { name: 'age', type: 'uint8' },
+              { name: 'wallet', type: 'address' },
+            ],
+          },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('createUser(userData: UserInfo): CallBuilder {')
+      expect(result).to.contain('updateProfile(profile: Tuple1): CallBuilder {')
+
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', userData.toEvmEncodeParams())`)
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', profile.toEvmEncodeParams())`)
+
+      expect(result).to.contain('export class UserInfo {')
+      expect(result).to.contain('export class Tuple1 {')
+    })
+
+    it('should handle write functions with nested complex types', () => {
+      const abi = [
+        createNonViewFunction('processOrders', [
+          {
+            name: 'orders',
+            type: 'tuple[]',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'items', type: 'address[]' },
+              { name: 'quantities', type: 'uint256[]' },
+              { name: 'buyer', type: 'address' },
+            ],
+          },
+        ]),
+        createPayableFunction('complexOperation', [
+          {
+            name: 'data',
+            type: 'tuple',
+            components: [
+              { name: 'values', type: 'uint256[]' },
+              { name: 'addresses', type: 'address[]' },
+              {
+                name: 'config',
+                type: 'tuple',
+                components: [
+                  { name: 'enabled', type: 'bool' },
+                  { name: 'threshold', type: 'uint256' },
+                ],
+              },
+            ],
+          },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('processOrders(orders: Tuple0[]): CallBuilder {')
+      expect(result).to.contain('complexOperation(data: Tuple1): CallBuilder {')
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('()[]', orders.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('()', s0.toEvmEncodeParams())))`
+      )
+
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', data.toEvmEncodeParams())`)
+
+      expect(result).to.contain('export class Tuple0 {')
+      expect(result).to.contain('export class Tuple1 {')
+    })
+
+    it('should handle write functions with mixed parameter complexity', () => {
+      const abi = [
+        createNonViewFunction('mixedFunction', [
+          { name: 'simpleAddress', type: 'address' },
+          { name: 'simpleAmount', type: 'uint256' },
+          { name: 'addressArray', type: 'address[]' },
+          {
+            name: 'userInfo',
+            type: 'tuple',
+            components: [
+              { name: 'id', type: 'uint256' },
+              { name: 'roles', type: 'uint8[]' },
+            ],
+          },
+          { name: 'flags', type: 'bool[]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `mixedFunction(simpleAddress: ${LibTypes.Address}, simpleAmount: ${LibTypes.BigInt}, addressArray: ${LibTypes.Address}[], userInfo: Tuple0, flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+      )
+
+      expect(result).to.contain(`EvmEncodeParam.fromValue('address', simpleAddress)`)
+      // eslint-disable-next-line no-secrets/no-secrets
+      expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', simpleAmount)`)
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[]', addressArray.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
+      )
+      expect(result).to.contain(`EvmEncodeParam.fromValues('()', userInfo.toEvmEncodeParams())`)
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[]', flags.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s0))))`
+      )
+    })
+
+    it('should handle write functions with array of arrays', () => {
+      const abi = [
+        createNonViewFunction('batchOperations', [
+          { name: 'addressMatrix', type: 'address[][]' },
+          { name: 'valueMatrix', type: 'uint256[][]' },
+          { name: 'flagMatrix', type: 'bool[][]' },
+        ]),
+        createPayableFunction('processMatrix', [
+          { name: 'data', type: 'bytes[][]' },
+          { name: 'ids', type: 'uint256[][]' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(
+        `batchOperations(addressMatrix: ${LibTypes.Address}[][], valueMatrix: ${LibTypes.BigInt}[][], flagMatrix: ${AssemblyPrimitiveTypes.bool}[][]): CallBuilder {`
+      )
+      expect(result).to.contain(
+        `processMatrix(data: ${LibTypes.Bytes}[][], ids: ${LibTypes.BigInt}[][]): CallBuilder {`
+      )
+
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('address[][]', addressMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('address[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('address', s1)))))`
+      )
+
+      expect(result).to.contain(
+        // eslint-disable-next-line no-secrets/no-secrets
+        `EvmEncodeParam.fromValues('uint256[][]', valueMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('uint256[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('uint256', s1)))))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bool[][]', flagMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('bool[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(s1))))))`
+      )
+      expect(result).to.contain(
+        `EvmEncodeParam.fromValues('bytes[][]', data.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('bytes[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('bytes', s1)))))`
+      )
     })
   })
 })

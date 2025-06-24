@@ -1,0 +1,28 @@
+{
+  "environment": {
+    "_contractCall": {
+      "log": true,
+      "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
+    },
+    "_getContext": "{ \"timestamp\": 1438223173000, \"user\": \"0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0\", \"settler\": \"0xdcf1d9d12a0488dfb70a8696f44d6d3bc303963d\", \"configId\": \"682ec8210b1ce912da4d2952\"}",
+    "_getRelevantTokens": "TokenAmount(Token(0x625e7708f30ca75bfd92586e17077590c60eb4cd,10),BigInt(100000000))",
+    "_call": {
+      "log": true,
+      "default": ""
+    }
+  },
+  "evm": {
+    "_keccak": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+    "_encode": {
+      "log": true,
+      "default": "00"
+    },
+    "_decode": {
+      "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
+    }
+  },
+  "inputs": {
+    "usdFeeAmount": "0.1",
+    "smartAccount": "0x047be3bb46f9416732fe39a05134f20235c19334"
+  }
+}

@@ -15,6 +15,7 @@ export type AbiParameter = {
 export type AbiFunctionItem = {
   type: string
   name: string
+  escapedName?: string
   stateMutability?: string
   inputs?: AbiParameter[]
   outputs?: AbiParameter[]
@@ -26,6 +27,7 @@ export enum LibTypes {
   Address = 'Address',
   Bytes = 'Bytes',
   ChainId = 'ChainId',
+  TokenAmount = 'TokenAmount',
 }
 
 export enum AssemblyPrimitiveTypes {
