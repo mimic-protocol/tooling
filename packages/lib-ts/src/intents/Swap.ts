@@ -30,9 +30,7 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   addTokensIn(tokensIn: TokenIn[]): SwapBuilder {
-    for (let i = 0; i < tokensIn.length; i++) {
-      this.addTokenIn(tokensIn[i])
-    }
+    for (let i = 0; i < tokensIn.length; i++) this.addTokenIn(tokensIn[i])
     return this
   }
 
@@ -42,51 +40,37 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   addTokensOut(tokensOut: TokenOut[]): SwapBuilder {
-    for (let i = 0; i < tokensOut.length; i++) {
-      this.addTokenOut(tokensOut[i])
-    }
+    for (let i = 0; i < tokensOut.length; i++) this.addTokenOut(tokensOut[i])
     return this
   }
 
   addTokenInFromTokenAmount(tokenAmount: TokenAmount): SwapBuilder {
-    if (tokenAmount.token.chainId !== this.sourceChain) {
-      throw new Error('All tokens in must be on the same chain')
-    }
+    if (tokenAmount.token.chainId !== this.sourceChain) throw new Error('Tokens in must be on the same chain')
     return this.addTokenIn(TokenIn.fromTokenAmount(tokenAmount))
   }
 
   addTokensInFromTokenAmounts(tokenAmounts: TokenAmount[]): SwapBuilder {
-    for (let i = 0; i < tokenAmounts.length; i++) {
-      this.addTokenInFromTokenAmount(tokenAmounts[i])
-    }
+    for (let i = 0; i < tokenAmounts.length; i++) this.addTokenInFromTokenAmount(tokenAmounts[i])
     return this
   }
 
   addTokenInFromStringDecimal(token: Token, amount: string): SwapBuilder {
-    if (token.chainId !== this.sourceChain) {
-      throw new Error('All tokens in must be on the same chain')
-    }
+    if (token.chainId !== this.sourceChain) throw new Error('Tokens in must be on the same chain')
     return this.addTokenIn(TokenIn.fromStringDecimal(token, amount))
   }
 
   addTokenOutFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): SwapBuilder {
-    if (tokenAmount.token.chainId !== this.destinationChain) {
-      throw new Error('All tokens out must be on the same chain')
-    }
+    if (tokenAmount.token.chainId !== this.destinationChain) throw new Error('Tokens out must be on the same chain')
     return this.addTokenOut(TokenOut.fromTokenAmount(tokenAmount, recipient))
   }
 
   addTokensOutFromTokenAmounts(tokenAmounts: TokenAmount[], recipient: Address): SwapBuilder {
-    for (let i = 0; i < tokenAmounts.length; i++) {
-      this.addTokenOutFromTokenAmount(tokenAmounts[i], recipient)
-    }
+    for (let i = 0; i < tokenAmounts.length; i++) this.addTokenOutFromTokenAmount(tokenAmounts[i], recipient)
     return this
   }
 
   addTokenOutFromStringDecimal(token: Token, amount: string, recipient: Address): SwapBuilder {
-    if (token.chainId !== this.destinationChain) {
-      throw new Error('All tokens out must be on the same chain')
-    }
+    if (token.chainId !== this.destinationChain) throw new Error('Tokens out must be on the same chain')
     return this.addTokenOut(TokenOut.fromStringDecimal(token, amount, recipient))
   }
 
@@ -115,9 +99,7 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   build(): Swap {
-    if (this.tokensIn.length === 0 || this.tokensOut.length === 0) {
-      throw new Error('Tokens in and out are required')
-    }
+    if (this.tokensIn.length === 0 || this.tokensOut.length === 0) throw new Error('Tokens in and out are required')
 
     return new Swap(
       this.sourceChain,
