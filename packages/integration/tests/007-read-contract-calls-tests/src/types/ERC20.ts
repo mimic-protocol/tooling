@@ -8,25 +8,17 @@ import {
   evm,
   EvmDecodeParam,
   EvmEncodeParam,
-  TokenAmount,
 } from '@mimicprotocol/lib-ts'
 
 export class ERC20 {
   private address: Address
   private chainId: ChainId
   private timestamp: Date | null
-  private feeTokenAmount: TokenAmount | null
 
-  constructor(
-    address: Address,
-    chainId: ChainId,
-    timestamp: Date | null = null,
-    feeTokenAmount: TokenAmount | null = null
-  ) {
+  constructor(address: Address, chainId: ChainId, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
     this.timestamp = timestamp
-    this.feeTokenAmount = feeTokenAmount
   }
 
   name(): string {
@@ -36,15 +28,11 @@ export class ERC20 {
   }
 
   approve(_spender: Address, _value: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x095ea7b3' +
         evm.encode([EvmEncodeParam.fromValue('address', _spender), EvmEncodeParam.fromValue('uint256', _value)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   totalSupply(): BigInt {
@@ -54,7 +42,6 @@ export class ERC20 {
   }
 
   transferFrom(_from: Address, _to: Address, _value: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x23b872dd' +
         evm.encode([
@@ -63,10 +50,7 @@ export class ERC20 {
           EvmEncodeParam.fromValue('uint256', _value),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   decimals(): u8 {
@@ -93,14 +77,10 @@ export class ERC20 {
   }
 
   transfer(_to: Address, _value: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xa9059cbb' + evm.encode([EvmEncodeParam.fromValue('address', _to), EvmEncodeParam.fromValue('uint256', _value)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   allowance(_owner: Address, _spender: Address): BigInt {

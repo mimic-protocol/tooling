@@ -9,25 +9,17 @@ import {
   EvmDecodeParam,
   EvmEncodeParam,
   parseCSVNotNullable,
-  TokenAmount,
 } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
   private address: Address
   private chainId: ChainId
   private timestamp: Date | null
-  private feeTokenAmount: TokenAmount | null
 
-  constructor(
-    address: Address,
-    chainId: ChainId,
-    timestamp: Date | null = null,
-    feeTokenAmount: TokenAmount | null = null
-  ) {
+  constructor(address: Address, chainId: ChainId, timestamp: Date | null = null) {
     this.address = address
     this.chainId = chainId
     this.timestamp = timestamp
-    this.feeTokenAmount = feeTokenAmount
   }
 
   VERSION(): string {
@@ -37,26 +29,18 @@ export class SAFE {
   }
 
   addOwnerWithThreshold(owner: Address, _threshold: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x0d582f13' +
         evm.encode([EvmEncodeParam.fromValue('address', owner), EvmEncodeParam.fromValue('uint256', _threshold)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   approveHash(hashToApprove: Bytes): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xd4d9bdcd' + evm.encode([EvmEncodeParam.fromValue('bytes32', hashToApprove)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   approvedHashes(param0: Address, param1: Bytes): BigInt {
@@ -72,14 +56,10 @@ export class SAFE {
   }
 
   changeThreshold(_threshold: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x694e80c3' + evm.encode([EvmEncodeParam.fromValue('uint256', _threshold)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   checkNSignatures(dataHash: Bytes, data: Bytes, signatures: Bytes, requiredSignatures: BigInt): void {
@@ -112,15 +92,11 @@ export class SAFE {
   }
 
   disableModule(prevModule: Address, module: Address): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xe009cfde' +
         evm.encode([EvmEncodeParam.fromValue('address', prevModule), EvmEncodeParam.fromValue('address', module)])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   domainSeparator(): Bytes {
@@ -130,12 +106,8 @@ export class SAFE {
   }
 
   enableModule(module: Address): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0x610b5925' + evm.encode([EvmEncodeParam.fromValue('address', module)]))
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   encodeTransactionData(
@@ -184,7 +156,6 @@ export class SAFE {
     refundReceiver: Address,
     signatures: Bytes
   ): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x6a761202' +
         evm.encode([
@@ -200,14 +171,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('bytes', signatures),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   execTransactionFromModule(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x468721a7' +
         evm.encode([
@@ -217,14 +184,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   execTransactionFromModuleReturnData(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0x5229073f' +
         evm.encode([
@@ -234,10 +197,7 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   getChainId(): BigInt {
@@ -347,7 +307,6 @@ export class SAFE {
   }
 
   removeOwner(prevOwner: Address, owner: Address, _threshold: BigInt): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xf8dc5dd9' +
         evm.encode([
@@ -356,14 +315,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint256', _threshold),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   requiredTxGas(to: Address, value: BigInt, data: Bytes, operation: u8): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xc4ca3a9c' +
         evm.encode([
@@ -373,28 +328,17 @@ export class SAFE {
           EvmEncodeParam.fromValue('uint8', BigInt.fromU8(operation)),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   setFallbackHandler(handler: Address): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xf08a0323' + evm.encode([EvmEncodeParam.fromValue('address', handler)]))
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   setGuard(guard: Address): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString('0xe19a9dd9' + evm.encode([EvmEncodeParam.fromValue('address', guard)]))
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   setup(
@@ -407,7 +351,6 @@ export class SAFE {
     payment: BigInt,
     paymentReceiver: Address
   ): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xb63e800d' +
         evm.encode([
@@ -424,10 +367,7 @@ export class SAFE {
           EvmEncodeParam.fromValue('address', paymentReceiver),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   signedMessages(param0: Bytes): BigInt {
@@ -442,7 +382,6 @@ export class SAFE {
   }
 
   simulateAndRevert(targetContract: Address, calldataPayload: Bytes): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xb4faba09' +
         evm.encode([
@@ -450,14 +389,10 @@ export class SAFE {
           EvmEncodeParam.fromValue('bytes', calldataPayload),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 
   swapOwner(prevOwner: Address, oldOwner: Address, newOwner: Address): CallBuilder {
-    if (!this.feeTokenAmount) throw new Error('Fee token amount is not set')
     const encodedData = Bytes.fromHexString(
       '0xe318b52b' +
         evm.encode([
@@ -466,10 +401,7 @@ export class SAFE {
           EvmEncodeParam.fromValue('address', newOwner),
         ])
     )
-    return CallBuilder.forChainWithFee(this.chainId, changetype<TokenAmount>(this.feeTokenAmount)).addCall(
-      this.address,
-      encodedData
-    )
+    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)
   }
 }
 
