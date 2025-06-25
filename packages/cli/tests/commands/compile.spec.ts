@@ -43,6 +43,39 @@ describe('compile', () => {
         })
       })
 
+      context('when the manifest has inputs with descriptions', () => {
+        it('creates the files correctly with described inputs', async () => {
+          const { stdout, error } = await runCommand([
+            'compile',
+            `--task ${taskPath}`,
+            `--manifest ${basePath}/manifests/manifest-with-descriptions.yaml`,
+            `--output ${outputDir}`,
+          ])
+
+          expect(error).to.be.undefined
+          expect(stdout).to.include('Build complete!')
+
+          expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
+          expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
+          expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
+
+          const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
+
+          expect(manifest.inputs).to.be.deep.equal({
+            firstStaticNumber: 'uint32',
+            describedNumber: {
+              type: 'uint32',
+              description: 'A number parameter with detailed description',
+            },
+            tokenAddress: {
+              type: 'address',
+              description: 'The address of the ERC20 token contract',
+            },
+            simpleFlag: 'bool',
+          })
+        })
+      })
+
       context('when the task fails to compile', () => {
         const command = [
           'compile',
