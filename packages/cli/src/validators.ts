@@ -14,7 +14,7 @@ const InputValue = z.union([
   SolidityType,
   z.object({
     type: SolidityType,
-    description: z.string().optional(),
+    description: String.optional(),
   }),
 ])
 
