@@ -1,4 +1,5 @@
 declare namespace input {
+  // The chain ID to use for the transaction
   const chainId: i32
 }
 
