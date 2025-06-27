@@ -21,7 +21,7 @@ describe('Call', () => {
     expect(call.user).toBe(user.toString())
     expect(call.settler).toBe(settler.toString())
     expect(call.chainId).toBe(chainId)
-    expect(call.deadline).toBe('300001')
+    expect(call.deadline).toBe('300')
     expect(call.nonce).toBe('0x')
 
     expect(call.calls.length).toBe(1)
@@ -33,7 +33,7 @@ describe('Call', () => {
     expect(call.feeAmount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
+      `{"op":2,"settler":"${settler}","user":"${user}","deadline":"300","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
     )
   })
 

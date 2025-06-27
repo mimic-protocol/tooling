@@ -21,7 +21,7 @@ describe('Swap', () => {
     expect(swap.op).toBe(OperationType.Swap)
     expect(swap.user).toBe(user.toString())
     expect(swap.settler).toBe(settler.toString())
-    expect(swap.deadline).toBe('300001')
+    expect(swap.deadline).toBe('300')
     expect(swap.nonce).toBe('0x')
 
     expect(swap.sourceChain).toBe(chainId)
@@ -35,7 +35,7 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler}","user":"${user}","deadline":"300","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 

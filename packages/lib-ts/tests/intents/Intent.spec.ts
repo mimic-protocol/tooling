@@ -48,7 +48,7 @@ describe('IntentBuilder', () => {
         const call = builder.build()
         expect(call.user).toBe(userAddressStr)
         expect(call.settler).toBe(settlerAddressStr)
-        expect(call.deadline).toBe('300000')
+        expect(call.deadline).toBe('300')
         expect(call.nonce).toBe('0x')
       })
     })
