@@ -9,7 +9,7 @@ export enum OperationType {
   Call,
 }
 
-const DEFAULT_DEADLINE = 5 * 60 * 1000 // 5 minutes
+const DEFAULT_DEADLINE = 5 * 60 // 5 minutes in seconds
 
 export abstract class IntentBuilder {
   protected user: Address | null = null
@@ -67,7 +67,7 @@ export abstract class Intent {
     const context = environment.getContext()
     this.op = op
     this.settler = settler ? settler.toString() : context.settler.toString()
-    this.deadline = deadline ? deadline.toString() : (context.timestamp + DEFAULT_DEADLINE).toString()
+    this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
 

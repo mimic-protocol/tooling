@@ -22,7 +22,7 @@ describe('Transfer', () => {
     expect(transfer.user).toBe(user.toString())
     expect(transfer.settler).toBe(settler.toString())
     expect(transfer.chainId).toBe(chainId)
-    expect(transfer.deadline).toBe('300001')
+    expect(transfer.deadline).toBe('300')
     expect(transfer.nonce).toBe('0x')
 
     expect(transfer.transfers.length).toBe(1)
@@ -34,7 +34,7 @@ describe('Transfer', () => {
     expect(transfer.feeAmount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler}","user":"${user}","deadline":"300001","nonce":"0x","chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}"}`
+      `{"op":1,"settler":"${settler}","user":"${user}","deadline":"300","nonce":"0x","chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}"}`
     )
   })
 
