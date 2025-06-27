@@ -1,5 +1,6 @@
 declare namespace input {
-  const chainId: i32 // The chain ID to use for the transaction
+  // The chain ID to use for the transaction
+  const chainId: i32
 }
 
 // The class name is intentionally lowercase and plural to resemble a namespace when used in a task

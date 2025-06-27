@@ -1,6 +1,4 @@
-import { Manifest } from '../types'
-
-type ManifestInputs = Manifest['inputs']
+import { ManifestInputs } from '../types'
 
 export default {
   generate(inputs: ManifestInputs): string {
@@ -52,10 +50,11 @@ function generateInputsMapping(inputs: Record<string, string>, originalInputs: M
           : `const ${name}: ${type}`
 
       const originalInput = originalInputs[name]
-      const comment =
-        typeof originalInput === 'object' && originalInput.description ? ` // ${originalInput.description}` : ''
+      const hasDescription = typeof originalInput === 'object' && !!originalInput.description
 
-      return declaration + comment
+      if (hasDescription) return `// ${originalInput.description}\n\t${declaration}`
+
+      return declaration
     })
     .join('\n  ')
 }
