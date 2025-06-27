@@ -60,7 +60,7 @@ describe('compile', () => {
       })
 
       context('when the task fails to compile', () => {
-        const command = buildCommand(`${basePath}/tasks/invalid-task.ts`, taskPath, outputDir)
+        const command = buildCommand(manifestPath, `${basePath}/tasks/invalid-task.ts`, outputDir)
 
         itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
       })
