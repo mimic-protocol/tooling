@@ -56,7 +56,7 @@ function generateInputsMapping(inputs: Record<string, string>, originalInputs: M
 
       return declaration
     })
-    .join('\n  ')
+    .join('\n\n  ')
 }
 
 function generateInputsClass(inputs: Record<string, string>): string {

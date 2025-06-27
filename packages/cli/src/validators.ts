@@ -7,6 +7,7 @@ export const SEM_VER_REGEX =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
 
 const String = z.string().min(1)
+
 const SolidityType = String.regex(SOLIDITY_TYPE_REGEX, 'Must be a valid solidity type')
 
 const InputValue = z.union([
