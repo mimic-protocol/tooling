@@ -3,6 +3,10 @@ import { evm } from '../evm'
 import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../helpers'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
+/**
+ * Represents a token on a blockchain network with metadata like symbol, decimals, and address.
+ * Supports both ERC-20 tokens and native tokens with automatic metadata resolution.
+ */
 export class Token implements Serializable {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
   public static readonly EMPTY_SYMBOL: string = ''
@@ -14,6 +18,15 @@ export class Token implements Serializable {
   private _decimals: u8
   private _timestamp: Date | null = null
 
+  /**
+   * Creates a Token instance from an Address object.
+   * @param address - The contract address of the token
+   * @param chainId - The blockchain network identifier
+   * @param decimals - Number of decimal places (optional, will be queried if not provided)
+   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param timestamp - Timestamp for historical queries (optional)
+   * @returns A new Token instance
+   */
   static fromAddress(
     address: Address,
     chainId: ChainId,
@@ -24,6 +37,15 @@ export class Token implements Serializable {
     return new Token(address, chainId, decimals, symbol, timestamp)
   }
 
+  /**
+   * Creates a Token instance from a string address.
+   * @param address - The contract address as a hex string
+   * @param chainId - The blockchain network identifier
+   * @param decimals - Number of decimal places (optional, will be queried if not provided)
+   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param timestamp - Timestamp for historical queries (optional)
+   * @returns A new Token instance
+   */
   static fromString(
     address: string,
     chainId: ChainId,
@@ -34,6 +56,11 @@ export class Token implements Serializable {
     return Token.fromAddress(Address.fromString(address), chainId, decimals, symbol, timestamp)
   }
 
+  /**
+   * Creates a Token instance representing the native token of the specified chain.
+   * @param chainId - The blockchain network identifier
+   * @returns A new Token instance for the native token
+   */
   static native(chainId: ChainId): Token {
     switch (chainId) {
       case ChainId.ETHEREUM:
@@ -46,6 +73,11 @@ export class Token implements Serializable {
     }
   }
 
+  /**
+   * Parses a serialized Token string and creates a Token instance.
+   * @param serialized - The serialized token string in format: Token(address,chainId)
+   * @returns A new Token instance parsed from the serialized data
+   */
   static parse(serialized: string): Token {
     const isToken = serialized.startsWith(`${Token.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
     if (!isToken) throw new Error('Invalid serialized token')
@@ -60,6 +92,14 @@ export class Token implements Serializable {
     return Token.fromString(address, chainId)
   }
 
+  /**
+   * Creates a new Token instance.
+   * @param address - The contract address of the token
+   * @param chainId - The blockchain network identifier
+   * @param decimals - Number of decimal places (optional, will be queried if not provided)
+   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param timestamp - Timestamp for historical queries (optional)
+   */
   constructor(
     address: Address,
     chainId: ChainId,
@@ -125,12 +165,22 @@ export class Token implements Serializable {
     this._timestamp = value
   }
 
+  /**
+   * Checks if this token is equal to another token.
+   * Tokens are considered equal if they have the same address on the same chain.
+   * @param other - The token to compare with
+   * @returns True if both tokens represent the same asset
+   */
   equals(other: Token): boolean {
     const isSameChain = this.chainId === other.chainId
     const isSameAddress = this.address.equals(other.address)
     return isSameChain && isSameAddress
   }
 
+  /**
+   * Returns the string representation of this token.
+   * @returns The token symbol
+   */
   toString(): string {
     return this.symbol
   }
