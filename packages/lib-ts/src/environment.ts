@@ -2,7 +2,7 @@ import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetRelevantTokens } from './queries'
+import { Call as CallQuery, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 
@@ -54,16 +54,9 @@ export namespace environment {
     listType: ListType = ListType.DenyList,
     timestamp: Date | null = null
   ): TokenAmount[] {
-    const response = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
-    const rows = response.split('\n')
-    const tokenAmounts: TokenAmount[] = []
-
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].length === 0) continue
-      tokenAmounts.push(TokenAmount.parse(rows[i]))
-    }
-
-    return tokenAmounts
+    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
+    const response = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
+    return response.map<TokenAmount>((r) => r.toTokenAmount())
   }
 
   export function contractCall(

@@ -1,12 +1,12 @@
 import { ListType } from '../helpers'
-import { Token, USD } from '../tokens'
-import { Address, ChainId } from '../types'
+import { Token, TokenAmount, USD } from '../tokens'
+import { Address, BigInt, ChainId } from '../types'
 
 @json
 class TokenQuery {
   constructor(
-    public readonly address: string,
-    public readonly chainId: ChainId
+    public address: string,
+    public chainId: ChainId
   ) {}
 
   static fromToken(token: Token): TokenQuery {
@@ -63,5 +63,20 @@ export class GetRelevantTokens extends GetRelevantTokensBase {
           changetype<Date>(timestamp).getTime()
         )
       : new GetRelevantTokensBase(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
+  }
+}
+
+@json
+export class GetRelevantTokensResponse {
+  constructor(
+    public token: TokenQuery,
+    public amount: string
+  ) {}
+
+  toTokenAmount(): TokenAmount {
+    return TokenAmount.fromBigInt(
+      Token.fromString(this.token.address, this.token.chainId),
+      BigInt.fromString(this.amount)
+    )
   }
 }
