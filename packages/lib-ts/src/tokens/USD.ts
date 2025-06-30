@@ -38,22 +38,26 @@ export class USD {
 
   /**
    * Creates a USD instance from a BigInt amount.
-   * @param amount - The amount in the smallest unit (must be non-negative)
+   * @param amount - The amount in 18 decimals precision (must be non-negative)
    * @returns A new USD instance
    */
   static fromBigInt(amount: BigInt): USD {
-    if (amount.isNegative()) throw new Error('USD cannot be negative')
     return new USD(amount)
   }
 
   /**
    * Creates a new USD instance.
-   * @param amount - The amount in the smallest unit
+   * @param amount - The amount in 18 decimals precision (must be non-negative)
    */
   constructor(amount: BigInt) {
+    if (amount.isNegative()) throw new Error('USD cannot be negative')
     this._value = amount.clone()
   }
 
+  /**
+   * Returns the value of this USD amount in 18 decimals precision.
+   * @returns A new BigInt instance representing the value
+   */
   get value(): BigInt {
     return this._value.clone()
   }
