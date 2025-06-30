@@ -2,7 +2,7 @@ import { join, ListType, serialize, serializeArray } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery } from './queries'
+import { Call as CallQuery, GetRelevantTokens } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 
@@ -51,14 +51,10 @@ export namespace environment {
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: Token[] = [],
-    listType: ListType = ListType.DenyList
+    listType: ListType = ListType.DenyList,
+    timestamp: Date | null = null
   ): TokenAmount[] {
-    const response = _getRelevantTokens(
-      // NOTE: The runner expects an optional timestamp that the user will not be able to input
-      // that's why serialize('') is used
-      // this is a workaround until a decision is made regarding the timestamp
-      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType), serialize('')])
-    )
+    const response = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
     const rows = response.split('\n')
     const tokenAmounts: TokenAmount[] = []
 
