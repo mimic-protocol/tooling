@@ -28,24 +28,50 @@ export namespace environment {
   @external('environment', '_getContext')
   declare function _getContext(): string
 
+  /**
+   * Generates a Call intent containing contract calls on the blockchain.
+   * @param call - The Call intent to generate
+   */
   export function call(call: Call): void {
     _call(JSON.stringify(call))
   }
 
+  /**
+   * Generates a Swap intent for token exchange operations.
+   * @param swap - The Swap intent to generate
+   */
   export function swap(swap: Swap): void {
     _swap(JSON.stringify(swap))
   }
 
+  /**
+   * Generates a Transfer intent for sending tokens to recipients.
+   * @param transfer - The Transfer intent to generate
+   */
   export function transfer(transfer: Transfer): void {
     _transfer(JSON.stringify(transfer))
   }
 
-  // Returns the price of a token in USD expressed in 18 decimal places
+  /**
+   * Tells the price of a token in USD at a specific timestamp.
+   * @param token - The token to get the price of
+   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
+   * @returns The token price in USD
+   */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
     const price = _getPrice(join([serialize(token.address), serialize(token.chainId), serialize(timestamp ? timestamp.getTime().toString() : '')]))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
+  /**
+   * Tells the balances of an address for the specified tokens and chains.
+   * @param address - The address to query balances for
+   * @param chainIds - Array of chain ids to search
+   * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
+   * @param tokensList - List of tokens to include/exclude (optional, defaults to empty array)
+   * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
+   * @returns Array of TokenAmount objects representing the relevant tokens
+   */
   export function getRelevantTokens(
     address: Address,
     chainIds: ChainId[],
@@ -70,6 +96,14 @@ export namespace environment {
     return tokenAmounts
   }
 
+  /**
+   * Generates a contract call of a read function on the blockchain and returns the result.
+   * @param to - The contract address to call
+   * @param chainId - The blockchain network identifier
+   * @param timestamp - The timestamp for the call context (optional)
+   * @param data - The encoded function call data
+   * @returns The raw response from the contract call
+   */
   export function contractCall(
     to: Address,
     chainId: ChainId,
@@ -81,6 +115,10 @@ export namespace environment {
     )
   }
 
+  /**
+   * Tells the current execution context containing environment information.
+   * @returns The Context object containing: user, settler, timestamp, and config ID
+   */
   export function getContext(): Context {
     const context = JSON.parse<SerializableContext>(_getContext())
     return Context.fromSerializable(context)

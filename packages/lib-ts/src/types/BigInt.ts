@@ -257,7 +257,13 @@ export class BigInt extends Uint8Array implements Serializable {
     return quotient
   }
 
-  private static compare(a: BigInt, b: BigInt): i32 {
+  /**
+   * Compares two BigInt values.
+   * @param a - The first BigInt to compare
+   * @param b - The second BigInt to compare
+   * @returns -1 if a < b, 0 if a == b, 1 if a > b
+   */
+  static compare(a: BigInt, b: BigInt): i32 {
     const aIsNeg = a.length > 0 && a[a.length - 1] >> 7 == 1
     const bIsNeg = b.length > 0 && b[b.length - 1] >> 7 == 1
     if (!aIsNeg && bIsNeg) return 1
@@ -291,24 +297,45 @@ export class BigInt extends Uint8Array implements Serializable {
     return 0
   }
 
+  /**
+   * Checks if this BigInt represents a negative number.
+   * @returns True if the number is negative, false otherwise
+   */
   isNegative(): boolean {
     return this.length > 0 && (this[this.length - 1] & 0x80) == 0x80
   }
 
+  /**
+   * Checks if this BigInt represents zero.
+   * @returns True if the number is zero, false otherwise
+   */
   isZero(): boolean {
     if (this.length == 0) return true
     for (let i = 0; i < this.length; i++) if (this[i] !== 0) return false
     return true
   }
 
+  /**
+   * Checks if this BigInt can fit within the range of a signed 32-bit integer.
+   * @returns True if the value fits in i32 range, false otherwise
+   */
   isI32(): boolean {
     return BigInt.fromI32(i32.MIN_VALUE) <= this && this <= BigInt.fromI32(i32.MAX_VALUE)
   }
 
+  /**
+   * Tells the absolute value of this BigInt.
+   * @returns A new BigInt representing the absolute value
+   */
   abs(): BigInt {
     return this.isNegative() ? this.neg() : this
   }
 
+  /**
+   * Raises this BigInt to the power of the given exponent.
+   * @param exp - The exponent (unsigned 8-bit integer)
+   * @returns A new BigInt representing this^exp
+   */
   pow(exp: u8): BigInt {
     if (exp === 0) return BigInt.fromI32(1)
     if (exp === 1) return this.clone()
@@ -326,20 +353,40 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Multiplies this BigInt by 10^precision (moves decimal point right).
+   * @param precision - Number of decimal places to scale up
+   * @returns A new BigInt scaled up by the specified precision
+   */
   upscale(precision: u8): BigInt {
     return this.times(BigInt.fromI32(10).pow(precision))
   }
 
+  /**
+   * Divides this BigInt by 10^precision (moves decimal point left).
+   * @param precision - Number of decimal places to scale down
+   * @returns A new BigInt scaled down by the specified precision
+   */
   downscale(precision: u8): BigInt {
     return this.div(BigInt.fromI32(10).pow(precision))
   }
 
+  /**
+   * Creates a deep copy of this BigInt.
+   * @returns A new BigInt instance with the same value
+   */
   clone(): BigInt {
     const clone = new BigInt(this.length)
     memory.copy(clone.dataStart, this.dataStart, this.length)
     return clone
   }
 
+  /**
+   * Creates a new BigInt from a portion of this BigInt's byte array.
+   * @param start - Starting index (inclusive)
+   * @param end - Ending index (exclusive)
+   * @returns A new BigInt containing the specified byte range
+   */
   subarray(start: i32, end: i32): BigInt {
     const length = end - start
     const result = new BigInt(length)
@@ -347,6 +394,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Adds another BigInt to this BigInt.
+   * @param other - The BigInt to add
+   * @returns A new BigInt representing the sum
+   */
   @operator('+')
   plus(other: BigInt): BigInt {
     const aIsNeg = this.isNegative()
@@ -367,11 +419,21 @@ export class BigInt extends Uint8Array implements Serializable {
     }
   }
 
+  /**
+   * Subtracts another BigInt from this BigInt.
+   * @param other - The BigInt to subtract
+   * @returns A new BigInt representing the difference
+   */
   @operator('-')
   minus(other: BigInt): BigInt {
     return this.plus(other.neg())
   }
 
+  /**
+   * Multiplies this BigInt by another BigInt.
+   * @param other - The BigInt to multiply by
+   * @returns A new BigInt representing the product
+   */
   @operator('*')
   times(other: BigInt): BigInt {
     if (other.isZero() || this.isZero()) return BigInt.zero()
@@ -390,6 +452,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
+  /**
+   * Divides this BigInt by another BigInt.
+   * @param other - The BigInt to divide by (cannot be zero)
+   * @returns A new BigInt representing the quotient
+   */
   @operator('/')
   div(other: BigInt): BigInt {
     assert(!other.isZero(), 'Trying to divide by zero')
@@ -400,42 +467,81 @@ export class BigInt extends Uint8Array implements Serializable {
     return signIsNeg ? resultAbs.neg() : resultAbs
   }
 
+  /**
+   * Calculates the remainder when dividing this BigInt by another BigInt.
+   * @param other - The BigInt to divide by (cannot be zero)
+   * @returns A new BigInt representing the remainder
+   */
   @operator('%')
   mod(other: BigInt): BigInt {
     assert(!other.isZero(), '')
     return this.minus(this.div(other).times(other))
   }
 
+  /**
+   * Checks if this BigInt is equal to another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if both BigInts have the same value
+   */
   @operator('==')
   equals(other: BigInt): boolean {
     return BigInt.compare(this, other) == 0
   }
 
+  /**
+   * Checks if this BigInt is not equal to another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if the BigInts have different values
+   */
   @operator('!=')
   notEqual(other: BigInt): boolean {
     return !(this == other)
   }
 
+  /**
+   * Checks if this BigInt is less than another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if this BigInt is smaller
+   */
   @operator('<')
   lt(other: BigInt): boolean {
     return BigInt.compare(this, other) == -1
   }
 
+  /**
+   * Checks if this BigInt is greater than another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if this BigInt is larger
+   */
   @operator('>')
   gt(other: BigInt): boolean {
     return BigInt.compare(this, other) == 1
   }
 
+  /**
+   * Checks if this BigInt is less than or equal to another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if this BigInt is smaller or equal
+   */
   @operator('<=')
   le(other: BigInt): boolean {
     return !(this > other)
   }
 
+  /**
+   * Checks if this BigInt is greater than or equal to another BigInt.
+   * @param other - The BigInt to compare with
+   * @returns True if this BigInt is larger or equal
+   */
   @operator('>=')
   ge(other: BigInt): boolean {
     return !(this < other)
   }
 
+  /**
+   * Tells the negation (opposite sign) of this BigInt.
+   * @returns A new BigInt with the opposite sign
+   */
   @operator.prefix('-')
   neg(): BigInt {
     const result = new BigInt(this.length)
@@ -451,6 +557,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Performs a bitwise OR operation with another BigInt.
+   * @param other - The BigInt to perform bitwise OR with
+   * @returns A new BigInt representing the bitwise OR result
+   */
   @operator('|')
   bitOr(other: BigInt): BigInt {
     const maxLen = max(this.length, other.length)
@@ -463,6 +574,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Performs a bitwise AND operation with another BigInt.
+   * @param other - The BigInt to perform bitwise AND with
+   * @returns A new BigInt representing the bitwise AND result
+   */
   @operator('&')
   bitAnd(other: BigInt): BigInt {
     const maxLen = max(this.length, other.length)
@@ -475,6 +591,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Shifts this BigInt left by the specified number of bits.
+   * @param bits - Number of bits to shift left
+   * @returns A new BigInt shifted left (equivalent to multiplying by 2^bits)
+   */
   @operator('<<')
   leftShift(bits: u8): BigInt {
     if (bits == 0) return this
@@ -494,6 +615,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Shifts this BigInt right by the specified number of bits.
+   * @param bits - Number of bits to shift right
+   * @returns A new BigInt shifted right (equivalent to dividing by 2^bits)
+   */
   @operator('>>')
   rightShift(bits: u8): BigInt {
     if (bits == 0) return this
@@ -539,30 +665,54 @@ export class BigInt extends Uint8Array implements Serializable {
     return result
   }
 
+  /**
+   * Converts this BigInt to a Bytes representation.
+   * @returns A new Bytes instance containing the raw byte data
+   */
   toBytes(): Bytes {
     return Bytes.fromUint8Array(changetype<Uint8Array>(this))
   }
 
+  /**
+   * Converts this BigInt to a signed 32-bit integer.
+   * @returns The i32 representation (behavior undefined if value doesn't fit)
+   */
   toI32(): i32 {
     const byteArray = this.toBytes()
     return byteArray.toI32()
   }
 
+  /**
+   * Converts this BigInt to an unsigned 32-bit integer.
+   * @returns The u32 representation (behavior undefined if value doesn't fit)
+   */
   toU32(): u32 {
     const byteArray = this.toBytes()
     return byteArray.toU32()
   }
 
+  /**
+   * Converts this BigInt to a signed 64-bit integer.
+   * @returns The i64 representation (behavior undefined if value doesn't fit)
+   */
   toI64(): i64 {
     const byteArray = this.toBytes()
     return byteArray.toI64()
   }
 
+  /**
+   * Converts this BigInt to an unsigned 64-bit integer.
+   * @returns The u64 representation (behavior undefined if value doesn't fit)
+   */
   toU64(): u64 {
     const byteArray = this.toBytes()
     return byteArray.toU64()
   }
 
+  /**
+   * Converts this BigInt to a hexadecimal string representation.
+   * @returns Hex string with '0x' prefix, or '0x' for zero
+   */
   toHexString(): string {
     if (this.isZero()) return '0x'
     const abs = this.isNegative() ? this.neg() : this
@@ -573,6 +723,10 @@ export class BigInt extends Uint8Array implements Serializable {
     return this.isNegative() ? '-' + hex : hex
   }
 
+  /**
+   * Converts this BigInt to a decimal string representation.
+   * @returns Decimal string representation of the number
+   */
   toString(): string {
     if (this.isZero()) return '0'
 
@@ -599,6 +753,11 @@ export class BigInt extends Uint8Array implements Serializable {
     return String.fromCharCodes(digits)
   }
 
+  /**
+   * Converts this BigInt to a decimal string with specified precision.
+   * @param precision - Number of decimal places to format
+   * @returns Decimal string with the specified precision, trailing zeros removed
+   */
   toStringDecimal(precision: u8): string {
     if (this.isZero()) return '0'
 
