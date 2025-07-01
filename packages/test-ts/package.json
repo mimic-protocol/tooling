@@ -1,8 +1,8 @@
 {
   "name": "@mimicprotocol/test-ts",
   "version": "0.0.1",
-  "license": "Unlicensed",
-  "private": true,
+  "license": "GPL-3.0",
+  "private": false,
   "main": "dist/index.js",
   "scripts": {
     "prepare": "yarn build",
@@ -10,6 +10,11 @@
     "test": "echo 'no tests for now'",
     "lint": "eslint ."
   },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "dependencies": {
     "zod": "^3.24.1"
   },

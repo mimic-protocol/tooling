@@ -13,8 +13,8 @@
   "workspaces": {
     "packages": [
       "packages/lib-ts",
-      "packages/cli",
       "packages/test-ts",
+      "packages/cli",
       "packages/integration"
     ]
   }

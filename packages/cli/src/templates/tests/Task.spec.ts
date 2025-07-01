@@ -3,7 +3,7 @@ import { expect } from 'chai'
 
 describe('Task', () => {
   it('produces the expected intents', async () => {
-    const taskDir = './' // TODO: replace with yours
+    const taskDir = './'
 
     // Not necessary for this task
     const prices = [
