@@ -1,7 +1,6 @@
 import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
-import * as path from 'path'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
@@ -82,26 +81,10 @@ function handleValidationError(command: Command, err: unknown): never {
 
 function getLibVersion(): string {
   try {
-    let currentDir = __dirname
-    while (currentDir !== path.dirname(currentDir)) {
-      const packageJsonPath = path.join(currentDir, 'package.json')
-      if (fs.existsSync(packageJsonPath)) {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
-        if (packageJson.workspaces) {
-          const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-          if (fs.existsSync(libPackagePath)) return getVersionFromPackage(libPackagePath)
-        }
-      }
-      currentDir = path.dirname(currentDir)
-    }
-
-    throw new Error('Could not find @mimicprotocol/lib-ts package')
+    const libPackageJsonPath = require.resolve('@mimicprotocol/lib-ts/package.json')
+    const packageJson = JSON.parse(fs.readFileSync(libPackageJsonPath, 'utf-8'))
+    return packageJson.version
   } catch (error) {
     throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
   }
-}
-
-function getVersionFromPackage(packagePath: string): string {
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'))
-  return packageJson.version
 }
