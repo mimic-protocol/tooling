@@ -22,9 +22,28 @@ export default {
     const myImports = {
       env: {
         memory,
-        'console.log': (ptr) => {
-          const string = exports.__getString(ptr)
-          console.log(string)
+      },
+      log: {
+        _log: (level, msgPtr) => {
+          const msg = exports.__getString(msgPtr)
+          switch (level) {
+            case 0:
+              throw new Error(`[CRITICAL] ${msg}`)
+            case 1:
+              console.error(`[ERROR] ${msg}`)
+              break
+            case 2:
+              console.warn(`[WARNING] ${msg}`)
+              break
+            case 3:
+              console.info(`[INFO] ${msg}`)
+              break
+            case 4:
+              console.debug(`[DEBUG] ${msg}`)
+              break
+            default:
+              throw new Error(`Invalid log level: ${level}`)
+          }
         },
       },
       evm: {
