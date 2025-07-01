@@ -18,7 +18,6 @@ export default class Test extends Command {
     const testPath = path.join(baseDir, 'tests')
 
     if (!flags.skipCompile) {
-      // TODO: this only works if the task and the manifest are in the default paths
       const codegen = spawnSync('yarn', ['mimic', 'codegen'], { cwd: baseDir, stdio: 'inherit' })
       if (codegen.status !== 0) return
 

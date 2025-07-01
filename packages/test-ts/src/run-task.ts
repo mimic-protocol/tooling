@@ -38,7 +38,6 @@ export async function runTask(
 function generateMock(params: GenerateMockParams): MockConfig {
   const { context, prices, balances, inputs, calls } = params
 
-  // TODO: make response params dependent
   let _getRelevantTokens = ''
   if (balances.length > 0) {
     const tokenAmounts = balances.map((b) => `TokenAmount(Token(${b.token},${b.chainId}),BigInt(${b.balance}))`)
@@ -58,10 +57,8 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const decodeResponse: Record<string, string> = {}
   if (calls.length > 0) {
     for (const { to, chainId, timestamp, data, output, outputType } of calls) {
-      // TODO: generate data from fn name and params
       const key = JSON.stringify({ to, chainId, timestamp: timestamp || null, data })
       callResponse[key] = output
-      // TODO: get output type from ABI
       const decodeKey = `EvmDecodeParam(${outputType},${output})`
       decodeResponse[decodeKey] = output
     }
