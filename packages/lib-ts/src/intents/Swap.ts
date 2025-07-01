@@ -151,7 +151,7 @@ export class SwapBuilder extends IntentBuilder {
 
   /**
    * Sets the settler address for this intent.
-   * @param settler - The address authorized to settle this intent
+   * @param settler - The settler address as an Address instance
    * @returns This SwapBuilder instance for method chaining
    */
   addSettler(settler: Address): SwapBuilder {

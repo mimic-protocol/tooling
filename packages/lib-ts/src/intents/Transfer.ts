@@ -25,7 +25,7 @@ export class TransferBuilder extends IntentBuilder {
   /**
    * Creates a TransferBuilder for a specific chain with a pre-configured fee.
    * @param chainId - The blockchain network identifier
-   * @param fee - The fee amount for the transfer
+   * @param fee - The fee token amount for the transfer
    * @returns A new TransferBuilder instance with fee set
    */
   static forChainWithFee(chainId: ChainId, fee: TokenAmount): TransferBuilder {
@@ -123,7 +123,7 @@ export class TransferBuilder extends IntentBuilder {
 
   /**
    * Sets the fee for this transfer intent.
-   * @param fee - The fee amount (must be on same chain)
+   * @param fee - The fee token amount (must be on same chain)
    * @returns This TransferBuilder instance for method chaining
    */
   addFee(fee: TokenAmount): TransferBuilder {
@@ -134,7 +134,7 @@ export class TransferBuilder extends IntentBuilder {
 
   /**
    * Sets the settler address for this intent.
-   * @param settler - The address authorized to settle this intent
+   * @param settler - The settler address as an Address instance
    * @returns This TransferBuilder instance for method chaining
    */
   addSettler(settler: Address): TransferBuilder {
@@ -315,7 +315,7 @@ export class Transfer extends Intent {
    * Creates a new Transfer intent.
    * @param chainId - The blockchain network identifier
    * @param transfers - Array of transfer data configurations
-   * @param fee - The fee amount for the transfers
+   * @param fee - The fee token amount for the transfers
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)

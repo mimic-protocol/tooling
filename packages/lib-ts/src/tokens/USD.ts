@@ -50,12 +50,11 @@ export class USD {
    * @param amount - The amount in 18 decimals precision (must be non-negative)
    */
   constructor(amount: BigInt) {
-    if (amount.isNegative()) throw new Error('USD cannot be negative')
     this._value = amount.clone()
   }
 
   /**
-   * Returns the value of this USD amount in 18 decimals precision.
+   * Tells the value of this USD amount in 18 decimals precision.
    * @returns A new BigInt instance representing the value
    */
   get value(): BigInt {
@@ -180,7 +179,7 @@ export class USD {
   }
 
   /**
-   * Returns the string representation of this USD amount.
+   * Tells the string representation of this USD amount.
    * @returns Decimal string representation (e.g., "1.50", "100")
    */
   toString(): string {

@@ -206,7 +206,7 @@ export class TokenAmount implements Serializable {
   }
 
   /**
-   * Returns the string representation of this TokenAmount.
+   * Tells the string representation of this TokenAmount.
    * @returns Formatted string showing the decimal amount and symbol (e.g., "1.5 ETH")
    */
   toString(): string {

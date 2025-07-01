@@ -4,8 +4,8 @@ import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../help
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 /**
- * Represents a token on a blockchain network with metadata like symbol, decimals, and address.
- * Supports both ERC-20 tokens and native tokens with automatic metadata resolution.
+ * Represents a token on a blockchain network including data like symbol, decimals, and address.
+ * Supports both ERC-20 and native tokens.
  */
 export class Token implements Serializable {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
@@ -114,7 +114,7 @@ export class Token implements Serializable {
     this._decimals = decimals
     // Ensure symbol and decimals are set for native tokens.
     // Since queries return only the address and chainId, missing metadata must be filled
-    // to prevent the symbol and decimals getters from failing for native tokens
+    // to prevent the symbol and decimals getters from failing for native tokens.
     if (
       this._address.equals(Address.fromString(NATIVE_ADDRESS)) &&
       (this._symbol === Token.EMPTY_SYMBOL || this._decimals === Token.EMPTY_DECIMALS)
@@ -178,7 +178,7 @@ export class Token implements Serializable {
   }
 
   /**
-   * Returns the string representation of this token.
+   * Tells the string representation of this token.
    * @returns The token symbol
    */
   toString(): string {

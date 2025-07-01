@@ -324,7 +324,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   /**
-   * Returns the absolute value of this BigInt.
+   * Tells the absolute value of this BigInt.
    * @returns A new BigInt representing the absolute value
    */
   abs(): BigInt {
@@ -539,7 +539,7 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   /**
-   * Returns the negation (opposite sign) of this BigInt.
+   * Tells the negation (opposite sign) of this BigInt.
    * @returns A new BigInt with the opposite sign
    */
   @operator.prefix('-')

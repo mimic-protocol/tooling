@@ -26,7 +26,7 @@ export class CallBuilder extends IntentBuilder {
   /**
    * Creates a CallBuilder with a pre-configured fee.
    * @param chainId - The blockchain network identifier
-   * @param fee - The fee amount to be charged for the call
+   * @param fee - The fee token amount to be charged for the call
    * @returns A new CallBuilder instance with fee already set
    */
   static forChainWithFee(chainId: ChainId, fee: TokenAmount): CallBuilder {
@@ -47,8 +47,8 @@ export class CallBuilder extends IntentBuilder {
   /**
    * Adds a contract call to the intent.
    * @param target - The contract address to call
-   * @param data - The call data (optional, defaults to empty)
-   * @param value - The ETH/native token value to send (optional, defaults to zero)
+   * @param data - The call data (optional, defaults to empty bytes)
+   * @param value - The native token value to send (optional, defaults to zero)
    * @returns This CallBuilder instance for method chaining
    */
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
@@ -58,7 +58,7 @@ export class CallBuilder extends IntentBuilder {
 
   /**
    * Sets the fee to be charged for executing this call intent.
-   * @param fee - The fee amount (must be on the same chain as the call)
+   * @param fee - The fee token amount (must be on the same chain as the call)
    * @returns This CallBuilder instance for method chaining
    */
   addFee(fee: TokenAmount): CallBuilder {
@@ -69,7 +69,7 @@ export class CallBuilder extends IntentBuilder {
 
   /**
    * Sets the settler address for this intent.
-   * @param settler - The address authorized to settle this intent
+   * @param settler - The settler address as an Address instance
    * @returns This CallBuilder instance for method chaining
    */
   addSettler(settler: Address): CallBuilder {
@@ -152,8 +152,8 @@ export class CallData {
   /**
    * Creates a new CallData instance.
    * @param target - The contract address to call
-   * @param data - The call data (optional, defaults to empty)
-   * @param value - The ETH/native token value to send (optional, defaults to zero)
+   * @param data - The call data (optional, defaults to empty bytes)
+   * @param value - The native token value to send (optional, defaults to zero)
    */
   constructor(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()) {
     this.target = target.toString()
@@ -177,8 +177,8 @@ export class Call extends Intent {
    * @param chainId - The blockchain network identifier
    * @param target - The contract address to call
    * @param data - The call data
-   * @param fee - The fee amount to be charged
-   * @param value - The ETH/native token value to send (optional, defaults to zero)
+   * @param fee - The fee token amount to be charged
+   * @param value - The native token value to send (optional, defaults to zero)
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
@@ -204,7 +204,7 @@ export class Call extends Intent {
    * Creates a new Call intent.
    * @param chainId - The blockchain network identifier
    * @param calls - Array of contract calls to execute
-   * @param fee - The fee amount to be charged
+   * @param fee - The fee token amount to be charged
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)

@@ -29,32 +29,32 @@ export namespace environment {
   declare function _getContext(): string
 
   /**
-   * Executes a Call intent containing contract calls on the blockchain.
-   * @param call - The Call intent to execute
+   * Generates a Call intent containing contract calls on the blockchain.
+   * @param call - The Call intent to generate
    */
   export function call(call: Call): void {
     _call(JSON.stringify(call))
   }
 
   /**
-   * Executes a Swap intent for token exchange operations.
-   * @param swap - The Swap intent to execute
+   * Generates a Swap intent for token exchange operations.
+   * @param swap - The Swap intent to generate
    */
   export function swap(swap: Swap): void {
     _swap(JSON.stringify(swap))
   }
 
   /**
-   * Executes a Transfer intent for sending tokens to recipients.
-   * @param transfer - The Transfer intent to execute
+   * Generates a Transfer intent for sending tokens to recipients.
+   * @param transfer - The Transfer intent to generate
    */
   export function transfer(transfer: Transfer): void {
     _transfer(JSON.stringify(transfer))
   }
 
   /**
-   * Gets the price of a token in USD at a specific timestamp.
-   * @param token - The token to get the price for
+   * Tells the price of a token in USD at a specific timestamp.
+   * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
    * @returns The token price in USD
    */
@@ -64,12 +64,12 @@ export namespace environment {
   }
 
   /**
-   * Gets relevant token amounts for an address across specified chains.
-   * @param address - The wallet address to query tokens for
+   * Tells the balances of an address for the specified tokens and chains.
+   * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of tokens to include/exclude (optional, defaults to empty array)
-   * @param listType - Whether tokensList is a DenyList or AllowList (optional, defaults to DenyList)
+   * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
   export function getRelevantTokens(
@@ -97,7 +97,7 @@ export namespace environment {
   }
 
   /**
-   * Executes a contract call of a read function on the blockchain and returns the result.
+   * Generates a contract call of a read function on the blockchain and returns the result.
    * @param to - The contract address to call
    * @param chainId - The blockchain network identifier
    * @param timestamp - The timestamp for the call context (optional)
@@ -116,8 +116,8 @@ export namespace environment {
   }
 
   /**
-   * Gets the current execution context containing user and environment information.
-   * @returns The Context object with user address and other environment data
+   * Tells the current execution context containing environment information.
+   * @returns The Context object containing: user, settler, timestamp, and config ID
    */
   export function getContext(): Context {
     const context = JSON.parse<SerializableContext>(_getContext())
