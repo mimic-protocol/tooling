@@ -57,7 +57,7 @@ import { runTask } from '@mimicprotocol/test-ts'
 import { expect } from 'chai'
 
 const taskDir = './my-task'
-const context = { user: '0x...', settler: '0x...' }
+const context = { user: '0x...', settler: '0x...', timestamp: Date.now() }
 const inputs = { token: '0x...', amount: '10000000' }
 
 const intents = await runTask(taskDir, context, { inputs })

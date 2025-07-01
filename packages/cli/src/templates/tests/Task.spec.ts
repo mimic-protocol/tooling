@@ -5,36 +5,6 @@ describe('Task', () => {
   it('produces the expected intents', async () => {
     const taskDir = './'
 
-    // Not necessary for this task
-    const prices = [
-      {
-        token: '0x625e7708f30ca75bfd92586e17077590c60eb4cd',
-        chainId: 10,
-        usdPrice: '1000000000000000000',
-      },
-    ]
-
-    // Not necessary for this task
-    const balances = [
-      {
-        token: '0x625e7708f30ca75bfd92586e17077590c60eb4cd',
-        chainId: 10,
-        user: '0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0',
-        balance: '100000000',
-      },
-    ]
-
-    // Not necessary for this task
-    const calls = [
-      {
-        to: '0x625e7708f30ca75bfd92586e17077590c60eb4cd',
-        chainId: 10,
-        data: '0x06fdde03', // name() fn selector
-        output: 'Aave Usdc',
-        outputType: 'string',
-      },
-    ]
-
     const context = {
       user: '0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0',
       settler: '0xdcf1d9d12a0488dfb70a8696f44d6d3bc303963d',
@@ -49,7 +19,7 @@ describe('Task', () => {
       fee: '100',
     }
 
-    const intents = await runTask(taskDir, context, { inputs, prices, balances, calls })
+    const intents = await runTask(taskDir, context, { inputs })
 
     expect(intents).to.be.an('array').that.is.not.empty
     expect(intents).to.have.lengthOf(1)
