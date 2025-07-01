@@ -29,6 +29,7 @@ The `mimic` CLI is a command-line interface to:
 - Initialize a Mimic-compatible task project
 - Generate types from your task manifest and ABIs
 - Compile your AssemblyScript tasks to WebAssembly
+- Test your tasks
 - Deploy compiled tasks to IPFS and the Mimic Registry
 - Link tasks to a project in the Mimic explorer
 
@@ -60,6 +61,7 @@ USAGE
 COMMANDS
   codegen  Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file
   compile  Compiles task
+  test     Tests task
   deploy   Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry
   init     Initializes a new Mimic-compatible project structure in the specified directory
 ```

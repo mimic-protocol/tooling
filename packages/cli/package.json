@@ -39,13 +39,14 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.10.5",
     "axios-mock-adapter": "^2.1.0",
-    "chai": "^4.3.7",
+    "chai": "^5.2.0",
     "eslint-config-mimic": "^0.0.3",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.1",
     "sinon": "^18.0.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^4.0.0"
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
   },
   "oclif": {
     "bin": "mimic",
