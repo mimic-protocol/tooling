@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "0.0.1-rc.5",
+  "version": "0.0.1-rc.6",
   "license": "GPL-3.0",
   "private": false,
   "type": "commonjs",
@@ -16,8 +16,7 @@
   },
   "files": [
     "dist",
-    "bin",
-    "README.md"
+    "bin"
   ],
   "dependencies": {
     "@inquirer/prompts": "^7.2.4",
