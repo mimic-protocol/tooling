@@ -1,8 +1,8 @@
 {
   "name": "@mimicprotocol/test-ts",
   "version": "0.0.1-rc.5",
-  "description": "Mimic Protocol Test",
   "license": "GPL-3.0",
+  "private": false,
   "main": "dist/index.js",
   "scripts": {
     "prepare": "yarn build",
@@ -11,9 +11,7 @@
     "lint": "eslint ."
   },
   "files": [
-    "dist",
-    "src",
-    "README.md"
+    "dist"
   ],
   "dependencies": {
     "zod": "^3.24.1"
