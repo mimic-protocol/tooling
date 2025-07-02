@@ -25,13 +25,13 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bigInt = BigInt.fromI32(5)
         const serialized = serialize(bigInt)
-        expect(serialized).toBe('BigInt(5)')
+        expect(serialized).toBe('5')
       })
 
       it('converts a negative BigInt to string correctly', () => {
         const bigInt = BigInt.fromI32(-5)
         const serialized = serialize(bigInt)
-        expect(serialized).toBe('BigInt(-5)')
+        expect(serialized).toBe('-5')
       })
     })
 
@@ -111,7 +111,7 @@ describe('serialize', () => {
       it('converts it to string correctly', () => {
         const bigInts = [BigInt.fromI32(5), BigInt.fromI32(10)]
         const serialized = serializeArray(bigInts)
-        expect(serialized).toBe('Array(BigInt(5),BigInt(10))')
+        expect(serialized).toBe('Array(5,10)')
       })
     })
 
