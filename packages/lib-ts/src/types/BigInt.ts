@@ -21,9 +21,7 @@ export class BigInt extends Uint8Array implements Serializable {
    * Parses a serialized representation of a BigInt and converts it to a BigInt.
    */
   static parse(serialized: string): BigInt {
-    const isBigInt = serialized.startsWith(`${BigInt.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
-    if (!isBigInt) throw new Error('Invalid serialized BigInt')
-    return BigInt.fromString(serialized.slice(BigInt.SERIALIZED_PREFIX.length + 1, -1))
+    return BigInt.fromString(serialized)
   }
 
   /**
@@ -791,6 +789,6 @@ export class BigInt extends Uint8Array implements Serializable {
   }
 
   serialize(): string {
-    return `${BigInt.SERIALIZED_PREFIX}(${this.toString()})`
+    return this.toString()
   }
 }
