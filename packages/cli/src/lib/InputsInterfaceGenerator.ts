@@ -1,8 +1,10 @@
+import { ManifestInputs } from '../types'
+
 export default {
-  generate(inputs: Record<string, string>): string {
+  generate(inputs: ManifestInputs): string {
     if (Object.entries(inputs).length == 0) return ''
     const convertedInputs = convertInputs(inputs)
-    const inputsMapping = generateInputsMapping(convertedInputs)
+    const inputsMapping = generateInputsMapping(convertedInputs, inputs)
     const imports = generateImports(convertedInputs)
     const inputsClass = generateInputsClass(convertedInputs)
     return [
@@ -24,8 +26,13 @@ export default {
   },
 }
 
-function convertInputs(inputs: Record<string, string>): Record<string, string> {
-  return Object.fromEntries(Object.entries(inputs).map(([name, type]) => [name, convertType(type)]))
+function convertInputs(inputs: ManifestInputs): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(inputs).map(([name, input]) => {
+      const type = typeof input === 'string' ? input : input.type
+      return [name, convertType(type)]
+    })
+  )
 }
 
 function generateImports(inputs: Record<string, string>): string {
@@ -36,14 +43,20 @@ function generateImports(inputs: Record<string, string>): string {
   return `import { ${[...typesToImport].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
-function generateInputsMapping(inputs: Record<string, string>): string {
+function generateInputsMapping(inputs: Record<string, string>, originalInputs: ManifestInputs): string {
   return Object.entries(inputs)
-    .map(([name, type]) =>
-      type === 'string' || type === 'Address' || type === 'Bytes' || type === 'BigInt'
-        ? `var ${name}: string | null`
-        : `const ${name}: ${type}`
-    )
-    .join('\n  ')
+    .map(([name, type]) => {
+      const declaration =
+        type === 'string' || type === 'Address' || type === 'Bytes' || type === 'BigInt'
+          ? `var ${name}: string | null`
+          : `const ${name}: ${type}`
+
+      const originalInput = originalInputs[name]
+      const hasDescription = typeof originalInput === 'object' && !!originalInput.description
+
+      return hasDescription ? `// ${originalInput.description}\n\t${declaration}` : declaration
+    })
+    .join('\n\n  ')
 }
 
 function generateInputsClass(inputs: Record<string, string>): string {
