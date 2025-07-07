@@ -15,113 +15,14 @@ describe('compile', () => {
     if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true })
   })
 
-  context('when the manifest exists', () => {
-    context('when the manifest is valid', () => {
-      context('when the task compiles successfully', () => {
-        it('creates the files correctly', async () => {
-          const { stdout, error } = await runCommand([
-            'compile',
-            `--task ${taskPath}`,
-            `--manifest ${manifestPath}`,
-            `--output ${outputDir}`,
-          ])
+  const buildCommand = (manifestPath: string, taskPath: string, outputDir: string) => {
+    return ['compile', `--task ${taskPath}`, `--manifest ${manifestPath}`, `--output ${outputDir}`]
+  }
 
-          expect(error).to.be.undefined
-          expect(stdout).to.include('Build complete!')
-
-          expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
-
-          const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
-
-          expect(manifest.inputs).to.be.deep.equal({
-            firstStaticNumber: 'uint32',
-            secondStaticNumber: 'uint32',
-            isTrue: 'bool',
-          })
-        })
-      })
-
-      context('when the task fails to compile', () => {
-        const command = [
-          'compile',
-          `--task ${basePath}/tasks/invalid-task.ts`,
-          `--manifest ${manifestPath}`,
-          `--output ${outputDir}`,
-        ]
-
-        itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
-      })
-    })
-
-    context('when the manifest is not valid', () => {
-      context('when the manfiest has invalid fields', () => {
-        const command = [
-          'compile',
-          `--task ${taskPath}`,
-          `--manifest ${basePath}/manifests/invalid-manifest.yaml`,
-          `--output ${outputDir}`,
-        ]
-
-        itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
-      })
-
-      context('when the manfiest has repeated fields', () => {
-        const command = [
-          'compile',
-          `--task ${taskPath}`,
-          `--manifest ${basePath}/manifests/invalid-manifest-repeated.yaml`,
-          `--output ${outputDir}`,
-        ]
-
-        itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
-      })
-
-      context('when the manifest is incomplete', () => {
-        const command = [
-          'compile',
-          `--task ${taskPath}`,
-          `--manifest ${basePath}/manifests/incomplete-manifest.yaml`,
-          `--output ${outputDir}`,
-        ]
-
-        itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
-      })
-
-      context('when the manifest is empty', () => {
-        const command = [
-          'compile',
-          `--task ${taskPath}`,
-          `--manifest ${basePath}/manifests/empty-manifest.yaml`,
-          `--output ${outputDir}`,
-        ]
-
-        itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
-      })
-    })
-  })
-
-  context('when the manifest does not exist', () => {
-    let inexistentManifestPath = `${manifestPath}-none`
-    const command = ['compile', `--task ${taskPath}`, `--manifest ${inexistentManifestPath}`, `--output ${outputDir}`]
-
-    itThrowsACliError(command, `Could not find ${inexistentManifestPath}`, 'FileNotFound', 1)
-  })
-
-  context('when the output directory already exists', () => {
-    beforeEach('create outputDirectory with files', () => {
-      if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
-      fs.writeFileSync(path.join(outputDir, 'randomFile.txt'), JSON.stringify({ a: 2 }, null, 2))
-    })
-
+  const itCreatesFilesCorrectly = (manifestPath: string, expectedInputs: object) => {
     it('creates the files correctly', async () => {
-      const { stdout, error } = await runCommand([
-        'compile',
-        `--task ${taskPath}`,
-        `--manifest ${manifestPath}`,
-        `--output ${outputDir}`,
-      ])
+      const command = buildCommand(manifestPath, taskPath, outputDir)
+      const { stdout, error } = await runCommand(command)
 
       expect(error).to.be.undefined
       expect(stdout).to.include('Build complete!')
@@ -132,11 +33,97 @@ describe('compile', () => {
 
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
 
-      expect(manifest.inputs).to.be.deep.equal({
-        firstStaticNumber: 'uint32',
-        secondStaticNumber: 'uint32',
-        isTrue: 'bool',
+      expect(manifest.inputs).to.be.deep.equal(expectedInputs)
+    })
+  }
+
+  context('when the manifest exists', () => {
+    context('when the manifest is valid', () => {
+      context('when the task compiles successfully', () => {
+        context('when the manifest has simple inputs', () => {
+          const expectedInputs = {
+            firstStaticNumber: 'uint32',
+            secondStaticNumber: 'uint32',
+            isTrue: 'bool',
+          }
+          itCreatesFilesCorrectly(manifestPath, expectedInputs)
+        })
+
+        context('when the manifest has inputs with descriptions', () => {
+          const manifestPath = `${basePath}/manifests/manifest-with-descriptions.yaml`
+          const expectedInputs = {
+            firstStaticNumber: 'uint32',
+            describedNumber: {
+              type: 'uint32',
+              description: 'A number parameter with detailed description',
+            },
+            tokenAddress: {
+              type: 'address',
+              description: 'The address of the ERC20 token contract',
+            },
+            simpleFlag: 'bool',
+          }
+          itCreatesFilesCorrectly(manifestPath, expectedInputs)
+        })
+      })
+
+      context('when the task fails to compile', () => {
+        const taskPath = `${basePath}/tasks/invalid-task.ts`
+        const command = buildCommand(manifestPath, taskPath, outputDir)
+
+        itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
       })
     })
+
+    context('when the manifest is not valid', () => {
+      context('when the manfiest has invalid fields', () => {
+        const manifestPath = `${basePath}/manifests/invalid-manifest.yaml`
+        const command = buildCommand(manifestPath, taskPath, outputDir)
+
+        itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
+      })
+
+      context('when the manfiest has repeated fields', () => {
+        const manifestPath = `${basePath}/manifests/invalid-manifest-repeated.yaml`
+        const command = buildCommand(manifestPath, taskPath, outputDir)
+
+        itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
+      })
+
+      context('when the manifest is incomplete', () => {
+        const manifestPath = `${basePath}/manifests/incomplete-manifest.yaml`
+        const command = buildCommand(manifestPath, taskPath, outputDir)
+
+        itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
+      })
+
+      context('when the manifest is empty', () => {
+        const manifestPath = `${basePath}/manifests/empty-manifest.yaml`
+        const command = buildCommand(manifestPath, taskPath, outputDir)
+
+        itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
+      })
+    })
+  })
+
+  context('when the manifest does not exist', () => {
+    const inexistentManifestPath = `${manifestPath}-none`
+    const command = buildCommand(inexistentManifestPath, taskPath, outputDir)
+
+    itThrowsACliError(command, `Could not find ${inexistentManifestPath}`, 'FileNotFound', 1)
+  })
+
+  context('when the output directory already exists', () => {
+    beforeEach('create outputDirectory with files', () => {
+      if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
+      fs.writeFileSync(path.join(outputDir, 'randomFile.txt'), JSON.stringify({ a: 2 }, null, 2))
+    })
+
+    const expectedInputs = {
+      firstStaticNumber: 'uint32',
+      secondStaticNumber: 'uint32',
+      isTrue: 'bool',
+    }
+    itCreatesFilesCorrectly(manifestPath, expectedInputs)
   })
 })

@@ -27,7 +27,51 @@ describe('ManifestHandler', () => {
             expect(Array.isArray(parsedManifest.abis)).to.be.false
           }
         })
+      })
 
+      context('when dealing with inputs', () => {
+        context('when inputs have descriptions', () => {
+          it('returns the parsed manifest with described inputs', () => {
+            const manifestWithDescriptions = {
+              ...manifest,
+              inputs: [
+                { staticNumber: 'uint32' },
+                { describedNumber: { type: 'uint32', description: 'A number with description' } },
+              ],
+            }
+            const parsedManifest = ManifestHandler.validate(manifestWithDescriptions)
+
+            expect(parsedManifest).to.not.be.undefined
+            expect(parsedManifest.inputs.staticNumber).to.equal('uint32')
+            expect(parsedManifest.inputs.describedNumber).to.deep.equal({
+              type: 'uint32',
+              description: 'A number with description',
+            })
+          })
+        })
+
+        context('when inputs do not have descriptions', () => {
+          it('returns the parsed manifest with simple type inputs', () => {
+            const parsedManifest = ManifestHandler.validate(manifest)
+
+            expect(parsedManifest).to.not.be.undefined
+            expect(parsedManifest.inputs.firstStaticNumber).to.equal('uint8')
+            expect(parsedManifest.inputs.secondStaticNumber).to.equal('uint8')
+          })
+        })
+
+        context('when inputs is missing', () => {
+          it('returns the parsed manifest', () => {
+            const parsedManifest = ManifestHandler.validate({ ...manifest, inputs: undefined })
+
+            expect(parsedManifest).to.not.be.undefined
+            expect(Array.isArray(parsedManifest.inputs)).to.be.false
+            expect(Array.isArray(parsedManifest.abis)).to.be.false
+          })
+        })
+      })
+
+      context('when dealing with lib version', () => {
         context('when the lib version is not present', () => {
           it('adds the lib version to the manifest', () => {
             const parsedManifest = ManifestHandler.validate(manifest)
@@ -44,16 +88,6 @@ describe('ManifestHandler', () => {
 
             expect(parsedManifest.metadata.libVersion).to.not.equal(libVersion)
           })
-        })
-      })
-
-      context('when inputs is missing', () => {
-        it('returns the parsed manifest', () => {
-          const parsedManifest = ManifestHandler.validate({ ...manifest, inputs: undefined })
-
-          expect(parsedManifest).to.not.be.undefined
-          expect(Array.isArray(parsedManifest.inputs)).to.be.false
-          expect(Array.isArray(parsedManifest.abis)).to.be.false
         })
       })
 

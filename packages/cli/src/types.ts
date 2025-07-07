@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { ManifestValidator } from './validators'
 
 export type Manifest = z.infer<typeof ManifestValidator>
+export type ManifestInputs = z.infer<typeof ManifestValidator.shape.inputs>
 
 export type AbiParameter = {
   name?: string

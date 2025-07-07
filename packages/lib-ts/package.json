@@ -1,19 +1,18 @@
 {
   "name": "@mimicprotocol/lib-ts",
-  "version": "0.0.1-rc.5",
+  "version": "0.0.1-rc.9",
   "license": "GPL-3.0",
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit  --transform json-as/transform",
+    "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit --transform json-as/transform",
     "test": "asp",
     "lint": "eslint . --ignore-pattern 'src/environment.ts' --ignore-pattern 'src/evm.ts'"
   },
   "files": [
     "src",
     "index.ts",
-    "asconfig.json",
-    "README.md"
+    "asconfig.json"
   ],
   "devDependencies": {
     "@as-pect/cli": "8.1.0",
