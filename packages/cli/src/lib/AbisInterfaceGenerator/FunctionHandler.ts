@@ -100,7 +100,8 @@ export default class FunctionHandler {
         importManager,
         depth + 1
       )
-      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.map<EvmEncodeParam>((${elementLambdaVar}) => ${nestedEvmParam}))`
+      importManager.addType('EvmEncodeParamBase')
+      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.map<EvmEncodeParamBase>((${elementLambdaVar}) => ${nestedEvmParam}))`
     }
 
     if (TupleHandler.isBaseTypeATuple(paramDefinition.type)) {

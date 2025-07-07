@@ -100,7 +100,7 @@ export namespace environment {
     data: string
   ): string {
     return _contractCall(
-      JSON.stringify(new CallQuery(to, chainId, timestamp, data))
+      JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
     )
   }
 

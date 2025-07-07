@@ -202,7 +202,7 @@ export default class TupleHandler {
       lines.push(`  }`)
       lines.push('')
 
-      lines.push(`  toEvmEncodeParams(): EvmEncodeParam[] {`)
+      lines.push(`  toEvmEncodeParams(): EvmEncodeParamBase[] {`)
       importManager.addType('EvmEncodeParam')
       lines.push(`    return [`)
       lines.push(...this.getTupleToEvmParamsMethodBody(def, abiTypeConverter, importManager))
