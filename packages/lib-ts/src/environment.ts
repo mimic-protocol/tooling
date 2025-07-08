@@ -1,8 +1,8 @@
-import { join, ListType, serialize, serializeArray } from './helpers'
+import { ListType } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
+import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 
@@ -59,7 +59,7 @@ export namespace environment {
    * @returns The token price in USD
    */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    const price = _getPrice(join([serialize(token.address), serialize(token.chainId), serialize(timestamp ? timestamp.getTime().toString() : '')]))
+    const price = _getPrice(JSON.stringify(GetPrice.fromToken(token, timestamp)))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
