@@ -3538,10 +3538,10 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha512-UVU9dibq2JcFWxQPA6KCqj5O42VOmAY3zQUfEKxU0KpTGXwNoCjkX1e13eHNvw/xPynt6pU0rZ1htjWTNTSXsg==
 
-json-as@1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/json-as/-/json-as-1.0.7.tgz#2bfdbf5d01bd6bf35984b969caf2317372bb2df3"
-  integrity sha512-+SOoMPj+HOB7RR7KO8gDKOPFlUyp4ltOHcJRrSLHLZmvhhw9330kSrTEycIppCX+tHhbqDu8slX32c4T4mq6Ng==
+json-as@1.1.7:
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/json-as/-/json-as-1.1.7.tgz#27fa49c04ece2fa368f0ba1da708f3c7025d142f"
+  integrity sha512-N/Vw88DnWqyRzJllzAOeznO8ORswv66Sodsw877QEDDu5CukCd2quo/9kDh26VsghQ1gUSJy9yoMuz8MHYPgPw==
 
 json-buffer@3.0.1:
   version "3.0.1"

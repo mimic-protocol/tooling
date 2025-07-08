@@ -1,4 +1,4 @@
-import { EvmDecodeParam, EvmEncodeParamBase } from './types'
+import { EvmDecodeParam, EvmEncodeParam } from './types'
 import { JSON } from 'json-as/assembly'
 
 export namespace evm {
@@ -16,7 +16,7 @@ export namespace evm {
    * @param callParameters - Array of parameters to encode for the contract call
    * @returns The ABI-encoded data as a hex string
    */
-  export function encode(callParameters: EvmEncodeParamBase[]): string {
+  export function encode(callParameters: EvmEncodeParam[]): string {
     return _encode(JSON.stringify(callParameters))
   }
 

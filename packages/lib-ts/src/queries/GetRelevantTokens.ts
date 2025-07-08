@@ -6,7 +6,7 @@ import { Address, BigInt, ChainId } from '../types'
 class TokenQuery {
   constructor(
     public address: string,
-    public chainId: ChainId
+    public chainId: i32
   ) {}
 
   static fromToken(token: Token): TokenQuery {

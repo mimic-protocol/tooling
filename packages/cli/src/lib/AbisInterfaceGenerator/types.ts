@@ -5,7 +5,6 @@ export type ImportedTypes =
   | 'environment'
   | 'evm'
   | 'EvmEncodeParam'
-  | 'EvmEncodeParamBase'
   | 'EvmDecodeParam'
   | 'parseCSVNotNullable'
   | 'CallBuilder'
