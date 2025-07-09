@@ -82,16 +82,10 @@ function handleValidationError(command: Command, err: unknown): never {
 
 function getLibVersion(): string {
   try {
-    let currentDir = __dirname
+    let currentDir = process.cwd()
     while (currentDir !== path.dirname(currentDir)) {
-      const packageJsonPath = path.join(currentDir, 'package.json')
-      if (fs.existsSync(packageJsonPath)) {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
-        if (packageJson.workspaces) {
-          const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-          if (fs.existsSync(libPackagePath)) return getVersionFromPackage(libPackagePath)
-        }
-      }
+      const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
+      if (fs.existsSync(libPackagePath)) return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
       currentDir = path.dirname(currentDir)
     }
 
@@ -99,9 +93,4 @@ function getLibVersion(): string {
   } catch (error) {
     throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
   }
-}
-
-function getVersionFromPackage(packagePath: string): string {
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'))
-  return packageJson.version
 }

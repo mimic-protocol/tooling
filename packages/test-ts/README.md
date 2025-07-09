@@ -25,19 +25,17 @@
 
 ## Content 
 
-The `mimic` CLI is a command-line interface to:
-- Initialize a Mimic-compatible task project
-- Generate types from your task manifest and ABIs
-- Compile your AssemblyScript tasks to WebAssembly
-- Test your tasks
-- Deploy compiled tasks to IPFS and the Mimic Registry
-- Link tasks to a project in the Mimic explorer
+This package provides tooling and helpers to write and run tests for Mimic Protocol tasks using TypeScript. It includes:
+
+- Mocking of inputs, balances, prices, contract calls responses, and context variables
+- Simulated task execution with mocked environment
+- Structured task outputs to assert emitted intents using frameworks like Mocha and Chai
 
 ## Setup
 
 To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed. 
 
-Install the CLI from the root of the monorepo:
+Install the library from the root of the monorepo:
 
 ```bash
 # Clone this repository
@@ -52,21 +50,30 @@ $ yarn
 
 ## Usage
 
-Here's a quick overview of common commands:
+Here’s an example of how to test a Mimic task:
 
+```ts
+import { runTask } from '@mimicprotocol/test-ts'
+import { expect } from 'chai'
+
+const taskDir = './my-task'
+const context = { user: '0x...', settler: '0x...', timestamp: Date.now() }
+const inputs = { token: '0x...', amount: '10000000' }
+
+const intents = await runTask(taskDir, context, { inputs })
+
+expect(intents).to.be.an('array').that.is.not.empty
+expect(intents).to.have.lengthOf(1)
+
+expect(intents[0].type).to.be.equal('transfer')
+expect(intents[0].settler).to.be.equal(context.settler)
+
+expect(intents[0].transfers).to.have.lengthOf(1)
+expect(intents[0].transfers[0].token).to.be.equal(inputs.token)
+expect(intents[0].transfers[0].amount).to.be.equal(inputs.amount)
 ```
-USAGE
-  $ mimic [COMMAND]
 
-COMMANDS
-  codegen  Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file
-  compile  Compiles task
-  test     Tests your tasks
-  deploy   Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry
-  init     Initializes a new Mimic-compatible project structure in the specified directory
-```
-
-For full CLI documentation and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
+For full task testing guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
 
 ## Security
 
@@ -79,12 +86,6 @@ for the safety of the protocol, please contact us through <a href="mailto:securi
 
 This project is licensed under the GNU General Public License v3.0.  
 See the [LICENSE](../../LICENSE) file for details.
-
-### Third-Party Code
-
-This project includes code from [The Graph Tooling](https://github.com/graphprotocol/graph-tooling), licensed under the MIT License.  
-See the [LICENSE-MIT](https://github.com/graphprotocol/graph-tooling/blob/27659e56adfa3ef395ceaf39053dc4a31e6d86b7/LICENSE-MIT) file for details.
-Their original license and attribution are preserved.
 
 
 ---

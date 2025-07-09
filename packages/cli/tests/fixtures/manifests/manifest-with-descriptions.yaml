@@ -1,0 +1,14 @@
+version: 1.0.0
+name: sample task with descriptions
+description: some description
+inputs:
+  - firstStaticNumber: uint32
+  - describedNumber:
+      type: uint32
+      description: A number parameter with detailed description
+  - tokenAddress:
+      type: address
+      description: The address of the ERC20 token contract
+  - simpleFlag: bool
+abis:
+  - ERC20: '../abis/ERC20.json' 

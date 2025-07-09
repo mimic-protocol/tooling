@@ -5,15 +5,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "mimic compile",
-    "codegen": "mimic codegen"
+    "build": "yarn codegen && yarn compile",
+    "codegen": "mimic codegen",
+    "compile": "mimic compile",
+    "test": "mimic test"
   },
   "devDependencies": {
     "@mimicprotocol/cli": "^0.0.1-rc.0",
     "@mimicprotocol/lib-ts": "^0.0.1-rc.0",
-    "typescript": "^5.8.3",
+    "@mimicprotocol/test-ts": "^0.0.1-rc.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^22.10.5",
     "assemblyscript": "0.27.36",
-    "json-as": "1.0.7",
+    "chai": "^4.3.7",
+    "json-as": "1.1.7",
+    "mocha": "^10.2.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
     "visitor-as": "0.11.4"
   }
 }

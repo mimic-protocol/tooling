@@ -1,9 +1,8 @@
+import { RunnerMock } from '@mimicprotocol/test-ts'
 import { expect } from 'chai'
 import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import { join } from 'path'
-
-import MockRunner from '../src/MockRunner'
 
 describe('Integration tests', async () => {
   const testCases = fs
@@ -53,6 +52,7 @@ async function runTestCase(testCase: string): Promise<void> {
 
     after('delete artifacts', () => {
       fs.rmSync(outputPath, { recursive: true })
+      fs.rmSync(join(path, 'test.log'))
     })
 
     it('run task', async () => {
@@ -60,10 +60,10 @@ async function runTestCase(testCase: string): Promise<void> {
         throw new Error(`Unable to run test case '${testCase}' due to compilation errors`)
       }
 
-      const mockRunner = new MockRunner(outputPath)
+      const mockRunner = new RunnerMock(outputPath, path)
       mockRunner.run()
       const expectedLogs = loadLogs(join(path, 'expected.log'))
-      const testLogs = loadLogs(join(outputPath, 'test.log'))
+      const testLogs = loadLogs(join(path, 'test.log'))
       expect(testLogs).to.be.deep.equal(expectedLogs)
     })
   })
