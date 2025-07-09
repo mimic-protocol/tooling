@@ -1,6 +1,16 @@
+import { JSON } from 'json-as'
+
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
 import { Address, BigInt, Bytes, ChainId } from '../src/types'
+
+@json
+class Log {
+  constructor(
+    public level: i32,
+    public message: string
+  ) {}
+}
 
 /* eslint-disable no-secrets/no-secrets */
 
@@ -52,3 +62,17 @@ export declare function setContractCall(to: string, chainId: ChainId, data: stri
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
 export declare function setContext(timestamp: u64, user: string, settler: string, configId: string): void
+
+export declare function clearLogs(): void
+
+declare function _getLogs(): string
+
+export function getLogs(): Log[] {
+  return JSON.parse<Log[]>(_getLogs())
+}
+
+declare function _getLogsByLevel(level: i32): string
+
+export function getLogsByLevel(level: i32): Log[] {
+  return JSON.parse<Log[]>(_getLogsByLevel(level))
+}
