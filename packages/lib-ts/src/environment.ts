@@ -1,8 +1,8 @@
-import { join, ListType, serialize, serializeArray } from './helpers'
+import { ListType } from './helpers'
 import { Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery } from './queries'
+import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
 import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 
@@ -59,7 +59,7 @@ export namespace environment {
    * @returns The token price in USD
    */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    const price = _getPrice(join([serialize(token.address), serialize(token.chainId), serialize(timestamp ? timestamp.getTime().toString() : '')]))
+    const price = _getPrice(JSON.stringify(GetPrice.fromToken(token, timestamp)))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
@@ -77,23 +77,12 @@ export namespace environment {
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: Token[] = [],
-    listType: ListType = ListType.DenyList
+    listType: ListType = ListType.DenyList,
+    timestamp: Date | null = null
   ): TokenAmount[] {
-    const response = _getRelevantTokens(
-      // NOTE: The runner expects an optional timestamp that the user will not be able to input
-      // that's why serialize('') is used
-      // this is a workaround until a decision is made regarding the timestamp
-      join([serialize(address), serializeArray(chainIds), serialize(usdMinAmount.value), serializeArray(tokensList), serialize(listType), serialize('')])
-    )
-    const rows = response.split('\n')
-    const tokenAmounts: TokenAmount[] = []
-
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].length === 0) continue
-      tokenAmounts.push(TokenAmount.parse(rows[i]))
-    }
-
-    return tokenAmounts
+    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
+    const response = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
+    return response.map<TokenAmount>((r) => r.toTokenAmount())
   }
 
   /**
@@ -111,7 +100,7 @@ export namespace environment {
     data: string
   ): string {
     return _contractCall(
-      JSON.stringify(new CallQuery(to, chainId, timestamp, data))
+      JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
     )
   }
 

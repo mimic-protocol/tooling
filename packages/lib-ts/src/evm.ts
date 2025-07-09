@@ -1,5 +1,5 @@
 import { EvmDecodeParam, EvmEncodeParam } from './types'
-import { join, serialize, serializeArray } from './helpers'
+import { JSON } from 'json-as/assembly'
 
 export namespace evm {
   @external('evm', '_encode')
@@ -17,7 +17,7 @@ export namespace evm {
    * @returns The ABI-encoded data as a hex string
    */
   export function encode(callParameters: EvmEncodeParam[]): string {
-    return _encode(join([serializeArray(callParameters)]))
+    return _encode(JSON.stringify(callParameters))
   }
 
   /**
@@ -26,7 +26,7 @@ export namespace evm {
    * @returns The decoded data as a formatted string
    */
   export function decode(encodedData: EvmDecodeParam): string {
-    return _decode(serialize(encodedData))
+    return _decode(JSON.stringify(encodedData))
   }
 
   /**

@@ -21,7 +21,7 @@
     "assemblyscript": "0.27.36",
     "chai": "^4.3.7",
     "eslint": "^9.10.0",
-    "json-as": "1.0.7",
+    "json-as": "1.1.7",
     "mocha": "^10.2.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",

@@ -30,10 +30,10 @@ export default {
       evm: {
         _decode: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
-          const params = paramsStr.split('(')[1].split(')')[0].split(',')
-          const abiType = params[0]
-          const hex = params[1]
-          const key = `_evmDecode:${abiType}:${hex}`
+          const params = JSON.parse(paramsStr)
+          const abiType = params.abiType
+          const value = params.value
+          const key = `_evmDecode:${abiType}:${value}`
           const decoded = store.has(key) ? store.get(key) : ''
           return exports.__newString(decoded)
         },
@@ -44,10 +44,11 @@ export default {
       environment: {
         _getPrice: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
-          const params = paramsStr.split(',')
-          const address = params[0]
-          const chainId = params[1]
-          const key = `_getPrice:${address}:${chainId}`
+          const params = JSON.parse(paramsStr)
+          const address = params.address
+          const chainId = params.chainId
+          const timestamp = params.timestamp
+          const key = `_getPrice:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
           // Check if the price is set, if not, return default price
           const price = store.has(key) ? store.get(key) : (1 * 10 ** 18).toString()
