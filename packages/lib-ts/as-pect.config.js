@@ -26,24 +26,14 @@ export default {
       log: {
         _log: (level, msgPtr) => {
           const msg = exports.__getString(msgPtr)
-          switch (level) {
-            case 0:
-              throw new Error(`[CRITICAL] ${msg}`)
-            case 1:
-              console.error(`[ERROR] ${msg}`)
-              break
-            case 2:
-              console.warn(`[WARNING] ${msg}`)
-              break
-            case 3:
-              console.info(`[INFO] ${msg}`)
-              break
-            case 4:
-              console.debug(`[DEBUG] ${msg}`)
-              break
-            default:
-              throw new Error(`Invalid log level: ${level}`)
-          }
+
+          if (level === 0) throw new Error(`[CRITICAL] ${msg}`)
+
+          // Store the log for testing purposes
+          const logEntry = { level, message: msg }
+          const logs = store.get('_logs') || []
+          logs.push(logEntry)
+          store.set('_logs', logs)
         },
       },
       evm: {
@@ -118,6 +108,18 @@ export default {
           const configId = exports.__getString(configIdPtr)
           const key = `_getContext`
           store.set(key, `{"timestamp":${timestamp},"user":"${user}","settler":"${settler}","configId":"${configId}"}`)
+        },
+        _getLogs: () => {
+          const logs = store.get('_logs') || []
+          return exports.__newString(JSON.stringify(logs))
+        },
+        clearLogs: () => {
+          store.set('_logs', [])
+        },
+        _getLogsByLevel: (level) => {
+          const logs = store.get('_logs') || []
+          const filteredLogs = logs.filter((log) => log.level === level)
+          return exports.__newString(JSON.stringify(filteredLogs))
         },
       },
     }

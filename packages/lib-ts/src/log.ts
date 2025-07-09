@@ -8,7 +8,7 @@ export namespace log {
   @external('log', '_log')
   declare function _log(level: Level, msg: string): void
 
-  enum Level {
+  export enum Level {
     CRITICAL = 0,
     ERROR = 1,
     WARNING = 2,
@@ -17,9 +17,9 @@ export namespace log {
   }
 
   /**
-   * Logs a critical message that terminates the subgraph.
+   * Logs a critical message that terminates the execution.
    *
-   * @param msg Format string a la "Value = {}, other = {}".
+   * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
   export function critical(msg: string, args: Array<string>): void {
@@ -29,7 +29,7 @@ export namespace log {
   /**
    * Logs an error message.
    *
-   * @param msg Format string a la "Value = {}, other = {}".
+   * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
   export function error(msg: string, args: Array<string>): void {
@@ -38,7 +38,7 @@ export namespace log {
 
   /** Logs a warning message.
    *
-   * @param msg Format string a la "Value = {}, other = {}".
+   * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
   export function warning(msg: string, args: Array<string>): void {
@@ -47,7 +47,7 @@ export namespace log {
 
   /** Logs an info message.
    *
-   * @param msg Format string a la "Value = {}, other = {}".
+   * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
   export function info(msg: string, args: Array<string>): void {
@@ -56,7 +56,7 @@ export namespace log {
 
   /** Logs a debug message.
    *
-   * @param msg Format string a la "Value = {}, other = {}".
+   * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
   export function debug(msg: string, args: Array<string>): void {
