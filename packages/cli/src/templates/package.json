@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "yarn codegen && yarn lint --fix && yarn compile",
+    "build": "yarn codegen && yarn compile",
     "codegen": "mimic codegen",
     "compile": "mimic compile",
     "test": "mimic test",
