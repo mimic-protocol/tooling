@@ -1,5 +1,4 @@
 import { environment } from '../environment'
-import { join, parseCSV, Serializable, serialize } from '../helpers'
 import { BigInt } from '../types'
 
 import { Token } from './Token'
@@ -9,9 +8,7 @@ import { USD } from './USD'
  * Represents an amount of a specific token, combining the token metadata with a quantity.
  * Supports arithmetic operations, comparisons, and conversions between tokens and USD.
  */
-export class TokenAmount implements Serializable {
-  private static readonly SERIALIZED_PREFIX: string = 'TokenAmount'
-
+export class TokenAmount {
   private _token: Token
   private _amount: BigInt
 
@@ -42,25 +39,6 @@ export class TokenAmount implements Serializable {
    * @returns A new TokenAmount instance
    */
   static fromBigInt(token: Token, amount: BigInt): TokenAmount {
-    return new TokenAmount(token, amount)
-  }
-
-  /**
-   * Parses a serialized TokenAmount string and creates a TokenAmount instance.
-   * @param serialized - The serialized string in format: TokenAmount(token,amount)
-   * @returns A new TokenAmount instance parsed from the serialized data
-   */
-  static parse(serialized: string): TokenAmount {
-    const isTokenAmount = serialized.startsWith(`${TokenAmount.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
-    if (!isTokenAmount) throw new Error('Invalid serialized token amount')
-
-    const elements = parseCSV(serialized.slice(TokenAmount.SERIALIZED_PREFIX.length + 1, -1))
-    const areNull = elements.some((element) => element === null)
-    if (areNull) throw new Error('Invalid serialized token amount')
-
-    const token = Token.parse(elements[0]!)
-    const amount = BigInt.parse(elements[1]!)
-
     return new TokenAmount(token, amount)
   }
 
@@ -232,10 +210,6 @@ export class TokenAmount implements Serializable {
   toTokenAmount(other: Token): TokenAmount {
     if (this.isZero()) return TokenAmount.fromI32(other, 0)
     return this.toUsd().toTokenAmount(other)
-  }
-
-  serialize(): string {
-    return `${TokenAmount.SERIALIZED_PREFIX}(${join([serialize(this.token), serialize(this.amount)])})`
   }
 
   private amountCompare(other: TokenAmount): i32 {

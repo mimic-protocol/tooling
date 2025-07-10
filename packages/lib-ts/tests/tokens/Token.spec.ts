@@ -20,7 +20,7 @@ describe('Token', () => {
     it('respects the user parameters if add them', () => {
       const token = Token.fromAddress(randomAddress(), 1, 6, 'USDC')
       expect('USDC').toBe(token.symbol)
-      // expect(6).toBe(token.decimals)
+      expect(6).toBe(token.decimals)
     })
 
     it('populates the symbol and decimal if missing', () => {
@@ -130,16 +130,6 @@ describe('Token', () => {
           Token.native(changetype<ChainId>(9999))
         }).toThrow()
       })
-    })
-  })
-
-  describe('parse', () => {
-    it('parses a token', () => {
-      const token = randomToken()
-      const serialized = token.serialize()
-      const parsed = Token.parse(serialized)
-
-      expect(parsed.equals(token)).toBe(true)
     })
   })
 

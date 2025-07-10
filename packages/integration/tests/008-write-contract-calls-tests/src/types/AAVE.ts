@@ -8,7 +8,7 @@ import {
   evm,
   EvmDecodeParam,
   EvmEncodeParam,
-  parseCSVNotNullable,
+  JSON,
 } from '@mimicprotocol/lib-ts'
 
 export class AAVE {
@@ -404,7 +404,7 @@ export class AAVE {
     const decodedResponse = evm.decode(new EvmDecodeParam('address[]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<Address>((item0: string) => Address.fromString(item0))
+      : JSON.parse<string[]>(decodedResponse).map<Address>((item0: string) => Address.fromString(item0))
   }
 
   getSupplyLogic(): Address {
@@ -794,7 +794,7 @@ export class EModeCategoryBaseConfiguration {
   }
 
   static parse(data: string): EModeCategoryBaseConfiguration {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 4) throw new Error('Invalid data for tuple parsing')
     const ltv: u16 = u16.parse(parts[0])
     const liquidationThreshold: u16 = u16.parse(parts[1])
@@ -821,7 +821,7 @@ export class ReserveConfigurationMap {
   }
 
   static parse(data: string): ReserveConfigurationMap {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 1) throw new Error('Invalid data for tuple parsing')
     const data_var: BigInt = BigInt.fromString(parts[0])
     return new ReserveConfigurationMap(data_var)
@@ -844,7 +844,7 @@ export class CollateralConfig {
   }
 
   static parse(data: string): CollateralConfig {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const ltv: u16 = u16.parse(parts[0])
     const liquidationThreshold: u16 = u16.parse(parts[1])
@@ -877,7 +877,7 @@ export class EModeCategoryLegacy {
   }
 
   static parse(data: string): EModeCategoryLegacy {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 5) throw new Error('Invalid data for tuple parsing')
     const ltv: u16 = u16.parse(parts[0])
     const liquidationThreshold: u16 = u16.parse(parts[1])
@@ -950,7 +950,7 @@ export class ReserveDataLegacy {
   }
 
   static parse(data: string): ReserveDataLegacy {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 15) throw new Error('Invalid data for tuple parsing')
     const configuration: ReserveConfigurationMap = ReserveConfigurationMap.parse(parts[0])
     const liquidityIndex: BigInt = BigInt.fromString(parts[1])
@@ -1065,7 +1065,7 @@ export class ReserveData {
   }
 
   static parse(data: string): ReserveData {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 17) throw new Error('Invalid data for tuple parsing')
     const configuration: ReserveConfigurationMap = ReserveConfigurationMap.parse(parts[0])
     const liquidityIndex: BigInt = BigInt.fromString(parts[1])
@@ -1153,7 +1153,7 @@ export class GetUserAccountDataOutputs {
   }
 
   static parse(data: string): GetUserAccountDataOutputs {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 6) throw new Error('Invalid data for tuple parsing')
     const totalCollateralBase: BigInt = BigInt.fromString(parts[0])
     const totalDebtBase: BigInt = BigInt.fromString(parts[1])

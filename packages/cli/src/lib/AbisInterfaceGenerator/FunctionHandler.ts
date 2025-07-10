@@ -1,5 +1,5 @@
 import { getFunctionSelector } from '../../helpers'
-import { type AbiFunctionItem, type AbiParameter, LibTypes } from '../../types'
+import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
@@ -151,12 +151,12 @@ export default class FunctionHandler {
     depth: number = 0
   ): string {
     if (ArrayHandler.isArrayType(currentType)) {
-      importManager.addType('parseCSVNotNullable')
+      importManager.addType('JSON')
       const elementType = ArrayHandler.getArrayType(currentType)
       const itemVar = `item${depth}`
 
       const subLogic = this.getReturnExpression(elementType, itemVar, importManager, abiTypeConverter, depth + 1)
-      return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
+      return `${dataAccessString} === '' ? [] : JSON.parse<${AssemblyPrimitiveTypes.string}[]>(${dataAccessString}).map<${elementType}>(((${itemVar}: ${AssemblyPrimitiveTypes.string}) => ${subLogic}))`
     }
 
     return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
