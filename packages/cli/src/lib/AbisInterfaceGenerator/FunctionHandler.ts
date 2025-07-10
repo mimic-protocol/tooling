@@ -179,12 +179,12 @@ export default class FunctionHandler {
       importManager.addType(LibTypes.Bytes)
       importManager.addType('CallBuilder')
       lines.push(`    const encodedData = Bytes.fromHexString(${encodedCall})`)
-      lines.push(`    return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
+      lines.push(`    return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
       return
     }
 
     importManager.addType('environment')
-    const contractCallCode = `environment.contractCall(this.address, this.chainId, this.timestamp, ${encodedCall})`
+    const contractCallCode = `environment.contractCall(this._address, this._chainId, this._timestamp, ${encodedCall})`
 
     if (returnType === 'void') {
       lines.push(`    ${contractCallCode}`)
