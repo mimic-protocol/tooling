@@ -262,7 +262,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `return decodedResponse === '' ? [] : parseCSVNotNullable(decodedResponse).map<${LibTypes.Address}>(((item0: string) => ${LibTypes.Address}.fromString(item0)))`
+        `return decodedResponse === '' ? [] : JSON.parse<${AssemblyPrimitiveTypes.string}[]>(decodedResponse).map<${LibTypes.Address}>(((item0: string) => ${LibTypes.Address}.fromString(item0)))`
       )
     })
 
@@ -427,7 +427,7 @@ describe('AbisInterfaceGenerator', () => {
 
       // Check parse method existence and signature
       expect(result).to.contain('static parse(data: string): Tuple0 {')
-      expect(result).to.contain('const parts = parseCSVNotNullable(data)')
+      expect(result).to.contain(`const parts = JSON.parse<${AssemblyPrimitiveTypes.string}[]>(data)`)
       expect(result).to.contain('if (parts.length !== 5) throw new Error("Invalid data for tuple parsing")')
 
       // Check type conversions

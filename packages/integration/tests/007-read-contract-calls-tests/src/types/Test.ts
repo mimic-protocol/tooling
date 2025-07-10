@@ -7,7 +7,7 @@ import {
   evm,
   EvmDecodeParam,
   EvmEncodeParam,
-  parseCSVNotNullable,
+  JSON,
 } from '@mimicprotocol/lib-ts'
 
 export class Test {
@@ -92,7 +92,7 @@ export class Test {
     const decodedResponse = evm.decode(new EvmDecodeParam('(uint256,string,int256)[]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<MyStruct>((item0: string) => MyStruct.parse(item0))
+      : JSON.parse<string[]>(decodedResponse).map<MyStruct>((item0: string) => MyStruct.parse(item0))
   }
 
   echoUint(value: BigInt): BigInt {
@@ -159,7 +159,7 @@ export class Test {
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256[3]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : JSON.parse<string[]>(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getInt(): BigInt {
@@ -178,7 +178,7 @@ export class Test {
     const decodedResponse = evm.decode(new EvmDecodeParam('int256[]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : JSON.parse<string[]>(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   getMultipleValues(): GetMultipleValuesOutputs {
@@ -207,7 +207,7 @@ export class Test {
   getStringArray(): string[] {
     const response = environment.contractCall(this.address, this.chainId, this.timestamp, '0x103b1828')
     const decodedResponse = evm.decode(new EvmDecodeParam('string[]', response))
-    return decodedResponse === '' ? [] : parseCSVNotNullable(decodedResponse).map<string>((item0: string) => item0)
+    return decodedResponse === '' ? [] : JSON.parse<string[]>(decodedResponse).map<string>((item0: string) => item0)
   }
 
   getUint(): BigInt {
@@ -221,7 +221,7 @@ export class Test {
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256[]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
+      : JSON.parse<string[]>(decodedResponse).map<BigInt>((item0: string) => BigInt.fromString(item0))
   }
 
   processTransactionData(user: Address, amount: BigInt, note: string, data: Bytes): Bytes {
@@ -383,7 +383,7 @@ export class MyStruct {
   }
 
   static parse(data: string): MyStruct {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const id: BigInt = BigInt.fromString(parts[0])
     const name: string = parts[1]
@@ -410,11 +410,11 @@ export class NestedStruct {
   }
 
   static parse(data: string): NestedStruct {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const single: MyStruct = MyStruct.parse(parts[0])
     const list: MyStruct[] =
-      parts[1] === '' ? [] : parseCSVNotNullable(parts[1]).map<MyStruct>((item0: string) => MyStruct.parse(item0))
+      parts[1] === '' ? [] : JSON.parse<string[]>(parts[1]).map<MyStruct>((item0: string) => MyStruct.parse(item0))
     return new NestedStruct(single, list)
   }
 
@@ -441,7 +441,7 @@ export class GetMultipleValuesOutputs {
   }
 
   static parse(data: string): GetMultipleValuesOutputs {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 3) throw new Error('Invalid data for tuple parsing')
     const field0: BigInt = BigInt.fromString(parts[0])
     const field1: bool = u8.parse(parts[1]) as bool

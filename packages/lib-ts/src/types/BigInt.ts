@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { areAllZeros, bytesToHexString, isHex, normalizeScientificNotation, Serializable } from '../helpers'
+import { areAllZeros, bytesToHexString, isHex, normalizeScientificNotation } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -14,16 +14,7 @@ const ZERO_ASCII = '0'.charCodeAt(0)
 /**
  * Represents an arbitrary-precision integer stored as a byte array.
  */
-export class BigInt extends Uint8Array implements Serializable {
-  private static readonly SERIALIZED_PREFIX: string = 'BigInt'
-
-  /**
-   * Parses a serialized representation of a BigInt and converts it to a BigInt.
-   */
-  static parse(serialized: string): BigInt {
-    return BigInt.fromString(serialized)
-  }
-
+export class BigInt extends Uint8Array {
   /**
    * Returns a BigInt initialized to zero.
    */
@@ -786,9 +777,5 @@ export class BigInt extends Uint8Array implements Serializable {
     return decimalPart.length > 0
       ? `${isNegative ? '-' : ''}${wholePart}.${decimalPart}`
       : `${isNegative ? '-' : ''}${wholePart}`
-  }
-
-  serialize(): string {
-    return this.toString()
   }
 }

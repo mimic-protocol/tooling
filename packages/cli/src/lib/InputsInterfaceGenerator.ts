@@ -54,9 +54,9 @@ function generateInputsMapping(inputs: Record<string, string>, originalInputs: M
       const originalInput = originalInputs[name]
       const hasDescription = typeof originalInput === 'object' && !!originalInput.description
 
-      return hasDescription ? `// ${originalInput.description}\n\t${declaration}` : declaration
+      return hasDescription ? `\n// ${originalInput.description}\n\t${declaration}` : declaration
     })
-    .join('\n\n  ')
+    .join('\n')
 }
 
 function generateInputsClass(inputs: Record<string, string>): string {

@@ -13,7 +13,7 @@
     "_decode": {
       "default": "0x047be3bb46f9416732fe39a05134f20235c19334",
       "paramResponse": {
-        "{\"abiType\":\"(uint256,string,int256)\",\"value\":\"0x047be3bb46f9416732fe39a05134f20235c19334\"}": "1,test,-20"
+        "{\"abiType\":\"(uint256,string,int256)\",\"value\":\"0x047be3bb46f9416732fe39a05134f20235c19334\"}": "[\"1\",\"test\",\"-20\"]"
       }
     }
   }

@@ -8,7 +8,7 @@ import {
   evm,
   EvmDecodeParam,
   EvmEncodeParam,
-  parseCSVNotNullable,
+  JSON,
 } from '@mimicprotocol/lib-ts'
 
 export class SAFE {
@@ -223,7 +223,7 @@ export class SAFE {
     const decodedResponse = evm.decode(new EvmDecodeParam('address[]', response))
     return decodedResponse === ''
       ? []
-      : parseCSVNotNullable(decodedResponse).map<Address>((item0: string) => Address.fromString(item0))
+      : JSON.parse<string[]>(decodedResponse).map<Address>((item0: string) => Address.fromString(item0))
   }
 
   getStorageAt(offset: BigInt, length: BigInt): Bytes {
@@ -415,7 +415,7 @@ export class ExecTransactionFromModuleReturnDataOutputs {
   }
 
   static parse(data: string): ExecTransactionFromModuleReturnDataOutputs {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const success: bool = u8.parse(parts[0]) as bool
     const returnData: Bytes = Bytes.fromHexString(parts[1])
@@ -440,10 +440,10 @@ export class GetModulesPaginatedOutputs {
   }
 
   static parse(data: string): GetModulesPaginatedOutputs {
-    const parts = parseCSVNotNullable(data)
+    const parts = JSON.parse<string[]>(data)
     if (parts.length !== 2) throw new Error('Invalid data for tuple parsing')
     const array: Address[] =
-      parts[0] === '' ? [] : parseCSVNotNullable(parts[0]).map<Address>((item0: string) => Address.fromString(item0))
+      parts[0] === '' ? [] : JSON.parse<string[]>(parts[0]).map<Address>((item0: string) => Address.fromString(item0))
     const next: Address = Address.fromString(parts[1])
     return new GetModulesPaginatedOutputs(array, next)
   }

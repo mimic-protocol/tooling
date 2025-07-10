@@ -1,16 +1,15 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { join, NATIVE_ADDRESS, parseCSV, Serializable, serialize } from '../helpers'
+import { NATIVE_ADDRESS } from '../helpers'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 /**
  * Represents a token on a blockchain network including data like symbol, decimals, and address.
  * Supports both ERC-20 and native tokens.
  */
-export class Token implements Serializable {
+export class Token {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
   public static readonly EMPTY_SYMBOL: string = ''
-  private static readonly SERIALIZED_PREFIX: string = 'Token'
 
   private _symbol: string
   private _address: Address
@@ -71,25 +70,6 @@ export class Token implements Serializable {
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
-  }
-
-  /**
-   * Parses a serialized Token string and creates a Token instance.
-   * @param serialized - The serialized token string in format: Token(address,chainId)
-   * @returns A new Token instance parsed from the serialized data
-   */
-  static parse(serialized: string): Token {
-    const isToken = serialized.startsWith(`${Token.SERIALIZED_PREFIX}(`) && serialized.endsWith(')')
-    if (!isToken) throw new Error('Invalid serialized token')
-
-    const elements = parseCSV(serialized.slice(Token.SERIALIZED_PREFIX.length + 1, -1))
-    const areNull = elements.some((element) => element === null)
-    if (areNull) throw new Error('Invalid serialized token')
-
-    const address = elements[0]!
-    const chainId = i32.parse(elements[1]!)
-
-    return Token.fromString(address, chainId)
   }
 
   /**
@@ -183,9 +163,5 @@ export class Token implements Serializable {
    */
   toString(): string {
     return this.symbol
-  }
-
-  serialize(): string {
-    return `${Token.SERIALIZED_PREFIX}(${join([serialize(this.address), serialize(this.chainId)])})`
   }
 }
