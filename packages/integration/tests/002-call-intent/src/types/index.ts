@@ -4,11 +4,17 @@ import { Address, BigInt, Bytes } from '@mimicprotocol/lib-ts'
 
 declare namespace input {
   const chainId: i32
+
   var user: string | null
+
   var target: string | null
+
   var data: string | null
+
   var value: string | null
+
   var feeToken: string | null
+
   var feeAmount: string | null
 }
 
