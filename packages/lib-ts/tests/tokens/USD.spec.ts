@@ -60,6 +60,13 @@ describe('USD', () => {
         USD.fromStringDecimal(invalidAmount)
       }).toThrow()
     })
+
+    it('throws an error when amount is negative', () => {
+      expect(() => {
+        const invalidAmount = '-100'
+        USD.fromStringDecimal(invalidAmount)
+      }).toThrow('USD cannot be negative')
+    })
   })
 
   describe('fromBigInt', () => {
@@ -71,6 +78,13 @@ describe('USD', () => {
 
       expect(amountUsd.value.equals(originalAmount)).toBe(true)
       expect(amountUsd.value.equals(modifiedAmount)).toBe(false)
+    })
+
+    it('throws an error when amount is negative', () => {
+      expect(() => {
+        const invalidAmount = BigInt.fromI32(-100)
+        USD.fromBigInt(invalidAmount)
+      }).toThrow('USD cannot be negative')
     })
   })
 
