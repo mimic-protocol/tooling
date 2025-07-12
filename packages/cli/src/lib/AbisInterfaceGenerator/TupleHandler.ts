@@ -1,5 +1,5 @@
 import { pascalCase } from '../../helpers'
-import type { AbiFunctionItem, AbiParameter } from '../../types'
+import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes } from '../../types'
 
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
@@ -154,7 +154,7 @@ export default class TupleHandler {
     abiTypeConverter: AbiTypeConverter
   ): string {
     if (tupleDefinitions.size === 0) return ''
-    importManager.addType('parseCSVNotNullable')
+    importManager.addType('JSON')
 
     const lines: string[] = []
 
@@ -188,7 +188,7 @@ export default class TupleHandler {
       lines.push('')
 
       lines.push(`  static parse(data: string): ${def.className} {`)
-      lines.push(`    const parts = parseCSVNotNullable(data)`)
+      lines.push(`    const parts = JSON.parse<${AssemblyPrimitiveTypes.string}[]>(data)`)
       lines.push(`    if (parts.length !== ${def.components.length}) throw new Error("Invalid data for tuple parsing")`)
 
       const componentsWithVarNames = this.resolveComponentNames(def.components, NameContext.LOCAL_VARIABLE)
@@ -248,7 +248,7 @@ export default class TupleHandler {
     importManager: ImportManager,
     depth: number = 0
   ): string {
-    importManager.addType('parseCSVNotNullable')
+    importManager.addType('JSON')
 
     const isAbiArray = ArrayHandler.isArrayType(componentAbiParam.type)
     const baseAbiType = ArrayHandler.getBaseType(componentAbiParam.type)
@@ -275,7 +275,7 @@ export default class TupleHandler {
         importManager,
         depth + 1
       )
-      return `${dataAccessString} === '' ? [] : parseCSVNotNullable(${dataAccessString}).map<${elementType}>(((${itemVar}: string) => ${subLogic}))`
+      return `${dataAccessString} === '' ? [] : JSON.parse<${AssemblyPrimitiveTypes.string}[]>(${dataAccessString}).map<${elementType}>(((${itemVar}: ${AssemblyPrimitiveTypes.string}) => ${subLogic}))`
     }
 
     return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
