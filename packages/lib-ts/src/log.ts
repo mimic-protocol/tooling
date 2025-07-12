@@ -22,7 +22,7 @@ export namespace log {
    * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
-  export function critical(msg: string, args: Array<string>): void {
+  export function critical(msg: string, args: Array<string> = []): void {
     _log(Level.CRITICAL, format(msg, args))
   }
 
