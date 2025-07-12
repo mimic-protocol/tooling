@@ -42,7 +42,6 @@ export class USD {
    * @returns A new USD instance
    */
   static fromBigInt(amount: BigInt): USD {
-    if (amount.isNegative()) throw new Error('USD cannot be negative')
     return new USD(amount)
   }
 
@@ -51,6 +50,7 @@ export class USD {
    * @param amount - The amount in 18 decimals precision (must be non-negative)
    */
   constructor(amount: BigInt) {
+    if (amount.isNegative()) throw new Error('USD cannot be negative')
     this._value = amount.clone()
   }
 
