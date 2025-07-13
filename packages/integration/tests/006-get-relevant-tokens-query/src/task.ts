@@ -1,8 +1,8 @@
-import { Address, environment, Ethereum, ListType, Polygon, USD } from '@mimicprotocol/lib-ts'
+import { Address, Arbitrum, environment, Ethereum, ListType, USD } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const userAddress = Address.zero()
-  const expectedChainIds = [Ethereum.CHAIN_ID, Polygon.CHAIN_ID]
+  const expectedChainIds = [Ethereum.CHAIN_ID, Arbitrum.CHAIN_ID]
 
   // Case 1: just the expected chains
   environment.getRelevantTokens(userAddress, expectedChainIds)
@@ -13,7 +13,7 @@ export default function main(): void {
 
   // Case 3: with allowed/excluded tokens
   const excludedTokens = [Ethereum.ETH]
-  const allowedTokens = [Ethereum.USDC, Ethereum.WBTC, Polygon.USDT, Polygon.DAI]
+  const allowedTokens = [Ethereum.USDC, Ethereum.WBTC, Arbitrum.USDT, Arbitrum.DAI]
   environment.getRelevantTokens(userAddress, expectedChainIds, minUsdValue, excludedTokens)
   environment.getRelevantTokens(userAddress, expectedChainIds, minUsdValue, allowedTokens, ListType.AllowList)
 

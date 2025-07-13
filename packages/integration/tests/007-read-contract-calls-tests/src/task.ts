@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, ChainId, Polygon } from '@mimicprotocol/lib-ts'
+import { Address, Arbitrum, BigInt, Bytes, ChainId } from '@mimicprotocol/lib-ts'
 import { Ethereum } from '@mimicprotocol/lib-ts'
 
 import { ERC20 } from './types/ERC20'
@@ -20,7 +20,7 @@ export default function main(): void {
   usdcContract.allowance(Address.zero(), Address.zero())
 
   const customTimestamp = Date.fromString('2025-04-04T16:35:57-03:00')
-  const erc4626Contract = new ERC4626(Address.zero(), Polygon.CHAIN_ID, customTimestamp)
+  const erc4626Contract = new ERC4626(Address.zero(), Arbitrum.CHAIN_ID, customTimestamp)
   erc4626Contract.convertToAssets(BigInt.fromI32(1234))
 
   const safeContract = new SAFE(Address.zero(), Ethereum.CHAIN_ID)

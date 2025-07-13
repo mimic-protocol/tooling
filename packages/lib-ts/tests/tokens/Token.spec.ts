@@ -98,15 +98,28 @@ describe('Token', () => {
       })
     })
 
-    describe('when the chain id is polygon', () => {
-      const chainId = ChainId.POLYGON
+    describe('when the chain id is base', () => {
+      const chainId = ChainId.BASE
 
       it('returns the expected token', () => {
         const token = Token.native(chainId)
 
         expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
-        expect(token.symbol).toBe('POL')
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is arbitrum', () => {
+      const chainId = ChainId.ARBITRUM
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
       })
     })

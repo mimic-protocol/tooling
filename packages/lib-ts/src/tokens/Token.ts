@@ -63,10 +63,10 @@ export class Token {
   static native(chainId: ChainId): Token {
     switch (chainId) {
       case ChainId.ETHEREUM:
+      case ChainId.BASE:
+      case ChainId.ARBITRUM:
       case ChainId.OPTIMISM:
         return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'ETH')
-      case ChainId.POLYGON:
-        return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'POL')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
