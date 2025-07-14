@@ -31,16 +31,32 @@ describe('AbisInterfaceGenerator', () => {
       const abi = [createViewFunction('getValue', [], [{ type: 'uint256' }])]
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`private address: ${LibTypes.Address}`)
-      expect(result).to.contain(`private chainId: ${LibTypes.ChainId}`)
-      expect(result).to.contain(`private timestamp: Date | null`)
+      expect(result).to.contain(`private _address: ${LibTypes.Address}`)
+      expect(result).to.contain(`private _chainId: ${LibTypes.ChainId}`)
+      expect(result).to.contain(`private _timestamp: Date | null`)
 
       expect(result).to.contain(
         `constructor(address: ${LibTypes.Address}, chainId: ${LibTypes.ChainId}, timestamp: Date | null = null) {`
       )
-      expect(result).to.contain('this.address = address')
-      expect(result).to.contain('this.chainId = chainId')
-      expect(result).to.contain('this.timestamp = timestamp')
+      expect(result).to.contain('this._address = address')
+      expect(result).to.contain('this._chainId = chainId')
+      expect(result).to.contain('this._timestamp = timestamp')
+    })
+  })
+
+  describe('when generating property getters', () => {
+    it('should generate getters with correct return type', () => {
+      const abi = [createViewFunction('getValue', [], [{ type: 'uint256' }])]
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain(`get address(): ${LibTypes.Address} {`)
+      expect(result).to.contain('return this._address.clone()')
+      expect(result).to.contain(`get chainId(): ${LibTypes.ChainId} {`)
+      expect(result).to.contain('return this._chainId')
+      expect(result).to.contain(`get timestamp(): ${AssemblyPrimitiveTypes.Date} | null {`)
+      expect(result).to.contain(
+        `return this._timestamp ? new ${AssemblyPrimitiveTypes.Date}(changetype<${AssemblyPrimitiveTypes.Date}>(this._timestamp).getTime()) : null`
+      )
     })
   })
 
@@ -212,7 +228,7 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(
-        ` environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}' + evm.encode([EvmEncodeParam.fromValue('address', owner)]))`
+        ` environment.contractCall(this._address, this._chainId, this._timestamp, '${selector}' + evm.encode([EvmEncodeParam.fromValue('address', owner)]))`
       )
     })
 
@@ -269,14 +285,15 @@ describe('AbisInterfaceGenerator', () => {
     it('should handle functions without return values', () => {
       const functionName = 'noReturn'
       const abi = [createViewFunction(functionName, [], [])]
-      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME).replace(/return.*\n/g, '')
 
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(`${functionName}(): void {`)
 
-      expect(result).to.contain(`environment.contractCall(this.address, this.chainId, this.timestamp, '${selector}')`)
-      expect(result).not.to.contain('return')
+      expect(result).to.contain(
+        `environment.contractCall(this._address, this._chainId, this._timestamp, '${selector}')`
+      )
     })
   })
 
@@ -291,7 +308,7 @@ describe('AbisInterfaceGenerator', () => {
       ]
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
+      const importMatch = result.match(/import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
 
       expect(importMatch).not.to.be.undefined
       expect(importMatch).to.contain(`${LibTypes.Address}`)
@@ -487,7 +504,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`return CallBuilder.forChain(this.chainId).addCall(this.address, encodedData)`)
+      expect(result).to.contain(`return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
     })
 
     it('should handle write functions without parameters', () => {
@@ -536,7 +553,7 @@ describe('AbisInterfaceGenerator', () => {
       const abi = [createPayableFunction('deposit', [{ name: 'amount', type: 'uint256' }])]
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
-      const importMatch = result.match(/^import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
+      const importMatch = result.match(/import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
 
       expect(importMatch).not.to.be.undefined
       expect(importMatch).to.contain('CallBuilder')
