@@ -1,29 +1,63 @@
-import { Address } from '../types'
+import { Address, ChainId } from '../types'
+
+@json
+export class SerializableSettler {
+  constructor(
+    public readonly address: string,
+    public readonly chainId: i32
+  ) {}
+}
+
+export class Settler {
+  constructor(
+    public readonly address: Address,
+    public readonly chainId: ChainId
+  ) {}
+
+  static fromSerializable(serializable: SerializableSettler): Settler {
+    return new Settler(Address.fromString(serializable.address), serializable.chainId)
+  }
+}
 
 @json
 export class SerializableContext {
   constructor(
     public readonly timestamp: u64,
+    public readonly consensusThreshold: u8,
     public user: string,
-    public settler: string,
-    public configId: string
+    public settlers: SerializableSettler[],
+    public configSig: string
   ) {}
 }
 
 export class Context {
   constructor(
     public readonly timestamp: u64,
+    public readonly consensusThreshold: u8,
     public user: Address,
-    public settler: Address,
-    public configId: string
+    public settlers: Settler[],
+    public configSig: string
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
     return new Context(
       serializable.timestamp,
+      serializable.consensusThreshold,
       Address.fromString(serializable.user),
-      Address.fromString(serializable.settler),
-      serializable.configId
+      serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
+      serializable.configSig
     )
+  }
+
+  findSettler(chainId: ChainId): Settler | null {
+    let settlerIdx = -1
+    for (let i = 0; i < this.settlers.length; i++) {
+      if (this.settlers[i].chainId === chainId) {
+        settlerIdx = i
+        break
+      }
+    }
+    if (settlerIdx === -1) return null
+    return this.settlers[settlerIdx]
   }
 }

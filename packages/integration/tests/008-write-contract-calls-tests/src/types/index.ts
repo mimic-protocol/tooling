@@ -4,7 +4,6 @@ import { Address } from '@mimicprotocol/lib-ts'
 
 declare namespace input {
   var smartAccount: string | null
-
   var usdFeeAmount: string | null
 }
 

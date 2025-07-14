@@ -330,7 +330,13 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Transfer, settler, user, deadline, nonce)
+    let settlerAddress = settler
+    if (!settlerAddress) {
+      const _settler = environment.getContext().findSettler(chainId)
+      if (!_settler) throw new Error(`Settler not found for chainId: ${chainId}`)
+      settlerAddress = _settler.address
+    }
+    super(OperationType.Transfer, settlerAddress, user, deadline, nonce)
 
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
 

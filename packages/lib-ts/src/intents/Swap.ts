@@ -405,7 +405,13 @@ export class Swap extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Swap, settler, user, deadline, nonce)
+    let settlerAddress = settler
+    if (!settlerAddress) {
+      const _settler = environment.getContext().findSettler(sourceChain)
+      if (!_settler) throw new Error(`Settler not found for chainId: ${sourceChain}`)
+      settlerAddress = _settler.address
+    }
+    super(OperationType.Swap, settlerAddress, user, deadline, nonce)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }

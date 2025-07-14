@@ -1,5 +1,6 @@
 import { JSON } from 'json-as'
 
+import { SerializableSettler } from '../src/context'
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { Token } from '../src/tokens'
 import { Address, BigInt, Bytes, ChainId } from '../src/types'
@@ -15,6 +16,10 @@ class Log {
 /* eslint-disable no-secrets/no-secrets */
 
 const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.BASE, ChainId.ARBITRUM, ChainId.OPTIMISM]
+
+export function randomChainId(): ChainId {
+  return CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+}
 
 export function zeroPadded(val: BigInt, length: u8): string {
   return val.toString() + '0'.repeat(length)
@@ -38,13 +43,16 @@ export function randomHex(length: i32): string {
   return result
 }
 
-export function randomToken(chainId: ChainId = 0, decimals: u8 = STANDARD_DECIMALS): Token {
-  chainId = chainId || CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+export function randomSettler(chainId: ChainId = randomChainId()): SerializableSettler {
+  return new SerializableSettler(randomAddress().toString(), chainId)
+}
+
+export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): Token {
   return Token.fromAddress(randomAddress(), chainId, decimals, 'TEST')
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
-  const chainId = CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
+  const chainId = randomChainId()
   const token = randomToken(chainId, decimals)
   setTokenPrice(token, priceUsd)
   return token
@@ -61,7 +69,23 @@ export declare function setContractCall(to: string, chainId: ChainId, data: stri
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
-export declare function setContext(timestamp: u64, user: string, settler: string, configId: string): void
+export declare function _setContext(
+  timestamp: u64,
+  consensusThreshold: u8,
+  user: string,
+  settlers: string,
+  configSig: string
+): void
+
+export function setContext(
+  timestamp: u64,
+  consensusThreshold: u8,
+  user: string,
+  settlers: SerializableSettler[],
+  configSig: string
+): void {
+  _setContext(timestamp, consensusThreshold, user, JSON.stringify(settlers), configSig)
+}
 
 export declare function clearLogs(): void
 

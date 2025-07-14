@@ -219,7 +219,13 @@ export class Call extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Call, settler, user, deadline, nonce)
+    let settlerAddress = settler
+    if (!settlerAddress) {
+      const _settler = environment.getContext().findSettler(chainId)
+      if (!_settler) throw new Error(`Settler not found for chainId: ${chainId}`)
+      settlerAddress = _settler.address
+    }
+    super(OperationType.Call, settlerAddress, user, deadline, nonce)
 
     if (calls.length === 0) throw new Error('Call list cannot be empty')
 

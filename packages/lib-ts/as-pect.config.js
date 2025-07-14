@@ -73,10 +73,15 @@ export default {
           return exports.__newString(result)
         },
         _getContext: () => {
+          const defaultContext = {
+            timestamp: 0,
+            consensusThreshold: 1,
+            user: '0x0000000000000000000000000000000000000000',
+            settlers: [],
+            configSig: '1',
+          }
           const key = `_getContext`
-          const result = store.has(key)
-            ? store.get(key)
-            : '{"timestamp": 0,"user":"0x0000000000000000000000000000000000000000","settler":"0x0000000000000000000000000000000000000000","configId":"1"}'
+          const result = store.has(key) ? store.get(key) : JSON.stringify(defaultContext)
 
           return exports.__newString(result)
         },
@@ -102,12 +107,19 @@ export default {
           const decoded = exports.__getString(decodedPtr)
           store.set(key, decoded)
         },
-        setContext: (timestamp, userPtr, settlerPtr, configIdPtr) => {
+        _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, configSigPtr) => {
           const user = exports.__getString(userPtr)
-          const settler = exports.__getString(settlerPtr)
-          const configId = exports.__getString(configIdPtr)
+          const settlers = JSON.parse(exports.__getString(settlersPtr))
+          const configSig = exports.__getString(configSigPtr)
           const key = `_getContext`
-          store.set(key, `{"timestamp":${timestamp},"user":"${user}","settler":"${settler}","configId":"${configId}"}`)
+          const context = {
+            timestamp: Number(timestamp.toString()),
+            consensusThreshold,
+            user,
+            settlers,
+            configSig,
+          }
+          store.set(key, JSON.stringify(context))
         },
         _getLogs: () => {
           const logs = store.get('_logs') || []
