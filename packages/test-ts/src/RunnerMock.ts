@@ -16,9 +16,28 @@ export default class RunnerMock {
       const file = this.getStringFromMemory(filePtr)
       throw Error(`${msg} in ${file} (line ${line}, column ${col})`)
     },
-    'console.log': (ptr: number) => {
-      const text = this.getStringFromMemory(ptr)
-      console.log('[LOG]:', text)
+  }
+  private LOG_IMPORTS = {
+    _log: (level: number, msgPtr: number) => {
+      const msg = this.getStringFromMemory(msgPtr)
+      switch (level) {
+        case 0:
+          throw new Error(`[CRITICAL] ${msg}`)
+        case 1:
+          console.error(`[ERROR] ${msg}`)
+          break
+        case 2:
+          console.warn(`[WARNING] ${msg}`)
+          break
+        case 3:
+          console.info(`[INFO] ${msg}`)
+          break
+        case 4:
+          console.debug(`[DEBUG] ${msg}`)
+          break
+        default:
+          throw new Error(`Invalid log level: ${level}`)
+      }
     },
   }
 
@@ -121,6 +140,7 @@ export default class RunnerMock {
     return {
       ...importModules,
       env: this.ENV_IMPORTS,
+      log: this.LOG_IMPORTS,
       index: variableImports,
     }
   }
