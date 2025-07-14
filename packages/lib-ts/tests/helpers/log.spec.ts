@@ -10,7 +10,7 @@ describe('log', () => {
     describe('when message has no placeholders', () => {
       it('should throw an error with the critical message', () => {
         expect(() => {
-          log.critical('Critical error occurred', [])
+          log.critical('Critical error occurred')
         }).toThrow('Critical error occurred')
       })
     })
@@ -36,7 +36,7 @@ describe('log', () => {
     describe('when message has no placeholders', () => {
       it('should not throw an error and capture the message', () => {
         expect(() => {
-          log.error('An error occurred', [])
+          log.error('An error occurred')
         }).not.toThrow()
 
         const errorLogs = getLogsByLevel(log.Level.ERROR)
@@ -70,7 +70,7 @@ describe('log', () => {
     describe('when message has no placeholders', () => {
       it('should not throw an error and capture the message', () => {
         expect(() => {
-          log.warning('This is a warning', [])
+          log.warning('This is a warning')
         }).not.toThrow()
 
         const warningLogs = getLogsByLevel(log.Level.WARNING)
@@ -104,7 +104,7 @@ describe('log', () => {
     describe('when message has no placeholders', () => {
       it('should not throw an error and capture the message', () => {
         expect(() => {
-          log.info('Information message', [])
+          log.info('Information message')
         }).not.toThrow()
 
         const infoLogs = getLogsByLevel(log.Level.INFO)
@@ -150,7 +150,7 @@ describe('log', () => {
     describe('when message has no placeholders', () => {
       it('should not throw an error and capture the message', () => {
         expect(() => {
-          log.debug('Debug information', [])
+          log.debug('Debug information')
         }).not.toThrow()
 
         const debugLogs = getLogsByLevel(log.Level.DEBUG)
@@ -256,7 +256,7 @@ describe('log', () => {
     describe('when format string is empty', () => {
       it('should handle empty format strings and capture correctly', () => {
         expect(() => {
-          log.info('', [])
+          log.info('')
         }).not.toThrow()
 
         const infoLogs = getLogsByLevel(log.Level.INFO)
@@ -280,7 +280,7 @@ describe('log', () => {
 
   describe('multiple logs interaction', () => {
     it('should capture and verify multiple sequential logs', () => {
-      log.info('Step 1: Initialization', [])
+      log.info('Step 1: Initialization')
       log.warning('Step 2: Warning about {}', ['configuration'])
       log.error('Step 3: Error in {}', ['validation'])
 
