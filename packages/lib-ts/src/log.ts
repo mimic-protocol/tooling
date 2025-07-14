@@ -32,7 +32,7 @@ export namespace log {
    * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
-  export function error(msg: string, args: Array<string>): void {
+  export function error(msg: string, args: Array<string> = []): void {
     _log(Level.ERROR, format(msg, args))
   }
 
@@ -41,7 +41,7 @@ export namespace log {
    * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
-  export function warning(msg: string, args: Array<string>): void {
+  export function warning(msg: string, args: Array<string> = []): void {
     _log(Level.WARNING, format(msg, args))
   }
 
@@ -50,7 +50,7 @@ export namespace log {
    * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
-  export function info(msg: string, args: Array<string>): void {
+  export function info(msg: string, args: Array<string> = []): void {
     _log(Level.INFO, format(msg, args))
   }
 
@@ -59,7 +59,7 @@ export namespace log {
    * @param msg Format string like "Value = {}, other = {}".
    * @param args Format string arguments.
    */
-  export function debug(msg: string, args: Array<string>): void {
+  export function debug(msg: string, args: Array<string> = []): void {
     _log(Level.DEBUG, format(msg, args))
   }
 }
