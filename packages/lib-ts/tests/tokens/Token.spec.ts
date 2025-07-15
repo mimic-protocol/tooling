@@ -137,6 +137,19 @@ describe('Token', () => {
       })
     })
 
+    describe('when the chain id is gnosis', () => {
+      const chainId = ChainId.GNOSIS
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('xDAI')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
     describe('when the chain id is unknown', () => {
       it('throws an error', () => {
         expect(() => {
