@@ -57,6 +57,11 @@ export abstract class Intent {
   public deadline: string
   public nonce: string
 
+  static getSettler(chainId: i32): Address {
+    const context = environment.getContext()
+    return context.findSettler(chainId)
+  }
+
   protected constructor(
     op: OperationType,
     settler: Address,
