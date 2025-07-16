@@ -330,8 +330,7 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    const settlerAddress = settler ? settler : Intent.getSettler(chainId)
-    super(OperationType.Transfer, settlerAddress, user, deadline, nonce)
+    super(OperationType.Transfer, chainId, settler, user, deadline, nonce)
 
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
 

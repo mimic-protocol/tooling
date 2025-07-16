@@ -1,7 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
-import { Address, BigInt } from '../types'
+import { Address, BigInt, ChainId } from '../types'
 
 export enum OperationType {
   Swap,
@@ -57,21 +57,17 @@ export abstract class Intent {
   public deadline: string
   public nonce: string
 
-  static getSettler(chainId: i32): Address {
-    const context = environment.getContext()
-    return context.findSettler(chainId)
-  }
-
   protected constructor(
     op: OperationType,
-    settler: Address,
+    chainId: ChainId,
+    settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
     nonce: string | null
   ) {
     const context = environment.getContext()
     this.op = op
-    this.settler = settler.toString()
+    this.settler = settler ? settler.toString() : context.findSettler(chainId).toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configSig}${context.timestamp}${++INTENT_INDEX}`)

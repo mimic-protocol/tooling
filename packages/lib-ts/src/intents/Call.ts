@@ -219,8 +219,7 @@ export class Call extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    const settlerAddress = settler ? settler : Intent.getSettler(chainId)
-    super(OperationType.Call, settlerAddress, user, deadline, nonce)
+    super(OperationType.Call, chainId, settler, user, deadline, nonce)
 
     if (calls.length === 0) throw new Error('Call list cannot be empty')
 
