@@ -5,7 +5,7 @@ import { ChainId } from '../types'
 
 export namespace Gnosis {
   export const CHAIN_ID = ChainId.GNOSIS
-  export const ETH = Token.native(CHAIN_ID)
+  export const xDAI = Token.native(CHAIN_ID)
   export const USDC = Token.fromString('0x2a22f9c3b484c3629090feed35f17ff8f88f76f0', CHAIN_ID, 6, 'USDC')
   export const USDT = Token.fromString('0x4ecaba5870353805a9f068101a40e0f32ed605c6', CHAIN_ID, 6, 'USDT')
   export const WXDAI = Token.fromString('0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', CHAIN_ID, 18, 'WXDAI')
