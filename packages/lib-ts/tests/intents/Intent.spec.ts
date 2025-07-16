@@ -1,8 +1,9 @@
+import { SerializableSettler } from '../../src/context'
 import { NULL_ADDRESS } from '../../src/helpers'
 import { CallBuilder } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
-import { randomToken, setContext } from '../helpers'
+import { randomSettler, randomToken, setContext } from '../helpers'
 
 describe('IntentBuilder', () => {
   const targetAddressStr = '0x0000000000000000000000000000000000000001'
@@ -39,25 +40,25 @@ describe('IntentBuilder', () => {
       it('uses default user, deadline, nonce and settler if not explicitly set', () => {
         const target = Address.fromString(targetAddressStr)
         const fee = TokenAmount.fromI32(randomToken(chainId), 9)
+        const settler = randomSettler(chainId)
 
-        setContext(0, userAddressStr, settlerAddressStr, 'config-transfer')
+        setContext(0, 1, userAddressStr, [settler], 'config-transfer')
 
         const builder = CallBuilder.forChainWithFee(chainId, fee)
         builder.addCall(target)
 
         const call = builder.build()
         expect(call.user).toBe(userAddressStr)
-        expect(call.settler).toBe(settlerAddressStr)
+        expect(call.settler).toBe(settler.address.toString())
         expect(call.deadline).toBe('300')
         expect(call.nonce).toBe('0x')
       })
     })
 
     describe('when the settler is zero', () => {
-      const settlerAddressStr = NULL_ADDRESS
-
       it('throws an error', () => {
-        setContext(0, userAddressStr, settlerAddressStr, 'config-call')
+        const settler = new SerializableSettler(NULL_ADDRESS, chainId)
+        setContext(0, 1, userAddressStr, [settler], 'config-call')
 
         expect(() => {
           const fee = TokenAmount.fromI32(randomToken(chainId), 9)
@@ -72,7 +73,8 @@ describe('IntentBuilder', () => {
     const userAddressStr = NULL_ADDRESS
 
     it('throws an error', () => {
-      setContext(0, userAddressStr, NULL_ADDRESS, 'config-call')
+      const settler = randomSettler(chainId)
+      setContext(0, 1, userAddressStr, [settler], 'config-call')
 
       expect(() => {
         const fee = TokenAmount.fromI32(randomToken(chainId), 9)

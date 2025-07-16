@@ -1,7 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
-import { Address, BigInt } from '../types'
+import { Address, BigInt, ChainId } from '../types'
 
 export enum OperationType {
   Swap,
@@ -59,6 +59,7 @@ export abstract class Intent {
 
   protected constructor(
     op: OperationType,
+    chainId: ChainId,
     settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
@@ -66,10 +67,10 @@ export abstract class Intent {
   ) {
     const context = environment.getContext()
     this.op = op
-    this.settler = settler ? settler.toString() : context.settler.toString()
+    this.settler = settler ? settler.toString() : context.findSettler(chainId).toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
-    this.nonce = nonce ? nonce : evm.keccak(`${context.configId}${context.timestamp}${++INTENT_INDEX}`)
+    this.nonce = nonce ? nonce : evm.keccak(`${context.configSig}${context.timestamp}${++INTENT_INDEX}`)
 
     if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
     if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')

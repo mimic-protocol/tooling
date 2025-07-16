@@ -219,7 +219,7 @@ export class Call extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Call, settler, user, deadline, nonce)
+    super(OperationType.Call, chainId, settler, user, deadline, nonce)
 
     if (calls.length === 0) throw new Error('Call list cannot be empty')
 
