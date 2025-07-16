@@ -67,6 +67,8 @@ export class Token {
       case ChainId.ARBITRUM:
       case ChainId.OPTIMISM:
         return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'ETH')
+      case ChainId.GNOSIS:
+        return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'xDAI')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
