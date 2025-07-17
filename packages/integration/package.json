@@ -4,9 +4,8 @@
   "license": "Unlicensed",
   "private": true,
   "scripts": {
-    "prepare": "yarn build",
-    "build": "rm -rf dist && tsc",
-    "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 10000",
+    "build": "echo 'No build needed - integration uses test-ts package'",
+    "test": "ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 10000",
     "lint": "eslint ."
   },
   "dependencies": {

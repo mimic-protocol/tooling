@@ -7,6 +7,8 @@ import {
   ParameterizedResponseValidator,
 } from './validators'
 
+export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 export type MockResponseValue = z.infer<typeof MockFunctionResponseValidator>
 
 export type ParameterizedResponse = z.infer<typeof ParameterizedResponseValidator>
@@ -15,11 +17,16 @@ export type MockConfig = z.output<typeof MockConfigValidator>
 
 export type Inputs = z.infer<typeof InputsValidator>
 
-export type Context = {
+export type Context = Partial<{
+  timestamp: number
+  consensusThreshold: number
   user: string
-  settler: string
-  timestamp: string
-}
+  settlers: Array<{
+    address: string
+    chainId: number
+  }>
+  configSig: string
+}>
 
 export type TokenPrice = {
   token: string

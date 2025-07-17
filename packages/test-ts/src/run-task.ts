@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import RunnerMock from './RunnerMock'
-import { Context, GenerateMockParams, MockConfig, Output, RunTaskOptionalParams } from './types'
+import { Context, GenerateMockParams, MockConfig, NULL_ADDRESS, Output, RunTaskOptionalParams } from './types'
 
 export async function runTask(
   taskDir: string,
@@ -38,11 +38,15 @@ export async function runTask(
 function generateMock(params: GenerateMockParams): MockConfig {
   const { context, prices, balances, inputs, calls } = params
 
-  let _getRelevantTokens = ''
+  const relevantTokensResponse: Record<string, string> = {}
   if (balances.length > 0) {
-    const tokenAmounts = balances.map((b) => `TokenAmount(Token(${b.token},${b.chainId}),BigInt(${b.balance}))`)
-    _getRelevantTokens = tokenAmounts.join(',')
+    const tokenAmounts = balances.map((b) => ({
+      token: { address: b.token, chainId: b.chainId },
+      amount: b.balance,
+    }))
+    relevantTokensResponse['default'] = JSON.stringify(tokenAmounts)
   }
+  const _getRelevantTokens = { paramResponse: relevantTokensResponse, default: '[]' }
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
@@ -51,7 +55,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       priceResponse[key] = usdPrice
     }
   }
-  const _getPrice = { paramResponse: priceResponse, default: '0' }
+  const _getPrice = { paramResponse: priceResponse, default: (1 * 10 ** 18).toString() }
 
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
@@ -59,21 +63,34 @@ function generateMock(params: GenerateMockParams): MockConfig {
     for (const { to, chainId, timestamp, data, output, outputType } of calls) {
       const key = JSON.stringify({ to, chainId, timestamp: timestamp || null, data })
       callResponse[key] = output
-      const decodeKey = `EvmDecodeParam(${outputType},${output})`
+      const decodeKey = JSON.stringify({ abiType: outputType, value: output })
       decodeResponse[decodeKey] = output
     }
   }
-  const _contractCall = { paramResponse: callResponse, default: '0' }
+  const _contractCall = { paramResponse: callResponse, default: '0x00' }
   const _decode = { paramResponse: decodeResponse, default: '0' }
 
+  const contextData: Required<Context> = {
+    timestamp: context.timestamp || Date.now(),
+    consensusThreshold: context.consensusThreshold || 1,
+    user: context.user || NULL_ADDRESS,
+    settlers: context.settlers || [
+      {
+        address: NULL_ADDRESS,
+        chainId: 1,
+      },
+    ],
+    configSig: context.configSig || 'config-sig-123',
+  }
+
   const environment = {
-    _getContext: JSON.stringify({ ...context, configId: 'config-id' }),
+    _getContext: JSON.stringify(contextData),
     _getRelevantTokens,
     _getPrice,
     _contractCall,
-    _transfer: { log: true, default: '' },
-    _swap: { log: true, default: '' },
-    _call: { log: true, default: '' },
+    _call: 'log',
+    _swap: 'log',
+    _transfer: 'log',
   }
 
   const evm = { _keccak: '', _encode: { default: '' }, _decode }
