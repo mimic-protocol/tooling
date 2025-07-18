@@ -41,16 +41,16 @@ export default class RunnerMock {
     },
   }
 
-  constructor(taskFolder: string, mockFolder: string) {
-    this.mockFolder = mockFolder
-    this.instance = this.initializeWasmInstance(taskFolder, mockFolder)
+  constructor(taskFolder: string, mockFolder?: string) {
+    this.mockFolder = mockFolder || join(taskFolder, '..')
+    this.instance = this.initializeWasmInstance(taskFolder)
   }
 
-  private initializeWasmInstance(taskFolder: string, mockFolder: string): WebAssembly.Instance {
+  private initializeWasmInstance(taskFolder: string): WebAssembly.Instance {
     try {
       const taskPath = join(taskFolder, 'task.wasm')
 
-      let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(mockFolder, 'mock.json'), MockConfigValidator)
+      let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(this.mockFolder, 'mock.json'), MockConfigValidator)
       inputs = inputs || {}
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
@@ -62,7 +62,7 @@ export default class RunnerMock {
 
       return instance
     } catch (error) {
-      throw new Error(`Failed to initialize task runner instance - ${error}`)
+      throw new Error(`Failed to initialize WASM instance: ${error}`)
     }
   }
 
