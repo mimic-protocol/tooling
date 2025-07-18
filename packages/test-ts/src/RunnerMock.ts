@@ -42,16 +42,15 @@ export default class RunnerMock {
   }
 
   constructor(taskFolder: string, mockFolder?: string) {
-    this.mockFolder = mockFolder || taskFolder
-    this.instance = this.initializeWasmInstance(taskFolder, mockFolder)
+    this.mockFolder = mockFolder || join(taskFolder, '..')
+    this.instance = this.initializeWasmInstance(taskFolder)
   }
 
-  private initializeWasmInstance(taskFolder: string, mockFolder?: string): WebAssembly.Instance {
+  private initializeWasmInstance(taskFolder: string): WebAssembly.Instance {
     try {
       const taskPath = join(taskFolder, 'task.wasm')
-      const mockPath = mockFolder ? join(mockFolder, 'mock.json') : join(taskFolder, '../mock.json')
 
-      let { inputs, ...mock } = this.readJsonFile<MockConfig>(mockPath, MockConfigValidator)
+      let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(this.mockFolder, 'mock.json'), MockConfigValidator)
       inputs = inputs || {}
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 

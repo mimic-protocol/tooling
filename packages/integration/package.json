@@ -4,7 +4,7 @@
   "license": "Unlicensed",
   "private": true,
   "scripts": {
-    "build": "echo 'No build needed - integration uses test-ts package'",
+    "build": "true // No build needed - integration uses test-ts package",
     "test": "ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 10000",
     "lint": "eslint ."
   },
