@@ -61,7 +61,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const decodeResponse: Record<string, string> = {}
   if (calls.length > 0) {
     for (const { to, chainId, timestamp, data, output, outputType } of calls) {
-      const key = JSON.stringify({ to, chainId, timestamp: timestamp || null, data })
+      const key = JSON.stringify({ to, chainId, ...(timestamp && { timestamp }), data })
       callResponse[key] = output
       const decodeKey = JSON.stringify({ abiType: outputType, value: output })
       decodeResponse[decodeKey] = output
