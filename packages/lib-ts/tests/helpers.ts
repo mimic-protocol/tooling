@@ -29,8 +29,12 @@ export function randomAddress(): Address {
   return Address.fromString(randomHex(40))
 }
 
-export function randomBytes(length: i32): Bytes {
-  return Bytes.fromHexString(randomHex(length))
+export function randomSolanaAddress(): Address {
+  return Address.fromBytes(randomBytes(64))
+}
+
+export function randomBytes(nibbles: i32): Bytes {
+  return Bytes.fromHexString(randomHex(nibbles))
 }
 
 export function randomHex(length: i32): string {
@@ -39,6 +43,16 @@ export function randomHex(length: i32): string {
   for (let i: i32 = 0; i < length; i++) {
     const randomIndex: i32 = <i32>Math.floor(Math.random() * hexChars.length)
     result += hexChars.charAt(randomIndex)
+  }
+  return result
+}
+
+export function randomBase58(length: i32): string {
+  const b58Chars: string = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+  let result: string = ''
+  for (let i: i32 = 0; i < length; i++) {
+    const randomIndex: i32 = <i32>Math.floor(Math.random() * b58Chars.length)
+    result += b58Chars.charAt(randomIndex)
   }
   return result
 }
