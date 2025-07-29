@@ -2,7 +2,7 @@
 
 import { isBase58, isHex, NULL_ADDRESS } from '../../src/helpers'
 import { Address, Bytes } from '../../src/types'
-import { randomAddress, randomBase58, randomBytes, randomHex, randomSolanaAddress } from '../helpers'
+import { randomBase58, randomBytes, randomEvmAddress, randomHex, randomSvmAddress } from '../helpers'
 
 describe('Address', () => {
   describe('fromString', () => {
@@ -207,7 +207,7 @@ describe('Address', () => {
   describe('clone', () => {
     describe('when cloning an address', () => {
       it('returns a new address with the same bytes', () => {
-        const originalAddress = randomAddress()
+        const originalAddress = randomEvmAddress()
         const clonedAddress = originalAddress.clone()
 
         expect(clonedAddress.length).toBe(originalAddress.length)
@@ -215,7 +215,7 @@ describe('Address', () => {
       })
 
       it('creates an independent copy', () => {
-        const originalAddress = randomAddress()
+        const originalAddress = randomEvmAddress()
         const clonedAddress = originalAddress.clone()
 
         originalAddress[0] = 255
@@ -228,14 +228,14 @@ describe('Address', () => {
 
   describe('isEVM / isSVM', () => {
     it('returns true / false when it is an EVM address', () => {
-      const address = randomAddress()
+      const address = randomEvmAddress()
 
       expect(address.isEVM()).toBe(true)
       expect(address.isSVM()).toBe(false)
     })
 
     it('return false / true when it is an SVM address', () => {
-      const address = randomSolanaAddress()
+      const address = randomSvmAddress()
 
       expect(address.isEVM()).toBe(false)
       expect(address.isSVM()).toBe(true)

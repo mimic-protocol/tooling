@@ -3,16 +3,16 @@ import { JSON } from 'json-as'
 import { OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
-import { randomAddress, randomSettler, randomToken, setContext } from '../helpers'
+import { randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
 describe('Transfer', () => {
   it('creates a simple Transfer with default values and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
-    const token = randomAddress()
+    const user = randomEvmAddress()
+    const token = randomEvmAddress()
     const amount = BigInt.fromI32(1000)
     const fee = BigInt.fromI32(10)
-    const recipient = randomAddress()
+    const recipient = randomEvmAddress()
     const settler = randomSettler(chainId)
 
     setContext(1, 1, user.toString(), [settler], 'config-transfer')
@@ -40,11 +40,11 @@ describe('Transfer', () => {
 
   it('creates a simple Transfer with valid parameters and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
-    const token = randomAddress()
+    const user = randomEvmAddress()
+    const token = randomEvmAddress()
     const amount = BigInt.fromI32(1000)
     const fee = BigInt.fromI32(10)
-    const recipient = randomAddress()
+    const recipient = randomEvmAddress()
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(9999999)
 
@@ -83,8 +83,8 @@ describe('Transfer', () => {
 
   it('creates a complex Transfer with valid parameters and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
-    const transferData = TransferData.fromI32(randomToken(chainId), 5000, randomAddress())
+    const user = randomEvmAddress()
+    const transferData = TransferData.fromI32(randomToken(chainId), 5000, randomEvmAddress())
     const fee = TokenAmount.fromI32(randomToken(chainId), 10)
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(9999999)

@@ -25,11 +25,11 @@ export function zeroPadded(val: BigInt, length: u8): string {
   return val.toString() + '0'.repeat(length)
 }
 
-export function randomAddress(): Address {
+export function randomEvmAddress(): Address {
   return Address.fromString(randomHex(40))
 }
 
-export function randomSolanaAddress(): Address {
+export function randomSvmAddress(): Address {
   return Address.fromBytes(randomBytes(64))
 }
 
@@ -38,31 +38,28 @@ export function randomBytes(nibbles: i32): Bytes {
 }
 
 export function randomHex(length: i32): string {
-  const hexChars: string = '0123456789abcdef'
-  let result: string = '0x'
-  for (let i: i32 = 0; i < length; i++) {
-    const randomIndex: i32 = <i32>Math.floor(Math.random() * hexChars.length)
-    result += hexChars.charAt(randomIndex)
-  }
-  return result
+  return '0x' + randomString('0123456789abcdef', length)
 }
 
 export function randomBase58(length: i32): string {
-  const b58Chars: string = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+  return randomString('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz', length)
+}
+
+export function randomString(alphabet: string, length: number): string {
   let result: string = ''
   for (let i: i32 = 0; i < length; i++) {
-    const randomIndex: i32 = <i32>Math.floor(Math.random() * b58Chars.length)
-    result += b58Chars.charAt(randomIndex)
+    const randomIndex: i32 = <i32>Math.floor(Math.random() * alphabet.length)
+    result += alphabet.charAt(randomIndex)
   }
   return result
 }
 
 export function randomSettler(chainId: ChainId = randomChainId()): SerializableSettler {
-  return new SerializableSettler(randomAddress().toString(), chainId)
+  return new SerializableSettler(randomEvmAddress().toString(), chainId)
 }
 
 export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): Token {
-  return Token.fromAddress(randomAddress(), chainId, decimals, 'TEST')
+  return Token.fromAddress(randomEvmAddress(), chainId, decimals, 'TEST')
 }
 
 export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
