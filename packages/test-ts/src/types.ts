@@ -35,11 +35,23 @@ export type TokenPrice = {
   timestamp?: string
 }
 
-export type TokenBalance = {
-  token: string
+export type Token = {
+  address: string
   chainId: number
-  user: string
-  balance: string
+}
+
+export type TokenAmount = {
+  token: Token
+  amount: string
+}
+
+export type RelevantTokens = {
+  owner: string
+  chainIds: number[]
+  usdMinAmount: string
+  tokens: { address: string; chainId: number }[]
+  tokenFilter: number
+  output: TokenAmount[]
 }
 
 export type ContractCall = {
@@ -55,7 +67,7 @@ export type GenerateMockParams = {
   context: Context
   inputs: Inputs
   prices: TokenPrice[]
-  balances: TokenBalance[]
+  balances: RelevantTokens[]
   calls: ContractCall[]
 }
 
