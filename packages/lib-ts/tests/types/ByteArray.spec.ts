@@ -36,6 +36,53 @@ describe('ByteArray', () => {
     })
   })
 
+  describe('fromBase58String', () => {
+    describe('when creating a ByteArray from a valid base58 string', () => {
+      it('creates a ByteArray with the expected values', (): void => {
+        const base58 = 'kA3B2yGe2z4'
+        const result = ByteArray.fromBase58String(base58)
+        expect(result.length).toBe(9)
+        expect(result[0]).toBe(0x01)
+        expect(result[1]).toBe(0x02)
+        expect(result[2]).toBe(0x03)
+        expect(result[3]).toBe(0x04)
+        expect(result[4]).toBe(0x05)
+        expect(result[5]).toBe(0x06)
+        expect(result[6]).toBe(0x07)
+        expect(result[7]).toBe(0x08)
+        expect(result[8]).toBe(0x09)
+      })
+
+      it('throws an assertion error with invalid input: 0', (): void => {
+        const invalidString = 'kA3B2yGe2z40'
+        expect(() => {
+          ByteArray.fromBase58String(invalidString)
+        }).toThrow('input ' + invalidString + ' is not valid base58')
+      })
+
+      it('throws an assertion error with invalid input: l', (): void => {
+        const invalidString = 'kA3B2yGe2z4l'
+        expect(() => {
+          ByteArray.fromBase58String(invalidString)
+        }).toThrow('input ' + invalidString + ' is not valid base58')
+      })
+
+      it('throws an assertion error with invalid input: I', (): void => {
+        const invalidString = 'kA3B2yGe2z4I'
+        expect(() => {
+          ByteArray.fromBase58String(invalidString)
+        }).toThrow('input ' + invalidString + ' is not valid base58')
+      })
+
+      it('throws an assertion error with invalid input: O', (): void => {
+        const invalidString = 'kA3B2yGe2z4O'
+        expect(() => {
+          ByteArray.fromBase58String(invalidString)
+        }).toThrow('input ' + invalidString + ' is not valid base58')
+      })
+    })
+  })
+
   describe('fromUTF8', () => {
     describe('when creating a ByteArray from a valid UTF-8 string', () => {
       it('creates a ByteArray with the encoded UTF-8 bytes', (): void => {

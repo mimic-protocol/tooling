@@ -1,3 +1,5 @@
+import { encode } from 'as-base58/assembly/index'
+
 export function bytesToString(bytes: Uint8Array): string {
   return String.UTF8.decodeUnsafe(bytes.dataStart, bytes.length)
 }
@@ -6,6 +8,10 @@ export function bytesToHexString(bytes: Uint8Array): string {
   let hex = '0x'
   for (let i = 0; i < bytes.length; i++) hex += bytes[i].toString(16).padStart(2, '0')
   return hex
+}
+
+export function bytesToBase58String(bytes: Uint8Array): string {
+  return encode(bytes)
 }
 
 export function areAllZeros(str: string): boolean {
@@ -97,6 +103,24 @@ export function isHex(str: string, strict: boolean = false): boolean {
     const isLetter =
       (c >= 'a'.charCodeAt(0) && c <= 'f'.charCodeAt(0)) || (c >= 'A'.charCodeAt(0) && c <= 'F'.charCodeAt(0))
     if (!(isDigit || isLetter)) return false
+  }
+
+  return true
+}
+
+export function isBase58(str: string): boolean {
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i)
+
+    // Base58 alphabet: digits, letters (not 0IOl)
+    if (
+      (c >= '1'.charCodeAt(0) && c <= '9'.charCodeAt(0)) ||
+      (c >= 'A'.charCodeAt(0) && c <= 'Z'.charCodeAt(0) && c !== 'I'.charCodeAt(0) && c !== 'O'.charCodeAt(0)) ||
+      (c >= 'a'.charCodeAt(0) && c <= 'z'.charCodeAt(0) && c !== 'l'.charCodeAt(0))
+    ) {
+      continue
+    }
+    return false
   }
 
   return true

@@ -35,6 +35,13 @@ export class Bytes extends ByteArray {
   }
 
   /**
+   * Converts a base58 string to a Bytes instance.
+   */
+  static fromBase58String(hex: string): Bytes {
+    return changetype<Bytes>(ByteArray.fromBase58String(hex))
+  }
+
+  /**
    * Converts a UTF-8 string to a Bytes instance.
    */
   static fromUTF8(str: string): Bytes {

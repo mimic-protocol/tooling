@@ -4,7 +4,9 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { bytesToHexString, bytesToString } from '../helpers'
+import { decode } from 'as-base58/assembly/index'
+
+import { bytesToBase58String, bytesToHexString, bytesToString, isBase58, isHex } from '../helpers'
 import { Serializable } from '../helpers'
 
 import { BigInt } from './BigInt'
@@ -102,10 +104,19 @@ export class ByteArray extends Uint8Array implements Serializable {
    */
   static fromHexString(hex: string): ByteArray {
     assert(hex.length % 2 == 0, 'input ' + hex + ' has odd length')
+    assert(isHex(hex), 'input ' + hex + ' is not valid hex')
     if (hex.length >= 2 && hex.charAt(0) == '0' && hex.charAt(1) == 'x') hex = hex.substring(2)
     const output = new Bytes(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) output[i / 2] = I8.parseInt(hex.substring(i, i + 2), 16)
     return output
+  }
+
+  /**
+   * Converts a base58 string to a ByteArray.
+   */
+  static fromBase58String(base58: string): ByteArray {
+    assert(isBase58(base58), 'input ' + base58 + ' is not valid base58')
+    return changetype<ByteArray>(decode(base58))
   }
 
   /**
@@ -301,6 +312,13 @@ export class ByteArray extends Uint8Array implements Serializable {
    */
   toHexString(): string {
     return bytesToHexString(this)
+  }
+
+  /**
+   * Converts this ByteArray to a base58 string.
+   */
+  toBase58String(): string {
+    return bytesToBase58String(this)
   }
 
   /**

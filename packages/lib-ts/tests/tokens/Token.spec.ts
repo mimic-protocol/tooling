@@ -1,7 +1,7 @@
 import { NATIVE_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { ChainId } from '../../src/types'
-import { randomAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
+import { randomEvmAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
 
 describe('Token', () => {
   describe('when creating a token', () => {
@@ -18,7 +18,7 @@ describe('Token', () => {
 
   describe('when it is a native token', () => {
     it('respects the user parameters if add them', () => {
-      const token = Token.fromAddress(randomAddress(), 1, 6, 'USDC')
+      const token = Token.fromAddress(randomEvmAddress(), 1, 6, 'USDC')
       expect('USDC').toBe(token.symbol)
       expect(6).toBe(token.decimals)
     })
@@ -42,14 +42,14 @@ describe('Token', () => {
 
   describe('when token does not have decimals or symbol', () => {
     it('looks for the symbol on chain', () => {
-      const token = Token.fromAddress(randomAddress(), 1)
+      const token = Token.fromAddress(randomEvmAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
       setEvmDecode('string', '0x123', 'ETH')
       expect('ETH').toBe(token.symbol)
     })
 
     it('uses the cache to get the symbol if it already looked for it', () => {
-      const token = Token.fromAddress(randomAddress(), 1)
+      const token = Token.fromAddress(randomEvmAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
       setEvmDecode('string', '0x123', 'ETH')
       expect('ETH').toBe(token.symbol)
@@ -58,19 +58,19 @@ describe('Token', () => {
     })
 
     it('uses the cache if it was created with a symbol', () => {
-      const token = Token.fromAddress(randomAddress(), 1, Token.EMPTY_DECIMALS, 'USDC')
+      const token = Token.fromAddress(randomEvmAddress(), 1, Token.EMPTY_DECIMALS, 'USDC')
       expect('USDC').toBe(token.symbol)
     })
 
     it('looks for the decimals on chain', () => {
-      const token = Token.fromAddress(randomAddress(), 1)
+      const token = Token.fromAddress(randomEvmAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
       setEvmDecode('uint8', '0x123', '18')
       expect(18).toBe(token.decimals)
     })
 
     it('uses the cache to get the decimals if it already looked for it', () => {
-      const token = Token.fromAddress(randomAddress(), 1)
+      const token = Token.fromAddress(randomEvmAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x313ce567', '0x123')
       setEvmDecode('uint8', '0x123', '18')
       expect(18).toBe(token.decimals)
@@ -79,7 +79,7 @@ describe('Token', () => {
     })
 
     it('uses the cache if it was created with decimals', () => {
-      const token = Token.fromAddress(randomAddress(), 1, 6)
+      const token = Token.fromAddress(randomEvmAddress(), 1, 6)
       expect(6).toBe(token.decimals)
     })
   })
@@ -165,7 +165,7 @@ describe('Token', () => {
         const chainId: ChainId = ChainId.ETHEREUM
 
         it('returns true for tokens with the same address and chainId', () => {
-          const address = randomAddress()
+          const address = randomEvmAddress()
           const token1 = Token.fromAddress(address, chainId, 18, 'TOKEN1')
           const token2 = Token.fromAddress(address, chainId, 6, 'TOKEN2')
 
@@ -173,8 +173,8 @@ describe('Token', () => {
         })
 
         it('returns false for tokens with different addresses', () => {
-          const token1 = Token.fromAddress(randomAddress(), chainId, 18, 'TOKEN')
-          const token2 = Token.fromAddress(randomAddress(), chainId, 18, 'TOKEN')
+          const token1 = Token.fromAddress(randomEvmAddress(), chainId, 18, 'TOKEN')
+          const token2 = Token.fromAddress(randomEvmAddress(), chainId, 18, 'TOKEN')
 
           expect(token1.equals(token2)).toBe(false)
         })
@@ -182,7 +182,7 @@ describe('Token', () => {
 
       describe('when using different chains', () => {
         it('returns false for tokens with different chainIds', () => {
-          const address = randomAddress()
+          const address = randomEvmAddress()
           const token1 = Token.fromAddress(address, ChainId.ETHEREUM, 18, 'TOKEN')
           const token2 = Token.fromAddress(address, ChainId.OPTIMISM, 18, 'TOKEN')
 
