@@ -20,7 +20,7 @@ export default function main(): void {
 
   aaveContract
     .withdraw(USDCe.address, userTokens[0].amount, context.user)
-    .addFee(feeUsdt)
+    .addMaxFee(feeUsdt)
     .addUser(inputs.smartAccount)
     .build()
     .send()

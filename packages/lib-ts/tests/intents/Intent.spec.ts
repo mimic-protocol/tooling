@@ -23,28 +23,32 @@ describe('IntentBuilder', () => {
         const deadline = BigInt.fromString('123456789')
         const customNonce = '0xabcdef123456'
 
-        const builder = CallBuilder.forChainWithFee(chainId, fee)
+        const builder = CallBuilder.forChain(chainId)
           .addCall(target, Bytes.fromHexString('0x1234'), BigInt.fromString('1'))
           .addUser(user)
           .addSettler(settler)
           .addDeadline(deadline)
           .addNonce(customNonce)
+          .addMaxFee(fee)
 
         const call = builder.build()
         expect(call.user).toBe(user.toString())
         expect(call.settler).toBe(settler.toString())
         expect(call.deadline).toBe('123456789')
         expect(call.nonce).toBe(customNonce)
+        expect(call.maxFeeTokens.length).toBe(1)
+        expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
+        expect(call.maxFeeAmounts.length).toBe(1)
+        expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
       })
 
       it('uses default user, deadline, nonce and settler if not explicitly set', () => {
         const target = Address.fromString(targetAddressStr)
-        const fee = TokenAmount.fromI32(randomToken(chainId), 9)
         const settler = randomSettler(chainId)
 
         setContext(0, 1, userAddressStr, [settler], 'config-transfer')
 
-        const builder = CallBuilder.forChainWithFee(chainId, fee)
+        const builder = CallBuilder.forChain(chainId)
         builder.addCall(target)
 
         const call = builder.build()
@@ -52,6 +56,8 @@ describe('IntentBuilder', () => {
         expect(call.settler).toBe(settler.address.toString())
         expect(call.deadline).toBe('300')
         expect(call.nonce).toBe('0x')
+        expect(call.maxFeeTokens.length).toBe(0)
+        expect(call.maxFeeAmounts.length).toBe(0)
       })
     })
 
@@ -61,8 +67,7 @@ describe('IntentBuilder', () => {
         setContext(0, 1, userAddressStr, [settler], 'config-call')
 
         expect(() => {
-          const fee = TokenAmount.fromI32(randomToken(chainId), 9)
-          const builder = CallBuilder.forChainWithFee(chainId, fee)
+          const builder = CallBuilder.forChain(chainId)
           builder.build()
         }).toThrow('A settler contract must be specified')
       })
@@ -77,8 +82,7 @@ describe('IntentBuilder', () => {
       setContext(0, 1, userAddressStr, [settler], 'config-call')
 
       expect(() => {
-        const fee = TokenAmount.fromI32(randomToken(chainId), 9)
-        const builder = CallBuilder.forChainWithFee(chainId, fee)
+        const builder = CallBuilder.forChain(chainId)
         builder.build()
       }).toThrow('A user must be specified')
     })

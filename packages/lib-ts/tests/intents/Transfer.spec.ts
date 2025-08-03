@@ -30,11 +30,13 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
-    expect(transfer.feeToken).toBe(token.toString())
-    expect(transfer.feeAmount).toBe(fee.toString())
+    expect(transfer.maxFeeTokens.length).toBe(1)
+    expect(transfer.maxFeeTokens[0]).toBe(token.toString())
+    expect(transfer.maxFeeAmounts.length).toBe(1)
+    expect(transfer.maxFeeAmounts[0]).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}"}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFeeTokens":["${token.toString()}"],"maxFeeAmounts":["${fee.toString()}"],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
@@ -73,11 +75,13 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
-    expect(transfer.feeToken).toBe(token.toString())
-    expect(transfer.feeAmount).toBe(fee.toString())
+    expect(transfer.maxFeeTokens.length).toBe(1)
+    expect(transfer.maxFeeTokens[0]).toBe(token.toString())
+    expect(transfer.maxFeeAmounts.length).toBe(1)
+    expect(transfer.maxFeeAmounts[0]).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}],"feeToken":"${token}","feeAmount":"${fee}"}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${token.toString()}"],"maxFeeAmounts":["${fee.toString()}"],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
@@ -91,7 +95,9 @@ describe('Transfer', () => {
 
     setContext(1, 1, user.toString(), [settler], 'config-transfer')
 
-    const transfer = new Transfer(chainId, [transferData], fee, Address.fromString(settler.address), user, deadline)
+    const transfer = new Transfer(chainId, [transferData], Address.fromString(settler.address), user, deadline, '0x', [
+      fee,
+    ])
 
     expect(transfer.op).toBe(OperationType.Transfer)
     expect(transfer.chainId).toBe(chainId)
@@ -105,18 +111,19 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(transferData.recipient)
     expect(transfer.transfers[0].amount).toBe(transferData.amount)
 
-    expect(transfer.feeToken).toBe(fee.token.address.toString())
-    expect(transfer.feeAmount).toBe(fee.amount.toString())
+    expect(transfer.maxFeeTokens.length).toBe(1)
+    expect(transfer.maxFeeTokens[0]).toBe(fee.token.address.toString())
+    expect(transfer.maxFeeAmounts.length).toBe(1)
+    expect(transfer.maxFeeAmounts[0]).toBe(fee.amount.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}]}`
     )
   })
 
   it('throws an error when transfer list is empty', () => {
     expect(() => {
-      const fee = TokenAmount.fromBigInt(randomToken(), BigInt.fromI32(10))
-      new Transfer(1, [], fee, null, null)
+      new Transfer(1, [])
     }).toThrow('Transfer list cannot be empty')
   })
 })
@@ -129,11 +136,10 @@ describe('TransferBuilder', () => {
   it('builds a Transfer from token amounts', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
     const token = Token.fromAddress(tokenAddress, chainId)
     const tokenAmount = TokenAmount.fromI32(token, 5000)
 
-    const builder = TransferBuilder.forChainWithFee(chainId, fee)
+    const builder = TransferBuilder.forChain(chainId)
     builder.addTransferFromTokenAmount(tokenAmount, recipientAddress)
 
     const transfer = builder.build()
@@ -149,9 +155,8 @@ describe('TransferBuilder', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
     const token = Token.fromAddress(tokenAddress, chainId)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    const builder = TransferBuilder.forChainWithFee(chainId, fee)
+    const builder = TransferBuilder.forChain(chainId)
     builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
 
     const transfer = builder.build()
@@ -163,14 +168,13 @@ describe('TransferBuilder', () => {
   it('adds multiple TransferData via addTransfers', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
     const token = Token.fromAddress(tokenAddress, chainId)
     const amount = TokenAmount.fromI32(token, 5000)
     const transfer1 = TransferData.fromTokenAmount(amount, recipientAddress)
     const transfer2 = TransferData.fromStringDecimal(token, '1000', recipientAddress)
 
-    const builder = TransferBuilder.forChainWithFee(chainId, fee)
+    const builder = TransferBuilder.forChain(chainId)
     builder.addTransfers([transfer1, transfer2])
 
     const transfer = builder.build()
@@ -182,12 +186,11 @@ describe('TransferBuilder', () => {
   it('adds multiple TokenAmounts via addTransfersFromTokenAmounts', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
     const token = Token.fromAddress(tokenAddress, chainId)
     const tokenAmounts = [TokenAmount.fromStringDecimal(token, '100'), TokenAmount.fromStringDecimal(token, '200')]
 
-    const builder = TransferBuilder.forChainWithFee(chainId, fee)
+    const builder = TransferBuilder.forChain(chainId)
     builder.addTransfersFromTokenAmounts(tokenAmounts, recipientAddress)
 
     const transfer = builder.build()
@@ -198,7 +201,7 @@ describe('TransferBuilder', () => {
   it('throws if fee token chainId mismatches the transfer chainId', () => {
     expect(() => {
       const fee = TokenAmount.fromI32(randomToken(9), 2) // mismatched chainId
-      TransferBuilder.forChainWithFee(chainId, fee)
+      TransferBuilder.forChain(chainId).addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the transfer')
   })
 
@@ -206,10 +209,9 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const fee = TokenAmount.fromI32(randomToken(chainId), 9)
       const wrongChainToken = Token.fromAddress(tokenAddress, 1337)
 
-      const builder = TransferBuilder.forChainWithFee(chainId, fee)
+      const builder = TransferBuilder.forChain(chainId)
 
       builder.addTransferFromStringDecimal(wrongChainToken, '100', recipientAddress)
     }).toThrow('All tokens must be on the same chain')
@@ -219,10 +221,9 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const fee = TokenAmount.fromI32(randomToken(chainId), 9)
       const wrongChainTokenAmount = TokenAmount.fromI32(Token.fromAddress(tokenAddress, 1337), 100)
 
-      const builder = TransferBuilder.forChainWithFee(chainId, fee)
+      const builder = TransferBuilder.forChain(chainId)
 
       builder.addTransferFromTokenAmount(wrongChainTokenAmount, recipientAddress)
     }).toThrow('All tokens must be on the same chain')

@@ -12,7 +12,6 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 export class CallBuilder extends IntentBuilder {
   private chainId: ChainId
   private calls: CallData[] = []
-  private fee: TokenAmount | null = null
 
   /**
    * Creates a CallBuilder for the specified blockchain network.
@@ -21,18 +20,6 @@ export class CallBuilder extends IntentBuilder {
    */
   static forChain(chainId: ChainId): CallBuilder {
     return new CallBuilder(chainId)
-  }
-
-  /**
-   * Creates a CallBuilder with a pre-configured fee.
-   * @param chainId - The blockchain network identifier
-   * @param fee - The fee token amount to be charged for the call
-   * @returns A new CallBuilder instance with fee already set
-   */
-  static forChainWithFee(chainId: ChainId, fee: TokenAmount): CallBuilder {
-    const builder = new CallBuilder(chainId)
-    builder.addFee(fee)
-    return builder
   }
 
   /**
@@ -53,17 +40,6 @@ export class CallBuilder extends IntentBuilder {
    */
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): CallBuilder {
     this.calls.push(new CallData(target, data, value))
-    return this
-  }
-
-  /**
-   * Sets the fee to be charged for executing this call intent.
-   * @param fee - The fee token amount (must be on the same chain as the call)
-   * @returns This CallBuilder instance for method chaining
-   */
-  addFee(fee: TokenAmount): CallBuilder {
-    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
-    this.fee = fee
     return this
   }
 
@@ -122,20 +98,22 @@ export class CallBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds a max fee for this intent.
+   * @param fee - The max fee token amount (must be on same chain)
+   * @returns This CallBuilder instance for method chaining
+   */
+  addMaxFee(fee: TokenAmount): CallBuilder {
+    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    this.maxFees.push(fee)
+    return this
+  }
+
+  /**
    * Builds and returns the final Call intent.
    * @returns A new Call instance with all configured parameters
    */
   build(): Call {
-    if (!this.fee) throw new Error('Call fee must be specified')
-    return new Call(
-      this.chainId,
-      this.calls,
-      this.fee as TokenAmount,
-      this.settler,
-      this.user,
-      this.deadline,
-      this.nonce
-    )
+    return new Call(this.chainId, this.calls, this.settler, this.user, this.deadline, this.nonce, this.maxFees)
   }
 }
 
@@ -169,15 +147,13 @@ export class CallData {
 export class Call extends Intent {
   public chainId: ChainId
   public calls: CallData[]
-  public feeToken: string
-  public feeAmount: string
 
   /**
    * Creates a Call intent with a single contract call.
    * @param chainId - The blockchain network identifier
    * @param target - The contract address to call
    * @param data - The call data
-   * @param fee - The fee token amount to be charged
+   * @param maxFee - The max fee to pay for the call intent
    * @param value - The native token value to send (optional, defaults to zero)
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
@@ -189,7 +165,7 @@ export class Call extends Intent {
     chainId: ChainId,
     target: Address,
     data: Bytes,
-    fee: TokenAmount,
+    maxFee: TokenAmount,
     value: BigInt = BigInt.zero(),
     settler: Address | null = null,
     user: Address | null = null,
@@ -197,35 +173,32 @@ export class Call extends Intent {
     nonce: string | null = null
   ): Call {
     const callData = new CallData(target, data, value)
-    return new Call(chainId, [callData], fee, settler, user, deadline, nonce)
+    return new Call(chainId, [callData], settler, user, deadline, nonce, [maxFee])
   }
 
   /**
    * Creates a new Call intent.
    * @param chainId - The blockchain network identifier
    * @param calls - Array of contract calls to execute
-   * @param fee - The fee token amount to be charged
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
+   * @param maxFees - The list of max fees to pay for the call intent (optional)
    */
   constructor(
     chainId: ChainId,
     calls: CallData[],
-    fee: TokenAmount,
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    maxFees: TokenAmount[] | null = null
   ) {
-    super(OperationType.Call, chainId, settler, user, deadline, nonce)
-
+    super(OperationType.Call, chainId, settler, user, deadline, nonce, maxFees)
     if (calls.length === 0) throw new Error('Call list cannot be empty')
 
     this.calls = calls
-    this.feeToken = fee.token.address.toString()
-    this.feeAmount = fee.amount.toString()
     this.chainId = chainId
   }
 
