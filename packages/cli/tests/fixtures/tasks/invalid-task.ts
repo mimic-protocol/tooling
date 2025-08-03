@@ -9,6 +9,5 @@ export default function main(): void {
   const feeAmount = BigInt.zero().plus(BigInt.fromI32(undeclaredVariable))
   const feeTokenAmount = new TokenAmount(feeToken, feeAmount)
 
-  // Replace this with your task code
-  CallBuilder.forChainWithFee(chainId, feeTokenAmount).addCall(target, data).addSettler(settler).build().send()
+  CallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(feeTokenAmount).build().send()
 }

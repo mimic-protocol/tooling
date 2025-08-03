@@ -7,5 +7,5 @@ export default function main(): void {
   const value = BigInt.fromI32(5)
   const fee = TokenAmount.fromI32(Token.fromString(NULL_ADDRESS, chainId), 10)
 
-  CallBuilder.forChainWithFee(chainId, fee).addCall(target, data, value).build().send()
+  CallBuilder.forChain(chainId).addCall(target, data, value).addMaxFee(fee).build().send()
 }

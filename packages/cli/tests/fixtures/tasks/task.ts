@@ -16,5 +16,5 @@ export default function main(): void {
   const feeAmount = BigInt.fromI32(input.firstStaticNumber).times(BigInt.fromI32(input.secondStaticNumber))
   const fee = TokenAmount.fromBigInt(feeToken, feeAmount)
 
-  CallBuilder.forChainWithFee(chainId, fee).addCall(target, data).addSettler(settler).build().send()
+  CallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(fee).build().send()
 }

@@ -1,6 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
+import { TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 export enum OperationType {
@@ -11,40 +12,85 @@ export enum OperationType {
 
 const DEFAULT_DEADLINE = 5 * 60 // 5 minutes in seconds
 
+/**
+ * Base builder for creating intents.
+ */
 export abstract class IntentBuilder {
   protected user: Address | null = null
   protected settler: Address | null = null
   protected deadline: BigInt | null = null
   protected nonce: string | null = null
+  protected maxFees: TokenAmount[] = []
 
+  /**
+   * Sets the settler address for this intent.
+   * @param settler - The settler address as an Address instance
+   * @returns This IntentBuilder instance for method chaining
+   */
   addSettler(settler: Address): IntentBuilder {
     this.settler = settler
     return this
   }
 
+  /**
+   * Sets the settler address from a string.
+   * @param settler - The settler address as a hex string
+   * @returns This IntentBuilder instance for method chaining
+   */
   addSettlerAsString(settler: string): IntentBuilder {
     return this.addSettler(Address.fromString(settler))
   }
 
+  /**
+   * Sets the deadline for this intent.
+   * @param deadline - The deadline as a timestamp
+   * @returns This IntentBuilder instance for method chaining
+   */
   addDeadline(deadline: BigInt): IntentBuilder {
     this.deadline = deadline
     return this
   }
 
+  /**
+   * Sets the user address for this intent.
+   * @param user - The user address
+   * @returns This IntentBuilder instance for method chaining
+   */
   addUser(user: Address): IntentBuilder {
     this.user = user
     return this
   }
 
+  /**
+   * Sets the user address from a string.
+   * @param user - The user address as a hex string
+   * @returns This IntentBuilder instance for method chaining
+   */
   addUserAsString(user: string): IntentBuilder {
     return this.addUser(Address.fromString(user))
   }
 
+  /**
+   * Sets the nonce for this intent.
+   * @param nonce - The nonce to be set for the intent
+   * @returns This IntentBuilder instance for method chaining
+   */
   addNonce(nonce: string): IntentBuilder {
     this.nonce = nonce
     return this
   }
 
+  /**
+   * Adds a max fee for this intent.
+   * @param fee - The max fee token amount (must be on same chain)
+   * @returns This IntentBuilder instance for method chaining
+   */
+  abstract addMaxFee(fee: TokenAmount): IntentBuilder
+
+  /**
+   * Builds and returns the final intent.
+   * @returns A new intent
+   */
   abstract build(): Intent
 }
 
@@ -56,14 +102,27 @@ export abstract class Intent {
   public user: string
   public deadline: string
   public nonce: string
+  public maxFeeTokens: string[]
+  public maxFeeAmounts: string[]
 
+  /**
+   * Creates a new intent.
+   * @param op - The type of intent to be created
+   * @param chainId - The chain ID for fetch the settler
+   * @param settler - The settler address (optional)
+   * @param user - The user address (optional)
+   * @param deadline - The deadline timestamp (optional)
+   * @param nonce - The nonce for replay protection (optional)
+   * @param maxFees - The list of max fees to pay for the swap intent (optional)
+   */
   protected constructor(
     op: OperationType,
     chainId: ChainId,
     settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
-    nonce: string | null
+    nonce: string | null,
+    maxFees: TokenAmount[] | null
   ) {
     const context = environment.getContext()
     this.op = op
@@ -71,10 +130,15 @@ export abstract class Intent {
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configSig}${context.timestamp}${++INTENT_INDEX}`)
+    this.maxFeeTokens = (maxFees || []).map((fee: TokenAmount) => fee.token.address.toString())
+    this.maxFeeAmounts = (maxFees || []).map((fee: TokenAmount) => fee.amount.toString())
 
     if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
     if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')
   }
 
+  /**
+   * Sends this intent to the execution environment.
+   */
   abstract send(): void
 }
