@@ -1,7 +1,7 @@
 import { JSON } from 'json-as'
 
 import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
-import { Token, TokenAmount } from '../../src/tokens'
+import { ERC20Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
 import { randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
@@ -158,8 +158,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
 
     const tokenInAmount = TokenAmount.fromI32(tokenIn, 1000)
     const tokenOutAmount = TokenAmount.fromI32(tokenOut, 950)
@@ -181,8 +181,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
 
     const builder = SwapBuilder.forChains(sourceChain, destinationChain)
     builder.addTokenInFromStringDecimal(tokenIn, '1')
@@ -197,19 +197,19 @@ describe('SwapBuilder', () => {
 
   it('throws if TokenIn chainId does not match sourceChain', () => {
     expect(() => {
-      const token = Token.fromString(tokenInAddressStr, 999) // wrong chain
+      const token = ERC20Token.fromString(tokenInAddressStr, 999) // wrong chain
       const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenInFromStringDecimal(token, '1')
-    }).toThrow('All tokens in must be on the same chain')
+    }).toThrow('Tokens in must be on the source chain')
   })
 
   it('throws if TokenOut chainId does not match destinationChain', () => {
     expect(() => {
       const recipient = Address.fromString(recipientAddressStr)
-      const token = Token.fromString(tokenOutAddressStr, 5) // wrong chain
+      const token = ERC20Token.fromString(tokenOutAddressStr, 5) // wrong chain
       const builder = SwapBuilder.forChains(sourceChain, destinationChain)
       builder.addTokenOutFromStringDecimal(token, '1', recipient)
-    }).toThrow('All tokens out must be on the same chain')
+    }).toThrow('Tokens out must be on the destination chain')
   })
 
   it('adds tokensIn and tokensOut via arrays', () => {
@@ -217,8 +217,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
 
     const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
     const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '2')
@@ -234,7 +234,7 @@ describe('SwapBuilder', () => {
 
   it('throws if no TokenIn is added before build', () => {
     expect(() => {
-      const tokenOut = Token.fromString(tokenOutAddressStr, destinationChain)
+      const tokenOut = ERC20Token.fromString(tokenOutAddressStr, destinationChain)
       const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '1')
       const recipient = Address.fromString(recipientAddressStr)
 
@@ -247,7 +247,7 @@ describe('SwapBuilder', () => {
 
   it('throws if no TokenOut is added before build', () => {
     expect(() => {
-      const tokenIn = Token.fromString(tokenInAddressStr, sourceChain)
+      const tokenIn = ERC20Token.fromString(tokenInAddressStr, sourceChain)
       const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
 
       const builder = SwapBuilder.forChains(sourceChain, destinationChain)

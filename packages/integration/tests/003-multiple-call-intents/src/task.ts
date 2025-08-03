@@ -1,9 +1,9 @@
-import { Address, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, Bytes, CallBuilder, ERC20Token, NULL_ADDRESS, TokenAmount } from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
 export default function main(): void {
-  const token = Token.fromString(NULL_ADDRESS, inputs.chainId)
+  const token = ERC20Token.fromString(NULL_ADDRESS, inputs.chainId)
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
 

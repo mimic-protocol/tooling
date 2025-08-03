@@ -1,7 +1,7 @@
 import { STANDARD_DECIMALS } from '../../src/helpers'
-import { TokenAmount } from '../../src/tokens'
+import { DenominationToken, TokenAmount } from '../../src/tokens'
 import { BigInt } from '../../src/types'
-import { randomToken, randomTokenWithPrice } from '../helpers'
+import { randomEvmAddress, randomToken, randomTokenWithPrice } from '../helpers'
 
 describe('TokenAmount', () => {
   describe('fromI32', () => {
@@ -430,52 +430,95 @@ describe('TokenAmount', () => {
   })
 
   describe('toUsd', () => {
-    describe('when zero', () => {
-      it('returns 0', () => {
-        const tokenAmount = TokenAmount.fromI32(randomToken(), 0)
-        const result = tokenAmount.toUsd()
-        expect(result.toString()).toBe('0')
+    describe('for ERC20 tokens', () => {
+      describe('when zero', () => {
+        it('returns 0', () => {
+          const tokenAmount = TokenAmount.fromI32(randomToken(), 0)
+          const result = tokenAmount.toUsd()
+          expect(result.toString()).toBe('0')
+        })
+      })
+
+      describe('when not zero', () => {
+        it('converts correctly for a token with less than standard decimals', () => {
+          const price = 2
+          const tokenDecimals: u8 = 6
+          const token = randomTokenWithPrice(tokenDecimals, price)
+
+          const decimalTokenAmount = 100
+          const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+
+          const result = tokenAmount.toUsd()
+          const expectedAmount = decimalTokenAmount * price
+          expect(result.toString()).toBe(expectedAmount.toString())
+        })
+
+        it('converts correctly for a token with standard decimals', () => {
+          const price = 5
+          const tokenDecimals: u8 = STANDARD_DECIMALS
+          const token = randomTokenWithPrice(tokenDecimals, price)
+
+          const decimalTokenAmount = 100
+          const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+
+          const result = tokenAmount.toUsd()
+          const expectedAmount = decimalTokenAmount * price
+          expect(result.toString()).toBe(expectedAmount.toString())
+        })
+
+        it('converts correctly for a token with more than standard decimals', () => {
+          const price = 20
+          const tokenDecimals: u8 = 20
+          const token = randomTokenWithPrice(tokenDecimals, price)
+
+          const decimalTokenAmount = 100
+          const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+
+          const result = tokenAmount.toUsd()
+          const expectedAmount = decimalTokenAmount * price
+          expect(result.toString()).toBe(expectedAmount.toString())
+        })
       })
     })
 
-    describe('when not zero', () => {
-      it('converts correctly for a token with less than standard decimals', () => {
-        const price = 2
-        const tokenDecimals: u8 = 6
-        const token = randomTokenWithPrice(tokenDecimals, price)
-
-        const decimalTokenAmount = 100
-        const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
-
-        const result = tokenAmount.toUsd()
-        const expectedAmount = decimalTokenAmount * price
-        expect(result.toString()).toBe(expectedAmount.toString())
+    describe('for USD denomination', () => {
+      describe('when zero', () => {
+        it('returns 0', () => {
+          const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), 0)
+          const result = tokenAmount.toUsd()
+          expect(result.toString()).toBe('0')
+        })
       })
 
-      it('converts correctly for a token with standard decimals', () => {
-        const price = 5
-        const tokenDecimals: u8 = STANDARD_DECIMALS
-        const token = randomTokenWithPrice(tokenDecimals, price)
+      describe('when not zero', () => {
+        it('converts with price 1', () => {
+          const decimalTokenAmount = 100
+          const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), decimalTokenAmount)
 
-        const decimalTokenAmount = 100
-        const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+          const result = tokenAmount.toUsd()
+          expect(result.toString()).toBe(decimalTokenAmount.toString())
+        })
+      })
+    })
 
-        const result = tokenAmount.toUsd()
-        const expectedAmount = decimalTokenAmount * price
-        expect(result.toString()).toBe(expectedAmount.toString())
+    describe('for another denomination token', () => {
+      describe('when zero', () => {
+        it('returns 0', () => {
+          const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), 0)
+          const result = tokenAmount.toUsd()
+          expect(result.toString()).toBe('0')
+        })
       })
 
-      it('converts correctly for a token with more than standard decimals', () => {
-        const price = 20
-        const tokenDecimals: u8 = 20
-        const token = randomTokenWithPrice(tokenDecimals, price)
-
-        const decimalTokenAmount = 100
-        const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
-
-        const result = tokenAmount.toUsd()
-        const expectedAmount = decimalTokenAmount * price
-        expect(result.toString()).toBe(expectedAmount.toString())
+      describe('when not zero', () => {
+        it('throws', () => {
+          expect(() => {
+            const decimalTokenAmount = 100
+            const token = new DenominationToken(randomEvmAddress(), 18, 'EUR')
+            const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+            tokenAmount.toUsd()
+          }).toThrow('Price query not supported for token')
+        })
       })
     })
   })

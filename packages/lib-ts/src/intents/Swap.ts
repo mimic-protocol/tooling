@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { Token, TokenAmount } from '../tokens'
+import { ERC20Token, Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, OperationType } from './Intent'
@@ -90,7 +90,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenInFromTokenAmount(tokenAmount: TokenAmount): SwapBuilder {
-    if (tokenAmount.token.chainId !== this.sourceChain) throw new Error('Tokens in must be on the same chain')
+    if (!tokenAmount.token.hasChain(this.sourceChain)) throw new Error('Tokens in must be on the same chain')
     return this.addTokenIn(TokenIn.fromTokenAmount(tokenAmount))
   }
 
@@ -111,7 +111,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenInFromStringDecimal(token: Token, amount: string): SwapBuilder {
-    if (token.chainId !== this.sourceChain) throw new Error('Tokens in must be on the same chain')
+    if (!token.hasChain(this.sourceChain)) throw new Error('Tokens in must be on the source chain')
     return this.addTokenIn(TokenIn.fromStringDecimal(token, amount))
   }
 
@@ -122,7 +122,8 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenOutFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): SwapBuilder {
-    if (tokenAmount.token.chainId !== this.destinationChain) throw new Error('Tokens out must be on the same chain')
+    if (!tokenAmount.token.hasChain(this.destinationChain))
+      throw new Error('Tokens out must be on the destination chain')
     return this.addTokenOut(TokenOut.fromTokenAmount(tokenAmount, recipient))
   }
 
@@ -145,7 +146,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenOutFromStringDecimal(token: Token, amount: string, recipient: Address): SwapBuilder {
-    if (token.chainId !== this.destinationChain) throw new Error('Tokens out must be on the same chain')
+    if (!token.hasChain(this.destinationChain)) throw new Error('Tokens out must be on the destination chain')
     return this.addTokenOut(TokenOut.fromStringDecimal(token, amount, recipient))
   }
 
@@ -209,7 +210,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addMaxFee(fee: TokenAmount): SwapBuilder {
-    if (fee.token.chainId !== this.destinationChain) throw new Error('Fee token must be on the destination chain')
+    if (!fee.token.hasChain(this.destinationChain)) throw new Error('Fee token must be on the destination chain')
     this.maxFees.push(fee)
     return this
   }
@@ -391,8 +392,8 @@ export class Swap extends Intent {
   ): Swap {
     const context = environment.getContext()
     const recipient = user || context.user
-    const swapIn = TokenIn.fromBigInt(Token.fromAddress(tokenIn, chainId), amountIn)
-    const swapOut = TokenOut.fromBigInt(Token.fromAddress(tokenOut, chainId), minAmountOut, recipient)
+    const swapIn = TokenIn.fromBigInt(ERC20Token.fromAddress(tokenIn, chainId), amountIn)
+    const swapOut = TokenOut.fromBigInt(ERC20Token.fromAddress(tokenOut, chainId), minAmountOut, recipient)
     return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce)
   }
 

@@ -3,8 +3,8 @@ import {
   BigInt,
   Bytes,
   CallBuilder,
+  ERC20Token,
   SwapBuilder,
-  Token,
   TokenAmount,
   TransferBuilder,
 } from '@mimicprotocol/lib-ts'
@@ -14,8 +14,8 @@ import { inputs } from './types'
 export default function main(): void {
   // Token definitions
   const chainId = inputs.chainId
-  const USDC = Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', chainId, 6, 'USDC')
-  const WBTC = Token.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', chainId, 8, 'WBTC')
+  const USDC = ERC20Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', chainId, 6, 'USDC')
+  const WBTC = ERC20Token.fromString('0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', chainId, 8, 'WBTC')
 
   // Call without bytes (optional field)
   const target = Address.fromString('0x0000000000000000000000000000000000000001')

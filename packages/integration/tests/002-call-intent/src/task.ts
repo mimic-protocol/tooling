@@ -1,9 +1,9 @@
-import { CallBuilder, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { CallBuilder, ERC20Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 import { inputs } from './types'
 
 export default function main(): void {
-  const feeToken = Token.fromAddress(inputs.feeToken, inputs.chainId)
+  const feeToken = ERC20Token.fromAddress(inputs.feeToken, inputs.chainId)
   const fee = TokenAmount.fromBigInt(feeToken, inputs.feeAmount)
 
   CallBuilder.forChain(inputs.chainId)

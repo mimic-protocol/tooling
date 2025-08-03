@@ -1,10 +1,11 @@
+import { JSON } from 'json-as/assembly'
+
+import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
-import { Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId } from './types'
 import { Swap, Transfer, Call } from './intents'
 import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
-import { JSON } from 'json-as/assembly'
-import { Context, SerializableContext } from './context'
+import { ERC20Token, Token, TokenAmount, USD } from './tokens'
+import { Address, BigInt, ChainId } from './types'
 
 export namespace environment {
   @external('environment', '_call')
@@ -59,7 +60,9 @@ export namespace environment {
    * @returns The token price in USD
    */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    const price = _getPrice(JSON.stringify(GetPrice.fromToken(token, timestamp)))
+    if (token.isUSD()) return USD.fromI32(1)
+    else if (!token instanceof ERC20Token) throw new Error('Price query not supported for token ' + token.toString())
+    const price = _getPrice(JSON.stringify(GetPrice.fromERC20Token(token as ERC20Token, timestamp)))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
@@ -68,15 +71,16 @@ export namespace environment {
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
-   * @param tokensList - List of tokens to include/exclude (optional, defaults to empty array)
+   * @param tokensList - List of ERC20 tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
+   * @param timestamp - The timestamp for relevant tokens qery (optional, defaults to current time)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
   export function getRelevantTokens(
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
-    tokensList: Token[] = [],
+    tokensList: ERC20Token[] = [],
     listType: ListType = ListType.DenyList,
     timestamp: Date | null = null
   ): TokenAmount[] {
