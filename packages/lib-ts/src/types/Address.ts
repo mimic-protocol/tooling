@@ -4,6 +4,8 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { NATIVE_ADDRESS, USD_ADDRESS } from '../helpers'
+
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
@@ -17,6 +19,20 @@ export class Address extends Bytes {
   static zero(): Address {
     const self = new ByteArray(20)
     return changetype<Address>(self)
+  }
+
+  /**
+   * Returns the USD denomination address.
+   */
+  static USD(): Address {
+    return Address.fromString(USD_ADDRESS)
+  }
+
+  /**
+   * Returns the native address.
+   */
+  static native(): Address {
+    return Address.fromString(NATIVE_ADDRESS)
   }
 
   /**
@@ -45,16 +61,33 @@ export class Address extends Bytes {
   }
 
   /**
+   * Returns a copy of this address.
+   */
+  clone(): Address {
+    const copy = new ByteArray(this.length)
+    copy.set(this)
+    return changetype<Address>(copy)
+  }
+
+  /**
+   * Tells whether this address is the USD denomination address.
+   */
+  isUsd(): boolean {
+    return this.equals(Address.USD())
+  }
+
+  /**
+   * Tells whether this address is the native address.
+   */
+  isNative(): boolean {
+    return this.equals(Address.native())
+  }
+
+  /**
    * Returns the address in hexadecimal. This method is overridden to avoid
    * returning the UTF-8 encoded version of the address.
    */
   toString(): string {
     return super.toHexString()
-  }
-
-  clone(): Address {
-    const copy = new ByteArray(this.length)
-    copy.set(this)
-    return changetype<Address>(copy)
   }
 }

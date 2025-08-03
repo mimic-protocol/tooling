@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { Token, TokenAmount } from '../tokens'
+import { ERC20Token, Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, OperationType } from './Intent'
@@ -57,7 +57,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns This TransferBuilder instance for method chaining
    */
   addTransferFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TransferBuilder {
-    if (tokenAmount.token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    if (!tokenAmount.token.hasChain(this.chainId)) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromTokenAmount(tokenAmount, recipient))
   }
 
@@ -69,7 +69,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns This TransferBuilder instance for method chaining
    */
   addTransferFromI32(token: Token, amount: i32, recipient: Address): TransferBuilder {
-    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    if (!token.hasChain(this.chainId)) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromI32(token, amount, recipient))
   }
 
@@ -81,7 +81,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns This TransferBuilder instance for method chaining
    */
   addTransferFromBigInt(token: Token, amount: BigInt, recipient: Address): TransferBuilder {
-    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    if (!token.hasChain(this.chainId)) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromBigInt(token, amount, recipient))
   }
 
@@ -93,7 +93,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns This TransferBuilder instance for method chaining
    */
   addTransferFromStringDecimal(token: Token, amount: string, recipient: Address): TransferBuilder {
-    if (token.chainId !== this.chainId) throw new Error('Transfer tokens must be on the same chain')
+    if (!token.hasChain(this.chainId)) throw new Error('Transfer tokens must be on the same chain')
     return this.addTransfer(TransferData.fromStringDecimal(token, amount, recipient))
   }
 
@@ -168,7 +168,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns This TransferBuilder instance for method chaining
    */
   addMaxFee(fee: TokenAmount): TransferBuilder {
-    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    if (!fee.token.hasChain(this.chainId)) throw new Error('Fee token must be on the same chain')
     this.maxFees.push(fee)
     return this
   }
@@ -280,7 +280,7 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ): Transfer {
-    const transferToken = Token.fromAddress(token, chainId)
+    const transferToken = ERC20Token.fromAddress(token, chainId)
     const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
     const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
