@@ -13,6 +13,14 @@ export class TokenAmount {
   private _amount: BigInt
 
   /**
+   * Creates a TokenAmount instance representing zero.
+   * @returns A new TokenAmount instance with amount 0
+   */
+  static zero(token: Token): TokenAmount {
+    return this.fromBigInt(token, BigInt.zero())
+  }
+
+  /**
    * Creates a TokenAmount from a decimal string representation.
    * @param token - The token to create an amount for
    * @param amount - The amount as a decimal string (e.g., "1.5", "100.0")

@@ -1,5 +1,5 @@
 import { ListType } from '../helpers'
-import { Token, TokenAmount, USD } from '../tokens'
+import { ERC20Token, Token, TokenAmount, USD } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 @json
@@ -75,7 +75,7 @@ export class GetRelevantTokensResponse {
 
   toTokenAmount(): TokenAmount {
     return TokenAmount.fromBigInt(
-      Token.fromString(this.token.address, this.token.chainId),
+      ERC20Token.fromString(this.token.address, this.token.chainId),
       BigInt.fromString(this.amount)
     )
   }
