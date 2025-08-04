@@ -103,8 +103,8 @@ export class ByteArray extends Uint8Array implements Serializable {
    * It may optionally start with '0x'.
    */
   static fromHexString(hex: string): ByteArray {
-    assert(hex.length % 2 == 0, 'input ' + hex + ' has odd length')
-    assert(isHex(hex), 'input ' + hex + ' is not valid hex')
+    assert(hex.length % 2 == 0, `input ${hex} has odd length`)
+    assert(isHex(hex), `input ${hex} is not valid hex`)
     if (hex.length >= 2 && hex.charAt(0) == '0' && hex.charAt(1) == 'x') hex = hex.substring(2)
     const output = new Bytes(hex.length / 2)
     for (let i = 0; i < hex.length; i += 2) output[i / 2] = I8.parseInt(hex.substring(i, i + 2), 16)
@@ -115,7 +115,7 @@ export class ByteArray extends Uint8Array implements Serializable {
    * Converts a base58 string to a ByteArray.
    */
   static fromBase58String(base58: string): ByteArray {
-    assert(isBase58(base58), 'input ' + base58 + ' is not valid base58')
+    assert(isBase58(base58), `input ${base58} is not valid base58`)
     return changetype<ByteArray>(decode(base58))
   }
 
