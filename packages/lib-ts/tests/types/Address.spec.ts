@@ -25,7 +25,7 @@ describe('Address', () => {
         expect(address.toBase58String()).toBe(address.toString())
       })
 
-      it('converts a valid Solana address to an Address', () => {
+      it('converts a valid SVM address to an Address', () => {
         const validAddress = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         const address = Address.fromString(validAddress)
 
@@ -56,14 +56,14 @@ describe('Address', () => {
           expect(() => {
             const shortAddress = randomBase58(10)
             Address.fromString(shortAddress)
-          }).toThrow('Invalid string for Solana addresses')
+          }).toThrow('Invalid string for SVM addresses')
         })
 
         it('throws an error for long strings', () => {
           expect(() => {
             const longAddress = randomBase58(50)
             Address.fromString(longAddress)
-          }).toThrow('Invalid string for Solana addresses')
+          }).toThrow('Invalid string for SVM addresses')
         })
       })
     })
@@ -120,21 +120,21 @@ describe('Address', () => {
         expect(() => {
           const shortAddress = randomBase58(10)
           Address.fromBase58String(shortAddress)
-        }).toThrow('Invalid string for Solana addresses')
+        }).toThrow('Invalid string for SVM addresses')
       })
 
       it('throws an error for long strings', () => {
         expect(() => {
           const longAddress = randomBase58(50)
           Address.fromBase58String(longAddress)
-        }).toThrow('Invalid string for Solana addresses')
+        }).toThrow('Invalid string for SVM addresses')
       })
 
       it('throws an error for hex strings', () => {
         expect(() => {
           const hexAddress = randomHex(40)
           Address.fromBase58String(hexAddress)
-        }).toThrow('Invalid string for Solana addresses')
+        }).toThrow('Invalid string for SVM addresses')
       })
     })
   })

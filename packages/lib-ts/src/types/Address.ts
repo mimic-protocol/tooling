@@ -10,7 +10,7 @@ import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
 
 /**
- * Represents an Ethereum or Solana address, a fixed-length 20 or 32-byte value.
+ * Represents an EVM or SVM address, a fixed-length 20 or 32-byte value.
  */
 export class Address extends Bytes {
   /**
@@ -23,7 +23,7 @@ export class Address extends Bytes {
 
   /**
    * Converts a string representation of an address to an Address instance.
-   * If hex, Ethereum address is returned. Otherwise, base58 (Solana) is assumed.
+   * If hex, EVM address is returned. Otherwise, base58 (SVM) is assumed.
    */
   static fromString(str: string): Address {
     return isHex(str) ? this.fromHexString(str) : this.fromBase58String(str)
@@ -51,7 +51,7 @@ export class Address extends Bytes {
    */
   static fromBytes(bytes: Bytes): Address {
     if (bytes.length != 20 && bytes.length != 32)
-      throw new Error(`Bytes of length ${bytes.length} can not be converted to 20/32 byte addresses`)
+      throw new Error(`Bytes of length ${bytes.length} can not be converted to 20 or 32 byte addresses`)
     return changetype<Address>(bytes)
   }
 
