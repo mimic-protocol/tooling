@@ -4,9 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { decode } from 'as-base58/assembly/index'
-
-import { bytesToBase58String, bytesToHexString, bytesToString, isBase58, isHex } from '../helpers'
+import { bytesFromBase58String, bytesToBase58String, bytesToHexString, bytesToString, isHex } from '../helpers'
 import { Serializable } from '../helpers'
 
 import { BigInt } from './BigInt'
@@ -115,8 +113,7 @@ export class ByteArray extends Uint8Array implements Serializable {
    * Converts a base58 string to a ByteArray.
    */
   static fromBase58String(base58: string): ByteArray {
-    assert(isBase58(base58), `input ${base58} is not valid base58`)
-    return changetype<ByteArray>(decode(base58))
+    return bytesFromBase58String(base58)
   }
 
   /**
