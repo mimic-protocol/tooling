@@ -1,4 +1,4 @@
-import { NATIVE_ADDRESS } from '../../src/helpers'
+import { NATIVE_ADDRESS, WRAPPED_SOL_ADDRESS } from '../../src/helpers'
 import { Token } from '../../src/tokens'
 import { ChainId } from '../../src/types'
 import { randomEvmAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
@@ -23,24 +23,40 @@ describe('Token', () => {
       expect(6).toBe(token.decimals)
     })
 
-    it('populates the symbol and decimal if missing', () => {
+    it('populates the symbol and decimal if missing (EVM)', () => {
       const token = Token.fromString(NATIVE_ADDRESS, 1)
       expect('ETH').toBe(token.symbol)
       expect(18).toBe(token.decimals)
     })
 
-    it('populates the symbol if missing', () => {
+    it('populates the symbol if missing (EVM)', () => {
       const token = Token.fromString(NATIVE_ADDRESS, 1, 18)
       expect('ETH').toBe(token.symbol)
     })
 
-    it('populates the decimals if missing', () => {
+    it('populates the decimals if missing (EVM)', () => {
       const token = Token.fromString(NATIVE_ADDRESS, 1, Token.EMPTY_DECIMALS, 'ETH')
       expect(18).toBe(token.decimals)
     })
+
+    it('populates the symbol and decimal if missing (SVM)', () => {
+      const token = Token.fromString(WRAPPED_SOL_ADDRESS, ChainId.SOLANA_MAINNET)
+      expect('SOL').toBe(token.symbol)
+      expect(9).toBe(token.decimals)
+    })
+
+    it('populates the symbol if missing (SVM)', () => {
+      const token = Token.fromString(WRAPPED_SOL_ADDRESS, ChainId.SOLANA_MAINNET, 9)
+      expect('SOL').toBe(token.symbol)
+    })
+
+    it('populates the decimals if missing (SVM)', () => {
+      const token = Token.fromString(WRAPPED_SOL_ADDRESS, ChainId.SOLANA_MAINNET, Token.EMPTY_DECIMALS, 'SOL')
+      expect(9).toBe(token.decimals)
+    })
   })
 
-  describe('when token does not have decimals or symbol', () => {
+  describe('when token does not have decimals or symbol (EVM)', () => {
     it('looks for the symbol on chain', () => {
       const token = Token.fromAddress(randomEvmAddress(), 1)
       setContractCall(token.address.toHexString(), token.chainId, '0x95d89b41', '0x123')
@@ -147,6 +163,19 @@ describe('Token', () => {
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('xDAI')
         expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is Solana', () => {
+      const chainId = ChainId.SOLANA_MAINNET
+
+      it('returns the expected token', () => {
+        const token = Token.native(chainId)
+
+        expect(token.address.toBase58String()).toBe(WRAPPED_SOL_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('SOL')
+        expect(token.decimals).toBe(9)
       })
     })
 

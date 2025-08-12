@@ -1,11 +1,11 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { NATIVE_ADDRESS } from '../helpers'
+import { NATIVE_ADDRESS, WRAPPED_SOL_ADDRESS } from '../helpers'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 /**
  * Represents a token on a blockchain network including data like symbol, decimals, and address.
- * Supports both ERC-20 and native tokens.
+ * Supports both ERC-20, SVM SPL tokens, and native EVM tokens.
  */
 export class Token {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
@@ -19,7 +19,7 @@ export class Token {
 
   /**
    * Creates a Token instance from an Address object.
-   * @param address - The contract address of the token
+   * @param address - The contract address (EVM) or token mint address (SVM) of the token
    * @param chainId - The blockchain network identifier
    * @param decimals - Number of decimal places (optional, will be queried if not provided)
    * @param symbol - Token symbol (optional, will be queried if not provided)
@@ -38,7 +38,7 @@ export class Token {
 
   /**
    * Creates a Token instance from a string address.
-   * @param address - The contract address as a hex string
+   * @param address - The contract address (EVM) as a hex string or token mint address (SVM) as b58 string
    * @param chainId - The blockchain network identifier
    * @param decimals - Number of decimal places (optional, will be queried if not provided)
    * @param symbol - Token symbol (optional, will be queried if not provided)
@@ -69,6 +69,8 @@ export class Token {
         return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'ETH')
       case ChainId.GNOSIS:
         return Token.fromString(NATIVE_ADDRESS, chainId, 18, 'xDAI')
+      case ChainId.SOLANA_MAINNET:
+        return Token.fromString(WRAPPED_SOL_ADDRESS, chainId, 9, 'SOL')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
@@ -76,7 +78,7 @@ export class Token {
 
   /**
    * Creates a new Token instance.
-   * @param address - The contract address of the token
+   * @param address - The contract address (EVM) or token mint address (SVM) of the token
    * @param chainId - The blockchain network identifier
    * @param decimals - Number of decimal places (optional, will be queried if not provided)
    * @param symbol - Token symbol (optional, will be queried if not provided)
@@ -94,13 +96,11 @@ export class Token {
     this._timestamp = timestamp
     this._symbol = symbol
     this._decimals = decimals
+    this.validateAddressForChain()
     // Ensure symbol and decimals are set for native tokens.
     // Since queries return only the address and chainId, missing metadata must be filled
     // to prevent the symbol and decimals getters from failing for native tokens.
-    if (
-      this._address.equals(Address.fromString(NATIVE_ADDRESS)) &&
-      (this._symbol === Token.EMPTY_SYMBOL || this._decimals === Token.EMPTY_DECIMALS)
-    ) {
+    if (this.isNative() && (this._symbol === Token.EMPTY_SYMBOL || this._decimals === Token.EMPTY_DECIMALS)) {
       const nativeToken = Token.native(this._chainId)
       if (this._symbol === Token.EMPTY_SYMBOL) {
         this._symbol = nativeToken.symbol
@@ -121,16 +121,24 @@ export class Token {
 
   get symbol(): string {
     if (this._symbol === Token.EMPTY_SYMBOL) {
-      const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
-      this._symbol = evm.decode(new EvmDecodeParam('string', response))
+      if (this.isEVM()) {
+        const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
+        this._symbol = evm.decode(new EvmDecodeParam('string', response))
+      } else {
+        this._symbol = 'SPL Token' // TBD
+      }
     }
     return this._symbol
   }
 
   get decimals(): u8 {
     if (this._decimals == Token.EMPTY_DECIMALS) {
-      const result = environment.contractCall(this.address, this.chainId, this._timestamp, '0x313ce567')
-      this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
+      if (this.isEVM()) {
+        const result = environment.contractCall(this.address, this.chainId, this._timestamp, '0x313ce567')
+        this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
+      } else {
+        this._decimals = 9 // TBD
+      }
     }
     return this._decimals
   }
@@ -165,5 +173,28 @@ export class Token {
    */
   toString(): string {
     return this.symbol
+  }
+
+  /**
+   * Throw error if the constructed token is invalid (mismatching address type for chain)
+   */
+  validateAddressForChain(): void {
+    if (this.isEVM() && this.address.isSVM()) throw new Error(`SVM address provided for non-SVM chain`)
+    if (this.isSVM() && this.address.isEVM()) throw new Error(`EVM address provider for SVM chain`)
+  }
+
+  isNative(): bool {
+    return (
+      this._address.equals(Address.fromString(NATIVE_ADDRESS)) ||
+      this._address.equals(Address.fromString(WRAPPED_SOL_ADDRESS))
+    )
+  }
+
+  isEVM(): bool {
+    return this.chainId !== ChainId.SOLANA_MAINNET
+  }
+
+  isSVM(): bool {
+    return this.chainId === ChainId.SOLANA_MAINNET
   }
 }
