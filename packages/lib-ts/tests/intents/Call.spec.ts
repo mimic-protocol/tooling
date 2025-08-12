@@ -3,13 +3,13 @@ import { JSON } from 'json-as'
 import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
-import { randomAddress, randomBytes, randomSettler, randomToken, setContext } from '../helpers'
+import { randomBytes, randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
 describe('Call', () => {
   it('creates a simple Call with default values and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
-    const target = randomAddress()
+    const user = randomEvmAddress()
+    const target = randomEvmAddress()
     const calldata = randomBytes(32)
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
     const settler = randomSettler(chainId)
@@ -41,10 +41,10 @@ describe('Call', () => {
 
   it('creates a simple Call with valid parameters and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
+    const user = randomEvmAddress()
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(9999999)
-    const target = randomAddress()
+    const target = randomEvmAddress()
     const calldata = randomBytes(32)
     const value = BigInt.fromI32(10)
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
@@ -76,12 +76,12 @@ describe('Call', () => {
 
   it('creates a complex Call with valid parameters and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
+    const user = randomEvmAddress()
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(9999999)
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
-    const callData1 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
-    const callData2 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(2))
+    const callData1 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(1))
+    const callData2 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(2))
     const callDatas = [callData1, callData2]
 
     const call = new Call(chainId, callDatas, [fee], Address.fromString(settler.address), user, deadline, '0x')
@@ -119,7 +119,7 @@ describe('Call', () => {
 
   it('throws an error when there is no max fee', () => {
     expect(() => {
-      const callData = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
+      const callData = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(1))
       new Call(1, [callData], [])
     }).toThrow('At least a max fee must be specified')
   })

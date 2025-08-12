@@ -3,15 +3,15 @@ import { JSON } from 'json-as'
 import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
 import { Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
-import { randomAddress, randomSettler, randomToken, setContext } from '../helpers'
+import { randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
 describe('Swap', () => {
   it('creates a simple Swap with default values', () => {
     const chainId = 1
-    const user = randomAddress()
-    const tokenIn = randomAddress()
+    const user = randomEvmAddress()
+    const tokenIn = randomEvmAddress()
     const amountIn = BigInt.fromI32(10)
-    const tokenOut = randomAddress()
+    const tokenOut = randomEvmAddress()
     const minAmountOut = BigInt.fromI32(100)
     const settler = randomSettler(chainId)
 
@@ -41,12 +41,12 @@ describe('Swap', () => {
 
   it('creates a simple Swap with valid parameters and stringifies it', () => {
     const chainId = 1
-    const user = randomAddress()
+    const user = randomEvmAddress()
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(999999)
-    const tokenIn = randomAddress()
+    const tokenIn = randomEvmAddress()
     const amountIn = BigInt.fromI32(10)
-    const tokenOut = randomAddress()
+    const tokenOut = randomEvmAddress()
     const minAmountOut = BigInt.fromI32(100)
 
     setContext(1, 1, user.toString(), [settler], 'config-456')
@@ -89,11 +89,11 @@ describe('Swap', () => {
   it('creates a complex Swap with valid parameters and stringifies it', () => {
     const sourceChain = 1
     const destinationChain = 10
-    const user = randomAddress()
+    const user = randomEvmAddress()
     const settler = randomSettler(sourceChain)
     const deadline = BigInt.fromI32(999999)
     const tokenIn = TokenIn.fromI32(randomToken(sourceChain), 10)
-    const tokenOut = TokenOut.fromI32(randomToken(destinationChain), 100, randomAddress())
+    const tokenOut = TokenOut.fromI32(randomToken(destinationChain), 100, randomEvmAddress())
 
     setContext(1, 1, user.toString(), [settler], 'config-456')
 
@@ -133,7 +133,7 @@ describe('Swap', () => {
 
   it('throws an error when TokenIn list is empty', () => {
     expect(() => {
-      const tokensOut = [TokenOut.fromI32(randomToken(), 10, randomAddress())]
+      const tokensOut = [TokenOut.fromI32(randomToken(), 10, randomEvmAddress())]
       new Swap(1, [], tokensOut, 10)
     }).toThrow('TokenIn list cannot be empty')
   })

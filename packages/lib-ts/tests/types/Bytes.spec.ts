@@ -1,5 +1,5 @@
 import { ByteArray, Bytes } from '../../src/types'
-import { randomHex } from '../helpers'
+import { randomBase58, randomHex } from '../helpers'
 
 describe('Bytes', () => {
   describe('fromByteArray', () => {
@@ -33,6 +33,29 @@ describe('Bytes', () => {
         const bytes = Bytes.fromHexString(hexString)
         expect(bytes.length).toBe(4)
         expect(bytes.toHexString()).toBe(hexString.toLowerCase())
+      })
+    })
+  })
+
+  describe('fromBase58String', () => {
+    describe('when creating Bytes from a valid base58 string', () => {
+      it('creates Bytes with the correct values', (): void => {
+        const base58String = randomBase58(40)
+        const bytes = Bytes.fromBase58String(base58String)
+        expect(bytes.toBase58String()).toBe(base58String)
+      })
+
+      it('fails with an invalid string', (): void => {
+        const invalidString = 'asdf0'
+        expect(() => {
+          Bytes.fromBase58String(invalidString)
+        }).toThrow('input ' + invalidString + ' is not valid base58')
+      })
+
+      it('gives empty bytes for empty string', (): void => {
+        const emptyString = ''
+        const bytes = Bytes.fromBase58String(emptyString)
+        expect(bytes.length).toBe(0)
       })
     })
   })

@@ -19,6 +19,7 @@
     "assemblyscript": "0.27.36"
   },
   "dependencies": {
+    "as-base58": "^0.1.1",
     "eslint-config-mimic": "^0.0.3",
     "json-as": "1.1.7",
     "visitor-as": "0.11.4"
