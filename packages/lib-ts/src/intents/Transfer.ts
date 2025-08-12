@@ -306,7 +306,7 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Transfer, chainId, settler, user, deadline, nonce, maxFees)
+    super(OperationType.Transfer, chainId, maxFees, settler, user, deadline, nonce)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 

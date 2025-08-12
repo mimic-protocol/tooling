@@ -109,20 +109,20 @@ export abstract class Intent {
    * Creates a new intent.
    * @param op - The type of intent to be created
    * @param chainId - The chain ID for fetch the settler
+   * @param maxFees - The list of max fees to pay for the intent
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
-   * @param maxFees - The list of max fees to pay for the swap intent (optional)
    */
   protected constructor(
     op: OperationType,
     chainId: ChainId,
+    maxFees: TokenAmount[],
     settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
-    nonce: string | null,
-    maxFees: TokenAmount[] | null
+    nonce: string | null
   ) {
     const context = environment.getContext()
     this.op = op
@@ -130,8 +130,8 @@ export abstract class Intent {
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configSig}${context.timestamp}${++INTENT_INDEX}`)
-    this.maxFeeTokens = (maxFees || []).map((fee: TokenAmount) => fee.token.address.toString())
-    this.maxFeeAmounts = (maxFees || []).map((fee: TokenAmount) => fee.amount.toString())
+    this.maxFeeTokens = maxFees.map((fee: TokenAmount) => fee.token.address.toString())
+    this.maxFeeAmounts = maxFees.map((fee: TokenAmount) => fee.amount.toString())
 
     if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
     if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')

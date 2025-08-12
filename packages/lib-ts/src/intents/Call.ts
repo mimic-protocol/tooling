@@ -195,7 +195,7 @@ export class Call extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Call, chainId, settler, user, deadline, nonce, maxFees)
+    super(OperationType.Call, chainId, maxFees, settler, user, deadline, nonce)
     if (calls.length === 0) throw new Error('Call list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 

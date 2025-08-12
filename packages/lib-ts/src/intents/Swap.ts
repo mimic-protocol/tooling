@@ -419,7 +419,7 @@ export class Swap extends Intent {
     nonce: string | null = null,
     maxFees: TokenAmount[] | null = null
   ) {
-    super(OperationType.Swap, sourceChain, settler, user, deadline, nonce, maxFees)
+    super(OperationType.Swap, sourceChain, maxFees || [], settler, user, deadline, nonce)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }
