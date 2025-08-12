@@ -11,7 +11,6 @@ import { Intent, IntentBuilder, OperationType } from './Intent'
 export class TransferBuilder extends IntentBuilder {
   private chainId: ChainId
   private transfers: TransferData[] = []
-  private fee: TokenAmount | null = null
 
   /**
    * Creates a TransferBuilder for a specific chain.
@@ -20,18 +19,6 @@ export class TransferBuilder extends IntentBuilder {
    */
   static forChain(chainId: ChainId): TransferBuilder {
     return new TransferBuilder(chainId)
-  }
-
-  /**
-   * Creates a TransferBuilder for a specific chain with a pre-configured fee.
-   * @param chainId - The blockchain network identifier
-   * @param fee - The fee token amount for the transfer
-   * @returns A new TransferBuilder instance with fee set
-   */
-  static forChainWithFee(chainId: ChainId, fee: TokenAmount): TransferBuilder {
-    const builder = new TransferBuilder(chainId)
-    builder.addFee(fee)
-    return builder
   }
 
   /**
@@ -122,17 +109,6 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the fee for this transfer intent.
-   * @param fee - The fee token amount (must be on same chain)
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addFee(fee: TokenAmount): TransferBuilder {
-    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
-    this.fee = fee
-    return this
-  }
-
-  /**
    * Sets the settler address for this intent.
    * @param settler - The settler address as an Address instance
    * @returns This TransferBuilder instance for method chaining
@@ -187,20 +163,22 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds a max fee for this intent.
+   * @param fee - The max fee token amount (must be on same chain)
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addMaxFee(fee: TokenAmount): TransferBuilder {
+    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    this.maxFees.push(fee)
+    return this
+  }
+
+  /**
    * Builds and returns the final Transfer intent.
    * @returns A new Transfer instance with all configured parameters
    */
   build(): Transfer {
-    if (!this.fee) throw new Error('Transfer fee must be specified')
-    return new Transfer(
-      this.chainId,
-      this.transfers,
-      this.fee as TokenAmount,
-      this.settler,
-      this.user,
-      this.deadline,
-      this.nonce
-    )
+    return new Transfer(this.chainId, this.transfers, this.maxFees, this.settler, this.user, this.deadline, this.nonce)
   }
 }
 
@@ -277,8 +255,6 @@ export class TransferData {
 export class Transfer extends Intent {
   public chainId: ChainId
   public transfers: TransferData[]
-  public feeToken: string
-  public feeAmount: string
 
   /**
    * Creates a simple single-token transfer intent.
@@ -286,7 +262,7 @@ export class Transfer extends Intent {
    * @param token - The token address to transfer
    * @param amount - The amount to transfer
    * @param recipient - The address to receive the tokens
-   * @param fee - The fee amount for the transfer
+   * @param maxFee - The max fee to pay for the transfer intent
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
@@ -298,7 +274,7 @@ export class Transfer extends Intent {
     token: Address,
     amount: BigInt,
     recipient: Address,
-    fee: BigInt,
+    maxFee: BigInt,
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
@@ -307,15 +283,15 @@ export class Transfer extends Intent {
     const transferToken = Token.fromAddress(token, chainId)
     const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
-    const feeAmount = TokenAmount.fromBigInt(transferToken, fee)
-    return new Transfer(chainId, [transferData], feeAmount, settler, user, deadline, nonce)
+    const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
+    return new Transfer(chainId, [transferData], maxFees, settler, user, deadline, nonce)
   }
 
   /**
    * Creates a new Transfer intent.
    * @param chainId - The blockchain network identifier
    * @param transfers - Array of transfer data configurations
-   * @param fee - The fee token amount for the transfers
+   * @param maxFees - The list of max fees to pay for the transfer intent
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
@@ -324,19 +300,17 @@ export class Transfer extends Intent {
   constructor(
     chainId: ChainId,
     transfers: TransferData[],
-    fee: TokenAmount,
+    maxFees: TokenAmount[],
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Transfer, chainId, settler, user, deadline, nonce)
-
+    super(OperationType.Transfer, chainId, maxFees, settler, user, deadline, nonce)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
+    if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 
     this.transfers = transfers
-    this.feeToken = fee.token.address.toString()
-    this.feeAmount = fee.amount.toString()
     this.chainId = chainId
   }
 

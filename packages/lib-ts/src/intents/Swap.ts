@@ -204,6 +204,17 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds a max fee for this intent.
+   * @param fee - The max fee token amount (must be on same chain)
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addMaxFee(fee: TokenAmount): SwapBuilder {
+    if (fee.token.chainId !== this.destinationChain) throw new Error('Fee token must be on the destination chain')
+    this.maxFees.push(fee)
+    return this
+  }
+
+  /**
    * Builds and returns the final Swap intent.
    * @returns A new Swap instance with all configured parameters
    */
@@ -218,7 +229,8 @@ export class SwapBuilder extends IntentBuilder {
       this.settler,
       this.user,
       this.deadline,
-      this.nonce
+      this.nonce,
+      this.maxFees
     )
   }
 }
@@ -394,6 +406,7 @@ export class Swap extends Intent {
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
+   * @param maxFees - The list of max fees to pay for the swap intent (optional)
    */
   constructor(
     public sourceChain: ChainId,
@@ -403,9 +416,10 @@ export class Swap extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    maxFees: TokenAmount[] | null = null
   ) {
-    super(OperationType.Swap, sourceChain, settler, user, deadline, nonce)
+    super(OperationType.Swap, sourceChain, maxFees || [], settler, user, deadline, nonce)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }

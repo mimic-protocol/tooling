@@ -35,7 +35,7 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFeeTokens":[],"maxFeeAmounts":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -77,8 +77,12 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].token).toBe(tokenOut.toString())
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
+
+    expect(swap.maxFeeTokens.length).toBe(0)
+    expect(swap.maxFeeAmounts.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":[],"maxFeeAmounts":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -118,22 +122,26 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].token).toBe(tokenOut.token)
     expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
     expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
+
+    expect(swap.maxFeeTokens.length).toBe(0)
+    expect(swap.maxFeeAmounts.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":[],"maxFeeAmounts":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 
   it('throws an error when TokenIn list is empty', () => {
     expect(() => {
       const tokensOut = [TokenOut.fromI32(randomToken(), 10, randomEvmAddress())]
-      new Swap(1, [], tokensOut, 10, null, null)
+      new Swap(1, [], tokensOut, 10)
     }).toThrow('TokenIn list cannot be empty')
   })
 
   it('throws an error when TokenOut list is empty', () => {
     expect(() => {
       const tokensIn = [TokenIn.fromI32(randomToken(), 10)]
-      new Swap(1, tokensIn, [], 10, null, null)
+      new Swap(1, tokensIn, [], 10)
     }).toThrow('TokenOut list cannot be empty')
   })
 })

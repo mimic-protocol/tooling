@@ -29,11 +29,13 @@ describe('Call', () => {
     expect(call.calls[0].data).toBe(calldata.toHexString())
     expect(call.calls[0].value).toBe('0')
 
-    expect(call.feeToken).toBe(fee.token.address.toString())
-    expect(call.feeAmount).toBe(fee.amount.toString())
+    expect(call.maxFeeTokens.length).toBe(1)
+    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
+    expect(call.maxFeeAmounts.length).toBe(1)
+    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}]}`
     )
   })
 
@@ -62,11 +64,13 @@ describe('Call', () => {
     expect(call.calls[0].data).toBe(calldata.toHexString())
     expect(call.calls[0].value).toBe(value.toString())
 
-    expect(call.feeToken).toBe(fee.token.address.toString())
-    expect(call.feeAmount).toBe(fee.amount.toString())
+    expect(call.maxFeeTokens.length).toBe(1)
+    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
+    expect(call.maxFeeAmounts.length).toBe(1)
+    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}],"feeToken":"${fee.token.address}","feeAmount":"${fee.amount}"}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}]}`
     )
   })
 
@@ -78,8 +82,9 @@ describe('Call', () => {
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
     const callData1 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(1))
     const callData2 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(2))
+    const callDatas = [callData1, callData2]
 
-    const call = new Call(chainId, [callData1, callData2], fee, Address.fromString(settler.address), user, deadline)
+    const call = new Call(chainId, callDatas, [fee], Address.fromString(settler.address), user, deadline, '0x')
     expect(call.op).toBe(OperationType.Call)
     expect(call.user).toBe(user.toString())
     expect(call.settler).toBe(settler.address.toString())
@@ -96,18 +101,27 @@ describe('Call', () => {
     expect(call.calls[1].data).toBe(callData2.data)
     expect(call.calls[1].value).toBe(callData2.value)
 
-    expect(call.feeToken).toBe(fee.token.address.toString())
-    expect(call.feeAmount).toBe(fee.amount.toString())
+    expect(call.maxFeeTokens.length).toBe(1)
+    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
+    expect(call.maxFeeAmounts.length).toBe(1)
+    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
+
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}],"feeToken":"${fee.token.address.toString()}","feeAmount":"${fee.amount.toString()}"}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}]}`
     )
   })
 
   it('throws an error when there is not Call Data', () => {
     expect(() => {
-      const fee = TokenAmount.fromI32(randomToken(), 10)
-      new Call(1, [], fee)
+      new Call(1, [], [])
     }).toThrow('Call list cannot be empty')
+  })
+
+  it('throws an error when there is no max fee', () => {
+    expect(() => {
+      const callData = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(1))
+      new Call(1, [callData], [])
+    }).toThrow('At least a max fee must be specified')
   })
 })
 
@@ -119,11 +133,11 @@ describe('CallBuilder', () => {
   it('adds multiple calls and builds call', () => {
     const target1 = Address.fromString(target1Str)
     const target2 = Address.fromString(target2Str)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    const builder = CallBuilder.forChainWithFee(chainId, fee)
+    const builder = CallBuilder.forChain(chainId)
     builder.addCall(target1, randomBytes(2), BigInt.fromString('1'))
     builder.addCall(target2, randomBytes(2), BigInt.fromString('2'))
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
 
     const call = builder.build()
     expect(call.calls.length).toBe(2)
@@ -133,10 +147,10 @@ describe('CallBuilder', () => {
 
   it('adds call with default data and value', () => {
     const target = Address.fromString(target1Str)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 9)
 
-    const builder = CallBuilder.forChainWithFee(chainId, fee)
+    const builder = CallBuilder.forChain(chainId)
     builder.addCall(target) // default Bytes.empty and BigInt.zero
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
 
     const call = builder.build()
     expect(call.calls[0].data).toBe(Bytes.empty().toHexString())
@@ -146,7 +160,7 @@ describe('CallBuilder', () => {
   it('throws if fee token chainId mismatches constructor chainId', () => {
     expect(() => {
       const fee = TokenAmount.fromI32(randomToken(2), 9)
-      CallBuilder.forChainWithFee(chainId, fee)
+      CallBuilder.forChain(chainId).addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the call')
   })
 })
