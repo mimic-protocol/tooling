@@ -178,7 +178,7 @@ export class TransferBuilder extends IntentBuilder {
    * @returns A new Transfer instance with all configured parameters
    */
   build(): Transfer {
-    return new Transfer(this.chainId, this.transfers, this.settler, this.user, this.deadline, this.nonce, this.maxFees)
+    return new Transfer(this.chainId, this.transfers, this.maxFees, this.settler, this.user, this.deadline, this.nonce)
   }
 }
 
@@ -284,30 +284,31 @@ export class Transfer extends Intent {
     const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
     const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
-    return new Transfer(chainId, [transferData], settler, user, deadline, nonce, maxFees)
+    return new Transfer(chainId, [transferData], maxFees, settler, user, deadline, nonce)
   }
 
   /**
    * Creates a new Transfer intent.
    * @param chainId - The blockchain network identifier
    * @param transfers - Array of transfer data configurations
+   * @param maxFees - The list of max fees to pay for the transfer intent
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
-   * @param maxFees - The list of max fees to pay for the transfer intent (optional)
    */
   constructor(
     chainId: ChainId,
     transfers: TransferData[],
+    maxFees: TokenAmount[],
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null,
-    maxFees: TokenAmount[] | null = null
+    nonce: string | null = null
   ) {
     super(OperationType.Transfer, chainId, settler, user, deadline, nonce, maxFees)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
+    if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 
     this.transfers = transfers
     this.chainId = chainId

@@ -113,7 +113,7 @@ export class CallBuilder extends IntentBuilder {
    * @returns A new Call instance with all configured parameters
    */
   build(): Call {
-    return new Call(this.chainId, this.calls, this.settler, this.user, this.deadline, this.nonce, this.maxFees)
+    return new Call(this.chainId, this.calls, this.maxFees, this.settler, this.user, this.deadline, this.nonce)
   }
 }
 
@@ -173,30 +173,31 @@ export class Call extends Intent {
     nonce: string | null = null
   ): Call {
     const callData = new CallData(target, data, value)
-    return new Call(chainId, [callData], settler, user, deadline, nonce, [maxFee])
+    return new Call(chainId, [callData], [maxFee], settler, user, deadline, nonce)
   }
 
   /**
    * Creates a new Call intent.
    * @param chainId - The blockchain network identifier
    * @param calls - Array of contract calls to execute
+   * @param maxFees - The list of max fees to pay for the call intent
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
-   * @param maxFees - The list of max fees to pay for the call intent (optional)
    */
   constructor(
     chainId: ChainId,
     calls: CallData[],
+    maxFees: TokenAmount[],
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null,
-    maxFees: TokenAmount[] | null = null
+    nonce: string | null = null
   ) {
     super(OperationType.Call, chainId, settler, user, deadline, nonce, maxFees)
     if (calls.length === 0) throw new Error('Call list cannot be empty')
+    if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 
     this.calls = calls
     this.chainId = chainId

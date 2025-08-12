@@ -82,10 +82,9 @@ describe('Call', () => {
     const fee = TokenAmount.fromI32(randomToken(chainId), 100)
     const callData1 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
     const callData2 = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(2))
+    const callDatas = [callData1, callData2]
 
-    const call = new Call(chainId, [callData1, callData2], Address.fromString(settler.address), user, deadline, '0x', [
-      fee,
-    ])
+    const call = new Call(chainId, callDatas, [fee], Address.fromString(settler.address), user, deadline, '0x')
     expect(call.op).toBe(OperationType.Call)
     expect(call.user).toBe(user.toString())
     expect(call.settler).toBe(settler.address.toString())
@@ -114,8 +113,15 @@ describe('Call', () => {
 
   it('throws an error when there is not Call Data', () => {
     expect(() => {
-      new Call(1, [])
+      new Call(1, [], [])
     }).toThrow('Call list cannot be empty')
+  })
+
+  it('throws an error when there is no max fee', () => {
+    expect(() => {
+      const callData = new CallData(randomAddress(), randomBytes(32), BigInt.fromI32(1))
+      new Call(1, [callData], [])
+    }).toThrow('At least a max fee must be specified')
   })
 })
 
@@ -131,6 +137,7 @@ describe('CallBuilder', () => {
     const builder = CallBuilder.forChain(chainId)
     builder.addCall(target1, randomBytes(2), BigInt.fromString('1'))
     builder.addCall(target2, randomBytes(2), BigInt.fromString('2'))
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
 
     const call = builder.build()
     expect(call.calls.length).toBe(2)
@@ -143,6 +150,7 @@ describe('CallBuilder', () => {
 
     const builder = CallBuilder.forChain(chainId)
     builder.addCall(target) // default Bytes.empty and BigInt.zero
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
 
     const call = builder.build()
     expect(call.calls[0].data).toBe(Bytes.empty().toHexString())

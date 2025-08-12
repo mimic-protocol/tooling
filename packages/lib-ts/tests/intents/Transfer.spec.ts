@@ -95,9 +95,15 @@ describe('Transfer', () => {
 
     setContext(1, 1, user.toString(), [settler], 'config-transfer')
 
-    const transfer = new Transfer(chainId, [transferData], Address.fromString(settler.address), user, deadline, '0x', [
-      fee,
-    ])
+    const transfer = new Transfer(
+      chainId,
+      [transferData],
+      [fee],
+      Address.fromString(settler.address),
+      user,
+      deadline,
+      '0x'
+    )
 
     expect(transfer.op).toBe(OperationType.Transfer)
     expect(transfer.chainId).toBe(chainId)
@@ -123,8 +129,15 @@ describe('Transfer', () => {
 
   it('throws an error when transfer list is empty', () => {
     expect(() => {
-      new Transfer(1, [])
+      new Transfer(1, [], [])
     }).toThrow('Transfer list cannot be empty')
+  })
+
+  it('throws an error when there is no max fee', () => {
+    expect(() => {
+      const transferData = TransferData.fromI32(randomToken(1), 5000, randomAddress())
+      new Transfer(1, [transferData], [])
+    }).toThrow('At least a max fee must be specified')
   })
 })
 
@@ -141,6 +154,7 @@ describe('TransferBuilder', () => {
 
     const builder = TransferBuilder.forChain(chainId)
     builder.addTransferFromTokenAmount(tokenAmount, recipientAddress)
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
 
     const transfer = builder.build()
     expect(transfer.op).toBe(OperationType.Transfer)
@@ -158,6 +172,7 @@ describe('TransferBuilder', () => {
 
     const builder = TransferBuilder.forChain(chainId)
     builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
 
     const transfer = builder.build()
     expect(transfer.transfers[0].amount).toBe('3000')
@@ -176,6 +191,7 @@ describe('TransferBuilder', () => {
 
     const builder = TransferBuilder.forChain(chainId)
     builder.addTransfers([transfer1, transfer2])
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
 
     const transfer = builder.build()
     expect(transfer.transfers.length).toBe(2)
@@ -192,6 +208,7 @@ describe('TransferBuilder', () => {
 
     const builder = TransferBuilder.forChain(chainId)
     builder.addTransfersFromTokenAmounts(tokenAmounts, recipientAddress)
+    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
 
     const transfer = builder.build()
     expect(transfer.transfers.length).toBe(2)

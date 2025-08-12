@@ -393,7 +393,7 @@ export class Swap extends Intent {
     const recipient = user || context.user
     const swapIn = TokenIn.fromBigInt(Token.fromAddress(tokenIn, chainId), amountIn)
     const swapOut = TokenOut.fromBigInt(Token.fromAddress(tokenOut, chainId), minAmountOut, recipient)
-    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce, [])
+    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce)
   }
 
   /**
