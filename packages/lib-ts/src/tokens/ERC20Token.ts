@@ -88,6 +88,7 @@ export class ERC20Token extends Token {
     symbol: string = ERC20Token.EMPTY_SYMBOL,
     timestamp: Date | null = null
   ) {
+    if (!address.isEVM()) throw new Error(`Address ${address} must be an EVM address.`)
     super(address, decimals, symbol)
     this._chainId = chainId
     this._timestamp = timestamp

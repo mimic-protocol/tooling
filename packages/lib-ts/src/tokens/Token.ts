@@ -2,7 +2,7 @@ import { Address, ChainId } from '../types'
 
 /**
  * Represents a token on a blockchain network including data like symbol, decimals, and address.
- * Supports both ERC-20 and denomination tokens.
+ * Supports both ERC-20, SPL, and denomination tokens.
  */
 export abstract class Token {
   protected _symbol: string
