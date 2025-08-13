@@ -2,7 +2,7 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../src/context'
 import { STANDARD_DECIMALS } from '../src/helpers'
-import { Token } from '../src/tokens'
+import { ERC20Token } from '../src/tokens'
 import { Address, BigInt, Bytes, ChainId } from '../src/types'
 
 @json
@@ -15,7 +15,7 @@ class Log {
 
 /* eslint-disable no-secrets/no-secrets */
 
-const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.BASE, ChainId.ARBITRUM, ChainId.OPTIMISM, ChainId.GNOSIS]
+export const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.BASE, ChainId.ARBITRUM, ChainId.OPTIMISM, ChainId.GNOSIS]
 
 export function randomChainId(): ChainId {
   return CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]
@@ -58,11 +58,11 @@ export function randomSettler(chainId: ChainId = randomChainId()): SerializableS
   return new SerializableSettler(randomEvmAddress().toString(), chainId)
 }
 
-export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): Token {
-  return Token.fromAddress(randomEvmAddress(), chainId, decimals, 'TEST')
+export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): ERC20Token {
+  return ERC20Token.fromAddress(randomEvmAddress(), chainId, decimals, 'TEST')
 }
 
-export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
+export function randomTokenWithPrice(decimals: u8, priceUsd: number): ERC20Token {
   const chainId = randomChainId()
   const token = randomToken(chainId, decimals)
   setTokenPrice(token, priceUsd)
@@ -71,7 +71,7 @@ export function randomTokenWithPrice(decimals: u8, priceUsd: number): Token {
 
 declare function _setTokenPrice(address: string, chainId: ChainId, price: string): void
 
-export function setTokenPrice(token: Token, priceUsd: number): void {
+export function setTokenPrice(token: ERC20Token, priceUsd: number): void {
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
 }

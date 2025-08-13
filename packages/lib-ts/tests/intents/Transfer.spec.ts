@@ -1,7 +1,7 @@
 import { JSON } from 'json-as'
 
 import { OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
-import { Token, TokenAmount } from '../../src/tokens'
+import { ERC20Token, TokenAmount } from '../../src/tokens'
 import { Address, BigInt } from '../../src/types'
 import { randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
@@ -149,7 +149,7 @@ describe('TransferBuilder', () => {
   it('builds a Transfer from token amounts', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
-    const token = Token.fromAddress(tokenAddress, chainId)
+    const token = ERC20Token.fromAddress(tokenAddress, chainId)
     const tokenAmount = TokenAmount.fromI32(token, 5000)
 
     const builder = TransferBuilder.forChain(chainId)
@@ -168,7 +168,7 @@ describe('TransferBuilder', () => {
   it('builds a Transfer from string decimals', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
-    const token = Token.fromAddress(tokenAddress, chainId)
+    const token = ERC20Token.fromAddress(tokenAddress, chainId)
 
     const builder = TransferBuilder.forChain(chainId)
     builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
@@ -184,7 +184,7 @@ describe('TransferBuilder', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const token = Token.fromAddress(tokenAddress, chainId)
+    const token = ERC20Token.fromAddress(tokenAddress, chainId)
     const amount = TokenAmount.fromI32(token, 5000)
     const transfer1 = TransferData.fromTokenAmount(amount, recipientAddress)
     const transfer2 = TransferData.fromStringDecimal(token, '1000', recipientAddress)
@@ -203,7 +203,7 @@ describe('TransferBuilder', () => {
     const tokenAddress = Address.fromString(tokenAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const token = Token.fromAddress(tokenAddress, chainId)
+    const token = ERC20Token.fromAddress(tokenAddress, chainId)
     const tokenAmounts = [TokenAmount.fromStringDecimal(token, '100'), TokenAmount.fromStringDecimal(token, '200')]
 
     const builder = TransferBuilder.forChain(chainId)
@@ -226,7 +226,7 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const wrongChainToken = Token.fromAddress(tokenAddress, 1337)
+      const wrongChainToken = ERC20Token.fromAddress(tokenAddress, 1337)
 
       const builder = TransferBuilder.forChain(chainId)
 
@@ -238,7 +238,7 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const wrongChainTokenAmount = TokenAmount.fromI32(Token.fromAddress(tokenAddress, 1337), 100)
+      const wrongChainTokenAmount = TokenAmount.fromI32(ERC20Token.fromAddress(tokenAddress, 1337), 100)
 
       const builder = TransferBuilder.forChain(chainId)
 

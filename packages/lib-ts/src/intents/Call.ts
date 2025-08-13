@@ -103,7 +103,7 @@ export class CallBuilder extends IntentBuilder {
    * @returns This CallBuilder instance for method chaining
    */
   addMaxFee(fee: TokenAmount): CallBuilder {
-    if (fee.token.chainId !== this.chainId) throw new Error('Fee token must be on the same chain')
+    if (!fee.token.hasChain(this.chainId)) throw new Error('Fee token must be on the same chain')
     this.maxFees.push(fee)
     return this
   }

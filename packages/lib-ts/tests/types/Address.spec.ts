@@ -1,10 +1,30 @@
-/* eslint-disable no-secrets/no-secrets */
-
-import { isBase58, isHex, NULL_ADDRESS } from '../../src/helpers'
+import { isBase58, isHex, NATIVE_ADDRESS, NULL_ADDRESS, USD_ADDRESS } from '../../src/helpers'
 import { Address, Bytes } from '../../src/types'
 import { randomBase58, randomBytes, randomEvmAddress, randomHex, randomSvmAddress } from '../helpers'
 
+/* eslint-disable no-secrets/no-secrets */
+
 describe('Address', () => {
+  describe('USD', () => {
+    it('creates the USD denomination address', () => {
+      const usd = Address.USD()
+
+      expect(usd.isUsd()).toBe(true)
+      expect(usd.isNative()).toBe(false)
+      expect(usd.toHexString()).toBe(USD_ADDRESS)
+    })
+  })
+
+  describe('native', () => {
+    it('creates the native address', () => {
+      const native = Address.native()
+
+      expect(native.isUsd()).toBe(false)
+      expect(native.isNative()).toBe(true)
+      expect(native.toHexString()).toBe(NATIVE_ADDRESS)
+    })
+  })
+
   describe('fromString', () => {
     describe('when the string is valid', () => {
       it('converts a valid hex string to an Address', () => {

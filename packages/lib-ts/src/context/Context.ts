@@ -51,7 +51,9 @@ export class Context {
 
   findSettler(chainId: ChainId): Address {
     for (let i = 0; i < this.settlers.length; i++) {
-      if (this.settlers[i].chainId === chainId) return this.settlers[i].address
+      if (this.settlers[i].chainId === chainId) {
+        return this.settlers[i].address
+      }
     }
     throw new Error(`Settler not found for chainId: ${chainId}`)
   }
