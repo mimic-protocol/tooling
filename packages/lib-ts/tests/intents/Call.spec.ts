@@ -29,13 +29,12 @@ describe('Call', () => {
     expect(call.calls[0].data).toBe(calldata.toHexString())
     expect(call.calls[0].value).toBe('0')
 
-    expect(call.maxFeeTokens.length).toBe(1)
-    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
-    expect(call.maxFeeAmounts.length).toBe(1)
-    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
+    expect(call.maxFees.length).toBe(1)
+    expect(call.maxFees[0].token).toBe(fee.token.address.toString())
+    expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}]}`
     )
   })
 
@@ -64,13 +63,12 @@ describe('Call', () => {
     expect(call.calls[0].data).toBe(calldata.toHexString())
     expect(call.calls[0].value).toBe(value.toString())
 
-    expect(call.maxFeeTokens.length).toBe(1)
-    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
-    expect(call.maxFeeAmounts.length).toBe(1)
-    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
+    expect(call.maxFees.length).toBe(1)
+    expect(call.maxFees[0].token).toBe(fee.token.address.toString())
+    expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}]}`
     )
   })
 
@@ -101,13 +99,12 @@ describe('Call', () => {
     expect(call.calls[1].data).toBe(callData2.data)
     expect(call.calls[1].value).toBe(callData2.value)
 
-    expect(call.maxFeeTokens.length).toBe(1)
-    expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
-    expect(call.maxFeeAmounts.length).toBe(1)
-    expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
+    expect(call.maxFees.length).toBe(1)
+    expect(call.maxFees[0].token).toBe(fee.token.address.toString())
+    expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}]}`
     )
   })
 
