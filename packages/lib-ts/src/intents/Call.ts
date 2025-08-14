@@ -3,7 +3,7 @@ import { TokenAmount } from '../tokens'
 import { ChainId } from '../types'
 import { Address, BigInt, Bytes } from '../types'
 
-import { Intent, IntentBuilder, OperationType } from './Intent'
+import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Call intents with contract call operations.
@@ -195,7 +195,8 @@ export class Call extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Call, chainId, maxFees, settler, user, deadline, nonce)
+    const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
+    super(OperationType.Call, chainId, fees, settler, user, deadline, nonce)
     if (calls.length === 0) throw new Error('Call list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 

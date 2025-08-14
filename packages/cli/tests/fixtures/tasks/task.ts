@@ -12,9 +12,9 @@ export default function main(): void {
   const target = Address.fromString(NULL_ADDRESS)
   const data = Bytes.empty()
 
-  const feeToken = ERC20Token.fromString(NULL_ADDRESS, chainId, 18, 'TEST')
-  const feeAmount = BigInt.fromI32(input.firstStaticNumber).times(BigInt.fromI32(input.secondStaticNumber))
-  const fee = TokenAmount.fromBigInt(feeToken, feeAmount)
+  const maxFeeToken = ERC20Token.fromString(NULL_ADDRESS, chainId, 18, 'TEST')
+  const maxFeeAmount = BigInt.fromI32(input.firstStaticNumber).times(BigInt.fromI32(input.secondStaticNumber))
+  const maxFee = TokenAmount.fromBigInt(maxFeeToken, maxFeeAmount)
 
-  CallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(fee).build().send()
+  CallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
 }

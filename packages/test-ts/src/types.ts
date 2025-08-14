@@ -79,14 +79,13 @@ export type Intent = {
   user: string
   deadline: string
   nonce: string
+  maxFees: { token: string; amount: string }[]
 }
 
 export type Transfer = Intent & {
   type: 'transfer'
   chainId: number
   transfers: { token: string; amount: string; recipient: string }[]
-  feeToken: string
-  feeAmount: string
 }
 
 export type Swap = Intent & {
@@ -101,8 +100,6 @@ export type Call = Intent & {
   type: 'call'
   chainId: number
   calls: { target: string; data: string; value: string }[]
-  feeToken: string
-  feeAmount: string
 }
 
 export type Output = Transfer | Swap | Call

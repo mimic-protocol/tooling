@@ -36,10 +36,9 @@ describe('IntentBuilder', () => {
         expect(call.settler).toBe(settler.toString())
         expect(call.deadline).toBe('123456789')
         expect(call.nonce).toBe(customNonce)
-        expect(call.maxFeeTokens.length).toBe(1)
-        expect(call.maxFeeTokens[0]).toBe(fee.token.address.toString())
-        expect(call.maxFeeAmounts.length).toBe(1)
-        expect(call.maxFeeAmounts[0]).toBe(fee.amount.toString())
+        expect(call.maxFees.length).toBe(1)
+        expect(call.maxFees[0].token).toBe(fee.token.address.toString())
+        expect(call.maxFees[0].amount).toBe(fee.amount.toString())
       })
 
       it('uses default user, deadline, nonce and settler if not explicitly set', () => {
@@ -56,8 +55,9 @@ describe('IntentBuilder', () => {
         expect(call.settler).toBe(settler.address.toString())
         expect(call.deadline).toBe('300')
         expect(call.nonce).toBe('0x')
-        expect(call.maxFeeTokens.length).toBe(1)
-        expect(call.maxFeeAmounts.length).toBe(1)
+        expect(call.maxFees.length).toBe(1)
+        expect(call.maxFees[0].token).toBe(fee.token.address.toString())
+        expect(call.maxFees[0].amount).toBe(fee.amount.toString())
       })
     })
 

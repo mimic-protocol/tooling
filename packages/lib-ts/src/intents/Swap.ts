@@ -2,7 +2,7 @@ import { environment } from '../environment'
 import { ERC20Token, Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
-import { Intent, IntentBuilder, OperationType } from './Intent'
+import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Swap intents with token exchange operations.
@@ -420,7 +420,8 @@ export class Swap extends Intent {
     nonce: string | null = null,
     maxFees: TokenAmount[] | null = null
   ) {
-    super(OperationType.Swap, sourceChain, maxFees || [], settler, user, deadline, nonce)
+    const fees: MaxFee[] = maxFees ? maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee)) : []
+    super(OperationType.Swap, sourceChain, fees, settler, user, deadline, nonce)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }
