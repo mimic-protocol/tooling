@@ -65,7 +65,6 @@ export class SPLToken extends Token {
    * @returns A string containing the token symbol.
    */
   get symbol(): string {
-    // TODO: Fetch on-chain value
     return this._symbol
   }
 
@@ -74,7 +73,6 @@ export class SPLToken extends Token {
    * @returns A `u8` representing the number of decimals of the token.
    */
   get decimals(): u8 {
-    // TODO: Fetch on-chain value
     return this._decimals
   }
 
