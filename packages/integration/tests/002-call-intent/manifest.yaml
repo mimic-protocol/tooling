@@ -7,5 +7,5 @@ inputs:
   - target: address
   - data: bytes
   - value: uint256
-  - feeToken: address
-  - feeAmount: uint256
+  - maxFeeToken: address
+  - maxFeeAmount: uint256
