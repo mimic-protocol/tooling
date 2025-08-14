@@ -8,4 +8,5 @@ export enum ChainId {
   ARBITRUM = 42161,
   BASE = 8453,
   GNOSIS = 100,
+  SONIC = 146,
 }
