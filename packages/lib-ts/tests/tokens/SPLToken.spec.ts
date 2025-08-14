@@ -1,15 +1,14 @@
-/* eslint-disable no-secrets/no-secrets */
-
-import { WSOL_ADDRESS } from '../../src/helpers'
+import { SOL_NATIVE_ADDRESS } from '../../src/helpers'
 import { SPLToken } from '../../src/tokens/SPLToken'
-import { Address, ChainId } from '../../src/types'
+import { ChainId } from '../../src/types'
+import { randomEvmAddress, randomSvmAddress } from '../helpers'
 
 describe('SPLToken', () => {
   describe('native', () => {
     it('returns the SOL token', () => {
       const token = SPLToken.native()
 
-      expect(token.address.toString()).toBe(WSOL_ADDRESS)
+      expect(token.address.toString()).toBe(SOL_NATIVE_ADDRESS)
       expect(token.chainId).toBe(ChainId.SOLANA_MAINNET)
       expect(token.decimals).toBe(9)
       expect(token.symbol).toBe('SOL')
@@ -19,10 +18,10 @@ describe('SPLToken', () => {
   describe('fromAddress', () => {
     describe('when the address is SVM', () => {
       it('creates the token', () => {
-        const address = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-        const token = SPLToken.fromAddress(Address.fromString(address), 6, 'USDC')
+        const address = randomSvmAddress()
+        const token = SPLToken.fromAddress(address, 6, 'USDC')
 
-        expect(token.address.toString()).toBe(address)
+        expect(token.address.toString()).toBe(address.toString())
         expect(token.chainId).toBe(ChainId.SOLANA_MAINNET)
         expect(token.decimals).toBe(6)
         expect(token.symbol).toBe('USDC')
@@ -31,9 +30,8 @@ describe('SPLToken', () => {
 
     describe('when the address is not SVM', () => {
       it('fails to create the token', () => {
-        const address = '0x000'
         expect(() => {
-          SPLToken.fromAddress(Address.fromString(address), 6, 'USDC')
+          SPLToken.fromAddress(randomEvmAddress(), 6, 'USDC')
         }).toThrow()
       })
     })
@@ -42,7 +40,7 @@ describe('SPLToken', () => {
   describe('fromString', () => {
     describe('when the address is SVM', () => {
       it('creates the token', () => {
-        const address = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+        const address = randomSvmAddress().toString()
         const token = SPLToken.fromString(address, 6, 'USDC')
 
         expect(token.address.toString()).toBe(address)
@@ -54,9 +52,8 @@ describe('SPLToken', () => {
 
     describe('when the address is not SVM', () => {
       it('fails to create the token', () => {
-        const address = '0x000'
         expect(() => {
-          SPLToken.fromString(address, 6, 'USDC')
+          SPLToken.fromString(randomEvmAddress().toString(), 6, 'USDC')
         }).toThrow()
       })
     })
@@ -79,7 +76,7 @@ describe('SPLToken', () => {
     })
 
     it('returns Solana chainId when SPL token', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.chainId).toBe(ChainId.SOLANA_MAINNET)
     })
@@ -93,7 +90,7 @@ describe('SPLToken', () => {
     })
 
     it('returns set symbol when SPL', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.symbol).toBe('USDC')
     })
@@ -107,7 +104,7 @@ describe('SPLToken', () => {
     })
 
     it('returns set decimals when SPL', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.decimals).toBe(6)
     })
@@ -115,15 +112,16 @@ describe('SPLToken', () => {
 
   describe('equals', () => {
     it('returns true when tokens have the same address', () => {
-      const tokenA = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
-      const tokenB = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const address = randomSvmAddress()
+      const tokenA = SPLToken.fromAddress(address, 6, 'USDC')
+      const tokenB = SPLToken.fromAddress(address, 6, 'USDC')
 
       expect(tokenA.equals(tokenB)).toBe(true)
     })
 
     it('returns false when tokens have a different address', () => {
-      const tokenA = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
-      const tokenB = SPLToken.fromString('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', 6, 'USDT')
+      const tokenA = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
+      const tokenB = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDT')
 
       expect(tokenA.equals(tokenB)).toBe(false)
     })
@@ -137,7 +135,7 @@ describe('SPLToken', () => {
     })
 
     it('returns false when SPL', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.isUSD()).toBe(false)
     })
@@ -151,7 +149,7 @@ describe('SPLToken', () => {
     })
 
     it('returns false when SPL', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.isNative()).toBe(false)
     })
@@ -177,12 +175,12 @@ describe('SPLToken', () => {
 
     describe('when SPL', () => {
       it('returns true for Solana chainId', () => {
-        const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+        const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
         expect(token.hasChain(ChainId.SOLANA_MAINNET)).toBe(true)
       })
       it('returns false for other chainId', () => {
-        const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+        const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
         expect(token.hasChain(ChainId.ARBITRUM)).toBe(false)
         expect(token.hasChain(ChainId.BASE)).toBe(false)
@@ -201,7 +199,7 @@ describe('SPLToken', () => {
     })
 
     it('returns symbol for SPL', () => {
-      const token = SPLToken.fromString('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', 6, 'USDC')
+      const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 
       expect(token.toString()).toBe(token.symbol)
     })
