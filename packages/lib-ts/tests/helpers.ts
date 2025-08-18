@@ -15,7 +15,14 @@ class Log {
 
 /* eslint-disable no-secrets/no-secrets */
 
-export const CHAIN_IDS: ChainId[] = [ChainId.ETHEREUM, ChainId.BASE, ChainId.ARBITRUM, ChainId.OPTIMISM, ChainId.GNOSIS]
+export const CHAIN_IDS: ChainId[] = [
+  ChainId.ETHEREUM,
+  ChainId.BASE,
+  ChainId.ARBITRUM,
+  ChainId.OPTIMISM,
+  ChainId.GNOSIS,
+  ChainId.SONIC,
+]
 
 export function randomChainId(): ChainId {
   return CHAIN_IDS[Math.floor(Math.random() * CHAIN_IDS.length) as i32]

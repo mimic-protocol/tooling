@@ -30,13 +30,12 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
-    expect(transfer.maxFeeTokens.length).toBe(1)
-    expect(transfer.maxFeeTokens[0]).toBe(token.toString())
-    expect(transfer.maxFeeAmounts.length).toBe(1)
-    expect(transfer.maxFeeAmounts[0]).toBe(fee.toString())
+    expect(transfer.maxFees.length).toBe(1)
+    expect(transfer.maxFees[0].token).toBe(token.toString())
+    expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFeeTokens":["${token.toString()}"],"maxFeeAmounts":["${fee.toString()}"],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${token.toString()}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
@@ -75,13 +74,12 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
-    expect(transfer.maxFeeTokens.length).toBe(1)
-    expect(transfer.maxFeeTokens[0]).toBe(token.toString())
-    expect(transfer.maxFeeAmounts.length).toBe(1)
-    expect(transfer.maxFeeAmounts[0]).toBe(fee.toString())
+    expect(transfer.maxFees.length).toBe(1)
+    expect(transfer.maxFees[0].token).toBe(token.toString())
+    expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${token.toString()}"],"maxFeeAmounts":["${fee.toString()}"],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${token.toString()}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
@@ -117,13 +115,12 @@ describe('Transfer', () => {
     expect(transfer.transfers[0].recipient).toBe(transferData.recipient)
     expect(transfer.transfers[0].amount).toBe(transferData.amount)
 
-    expect(transfer.maxFeeTokens.length).toBe(1)
-    expect(transfer.maxFeeTokens[0]).toBe(fee.token.address.toString())
-    expect(transfer.maxFeeAmounts.length).toBe(1)
-    expect(transfer.maxFeeAmounts[0]).toBe(fee.amount.toString())
+    expect(transfer.maxFees.length).toBe(1)
+    expect(transfer.maxFees[0].token).toBe(fee.token.address.toString())
+    expect(transfer.maxFees[0].amount).toBe(fee.amount.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFeeTokens":["${fee.token.address.toString()}"],"maxFeeAmounts":["${fee.amount.toString()}"],"chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}]}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}]}`
     )
   })
 

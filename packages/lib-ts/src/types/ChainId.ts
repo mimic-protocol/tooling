@@ -9,4 +9,5 @@ export enum ChainId {
   BASE = 8453,
   GNOSIS = 100,
   SOLANA_MAINNET = 507424,
+  SONIC = 146,
 }

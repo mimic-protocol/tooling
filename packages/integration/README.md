@@ -35,8 +35,6 @@ import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotoco
 
 export default function main(): void {
   // Your task implementation that calls environment functions
-  // Example:
-  environment.call(settler, chainId, target, feeToken, feeAmount, data)
 }
 ```
 

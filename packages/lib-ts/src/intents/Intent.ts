@@ -1,7 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
-import { TokenAmount } from '../tokens'
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 export enum OperationType {
@@ -94,6 +94,65 @@ export abstract class IntentBuilder {
   abstract build(): Intent
 }
 
+/**
+ * Represents an intent max fee.
+ * Specifies the token address and the max amount to be paid for the intent.
+ */
+@json
+export class MaxFee {
+  token: string
+  amount: string
+
+  /**
+   * Creates a MaxFee from a TokenAmount.
+   * @param tokenAmount - The token amount to be used as max fee
+   * @returns A new MaxFee instance
+   */
+  static fromTokenAmount(tokenAmount: TokenAmount): MaxFee {
+    return new MaxFee(tokenAmount.token.address, tokenAmount.amount)
+  }
+
+  /**
+   * Creates a MaxFee from a 32-bit integer amount.
+   * @param token - The max fee token
+   * @param amount - The max fee amount
+   * @returns A new MaxFee instance
+   */
+  static fromI32(token: Token, amount: i32): MaxFee {
+    return this.fromTokenAmount(TokenAmount.fromI32(token, amount))
+  }
+
+  /**
+   * Creates a MaxFee from a BigInt amount.
+   * @param token - The max fee token
+   * @param amount - The max fee amount in the token's smallest unit
+   * @returns A new MaxFee instance
+   */
+  static fromBigInt(token: Token, amount: BigInt): MaxFee {
+    return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount))
+  }
+
+  /**
+   * Creates a MaxFee from a decimal string amount.
+   * @param token - The max fee token
+   * @param amount - The max fee amount as a decimal string
+   * @returns A new MaxFee instance
+   */
+  static fromStringDecimal(token: Token, amount: string): MaxFee {
+    return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount))
+  }
+
+  /**
+   * Creates a new MaxFee instance.
+   * @param token - The max fee token address
+   * @param amount - The max fee amount
+   */
+  constructor(token: Address, amount: BigInt) {
+    this.token = token.toString()
+    this.amount = amount.toString()
+  }
+}
+
 let INTENT_INDEX: u32 = 0
 @json
 export abstract class Intent {
@@ -102,14 +161,13 @@ export abstract class Intent {
   public user: string
   public deadline: string
   public nonce: string
-  public maxFeeTokens: string[]
-  public maxFeeAmounts: string[]
+  public maxFees: MaxFee[]
 
   /**
    * Creates a new intent.
    * @param op - The type of intent to be created
    * @param chainId - The chain ID for fetch the settler
-   * @param maxFees - The list of max fees to pay for the intent
+   * @param maxFees - The list of max fees to pay for the intent (optional)
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
@@ -118,7 +176,7 @@ export abstract class Intent {
   protected constructor(
     op: OperationType,
     chainId: ChainId,
-    maxFees: TokenAmount[],
+    maxFees: MaxFee[] | null,
     settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
@@ -126,12 +184,11 @@ export abstract class Intent {
   ) {
     const context = environment.getContext()
     this.op = op
+    this.maxFees = maxFees || []
     this.settler = settler ? settler.toString() : context.findSettler(chainId).toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce ? nonce : evm.keccak(`${context.configSig}${context.timestamp}${++INTENT_INDEX}`)
-    this.maxFeeTokens = maxFees.map((fee: TokenAmount) => fee.token.address.toString())
-    this.maxFeeAmounts = maxFees.map((fee: TokenAmount) => fee.amount.toString())
 
     if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
     if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')

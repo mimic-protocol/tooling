@@ -36,8 +36,9 @@ describe('Task', () => {
 
     const transferIntent = intent as Transfer
     expect(transferIntent.chainId).to.be.equal(inputs.chainId)
-    expect(transferIntent.feeToken).to.be.equal(inputs.token)
-    expect(transferIntent.feeAmount).to.be.equal(inputs.fee)
+    expect(transferIntent.maxFees).to.have.lengthOf(1)
+    expect(transferIntent.maxFees[0].token).to.be.equal(inputs.token)
+    expect(transferIntent.maxFees[0].amount).to.be.equal(inputs.fee)
 
     expect(transferIntent.transfers).to.have.lengthOf(1)
     expect(transferIntent.transfers[0].token).to.be.equal(inputs.token)

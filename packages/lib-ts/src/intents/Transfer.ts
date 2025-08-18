@@ -2,7 +2,7 @@ import { environment } from '../environment'
 import { ERC20Token, Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
-import { Intent, IntentBuilder, OperationType } from './Intent'
+import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Transfer intents with token transfer operations.
@@ -306,7 +306,8 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ) {
-    super(OperationType.Transfer, chainId, maxFees, settler, user, deadline, nonce)
+    const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
+    super(OperationType.Transfer, chainId, fees, settler, user, deadline, nonce)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 

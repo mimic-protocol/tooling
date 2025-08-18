@@ -30,6 +30,8 @@ export class ERC20Token extends Token {
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'ETH')
       case ChainId.GNOSIS:
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'xDAI')
+      case ChainId.SONIC:
+        return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'SONIC')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }
