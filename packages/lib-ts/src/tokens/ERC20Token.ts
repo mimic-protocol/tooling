@@ -1,6 +1,6 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { NATIVE_ADDRESS } from '../helpers'
+import { EVM_NATIVE_ADDRESS } from '../helpers'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 import { Token } from './Token'
@@ -27,9 +27,9 @@ export class ERC20Token extends Token {
       case ChainId.BASE:
       case ChainId.ARBITRUM:
       case ChainId.OPTIMISM:
-        return ERC20Token.fromString(NATIVE_ADDRESS, chainId, 18, 'ETH')
+        return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'ETH')
       case ChainId.GNOSIS:
-        return ERC20Token.fromString(NATIVE_ADDRESS, chainId, 18, 'xDAI')
+        return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'xDAI')
       default:
         throw new Error(`Unsupported chainId: ${chainId}`)
     }

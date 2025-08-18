@@ -1,4 +1,4 @@
-import { isBase58, isHex, NATIVE_ADDRESS, NULL_ADDRESS, USD_ADDRESS } from '../../src/helpers'
+import { EVM_NATIVE_ADDRESS, isBase58, isHex, NULL_ADDRESS, USD_ADDRESS } from '../../src/helpers'
 import { Address, Bytes } from '../../src/types'
 import { randomBase58, randomBytes, randomEvmAddress, randomHex, randomSvmAddress } from '../helpers'
 
@@ -21,7 +21,7 @@ describe('Address', () => {
 
       expect(native.isUsd()).toBe(false)
       expect(native.isNative()).toBe(true)
-      expect(native.toHexString()).toBe(NATIVE_ADDRESS)
+      expect(native.toHexString()).toBe(EVM_NATIVE_ADDRESS)
     })
   })
 

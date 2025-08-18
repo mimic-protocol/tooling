@@ -1,4 +1,4 @@
-import { SOL_NATIVE_ADDRESS } from '../helpers'
+import { SVM_NATIVE_ADDRESS } from '../helpers'
 import { Address, ChainId } from '../types'
 
 import { Token } from './Token'
@@ -14,7 +14,7 @@ export class SPLToken extends Token {
    * @returns A new Token instance for the native token
    */
   static native(): SPLToken {
-    return SPLToken.fromString(SOL_NATIVE_ADDRESS, 9, 'SOL')
+    return SPLToken.fromString(SVM_NATIVE_ADDRESS, 9, 'SOL')
   }
 
   /**

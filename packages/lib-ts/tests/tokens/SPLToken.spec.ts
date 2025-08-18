@@ -1,4 +1,4 @@
-import { SOL_NATIVE_ADDRESS } from '../../src/helpers'
+import { SVM_NATIVE_ADDRESS } from '../../src/helpers'
 import { SPLToken } from '../../src/tokens/SPLToken'
 import { ChainId } from '../../src/types'
 import { randomEvmAddress, randomSvmAddress } from '../helpers'
@@ -8,7 +8,7 @@ describe('SPLToken', () => {
     it('returns the SOL token', () => {
       const token = SPLToken.native()
 
-      expect(token.address.toString()).toBe(SOL_NATIVE_ADDRESS)
+      expect(token.address.toString()).toBe(SVM_NATIVE_ADDRESS)
       expect(token.chainId).toBe(ChainId.SOLANA_MAINNET)
       expect(token.decimals).toBe(9)
       expect(token.symbol).toBe('SOL')
@@ -162,6 +162,7 @@ describe('SPLToken', () => {
 
         expect(token.hasChain(ChainId.SOLANA_MAINNET)).toBe(true)
       })
+
       it('returns false for other chainId', () => {
         const token = SPLToken.native()
 
@@ -179,6 +180,7 @@ describe('SPLToken', () => {
 
         expect(token.hasChain(ChainId.SOLANA_MAINNET)).toBe(true)
       })
+
       it('returns false for other chainId', () => {
         const token = SPLToken.fromAddress(randomSvmAddress(), 6, 'USDC')
 

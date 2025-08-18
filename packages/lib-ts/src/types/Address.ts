@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { isHex, NATIVE_ADDRESS, USD_ADDRESS } from '../helpers'
+import { EVM_NATIVE_ADDRESS, isHex, USD_ADDRESS } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -32,7 +32,7 @@ export class Address extends Bytes {
    * Returns the native address.
    */
   static native(): Address {
-    return Address.fromString(NATIVE_ADDRESS)
+    return Address.fromString(EVM_NATIVE_ADDRESS)
   }
 
   /**
