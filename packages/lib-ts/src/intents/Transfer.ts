@@ -1,5 +1,6 @@
 import { environment } from '../environment'
 import { ERC20Token, Token, TokenAmount } from '../tokens'
+import { SPLToken } from '../tokens/SPLToken'
 import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
@@ -119,7 +120,7 @@ export class TransferBuilder extends IntentBuilder {
 
   /**
    * Sets the settler address from a string.
-   * @param settler - The settler address as a hex string
+   * @param settler - The settler address as a hex or base58 string accordingly
    * @returns This TransferBuilder instance for method chaining
    */
   addSettlerAsString(settler: string): TransferBuilder {
@@ -267,6 +268,8 @@ export class Transfer extends Intent {
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
+   * @param decimals - Decimals for SPLToken, ignored if EVM
+   * @param symbol - Symbol for SPLToken, ignored if EVM
    * @returns A new Transfer instance
    */
   static create(
@@ -278,9 +281,17 @@ export class Transfer extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    decimals: u8 = 9,
+    symbol: string | null = null
   ): Transfer {
-    const transferToken = ERC20Token.fromAddress(token, chainId)
+    let transferToken: Token
+    if (chainId === ChainId.SOLANA_MAINNET) {
+      if (!symbol) throw new Error(`Decimals and symbol must be defined for SVM tokens`)
+      transferToken = SPLToken.fromAddress(token, decimals, symbol)
+    } else {
+      transferToken = ERC20Token.fromAddress(token, chainId)
+    }
     const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
     const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
@@ -313,6 +324,7 @@ export class Transfer extends Intent {
 
     this.transfers = transfers
     this.chainId = chainId
+    this.validateAllAddressEncodings()
   }
 
   /**
@@ -320,5 +332,59 @@ export class Transfer extends Intent {
    */
   send(): void {
     environment.transfer(this)
+  }
+
+  /**
+   * Whether the chainId is Solana or not
+   */
+  isSVM(): bool {
+    return this.chainId === ChainId.SOLANA_MAINNET
+  }
+
+  /**
+   * Validates address encoding according to the chainId
+   * @param address Address to validate
+   * @param fieldName Name of the field for errors
+   * @returns Throws if there is an encoding mismatch
+   */
+  private validateAddressEncoding(address: Address | null, fieldName: string): void {
+    if (!address) return
+    const isSVMEnvironment = this.isSVM()
+    const isValidAddress = isSVMEnvironment ? address.isSVM() : address.isEVM()
+    const expectedAddressType = isSVMEnvironment ? 'SVM' : 'EVM'
+
+    if (!isValidAddress)
+      throw new Error(`Invalid ${fieldName} address: ${address}. Expected an ${expectedAddressType} address.`)
+  }
+
+  /**
+   * Validates that the user address is properly encoded
+   */
+  validateUserEncoding(): void {
+    this.validateAddressEncoding(Address.fromString(this.user), 'user')
+  }
+
+  /**
+   * Validates that the settler address is properly encoded
+   */
+  validateSettlerEncoding(): void {
+    this.validateAddressEncoding(Address.fromString(this.settler), 'settler')
+  }
+
+  /**
+   * Validates that all transfers token addresses are properly encoded
+   */
+  validateTransfersTokenAddressEncoding(): void {
+    for (let i = 0; i < this.transfers.length; i++)
+      this.validateAddressEncoding(Address.fromString(this.transfers[i].token), 'transfer token')
+  }
+
+  /**
+   * Validates that all addresses are properly encoded
+   */
+  validateAllAddressEncodings(): void {
+    this.validateSettlerEncoding()
+    this.validateUserEncoding()
+    this.validateTransfersTokenAddressEncoding()
   }
 }
