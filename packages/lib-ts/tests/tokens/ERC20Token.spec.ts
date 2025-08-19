@@ -1,4 +1,4 @@
-import { NATIVE_ADDRESS } from '../../src/helpers'
+import { EVM_NATIVE_ADDRESS } from '../../src/helpers'
 import { DenominationToken, ERC20Token } from '../../src/tokens'
 import { Address, ChainId } from '../../src/types'
 import { randomEvmAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
@@ -7,19 +7,19 @@ describe('ERC20Token', () => {
   describe('create', () => {
     describe('when the address is the native address', () => {
       it('populates the symbol and decimal if missing', () => {
-        const token = ERC20Token.fromString(NATIVE_ADDRESS, 1)
+        const token = ERC20Token.fromString(EVM_NATIVE_ADDRESS, 1)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
       })
 
       it('populates the symbol if missing', () => {
-        const token = ERC20Token.fromString(NATIVE_ADDRESS, 1, 18)
+        const token = ERC20Token.fromString(EVM_NATIVE_ADDRESS, 1, 18)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
       })
 
       it('populates the decimals if missing', () => {
-        const token = ERC20Token.fromString(NATIVE_ADDRESS, 1, ERC20Token.EMPTY_DECIMALS, 'ETH')
+        const token = ERC20Token.fromString(EVM_NATIVE_ADDRESS, 1, ERC20Token.EMPTY_DECIMALS, 'ETH')
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
       })
@@ -77,7 +77,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
@@ -90,7 +90,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
@@ -103,7 +103,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
@@ -116,7 +116,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('ETH')
         expect(token.decimals).toBe(18)
@@ -129,7 +129,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('xDAI')
         expect(token.decimals).toBe(18)
@@ -142,7 +142,7 @@ describe('ERC20Token', () => {
       it('returns the expected token', () => {
         const token = ERC20Token.native(chainId)
 
-        expect(token.address.toHexString()).toBe(NATIVE_ADDRESS)
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('SONIC')
         expect(token.decimals).toBe(18)
