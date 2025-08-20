@@ -298,7 +298,6 @@ describe('TransferBuilder', () => {
           const tokenAddress = Address.fromString(tokenAddressStr)
           const recipientAddress = Address.fromString(recipientAddressStr)
           const wrongChainToken = ERC20Token.fromAddress(tokenAddress, ChainId.OPTIMISM)
-
           const builder = TransferBuilder.forChain(chainId)
 
           builder.addTransferFromStringDecimal(wrongChainToken, '100', recipientAddress)
@@ -310,7 +309,6 @@ describe('TransferBuilder', () => {
           const tokenAddress = Address.fromString(tokenAddressStr)
           const recipientAddress = Address.fromString(recipientAddressStr)
           const wrongChainTokenAmount = TokenAmount.fromI32(ERC20Token.fromAddress(tokenAddress, ChainId.OPTIMISM), 100)
-
           const builder = TransferBuilder.forChain(chainId)
 
           builder.addTransferFromTokenAmount(wrongChainTokenAmount, recipientAddress)
