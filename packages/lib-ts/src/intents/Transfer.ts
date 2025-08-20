@@ -369,8 +369,10 @@ export class Transfer extends Intent {
    * Validates that all transfers token addresses are properly encoded
    */
   validateTransfersTokenAddressEncoding(): void {
-    for (let i = 0; i < this.transfers.length; i++)
+    for (let i = 0; i < this.transfers.length; i++) {
       this.validateAddressEncoding(Address.fromString(this.transfers[i].token), 'transfer token')
+      this.validateAddressEncoding(Address.fromString(this.transfers[i].recipient), 'transfer recipient')
+    }
   }
 
   /**

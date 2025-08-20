@@ -65,6 +65,10 @@ export function randomSettler(chainId: ChainId = randomChainId()): SerializableS
   return new SerializableSettler(randomEvmAddress().toString(), chainId)
 }
 
+export function randomSvmSettler(): SerializableSettler {
+  return new SerializableSettler(randomSvmAddress().toString(), ChainId.SOLANA_MAINNET)
+}
+
 export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): ERC20Token {
   return ERC20Token.fromAddress(randomEvmAddress(), chainId, decimals, 'TEST')
 }
