@@ -1,6 +1,5 @@
 import { environment } from '../environment'
 import { ERC20Token, Token, TokenAmount } from '../tokens'
-import { SPLToken } from '../tokens/SPLToken'
 import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
@@ -259,8 +258,7 @@ export class Transfer extends Intent {
 
   /**
    * Creates a simple single-token transfer intent.
-   * @param chainId - The blockchain network identifier
-   * @param token - The token address to transfer
+   * @param token - The Token to transfer
    * @param amount - The amount to transfer
    * @param recipient - The address to receive the tokens
    * @param maxFee - The max fee to pay for the transfer intent
@@ -268,34 +266,30 @@ export class Transfer extends Intent {
    * @param user - The user address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
-   * @param decimals - Decimals for SPLToken, ignored if EVM
-   * @param symbol - Symbol for SPLToken, ignored if EVM
    * @returns A new Transfer instance
    */
   static create(
-    chainId: ChainId,
-    token: Address,
+    token: Token,
     amount: BigInt,
     recipient: Address,
     maxFee: BigInt,
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null,
-    decimals: u8 = 9,
-    symbol: string | null = null
+    nonce: string | null = null
   ): Transfer {
-    let transferToken: Token
-    if (chainId === ChainId.SOLANA_MAINNET) {
-      if (!symbol) throw new Error(`Decimals and symbol must be defined for SVM tokens`)
-      transferToken = SPLToken.fromAddress(token, decimals, symbol)
-    } else {
-      transferToken = ERC20Token.fromAddress(token, chainId)
-    }
-    const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
+    const transferAmount = TokenAmount.fromBigInt(token, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
-    const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
-    return new Transfer(chainId, [transferData], maxFees, settler, user, deadline, nonce)
+    const maxFees = [TokenAmount.fromBigInt(token, maxFee)]
+    return new Transfer(
+      token instanceof ERC20Token ? (token as ERC20Token).chainId : ChainId.SOLANA_MAINNET,
+      [transferData],
+      maxFees,
+      settler,
+      user,
+      deadline,
+      nonce
+    )
   }
 
   /**

@@ -2,14 +2,15 @@ import { JSON } from 'json-as'
 
 import { OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
 import { ERC20Token, TokenAmount } from '../../src/tokens'
-import { Address, BigInt } from '../../src/types'
+import { Address, BigInt, ChainId } from '../../src/types'
 import { randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
 
 describe('Transfer', () => {
   it('creates a simple Transfer with default values and stringifies it', () => {
     const chainId = 1
     const user = randomEvmAddress()
-    const token = randomEvmAddress()
+    const tokenAddress = randomEvmAddress()
+    const token = new ERC20Token(tokenAddress, chainId)
     const amount = BigInt.fromI32(1000)
     const fee = BigInt.fromI32(10)
     const recipient = randomEvmAddress()
@@ -17,7 +18,7 @@ describe('Transfer', () => {
 
     setContext(1, 1, user.toString(), [settler], 'config-transfer')
 
-    const transfer = Transfer.create(chainId, token, amount, recipient, fee)
+    const transfer = Transfer.create(token, amount, recipient, fee)
     expect(transfer.op).toBe(OperationType.Transfer)
     expect(transfer.user).toBe(user.toString())
     expect(transfer.settler).toBe(settler.address.toString())
@@ -26,23 +27,24 @@ describe('Transfer', () => {
     expect(transfer.nonce).toBe('0x')
 
     expect(transfer.transfers.length).toBe(1)
-    expect(transfer.transfers[0].token).toBe(token.toString())
+    expect(transfer.transfers[0].token).toBe(tokenAddress.toString())
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
     expect(transfer.maxFees.length).toBe(1)
-    expect(transfer.maxFees[0].token).toBe(token.toString())
+    expect(transfer.maxFees[0].token).toBe(tokenAddress.toString())
     expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${token.toString()}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
   it('creates a simple Transfer with valid parameters and stringifies it', () => {
     const chainId = 1
     const user = randomEvmAddress()
-    const token = randomEvmAddress()
+    const tokenAddress = randomEvmAddress()
+    const token = new ERC20Token(tokenAddress, chainId)
     const amount = BigInt.fromI32(1000)
     const fee = BigInt.fromI32(10)
     const recipient = randomEvmAddress()
@@ -51,16 +53,7 @@ describe('Transfer', () => {
 
     setContext(1, 1, user.toString(), [settler], 'config-transfer')
 
-    const transfer = Transfer.create(
-      chainId,
-      token,
-      amount,
-      recipient,
-      fee,
-      Address.fromString(settler.address),
-      user,
-      deadline
-    )
+    const transfer = Transfer.create(token, amount, recipient, fee, Address.fromString(settler.address), user, deadline)
 
     expect(transfer.op).toBe(OperationType.Transfer)
     expect(transfer.chainId).toBe(chainId)
@@ -70,16 +63,16 @@ describe('Transfer', () => {
     expect(transfer.nonce).toBe('0x')
 
     expect(transfer.transfers.length).toBe(1)
-    expect(transfer.transfers[0].token).toBe(token.toString())
+    expect(transfer.transfers[0].token).toBe(tokenAddress.toString())
     expect(transfer.transfers[0].recipient).toBe(recipient.toString())
     expect(transfer.transfers[0].amount).toBe(amount.toString())
 
     expect(transfer.maxFees.length).toBe(1)
-    expect(transfer.maxFees[0].token).toBe(token.toString())
+    expect(transfer.maxFees[0].token).toBe(tokenAddress.toString())
     expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
     expect(JSON.stringify(transfer)).toBe(
-      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${token.toString()}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${token}","amount":"${amount}","recipient":"${recipient}"}]}`
+      `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
     )
   })
 
@@ -214,7 +207,7 @@ describe('TransferBuilder', () => {
 
   it('throws if fee token chainId mismatches the transfer chainId', () => {
     expect(() => {
-      const fee = TokenAmount.fromI32(randomToken(9), 2) // mismatched chainId
+      const fee = TokenAmount.fromI32(randomToken(ChainId.GNOSIS), 2) // mismatched chainId
       TransferBuilder.forChain(chainId).addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the transfer')
   })
@@ -223,7 +216,7 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const wrongChainToken = ERC20Token.fromAddress(tokenAddress, 1337)
+      const wrongChainToken = ERC20Token.fromAddress(tokenAddress, ChainId.OPTIMISM)
 
       const builder = TransferBuilder.forChain(chainId)
 
@@ -235,7 +228,7 @@ describe('TransferBuilder', () => {
     expect(() => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const wrongChainTokenAmount = TokenAmount.fromI32(ERC20Token.fromAddress(tokenAddress, 1337), 100)
+      const wrongChainTokenAmount = TokenAmount.fromI32(ERC20Token.fromAddress(tokenAddress, ChainId.OPTIMISM), 100)
 
       const builder = TransferBuilder.forChain(chainId)
 
