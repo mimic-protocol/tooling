@@ -3,17 +3,16 @@ import { evm } from '../evm'
 import { EVM_NATIVE_ADDRESS } from '../helpers'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
+import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
 
 /**
- * Represents a token on a blockchain network including data like symbol, decimals, and address.
- * Supports both ERC-20 and denomination tokens.
+ * Represents an ERC-20 token on a blockchain network including data like symbol, decimals, and address.
  */
-export class ERC20Token extends Token {
+export class ERC20Token extends BlockchainToken {
   public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
   public static readonly EMPTY_SYMBOL: string = ''
 
-  private _chainId: ChainId
   private _timestamp: Date | null = null
 
   /**
@@ -91,8 +90,7 @@ export class ERC20Token extends Token {
     timestamp: Date | null = null
   ) {
     if (!address.isEVM()) throw new Error(`Address ${address} must be an EVM address.`)
-    super(address, decimals, symbol)
-    this._chainId = chainId
+    super(address, decimals, symbol, chainId)
     this._timestamp = timestamp
 
     // Ensure symbol and decimals are set for native or denomination tokens.
@@ -102,19 +100,10 @@ export class ERC20Token extends Token {
     const hasMissingDecimals = this._decimals === ERC20Token.EMPTY_DECIMALS
     const hasMissingSymbolOrDecimals = hasMissingSymbol || hasMissingDecimals
     if (address.isNative() && hasMissingSymbolOrDecimals) {
-      const nativeToken = ERC20Token.native(this._chainId)
+      const nativeToken = ERC20Token.native(this.chainId)
       if (hasMissingSymbol) this._symbol = nativeToken.symbol
       if (hasMissingDecimals) this._decimals = nativeToken.decimals
     }
-  }
-
-  /**
-   * Gets the blockchain network identifier where this token is deployed.
-   * This value is assigned during construction and remains constant throughout the token’s lifecycle.
-   * @returns The `ChainId` representing the token’s network.
-   */
-  get chainId(): ChainId {
-    return this._chainId
   }
 
   /**
@@ -158,27 +147,10 @@ export class ERC20Token extends Token {
   }
 
   /**
-   * Checks if this token is the USD denomination.
-   * @returns False always
-   */
-  isUSD(): boolean {
-    return false
-  }
-
-  /**
    * Checks if this token is the native token.
    * @returns True if the token is the native token
    */
   isNative(): boolean {
     return this.equals(ERC20Token.native(this.chainId))
-  }
-
-  /**
-   * Checks if this token belongs to the requested chain.
-   * @param chain - The chain ID asking for
-   * @returns True if chains are equal
-   */
-  hasChain(chain: ChainId): boolean {
-    return this.chainId === chain
   }
 }
