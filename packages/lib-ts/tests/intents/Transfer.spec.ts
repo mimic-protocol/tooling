@@ -137,73 +137,17 @@ describe('Transfer', () => {
   })
 
   describe('validations', () => {
-    describe('misc', () => {
-      it('throws an error when transfer list is empty', () => {
-        expect(() => {
-          new Transfer(1, [], [])
-        }).toThrow('Transfer list cannot be empty')
-      })
-
-      it('throws an error when there is no max fee', () => {
-        expect(() => {
-          const transferData = TransferData.fromI32(randomToken(1), 5000, randomEvmAddress())
-          new Transfer(1, [transferData], [])
-        }).toThrow('At least a max fee must be specified')
-      })
+    it('throws an error when transfer list is empty', () => {
+      expect(() => {
+        new Transfer(1, [], [])
+      }).toThrow('Transfer list cannot be empty')
     })
 
-    describe('addresses', () => {
-      it('throws when SVM user address is used with EVM transfer', () => {
-        expect(() => {
-          const user = randomSvmAddress()
-          const token = new ERC20Token(randomEvmAddress(), 1)
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomEvmAddress()
-          const settler = randomEvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid user address')
-      })
-
-      it('throws when SVM settler address is used with EVM transfer', () => {
-        expect(() => {
-          const user = randomEvmAddress()
-          const token = new ERC20Token(randomEvmAddress(), 1)
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomEvmAddress()
-          const settler = randomSvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid settler address')
-      })
-
-      it('throws when SVM token address is used with EVM transfer', () => {
-        expect(() => {
-          const user = randomEvmAddress()
-          const token = SPLToken.native()
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomEvmAddress()
-          const settler = randomEvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid transfer token address')
-      })
-
-      it('throws when SVM recipient address is used with EVM transfer', () => {
-        expect(() => {
-          const user = randomEvmAddress()
-          const token = new ERC20Token(randomEvmAddress(), 1)
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomSvmAddress()
-          const settler = randomEvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid transfer token address')
-      })
+    it('throws an error when there is no max fee', () => {
+      expect(() => {
+        const transferData = TransferData.fromI32(randomToken(1), 5000, randomEvmAddress())
+        new Transfer(1, [transferData], [])
+      }).toThrow('At least a max fee must be specified')
     })
   })
 })
@@ -315,61 +259,6 @@ describe('TransferBuilder', () => {
         }).toThrow('All tokens must be on the same chain')
       })
     })
-
-    describe('addresses', () => {
-      it('throws when SVM token is used with EVM TransferBuilder', () => {
-        expect(() => {
-          const svmToken = SPLToken.native()
-          const recipientAddress = Address.fromString(recipientAddressStr)
-          const builder = TransferBuilder.forChain(chainId)
-
-          builder.addTransferFromStringDecimal(svmToken, '100', recipientAddress)
-        }).toThrow('All tokens must be on the same chain')
-      })
-
-      it('throws when SVM token amount is used with EVM TransferBuilder', () => {
-        expect(() => {
-          const svmToken = SPLToken.native()
-          const svmTokenAmount = TokenAmount.fromI32(svmToken, 100)
-          const recipientAddress = Address.fromString(recipientAddressStr)
-          const builder = TransferBuilder.forChain(chainId)
-
-          builder.addTransferFromTokenAmount(svmTokenAmount, recipientAddress)
-        }).toThrow('All tokens must be on the same chain')
-      })
-
-      it('throws when SVM fee token is used with EVM TransferBuilder', () => {
-        expect(() => {
-          const svmToken = SPLToken.native()
-          const svmFee = TokenAmount.fromI32(svmToken, 10)
-          const builder = TransferBuilder.forChain(chainId)
-
-          builder.addMaxFee(svmFee)
-        }).toThrow('Fee token must be on the same chain')
-      })
-
-      it('throws when SVM settler address is used with EVM TransferBuilder', () => {
-        expect(() => {
-          const svmSettler = randomSvmAddress()
-          const builder = TransferBuilder.forChain(chainId)
-
-          builder.addSettler(svmSettler).build()
-        }).toThrow('Invalid settler address')
-      })
-
-      it('throws when SVM user address is used with EVM TransferBuilder', () => {
-        expect(() => {
-          const svmUser = randomSvmAddress()
-          const token = ERC20Token.fromAddress(Address.fromString(tokenAddressStr), chainId)
-          const recipientAddress = Address.fromString(recipientAddressStr)
-          const builder = TransferBuilder.forChain(chainId)
-
-          builder.addTransferFromI32(token, 100, recipientAddress)
-          builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
-          builder.addUser(svmUser).build()
-        }).toThrow('Invalid user address')
-      })
-    })
   })
 })
 
@@ -469,60 +358,6 @@ describe('Transfer - SVM support', () => {
       expect(transfer.maxFees.length).toBe(1)
       expect(transfer.maxFees[0].token).toBe(fee.token.address.toString())
       expect(transfer.maxFees[0].amount).toBe(fee.amount.toString())
-    })
-
-    describe('address encoding validations', () => {
-      it('validates SVM address encoding for user address', () => {
-        expect(() => {
-          const user = randomEvmAddress()
-          const token = SPLToken.native()
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomSvmAddress()
-          const settler = randomSvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid user address')
-      })
-
-      it('validates SVM address encoding for settler address', () => {
-        expect(() => {
-          const user = randomSvmAddress()
-          const token = SPLToken.native()
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomSvmAddress()
-          const settler = randomEvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid settler address')
-      })
-
-      it('validates SVM address encoding for transfer token addresses', () => {
-        expect(() => {
-          const user = randomSvmAddress()
-          const token = ERC20Token.fromAddress(randomEvmAddress(), ChainId.ETHEREUM)
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomSvmAddress()
-          const settler = randomSvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid transfer token address')
-      })
-
-      it('validates SVM address encoding for recipient addresses', () => {
-        expect(() => {
-          const user = randomSvmAddress()
-          const token = SPLToken.native()
-          const amount = BigInt.fromI32(1000)
-          const fee = BigInt.fromI32(10)
-          const recipient = randomEvmAddress()
-          const settler = randomSvmAddress()
-
-          Transfer.create(token, amount, recipient, fee, settler, user)
-        }).toThrow('Invalid transfer token address')
-      })
     })
   })
 })
@@ -656,53 +491,6 @@ describe('TransferBuilder - SVM support', () => {
 
         builder.addTransferFromTokenAmount(wrongChainTokenAmount, recipientAddress)
       }).toThrow('All tokens must be on the same chain')
-    })
-  })
-
-  describe('address encoding validations', () => {
-    it('throws if trying to use EVM token with Solana TransferBuilder', () => {
-      expect(() => {
-        const recipientAddress = randomSvmAddress()
-        const evmToken = ERC20Token.fromAddress(randomEvmAddress(), ChainId.ETHEREUM)
-        const builder = TransferBuilder.forChain(chainId)
-
-        builder.addTransferFromStringDecimal(evmToken, '100', recipientAddress)
-      }).toThrow('All tokens must be on the same chain')
-    })
-
-    it('throws if trying to use SVM token with EVM TransferBuilder', () => {
-      expect(() => {
-        const svmToken = SPLToken.native()
-        const recipientAddress = randomEvmAddress()
-        const builder = TransferBuilder.forChain(ChainId.ETHEREUM)
-
-        builder.addTransferFromStringDecimal(svmToken, '100', recipientAddress)
-      }).toThrow('All tokens must be on the same chain')
-    })
-
-    it('validates SVM address encoding in TransferBuilder settler', () => {
-      expect(() => {
-        const builder = TransferBuilder.forChain(chainId)
-        const evmSettler = randomEvmAddress()
-
-        builder.addSettler(evmSettler).build()
-      }).toThrow('Invalid settler address')
-    })
-
-    it('validates SVM address encoding in TransferBuilder user', () => {
-      expect(() => {
-        const builder = TransferBuilder.forChain(chainId)
-        const evmUser = randomEvmAddress()
-        const svmSettler = randomSvmAddress()
-        const token = SPLToken.native()
-        const recipient = randomSvmAddress()
-
-        builder.addSettler(svmSettler)
-        builder.addTransferFromI32(token, 100, recipient)
-        builder.addMaxFee(TokenAmount.fromI32(token, 9))
-
-        builder.addUser(evmUser).build()
-      }).toThrow('Invalid user address')
     })
   })
 })

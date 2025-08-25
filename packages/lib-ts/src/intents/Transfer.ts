@@ -318,7 +318,6 @@ export class Transfer extends Intent {
 
     this.transfers = transfers
     this.chainId = chainId
-    this.validateAllAddressEncodings()
   }
 
   /**
@@ -333,54 +332,5 @@ export class Transfer extends Intent {
    */
   isSVM(): bool {
     return this.chainId === ChainId.SOLANA_MAINNET
-  }
-
-  /**
-   * Validates address encoding according to the chainId
-   * @param address Address to validate
-   * @param fieldName Name of the field for errors
-   * @returns Throws if there is an encoding mismatch
-   */
-  private validateAddressEncoding(address: Address | null, fieldName: string): void {
-    if (!address) return
-    const isSVMEnvironment = this.isSVM()
-    const isValidAddress = isSVMEnvironment ? address.isSVM() : address.isEVM()
-    const expectedAddressType = isSVMEnvironment ? 'SVM' : 'EVM'
-
-    if (!isValidAddress)
-      throw new Error(`Invalid ${fieldName} address: ${address}. Expected an ${expectedAddressType} address.`)
-  }
-
-  /**
-   * Validates that the user address is properly encoded
-   */
-  validateUserEncoding(): void {
-    this.validateAddressEncoding(Address.fromString(this.user), 'user')
-  }
-
-  /**
-   * Validates that the settler address is properly encoded
-   */
-  validateSettlerEncoding(): void {
-    this.validateAddressEncoding(Address.fromString(this.settler), 'settler')
-  }
-
-  /**
-   * Validates that all transfers token addresses are properly encoded
-   */
-  validateTransfersTokenAddressEncoding(): void {
-    for (let i = 0; i < this.transfers.length; i++) {
-      this.validateAddressEncoding(Address.fromString(this.transfers[i].token), 'transfer token')
-      this.validateAddressEncoding(Address.fromString(this.transfers[i].recipient), 'transfer recipient')
-    }
-  }
-
-  /**
-   * Validates that all addresses are properly encoded
-   */
-  validateAllAddressEncodings(): void {
-    this.validateSettlerEncoding()
-    this.validateUserEncoding()
-    this.validateTransfersTokenAddressEncoding()
   }
 }
