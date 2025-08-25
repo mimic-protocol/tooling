@@ -10,7 +10,7 @@ describe('DenominationToken', () => {
 
       expect(token.address.toHexString()).toBe(USD_ADDRESS)
       expect(token.symbol).toBe('USD')
-      expect(token.decimals).toBe(6)
+      expect(token.decimals).toBe(18)
     })
   })
 

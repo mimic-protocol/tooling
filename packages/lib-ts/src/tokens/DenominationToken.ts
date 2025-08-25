@@ -11,7 +11,7 @@ export class DenominationToken extends Token {
    * @returns A new Denomination Token instance for USD
    */
   static USD(): DenominationToken {
-    return new DenominationToken(Address.USD(), 6, 'USD')
+    return new DenominationToken(Address.USD(), 18, 'USD')
   }
 
   /**
