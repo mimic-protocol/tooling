@@ -1,5 +1,6 @@
 export * from './DenominationToken'
 export * from './ERC20Token'
+export * from './SPLToken'
 export * from './Token'
 export * from './TokenAmount'
 export * from './USD'

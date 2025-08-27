@@ -119,7 +119,7 @@ export class TransferBuilder extends IntentBuilder {
 
   /**
    * Sets the settler address from a string.
-   * @param settler - The settler address as a hex string
+   * @param settler - The settler address as a hex or base58 string accordingly
    * @returns This TransferBuilder instance for method chaining
    */
   addSettlerAsString(settler: string): TransferBuilder {
@@ -258,8 +258,7 @@ export class Transfer extends Intent {
 
   /**
    * Creates a simple single-token transfer intent.
-   * @param chainId - The blockchain network identifier
-   * @param token - The token address to transfer
+   * @param token - The Token to transfer
    * @param amount - The amount to transfer
    * @param recipient - The address to receive the tokens
    * @param maxFee - The max fee to pay for the transfer intent
@@ -270,8 +269,7 @@ export class Transfer extends Intent {
    * @returns A new Transfer instance
    */
   static create(
-    chainId: ChainId,
-    token: Address,
+    token: Token,
     amount: BigInt,
     recipient: Address,
     maxFee: BigInt,
@@ -280,11 +278,18 @@ export class Transfer extends Intent {
     deadline: BigInt | null = null,
     nonce: string | null = null
   ): Transfer {
-    const transferToken = ERC20Token.fromAddress(token, chainId)
-    const transferAmount = TokenAmount.fromBigInt(transferToken, amount)
+    const transferAmount = TokenAmount.fromBigInt(token, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
-    const maxFees = [TokenAmount.fromBigInt(transferToken, maxFee)]
-    return new Transfer(chainId, [transferData], maxFees, settler, user, deadline, nonce)
+    const maxFees = [TokenAmount.fromBigInt(token, maxFee)]
+    return new Transfer(
+      token instanceof ERC20Token ? (token as ERC20Token).chainId : ChainId.SOLANA_MAINNET,
+      [transferData],
+      maxFees,
+      settler,
+      user,
+      deadline,
+      nonce
+    )
   }
 
   /**
@@ -320,5 +325,12 @@ export class Transfer extends Intent {
    */
   send(): void {
     environment.transfer(this)
+  }
+
+  /**
+   * Whether the chainId is Solana or not
+   */
+  isSVM(): bool {
+    return this.chainId === ChainId.SOLANA_MAINNET
   }
 }

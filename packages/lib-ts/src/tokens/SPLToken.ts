@@ -1,14 +1,13 @@
 import { SVM_NATIVE_ADDRESS } from '../helpers'
 import { Address, ChainId } from '../types'
 
+import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
 
 /**
- * Represents a token on a blockchain network including data like symbol, decimals, and address.
+ * Represents a SPL token on the Solana network including data like symbol, decimals, and address.
  */
-export class SPLToken extends Token {
-  private _chainId: ChainId
-
+export class SPLToken extends BlockchainToken {
   /**
    * Creates a Token instance representing the native SOL token.
    * @returns A new Token instance for the native token
@@ -47,33 +46,7 @@ export class SPLToken extends Token {
    */
   constructor(address: Address, decimals: u8, symbol: string) {
     if (!address.isSVM()) throw new Error(`Address ${address} must be an SVM address.`)
-    super(address, decimals, symbol)
-    this._chainId = ChainId.SOLANA_MAINNET
-  }
-
-  /**
-   * Gets the blockchain network identifier where this token is deployed.
-   * This value is assigned during construction and remains constant throughout the token's lifecycle.
-   * @returns The `ChainId` representing the token's network.
-   */
-  get chainId(): ChainId {
-    return this._chainId
-  }
-
-  /**
-   * Gets the token's symbol (e.g., "SOL", "USDC").
-   * @returns A string containing the token symbol.
-   */
-  get symbol(): string {
-    return this._symbol
-  }
-
-  /**
-   * Gets the token's decimals (number of decimal places used).
-   * @returns A `u8` representing the number of decimals of the token.
-   */
-  get decimals(): u8 {
-    return this._decimals
+    super(address, decimals, symbol, ChainId.SOLANA_MAINNET)
   }
 
   /**
@@ -87,27 +60,10 @@ export class SPLToken extends Token {
   }
 
   /**
-   * Checks if this token is the USD denomination.
-   * @returns False always
-   */
-  isUSD(): boolean {
-    return false
-  }
-
-  /**
    * Checks if this token is the native token.
    * @returns True if the token is the native token
    */
   isNative(): boolean {
     return this.equals(SPLToken.native())
-  }
-
-  /**
-   * Checks if this token belongs to the requested chain.
-   * @param chain - The chain ID asking for
-   * @returns True if chains are equal
-   */
-  hasChain(chain: ChainId): boolean {
-    return this.chainId === chain
   }
 }
