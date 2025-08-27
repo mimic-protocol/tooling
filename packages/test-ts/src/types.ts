@@ -32,7 +32,7 @@ export type TokenPrice = {
   token: string
   chainId: number
   usdPrice: string
-  timestamp?: string
+  timestamp?: number
 }
 
 export type Token = {
@@ -51,13 +51,14 @@ export type RelevantTokens = {
   usdMinAmount: string
   tokens: { address: string; chainId: number }[]
   tokenFilter: number
+  timestamp?: number
   output: TokenAmount[]
 }
 
 export type ContractCall = {
   to: string
   chainId: number
-  timestamp?: string
+  timestamp?: number
   data: string
   output: string
   outputType: string
