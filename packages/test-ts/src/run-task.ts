@@ -41,8 +41,8 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const relevantTokensResponse: Record<string, string> = {}
   if (balances.length > 0) {
     for (const balance of balances) {
-      const { owner, chainIds, usdMinAmount, tokens, tokenFilter, output } = balance
-      const key = JSON.stringify({ owner, chainIds, usdMinAmount, tokens, tokenFilter })
+      const { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp, output } = balance
+      const key = JSON.stringify({ owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp })
       relevantTokensResponse[key] = JSON.stringify(output)
     }
   }
@@ -50,12 +50,12 @@ function generateMock(params: GenerateMockParams): MockConfig {
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
-    for (const { token, chainId, timestamp, usdPrice } of prices) {
-      const key = `${token},${chainId},${timestamp || ''}`
+    for (const { token: address, chainId, timestamp, usdPrice } of prices) {
+      const key = JSON.stringify({ address, chainId, timestamp })
       priceResponse[key] = usdPrice
     }
   }
-  const _getPrice = { paramResponse: priceResponse, default: (1 * 10 ** 18).toString() }
+  const _getPrice = { paramResponse: priceResponse, default: '0' }
 
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
