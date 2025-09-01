@@ -4,7 +4,7 @@ import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
 import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
-import { ERC20Token, Token, TokenAmount, USD } from './tokens'
+import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
 export namespace environment {
@@ -61,8 +61,8 @@ export namespace environment {
    */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
     if (token.isUSD()) return USD.fromI32(1)
-    else if (!token instanceof ERC20Token) throw new Error('Price query not supported for token ' + token.toString())
-    const price = _getPrice(JSON.stringify(GetPrice.fromERC20Token(token as ERC20Token, timestamp)))
+    else if (!token instanceof BlockchainToken) throw new Error('Price query not supported for token ' + token.toString())
+    const price = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
     return USD.fromBigInt(BigInt.fromString(price))
   }
 
@@ -71,7 +71,7 @@ export namespace environment {
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
-   * @param tokensList - List of ERC20 tokens to include/exclude (optional, defaults to empty array)
+   * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @param timestamp - The timestamp for relevant tokens qery (optional, defaults to current time)
    * @returns Array of TokenAmount objects representing the relevant tokens
@@ -80,7 +80,7 @@ export namespace environment {
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
-    tokensList: ERC20Token[] = [],
+    tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList,
     timestamp: Date | null = null
   ): TokenAmount[] {

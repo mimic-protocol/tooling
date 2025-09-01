@@ -1,4 +1,4 @@
-import { ERC20Token } from '../tokens'
+import { BlockchainToken } from '../tokens'
 
 @json
 class GetPriceBase {
@@ -17,7 +17,7 @@ export class GetPrice extends GetPriceBase {
     this.timestamp = timestamp
   }
 
-  static fromERC20Token(token: ERC20Token, timestamp: Date | null): GetPriceBase {
+  static fromToken(token: BlockchainToken, timestamp: Date | null): GetPriceBase {
     const address = token.address.toString()
     const chainId = token.chainId
 

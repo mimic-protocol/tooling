@@ -1,12 +1,53 @@
 import { Address, ChainId } from '../types'
 
+import { ERC20Token } from './ERC20Token'
+import { SPLToken } from './SPLToken'
 import { Token } from './Token'
 
 /**
  * Represents a token on a blockchain network
  */
 export abstract class BlockchainToken extends Token {
+  public static readonly EMPTY_SYMBOL: string = ''
+  public static readonly EMPTY_DECIMALS: u8 = u8.MAX_VALUE
+
   private _chainId: ChainId
+
+  /**
+   * Creates a Blockchain Token instance from an Address object.
+   * @param address - The contract address of the token
+   * @param chainId - The blockchain network identifier
+   * @param decimals - Number of decimal places (optional, will be queried if not provided)
+   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @returns A new Token instance
+   */
+  static fromAddress(
+    address: Address,
+    chainId: ChainId,
+    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
+    symbol: string = BlockchainToken.EMPTY_SYMBOL
+  ): BlockchainToken {
+    if (address.isEVM()) return ERC20Token.fromAddress(address, chainId, decimals, symbol)
+    if (chainId != ChainId.SOLANA_MAINNET) throw new Error(`SVM tokens are only supported for Solana mainnet.`)
+    return SPLToken.fromAddress(address, decimals, symbol)
+  }
+
+  /**
+   * Creates a Token instance from a string address.
+   * @param address - The contract address as a hex string
+   * @param chainId - The blockchain network identifier
+   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param decimals - Number of decimal places (optional, will be queried if not provided)
+   * @returns A new Blockchain Token instance
+   */
+  static fromString(
+    address: string,
+    chainId: ChainId,
+    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
+    symbol: string = BlockchainToken.EMPTY_SYMBOL
+  ): BlockchainToken {
+    return BlockchainToken.fromAddress(Address.fromString(address), chainId, decimals, symbol)
+  }
 
   /**
    * Creates a new BlockchainToken instance

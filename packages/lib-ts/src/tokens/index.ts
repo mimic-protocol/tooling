@@ -1,3 +1,4 @@
+export * from './BlockchainToken'
 export * from './DenominationToken'
 export * from './ERC20Token'
 export * from './SPLToken'
