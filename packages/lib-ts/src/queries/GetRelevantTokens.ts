@@ -1,5 +1,5 @@
 import { ListType } from '../helpers'
-import { ERC20Token, TokenAmount, USD } from '../tokens'
+import { BlockchainToken, TokenAmount, USD } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 @json
@@ -9,7 +9,7 @@ class TokenQuery {
     public chainId: i32
   ) {}
 
-  static fromToken(token: ERC20Token): TokenQuery {
+  static fromToken(token: BlockchainToken): TokenQuery {
     return new TokenQuery(token.address.toString(), token.chainId)
   }
 }
@@ -45,7 +45,7 @@ export class GetRelevantTokens extends GetRelevantTokensBase {
     owner: Address,
     chainIds: ChainId[],
     usdMinAmount: USD,
-    tokens: ERC20Token[],
+    tokens: BlockchainToken[],
     tokenFilter: ListType,
     timestamp: Date | null = null
   ): GetRelevantTokensBase {
@@ -75,7 +75,7 @@ export class GetRelevantTokensResponse {
 
   toTokenAmount(): TokenAmount {
     return TokenAmount.fromBigInt(
-      ERC20Token.fromString(this.token.address, this.token.chainId),
+      BlockchainToken.fromString(this.token.address, this.token.chainId),
       BigInt.fromString(this.amount)
     )
   }
