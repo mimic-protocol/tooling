@@ -19,9 +19,9 @@ export class SPLToken extends BlockchainToken {
   /**
    * Creates a Token instance from an Address object.
    * @param address - The token mint address
-   * @param chainId - The blockchain network identifier (optional, is Solana mainnet by default)
-   * @param decimals - Number of decimal places (optional, will be queried if not provided)
-   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param chainId - The blockchain network identifier (optional)
+   * @param decimals - Number of decimal places (optional)
+   * @param symbol - Token symbol (optional)
    * @returns A new Token instance
    */
   static fromAddress(
@@ -37,9 +37,9 @@ export class SPLToken extends BlockchainToken {
   /**
    * Creates a Token instance from a string address.
    * @param address - The token mint address as a base58 string
-   * @param chainId - The blockchain network identifier (optional, is Solana mainnet by default)
-   * @param decimals - Number of decimal places (optional, will be queried if not provided)
-   * @param symbol - Token symbol (optional, will be queried if not provided)
+   * @param chainId - The blockchain network identifier (optional)
+   * @param decimals - Number of decimal places (optional)
+   * @param symbol - Token symbol (optional)
    * @returns A new Token instance
    */
   static fromString(
