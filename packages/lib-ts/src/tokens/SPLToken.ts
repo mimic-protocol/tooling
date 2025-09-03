@@ -13,29 +13,42 @@ export class SPLToken extends BlockchainToken {
    * @returns A new Token instance for the native token
    */
   static native(): SPLToken {
-    return SPLToken.fromString(SVM_NATIVE_ADDRESS, 9, 'SOL')
+    return SPLToken.fromString(SVM_NATIVE_ADDRESS, ChainId.SOLANA_MAINNET, 9, 'SOL')
   }
 
   /**
    * Creates a Token instance from an Address object.
    * @param address - The token mint address
-   * @param decimals - Number of decimal places
-   * @param symbol - Token symbol
+   * @param chainId - The blockchain network identifier (optional)
+   * @param decimals - Number of decimal places (optional)
+   * @param symbol - Token symbol (optional)
    * @returns A new Token instance
    */
-  static fromAddress(address: Address, decimals: u8, symbol: string): SPLToken {
+  static fromAddress(
+    address: Address,
+    chainId: ChainId = ChainId.SOLANA_MAINNET,
+    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
+    symbol: string = BlockchainToken.EMPTY_SYMBOL
+  ): SPLToken {
+    if (chainId != ChainId.SOLANA_MAINNET) throw new Error(`SPL tokens are only supported for Solana mainnet.`)
     return new SPLToken(address, decimals, symbol)
   }
 
   /**
    * Creates a Token instance from a string address.
    * @param address - The token mint address as a base58 string
-   * @param decimals - Number of decimal places
-   * @param symbol - Token symbol
+   * @param chainId - The blockchain network identifier (optional)
+   * @param decimals - Number of decimal places (optional)
+   * @param symbol - Token symbol (optional)
    * @returns A new Token instance
    */
-  static fromString(address: string, decimals: u8, symbol: string): SPLToken {
-    return SPLToken.fromAddress(Address.fromString(address), decimals, symbol)
+  static fromString(
+    address: string,
+    chainId: ChainId = ChainId.SOLANA_MAINNET,
+    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
+    symbol: string = BlockchainToken.EMPTY_SYMBOL
+  ): SPLToken {
+    return SPLToken.fromAddress(Address.fromString(address), chainId, decimals, symbol)
   }
 
   /**
