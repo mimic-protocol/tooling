@@ -73,9 +73,7 @@ export class Address extends Bytes {
    * Returns a copy of this address.
    */
   clone(): Address {
-    const copy = new ByteArray(this.length)
-    copy.set(this)
-    return changetype<Address>(copy)
+    return changetype<Address>(this.slice(0))
   }
 
   /**

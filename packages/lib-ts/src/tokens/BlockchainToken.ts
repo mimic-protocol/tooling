@@ -29,7 +29,7 @@ export abstract class BlockchainToken extends Token {
   ): BlockchainToken {
     if (address.isEVM()) return ERC20Token.fromAddress(address, chainId, decimals, symbol)
     if (chainId != ChainId.SOLANA_MAINNET) throw new Error(`SVM tokens are only supported for Solana mainnet.`)
-    return SPLToken.fromAddress(address, decimals, symbol)
+    return SPLToken.fromAddress(address, ChainId.SOLANA_MAINNET, decimals, symbol)
   }
 
   /**
