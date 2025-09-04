@@ -161,7 +161,7 @@ describe('TransferBuilder', () => {
     it('builds a Transfer from token amounts', () => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const token = ERC20Token.fromAddress(tokenAddress, chainId)
+      const token = ERC20Token.fromAddress(tokenAddress, chainId, 0)
       const tokenAmount = TokenAmount.fromI32(token, 5000)
 
       const builder = TransferBuilder.forChain(chainId)
@@ -180,7 +180,7 @@ describe('TransferBuilder', () => {
     it('builds a Transfer from string decimals', () => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
-      const token = ERC20Token.fromAddress(tokenAddress, chainId)
+      const token = ERC20Token.fromAddress(tokenAddress, chainId, 0)
 
       const builder = TransferBuilder.forChain(chainId)
       builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
@@ -196,7 +196,7 @@ describe('TransferBuilder', () => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
 
-      const token = ERC20Token.fromAddress(tokenAddress, chainId)
+      const token = ERC20Token.fromAddress(tokenAddress, chainId, 0)
       const amount = TokenAmount.fromI32(token, 5000)
       const transfer1 = TransferData.fromTokenAmount(amount, recipientAddress)
       const transfer2 = TransferData.fromStringDecimal(token, '1000', recipientAddress)
@@ -215,7 +215,7 @@ describe('TransferBuilder', () => {
       const tokenAddress = Address.fromString(tokenAddressStr)
       const recipientAddress = Address.fromString(recipientAddressStr)
 
-      const token = ERC20Token.fromAddress(tokenAddress, chainId)
+      const token = ERC20Token.fromAddress(tokenAddress, chainId, 0)
       const tokenAmounts = [TokenAmount.fromStringDecimal(token, '100'), TokenAmount.fromStringDecimal(token, '200')]
 
       const builder = TransferBuilder.forChain(chainId)

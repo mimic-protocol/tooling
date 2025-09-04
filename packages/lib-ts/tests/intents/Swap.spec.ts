@@ -155,8 +155,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain, 0)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain, 0)
 
     const tokenInAmount = TokenAmount.fromI32(tokenIn, 1000)
     const tokenOutAmount = TokenAmount.fromI32(tokenOut, 950)
@@ -178,8 +178,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain, 0)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain, 0)
 
     const builder = SwapBuilder.forChains(sourceChain, destinationChain)
     builder.addTokenInFromStringDecimal(tokenIn, '1')
@@ -214,8 +214,8 @@ describe('SwapBuilder', () => {
     const tokenOutAddress = Address.fromString(tokenOutAddressStr)
     const recipientAddress = Address.fromString(recipientAddressStr)
 
-    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain)
-    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain)
+    const tokenIn = ERC20Token.fromAddress(tokenInAddress, sourceChain, 0)
+    const tokenOut = ERC20Token.fromAddress(tokenOutAddress, destinationChain, 0)
 
     const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
     const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '2')
