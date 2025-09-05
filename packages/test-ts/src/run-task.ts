@@ -46,7 +46,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       relevantTokensResponse[key] = JSON.stringify(output)
     }
   }
-  const _getRelevantTokens = { paramResponse: relevantTokensResponse, default: '[]' }
+  const _getRelevantTokens = { paramResponse: relevantTokensResponse }
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
@@ -55,7 +55,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       priceResponse[key] = usdPrice
     }
   }
-  const _getPrice = { paramResponse: priceResponse, default: '0' }
+  const _getPrice = { paramResponse: priceResponse }
 
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
@@ -67,8 +67,8 @@ function generateMock(params: GenerateMockParams): MockConfig {
       decodeResponse[decodeKey] = output
     }
   }
-  const _contractCall = { paramResponse: callResponse, default: '0x00' }
-  const _decode = { paramResponse: decodeResponse, default: '0' }
+  const _contractCall = { paramResponse: callResponse }
+  const _decode = { paramResponse: decodeResponse }
 
   const contextData: Required<Context> = {
     timestamp: context.timestamp || Date.now(),

@@ -43,8 +43,9 @@ export default {
           const abiType = params.abiType
           const value = params.value
           const key = `_evmDecode:${abiType}:${value}`
-          const decoded = store.has(key) ? store.get(key) : ''
-          return exports.__newString(decoded)
+
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Decoded value not found for key: ${key}`)
         },
         _keccak: () => {
           return exports.__newString('0x')
@@ -54,48 +55,38 @@ export default {
         _getPrice: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
-          const address = params.address
+          const address = params.address.toLowerCase()
           const chainId = params.chainId
           const timestamp = params.timestamp
           const key = `_getPrice:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
-          // Check if the price is set, if not, return default price
-          const price = store.has(key) ? store.get(key) : (1 * 10 ** 18).toString()
-
-          return exports.__newString(price)
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Price not found for key: ${key}`)
         },
         _contractCall: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
-          const key = `_contractCall:${params.to}:${params.chainId}:${params.data}`
-          const result = store.has(key) ? store.get(key) : '0x00'
+          const key = `_contractCall:${params.to.toLowerCase()}:${params.chainId}:${params.data.toLowerCase()}`
 
-          return exports.__newString(result)
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Contract call result not found for key: ${key}`)
         },
         _getContext: () => {
-          const defaultContext = {
-            timestamp: 0,
-            consensusThreshold: 1,
-            user: '0x0000000000000000000000000000000000000000',
-            settlers: [],
-            configSig: '1',
-          }
           const key = `_getContext`
-          const result = store.has(key) ? store.get(key) : JSON.stringify(defaultContext)
-
-          return exports.__newString(result)
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Context not found for key: ${key}`)
         },
       },
       helpers: {
         _setTokenPrice: (addressPtr, chainId, pricePtr) => {
-          const address = exports.__getString(addressPtr)
+          const address = exports.__getString(addressPtr).toLowerCase()
           const price = exports.__getString(pricePtr)
-          const key = `_getPrice:${address}:${chainId}`
-          store.set(key, price)
+          const baseKey = `_getPrice:${address}:${chainId}`
+          store.set(baseKey, price)
         },
         setContractCall: (toPtr, chainId, dataPtr, resultPtr) => {
-          const to = exports.__getString(toPtr)
-          const data = exports.__getString(dataPtr)
+          const to = exports.__getString(toPtr).toLowerCase()
+          const data = exports.__getString(dataPtr).toLowerCase()
           const result = exports.__getString(resultPtr)
           const key = `_contractCall:${to}:${chainId}:${data}`
           store.set(key, result)
