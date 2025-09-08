@@ -187,9 +187,7 @@ export default class RunnerMock {
       } else if ('default' in config && config.default !== undefined) {
         result = this.writeStringToMemory(config.default)
       } else {
-        throw new Error(
-          `No response defined for parameter "${param}" in function "${functionName}" and no default value provided`
-        )
+        throw new Error(`No response defined for parameter "${param}" in function "${functionName}".`)
       }
 
       if (config.log === true) {
