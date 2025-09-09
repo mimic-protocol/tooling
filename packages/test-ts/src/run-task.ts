@@ -89,14 +89,14 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const contextData: Required<Context> = {
     timestamp: context.timestamp || Date.now(),
     consensusThreshold: context.consensusThreshold || 1,
-    user: (context.user || NULL_ADDRESS).toLowerCase(),
+    user: context.user || NULL_ADDRESS,
     settlers: context.settlers || [
       {
         address: NULL_ADDRESS,
         chainId: 1,
       },
     ],
-    configSig: (context.configSig || 'config-sig-123').toLowerCase(),
+    configSig: context.configSig || 'config-sig-123',
   }
 
   const environment = {
