@@ -42,33 +42,49 @@ function generateMock(params: GenerateMockParams): MockConfig {
   if (balances.length > 0) {
     for (const balance of balances) {
       const { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp, output } = balance
-      const key = JSON.stringify({ owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp })
+      const key = JSON.stringify({
+        owner: owner.toLowerCase(),
+        chainIds,
+        usdMinAmount,
+        tokens: tokens.map((token) => ({ ...token, address: token.address.toLowerCase() })),
+        tokenFilter,
+        timestamp,
+      })
       relevantTokensResponse[key] = JSON.stringify(output)
     }
   }
-  const _getRelevantTokens = { paramResponse: relevantTokensResponse, default: '[]' }
+  const _getRelevantTokens = { paramResponse: relevantTokensResponse }
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
     for (const { token: address, chainId, timestamp, usdPrice } of prices) {
-      const key = JSON.stringify({ address, chainId, timestamp })
+      const key = JSON.stringify({
+        address: address.toLowerCase(),
+        chainId,
+        timestamp,
+      })
       priceResponse[key] = usdPrice
     }
   }
-  const _getPrice = { paramResponse: priceResponse, default: '0' }
+  const _getPrice = { paramResponse: priceResponse }
 
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
   if (calls.length > 0) {
     for (const { to, chainId, timestamp, data, output, outputType } of calls) {
-      const key = JSON.stringify({ to, chainId, ...(timestamp && { timestamp }), data })
+      const key = JSON.stringify({
+        to: to.toLowerCase(),
+        chainId,
+        ...(timestamp !== undefined && { timestamp }),
+        data: data.toLowerCase(),
+      })
       callResponse[key] = output
       const decodeKey = JSON.stringify({ abiType: outputType, value: output })
       decodeResponse[decodeKey] = output
     }
   }
-  const _contractCall = { paramResponse: callResponse, default: '0x00' }
-  const _decode = { paramResponse: decodeResponse, default: '0' }
+  const _contractCall = { paramResponse: callResponse }
+  const _decode = { paramResponse: decodeResponse }
 
   const contextData: Required<Context> = {
     timestamp: context.timestamp || Date.now(),
