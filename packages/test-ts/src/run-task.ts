@@ -43,14 +43,14 @@ function generateMock(params: GenerateMockParams): MockConfig {
     for (const balance of balances) {
       const { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp, output } = balance
       const key = JSON.stringify({
-        owner: normalizeValue(owner),
+        owner: owner.toLowerCase(),
         chainIds,
         usdMinAmount,
-        tokens: normalizeValue(tokens),
+        tokens: tokens.map((token) => ({ ...token, address: token.address.toLowerCase() })),
         tokenFilter,
         timestamp,
       })
-      relevantTokensResponse[key] = JSON.stringify(normalizeValue(output))
+      relevantTokensResponse[key] = JSON.stringify(output)
     }
   }
   const _getRelevantTokens = { paramResponse: relevantTokensResponse }
@@ -59,7 +59,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
   if (prices.length > 0) {
     for (const { token: address, chainId, timestamp, usdPrice } of prices) {
       const key = JSON.stringify({
-        address: normalizeValue(address),
+        address: address.toLowerCase(),
         chainId,
         timestamp,
       })
@@ -73,14 +73,14 @@ function generateMock(params: GenerateMockParams): MockConfig {
   if (calls.length > 0) {
     for (const { to, chainId, timestamp, data, output, outputType } of calls) {
       const key = JSON.stringify({
-        to: normalizeValue(to),
+        to: to.toLowerCase(),
         chainId,
         ...(timestamp !== undefined && { timestamp }),
-        data: normalizeValue(data),
+        data: data.toLowerCase(),
       })
-      callResponse[key] = normalizeValue(output)
-      const decodeKey = JSON.stringify({ abiType: outputType, value: normalizeValue(output) })
-      decodeResponse[decodeKey] = normalizeValue(output)
+      callResponse[key] = output
+      const decodeKey = JSON.stringify({ abiType: outputType, value: output })
+      decodeResponse[decodeKey] = output
     }
   }
   const _contractCall = { paramResponse: callResponse }
@@ -89,14 +89,14 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const contextData: Required<Context> = {
     timestamp: context.timestamp || Date.now(),
     consensusThreshold: context.consensusThreshold || 1,
-    user: normalizeValue(context.user || NULL_ADDRESS),
+    user: (context.user || NULL_ADDRESS).toLowerCase(),
     settlers: context.settlers || [
       {
-        address: normalizeValue(NULL_ADDRESS),
+        address: NULL_ADDRESS,
         chainId: 1,
       },
     ],
-    configSig: normalizeValue(context.configSig || 'config-sig-123'),
+    configSig: (context.configSig || 'config-sig-123').toLowerCase(),
   }
 
   const environment = {
@@ -111,7 +111,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
 
   const evm = { _keccak: '', _encode: { default: '' }, _decode }
 
-  return { environment, evm, inputs: normalizeValue(inputs) }
+  return { environment, evm, inputs }
 }
 
 function parseLogs(logLines: string[]): Output[] {
@@ -122,13 +122,4 @@ function parseLogs(logLines: string[]): Output[] {
     const { op, ...data } = JSON.parse(json.trim())
     return { type, ...data }
   })
-}
-
-function normalizeValue<T>(value: T): T {
-  if (typeof value === 'string') return value.toLowerCase() as T
-  if (Array.isArray(value)) return value.map(normalizeValue) as T
-  if (typeof value === 'object' && value !== null)
-    return Object.fromEntries(Object.entries(value).map(([key, value]) => [key, normalizeValue(value)])) as T
-
-  return value
 }
