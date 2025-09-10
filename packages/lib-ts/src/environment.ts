@@ -54,20 +54,58 @@ export namespace environment {
   }
 
   /**
-   * Tells the price of a token in USD at a specific timestamp.
+   * Tells the prices from different sources for a token in USD at a specific timestamp.
    * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns The token price in USD
+   * @returns The token prices in USD
    */
-  export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    if (token.isUSD()) return USD.fromI32(1)
-    else if (!token instanceof BlockchainToken) throw new Error('Price query not supported for token ' + token.toString())
-    const price = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
-    return USD.fromBigInt(BigInt.fromString(price))
+  export function getRawPrice(token: Token, timestamp: Date | null = null): USD[] {
+    if (token.isUSD()) return [USD.fromI32(1)]
+    else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
+    const prices = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
+    return JSON.parse<string[]>(prices).map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
   }
 
   /**
-   * Tells the balances of an address for the specified tokens and chains.
+   * Tells the median price from different sources for a token in USD at a specific timestamp.
+   * @param token - The token to get the price of
+   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
+   * @returns The token median price in USD
+   */
+  export function getPrice(token: Token, timestamp: Date | null = null): USD {
+    const prices = getRawPrice(token, timestamp)
+    if (prices.length === 0) throw new Error('Prices not found for token ' + token.toString())
+
+    const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
+
+    const length = sortedPrices.length
+    if (length % 2 === 1) {
+      return sortedPrices[length / 2]
+    } else {
+      const left = sortedPrices[length / 2 - 1]
+      const right = sortedPrices[length / 2]
+      const sum = left.plus(right)
+      return sum.div(BigInt.fromI32(2))
+    }
+  }
+
+  /**
+   * Tells the relevant tokens from different sources for an address at a specific timestamp.
+   * @param address - The address to query relevant tokens for
+   * @param chainIds - Array of chain ids to search
+   * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
+   * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
+   * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
+   * @param timestamp - The timestamp for relevant tokens query (optional, defaults to current time)
+   * @returns Array of TokenAmount objects representing the relevant tokens
+   */
+  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType, timestamp: Date | null): GetRelevantTokensResponse[][] {
+    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
+    return JSON.parse<GetRelevantTokensResponse[][]>(responseStr)
+  }
+
+  /**
+   * Tells the relevant tokens from different sources for an address at a specific timestamp grouped by token address.
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
@@ -83,10 +121,20 @@ export namespace environment {
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList,
     timestamp: Date | null = null
-  ): TokenAmount[] {
-    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
-    const response = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
-    return response.map<TokenAmount>((r) => r.toTokenAmount())
+  ): TokenAmount[][] {
+    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType, timestamp)
+    const resultMap: Map<string, TokenAmount[]> = new Map()
+    for (let i = 0; i < response.length; i++) {
+      for (let j = 0; j < response[i].length; j++) {
+        const tokenAmount = response[i][j].toTokenAmount()
+        const mapKey = tokenAmount.token.address.toString()
+        if (!resultMap.has(mapKey)) {
+          resultMap.set(mapKey, [])
+        }
+        resultMap.get(mapKey).push(tokenAmount)
+      }
+    }
+    return resultMap.values()
   }
 
   /**
