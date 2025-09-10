@@ -1,7 +1,7 @@
 import { EVM_NATIVE_ADDRESS } from '../../src/helpers'
 import { DenominationToken, ERC20Token } from '../../src/tokens'
 import { Address, ChainId } from '../../src/types'
-import { randomEvmAddress, randomToken, setContractCall, setEvmDecode } from '../helpers'
+import { randomERC20Token, randomEvmAddress, setContractCall, setEvmDecode } from '../helpers'
 
 describe('ERC20Token', () => {
   describe('create', () => {
@@ -160,7 +160,7 @@ describe('ERC20Token', () => {
 
   describe('address', () => {
     it('has an immutable address', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const originalAddress = token.address.clone()
       const modifiedAddress = token.address
       modifiedAddress[0] = 0xff

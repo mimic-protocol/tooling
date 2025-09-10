@@ -4,11 +4,11 @@ import { OperationType, Transfer, TransferBuilder, TransferData } from '../../sr
 import { ERC20Token, SPLToken, TokenAmount } from '../../src/tokens'
 import { Address, BigInt, ChainId } from '../../src/types'
 import {
+  randomERC20Token,
   randomEvmAddress,
   randomSettler,
   randomSvmAddress,
   randomSvmSettler,
-  randomToken,
   setContext,
 } from '../helpers'
 
@@ -97,8 +97,8 @@ describe('Transfer', () => {
     it('creates a complex Transfer with valid parameters and stringifies it', () => {
       const chainId = 1
       const user = randomEvmAddress()
-      const transferData = TransferData.fromI32(randomToken(chainId), 5000, randomEvmAddress())
-      const fee = TokenAmount.fromI32(randomToken(chainId), 10)
+      const transferData = TransferData.fromI32(randomERC20Token(chainId), 5000, randomEvmAddress())
+      const fee = TokenAmount.fromI32(randomERC20Token(chainId), 10)
       const settler = randomSettler(chainId)
       const deadline = BigInt.fromI32(9999999)
 
@@ -145,7 +145,7 @@ describe('Transfer', () => {
 
     it('throws an error when there is no max fee', () => {
       expect(() => {
-        const transferData = TransferData.fromI32(randomToken(1), 5000, randomEvmAddress())
+        const transferData = TransferData.fromI32(randomERC20Token(1), 5000, randomEvmAddress())
         new Transfer(1, [transferData], [])
       }).toThrow('At least a max fee must be specified')
     })
@@ -166,7 +166,7 @@ describe('TransferBuilder', () => {
 
       const builder = TransferBuilder.forChain(chainId)
       builder.addTransferFromTokenAmount(tokenAmount, recipientAddress)
-      builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
+      builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 9))
 
       const transfer = builder.build()
       expect(transfer.op).toBe(OperationType.Transfer)
@@ -184,7 +184,7 @@ describe('TransferBuilder', () => {
 
       const builder = TransferBuilder.forChain(chainId)
       builder.addTransferFromStringDecimal(token, '3000', recipientAddress)
-      builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
+      builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 9))
 
       const transfer = builder.build()
       expect(transfer.transfers[0].amount).toBe('3000')
@@ -203,7 +203,7 @@ describe('TransferBuilder', () => {
 
       const builder = TransferBuilder.forChain(chainId)
       builder.addTransfers([transfer1, transfer2])
-      builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
+      builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 9))
 
       const transfer = builder.build()
       expect(transfer.transfers.length).toBe(2)
@@ -220,7 +220,7 @@ describe('TransferBuilder', () => {
 
       const builder = TransferBuilder.forChain(chainId)
       builder.addTransfersFromTokenAmounts(tokenAmounts, recipientAddress)
-      builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 9))
+      builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 9))
 
       const transfer = builder.build()
       expect(transfer.transfers.length).toBe(2)
@@ -232,7 +232,7 @@ describe('TransferBuilder', () => {
     describe('chainId', () => {
       it('throws if fee token chainId mismatches the transfer chainId', () => {
         expect(() => {
-          const fee = TokenAmount.fromI32(randomToken(ChainId.GNOSIS), 2)
+          const fee = TokenAmount.fromI32(randomERC20Token(ChainId.GNOSIS), 2)
           TransferBuilder.forChain(chainId).addMaxFee(fee)
         }).toThrow('Fee token must be on the same chain as the one requested for the transfer')
       })
@@ -466,7 +466,7 @@ describe('TransferBuilder - SVM support', () => {
   describe('chainId validations', () => {
     it('throws if fee token chainId mismatches the Solana transfer chainId', () => {
       expect(() => {
-        const fee = TokenAmount.fromI32(randomToken(ChainId.ETHEREUM), 2)
+        const fee = TokenAmount.fromI32(randomERC20Token(ChainId.ETHEREUM), 2)
         TransferBuilder.forChain(chainId).addMaxFee(fee)
       }).toThrow('Fee token must be on the same chain')
     })

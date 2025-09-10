@@ -1,7 +1,7 @@
 import { STANDARD_DECIMALS } from '../../src/helpers'
 import { USD } from '../../src/tokens'
 import { BigInt } from '../../src/types'
-import { randomToken, randomTokenWithPrice, zeroPadded } from '../helpers'
+import { randomERC20Token, randomERC20TokenWithPrice, zeroPadded } from '../helpers'
 
 describe('USD', () => {
   describe('fromI32', () => {
@@ -353,7 +353,7 @@ describe('USD', () => {
   describe('toTokenAmount', () => {
     describe('when zero', () => {
       it('returns 0', () => {
-        const token = randomToken()
+        const token = randomERC20Token()
         const usdAmount = USD.zero()
         const tokenAmount = usdAmount.toTokenAmount(token)
 
@@ -365,7 +365,7 @@ describe('USD', () => {
       it('converts correctly for a token with less than standard decimals', () => {
         const price = 2
         const tokenDecimals: u8 = 6
-        const token = randomTokenWithPrice(tokenDecimals, price)
+        const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
         const decimalAmountUsd = 100
         const usdAmount = USD.fromI32(decimalAmountUsd)
@@ -378,7 +378,7 @@ describe('USD', () => {
       it('converts correctly for a token with standard decimals', () => {
         const price = 5
         const tokenDecimals: u8 = STANDARD_DECIMALS
-        const token = randomTokenWithPrice(tokenDecimals, price)
+        const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
         const decimalAmountUsd = 100
         const usdAmount = USD.fromI32(decimalAmountUsd)
@@ -391,7 +391,7 @@ describe('USD', () => {
       it('converts correctly for a token with more than standard decimals', () => {
         const price = 20
         const tokenDecimals: u8 = 20
-        const token = randomTokenWithPrice(tokenDecimals, price)
+        const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
         const decimalAmountUsd = 100
         const usdAmount = USD.fromI32(decimalAmountUsd)

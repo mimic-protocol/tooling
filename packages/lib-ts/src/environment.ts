@@ -61,7 +61,7 @@ export namespace environment {
    */
   export function getPrice(token: Token, timestamp: Date | null = null): USD {
     if (token.isUSD()) return USD.fromI32(1)
-    else if (!token instanceof BlockchainToken) throw new Error('Price query not supported for token ' + token.toString())
+    else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
     const price = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
     return USD.fromBigInt(BigInt.fromString(price))
   }

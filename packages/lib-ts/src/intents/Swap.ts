@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { ERC20Token, Token, TokenAmount } from '../tokens'
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt, ChainId } from '../types'
 
 import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
@@ -369,9 +369,9 @@ export class Swap extends Intent {
   /**
    * Creates a simple single-chain swap intent.
    * @param chainId - The blockchain network identifier
-   * @param tokenIn - The input token address
+   * @param tokenIn - The input token
    * @param amountIn - The amount to swap from
-   * @param tokenOut - The output token address
+   * @param tokenOut - The output token
    * @param minAmountOut - The minimum amount to receive
    * @param settler - The settler address (optional)
    * @param user - The user address (optional)
@@ -381,9 +381,9 @@ export class Swap extends Intent {
    */
   static create(
     chainId: ChainId,
-    tokenIn: Address,
+    tokenIn: Token,
     amountIn: BigInt,
-    tokenOut: Address,
+    tokenOut: Token,
     minAmountOut: BigInt,
     settler: Address | null = null,
     user: Address | null = null,
@@ -392,8 +392,8 @@ export class Swap extends Intent {
   ): Swap {
     const context = environment.getContext()
     const recipient = user || context.user
-    const swapIn = TokenIn.fromBigInt(ERC20Token.fromAddress(tokenIn, chainId), amountIn)
-    const swapOut = TokenOut.fromBigInt(ERC20Token.fromAddress(tokenOut, chainId), minAmountOut, recipient)
+    const swapIn = TokenIn.fromBigInt(tokenIn, amountIn)
+    const swapOut = TokenOut.fromBigInt(tokenOut, minAmountOut, recipient)
     return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce)
   }
 
