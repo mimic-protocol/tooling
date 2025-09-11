@@ -60,7 +60,7 @@ export default {
           const timestamp = params.timestamp
           const key = `_getPrice:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
-          if (store.has(key)) return exports.__newString(store.get(key))
+          if (store.has(key)) return exports.__newString(`["${store.get(key)}"]`)
           throw new Error(`Price not found for key: ${key}`)
         },
         _contractCall: (paramsPtr) => {
