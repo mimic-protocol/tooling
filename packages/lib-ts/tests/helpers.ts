@@ -2,7 +2,7 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../src/context'
 import { STANDARD_DECIMALS } from '../src/helpers'
-import { ERC20Token } from '../src/tokens'
+import { BlockchainToken, ERC20Token, SPLToken, Token } from '../src/tokens'
 import { Address, BigInt, Bytes, ChainId } from '../src/types'
 
 @json
@@ -69,22 +69,34 @@ export function randomSvmSettler(): SerializableSettler {
   return new SerializableSettler(randomSvmAddress().toString(), ChainId.SOLANA_MAINNET)
 }
 
-export function randomToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): ERC20Token {
+export function randomERC20Token(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): ERC20Token {
   return ERC20Token.fromAddress(randomEvmAddress(), chainId, decimals, 'TEST')
 }
 
-export function randomTokenWithPrice(decimals: u8, priceUsd: number): ERC20Token {
+export function randomSPLToken(chainId: ChainId = randomChainId(), decimals: u8 = STANDARD_DECIMALS): SPLToken {
+  return SPLToken.fromAddress(randomSvmAddress(), chainId, decimals, 'TEST')
+}
+
+export function randomERC20TokenWithPrice(decimals: u8, priceUsd: number): ERC20Token {
   const chainId = randomChainId()
-  const token = randomToken(chainId, decimals)
+  const token = randomERC20Token(chainId, decimals)
+  setTokenPrice(token, priceUsd)
+  return token
+}
+
+export function randomSPLTokenWithPrice(decimals: u8, priceUsd: number): SPLToken {
+  const chainId = randomChainId()
+  const token = randomSPLToken(chainId, decimals)
   setTokenPrice(token, priceUsd)
   return token
 }
 
 declare function _setTokenPrice(address: string, chainId: ChainId, price: string): void
 
-export function setTokenPrice(token: ERC20Token, priceUsd: number): void {
+export function setTokenPrice(token: Token, priceUsd: number): void {
+  if (!(token instanceof BlockchainToken)) throw new Error('token must be Blockchaintoken')
   const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
-  _setTokenPrice(token.address.toHexString(), token.chainId, priceStr)
+  _setTokenPrice(token.address.toHexString(), (token as BlockchainToken).chainId, priceStr)
 }
 
 export declare function setContractCall(to: string, chainId: ChainId, data: string, result: string): void

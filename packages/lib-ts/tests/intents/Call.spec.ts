@@ -3,7 +3,7 @@ import { JSON } from 'json-as'
 import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
-import { randomBytes, randomEvmAddress, randomSettler, randomToken, setContext } from '../helpers'
+import { randomBytes, randomERC20Token, randomEvmAddress, randomSettler, setContext } from '../helpers'
 
 describe('Call', () => {
   it('creates a simple Call with default values and stringifies it', () => {
@@ -11,7 +11,7 @@ describe('Call', () => {
     const user = randomEvmAddress()
     const target = randomEvmAddress()
     const calldata = randomBytes(32)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+    const fee = TokenAmount.fromI32(randomERC20Token(chainId), 100)
     const settler = randomSettler(chainId)
 
     setContext(1, 1, user.toString(), [settler], 'config-123')
@@ -46,7 +46,7 @@ describe('Call', () => {
     const target = randomEvmAddress()
     const calldata = randomBytes(32)
     const value = BigInt.fromI32(10)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+    const fee = TokenAmount.fromI32(randomERC20Token(chainId), 100)
 
     setContext(1, 1, user.toString(), [settler], 'config-123')
 
@@ -77,7 +77,7 @@ describe('Call', () => {
     const user = randomEvmAddress()
     const settler = randomSettler(chainId)
     const deadline = BigInt.fromI32(9999999)
-    const fee = TokenAmount.fromI32(randomToken(chainId), 100)
+    const fee = TokenAmount.fromI32(randomERC20Token(chainId), 100)
     const callData1 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(1))
     const callData2 = new CallData(randomEvmAddress(), randomBytes(32), BigInt.fromI32(2))
     const callDatas = [callData1, callData2]
@@ -134,7 +134,7 @@ describe('CallBuilder', () => {
     const builder = CallBuilder.forChain(chainId)
     builder.addCall(target1, randomBytes(2), BigInt.fromString('1'))
     builder.addCall(target2, randomBytes(2), BigInt.fromString('2'))
-    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
+    builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 100))
 
     const call = builder.build()
     expect(call.calls.length).toBe(2)
@@ -147,7 +147,7 @@ describe('CallBuilder', () => {
 
     const builder = CallBuilder.forChain(chainId)
     builder.addCall(target) // default Bytes.empty and BigInt.zero
-    builder.addMaxFee(TokenAmount.fromI32(randomToken(chainId), 100))
+    builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 100))
 
     const call = builder.build()
     expect(call.calls[0].data).toBe(Bytes.empty().toHexString())
@@ -156,7 +156,7 @@ describe('CallBuilder', () => {
 
   it('throws if fee token chainId mismatches constructor chainId', () => {
     expect(() => {
-      const fee = TokenAmount.fromI32(randomToken(2), 9)
+      const fee = TokenAmount.fromI32(randomERC20Token(2), 9)
       CallBuilder.forChain(chainId).addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the call')
   })

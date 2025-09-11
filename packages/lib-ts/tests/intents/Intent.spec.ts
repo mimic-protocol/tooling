@@ -3,7 +3,7 @@ import { NULL_ADDRESS } from '../../src/helpers'
 import { CallBuilder } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
-import { randomSettler, randomToken, setContext } from '../helpers'
+import { randomERC20Token, randomSettler, setContext } from '../helpers'
 
 describe('IntentBuilder', () => {
   const chainId = 1
@@ -19,7 +19,7 @@ describe('IntentBuilder', () => {
         const target = Address.fromString(targetAddressStr)
         const user = Address.fromString(userAddressStr)
         const settler = Address.fromString(settlerAddressStr)
-        const fee = TokenAmount.fromI32(randomToken(chainId), 9)
+        const fee = TokenAmount.fromI32(randomERC20Token(chainId), 9)
         const deadline = BigInt.fromString('123456789')
         const customNonce = '0xabcdef123456'
 
@@ -46,7 +46,7 @@ describe('IntentBuilder', () => {
       it('uses default user, deadline, nonce and settler if not explicitly set', () => {
         const target = Address.fromString(targetAddressStr)
         const settler = randomSettler(chainId)
-        const fee = TokenAmount.fromI32(randomToken(chainId), 9)
+        const fee = TokenAmount.fromI32(randomERC20Token(chainId), 9)
 
         setContext(0, 1, userAddressStr, [settler], 'config-transfer')
 

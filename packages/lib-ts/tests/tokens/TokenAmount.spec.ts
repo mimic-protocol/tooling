@@ -1,18 +1,18 @@
 import { STANDARD_DECIMALS } from '../../src/helpers'
 import { DenominationToken, TokenAmount } from '../../src/tokens'
 import { BigInt } from '../../src/types'
-import { randomEvmAddress, randomToken, randomTokenWithPrice } from '../helpers'
+import { randomERC20Token, randomERC20TokenWithPrice, randomEvmAddress } from '../helpers'
 
 describe('TokenAmount', () => {
   describe('fromI32', () => {
     it('creates using integers properly', () => {
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 100)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 100)
       expect(tokenAmount.toString()).toBe('100 ' + tokenAmount.symbol)
     })
 
     it('throws an error when creating with a negative amount', () => {
       expect(() => {
-        TokenAmount.fromI32(randomToken(), -10)
+        TokenAmount.fromI32(randomERC20Token(), -10)
       }).toThrow('Token amount cannot be negative')
     })
   })
@@ -20,21 +20,21 @@ describe('TokenAmount', () => {
   describe('fromStringDecimal', () => {
     it('correctly scales the amount with standard decimals', () => {
       const amount = '123.45'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.amount.toString()).toBe('123450000000000000000')
     })
 
     it('handles whole numbers correctly', () => {
       const amount = '100'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.amount.toString()).toBe('100000000000000000000')
     })
 
     it('handles zero correctly', () => {
       const amount = '0'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.amount.toString()).toBe('0')
       expect(tokenAmount.isZero()).toBe(true)
@@ -42,14 +42,14 @@ describe('TokenAmount', () => {
 
     it('handles large numbers', () => {
       const amount = '1234567.89'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.amount.toString()).toBe('1234567890000000000000000')
     })
 
     it('handles small decimal fractions', () => {
       const amount = '0.000001'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.amount.toString()).toBe('1000000000000')
     })
@@ -57,21 +57,21 @@ describe('TokenAmount', () => {
     it('throws an error when amount has multiple decimal points', () => {
       expect(() => {
         const invalidAmount = '100.45.67'
-        TokenAmount.fromStringDecimal(randomToken(), invalidAmount)
+        TokenAmount.fromStringDecimal(randomERC20Token(), invalidAmount)
       }).toThrow()
     })
 
     it('throws an error when creating a token amount with more decimals than the requested precision', () => {
       expect(() => {
         const amount = '0.1234567890123456789'
-        TokenAmount.fromStringDecimal(randomToken(), amount)
+        TokenAmount.fromStringDecimal(randomERC20Token(), amount)
       }).toThrow('Too many decimal places. Max allowed: 18, found: 19')
     })
   })
 
   describe('fromBigInt', () => {
     it('creates a clone of the amount to prevent mutation', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const originalAmount = BigInt.fromI32(100)
 
       const tokenAmount = TokenAmount.fromBigInt(token, originalAmount)
@@ -85,19 +85,19 @@ describe('TokenAmount', () => {
 
   describe('isZero', () => {
     it('returns true when amount is zero', () => {
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 0)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 0)
       expect(tokenAmount.isZero()).toBe(true)
     })
 
     it('returns false when amount is not zero', () => {
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 100)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 100)
       expect(tokenAmount.isZero()).toBe(false)
     })
   })
 
   describe('plus', () => {
     it('adds two token amounts of the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 50)
 
@@ -108,8 +108,8 @@ describe('TokenAmount', () => {
 
     it('throws an error when adding tokens of different types', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 50)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 50)
 
         tokenAmount1.plus(tokenAmount2)
       }).toThrow('Cannot add different tokens')
@@ -118,7 +118,7 @@ describe('TokenAmount', () => {
 
   describe('minus', () => {
     it('subtracts two token amounts of the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 50)
 
@@ -129,8 +129,8 @@ describe('TokenAmount', () => {
 
     it('throws an error when subtracting tokens of different types', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 50)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 50)
 
         tokenAmount1.minus(tokenAmount2)
       }).toThrow('Cannot subtract different tokens')
@@ -138,7 +138,7 @@ describe('TokenAmount', () => {
 
     it('throws an error when the result is negative', () => {
       expect(() => {
-        const token = randomToken()
+        const token = randomERC20Token()
         const tokenAmount1 = TokenAmount.fromI32(token, 100)
         const tokenAmount2 = TokenAmount.fromI32(token, 500)
 
@@ -150,7 +150,7 @@ describe('TokenAmount', () => {
   describe('times', () => {
     it('multiplies a token amount by a decimal value', () => {
       const multiplier = BigInt.fromI32(5)
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 10)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 10)
 
       const result = tokenAmount.times(multiplier)
       expect(result.toString()).toBe('50 ' + tokenAmount.symbol)
@@ -160,7 +160,7 @@ describe('TokenAmount', () => {
     it('throws an error when using a negative multiplier', () => {
       expect(() => {
         const multiplier = BigInt.fromI32(-5)
-        const tokenAmount = TokenAmount.fromI32(randomToken(), 10)
+        const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 10)
 
         tokenAmount.times(multiplier)
       }).toThrow('Token amount cannot be negative')
@@ -170,7 +170,7 @@ describe('TokenAmount', () => {
   describe('div', () => {
     it('divides a token amount by a decimal value', () => {
       const divisor = BigInt.fromI32(4)
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 100)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 100)
 
       const result = tokenAmount.div(divisor)
       expect(result.toString()).toBe('25 ' + tokenAmount.symbol)
@@ -180,7 +180,7 @@ describe('TokenAmount', () => {
     it('throws an error using a negative divisor', () => {
       expect(() => {
         const divisor = BigInt.fromI32(-5)
-        const tokenAmount = TokenAmount.fromI32(randomToken(), 10)
+        const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 10)
 
         tokenAmount.div(divisor)
       }).toThrow('Token amount cannot be negative')
@@ -189,7 +189,7 @@ describe('TokenAmount', () => {
     it('throws an error when dividing by zero', () => {
       expect(() => {
         const divisor = BigInt.zero()
-        const tokenAmount = TokenAmount.fromI32(randomToken(), 10)
+        const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 10)
 
         tokenAmount.div(divisor)
       }).toThrow('Trying to divide by zero')
@@ -198,7 +198,7 @@ describe('TokenAmount', () => {
 
   describe('equals', () => {
     it('returns true for token amounts with the same token and amount', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -206,7 +206,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false for same tokens with different amounts', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -214,8 +214,8 @@ describe('TokenAmount', () => {
     })
 
     it('returns false for different tokens', () => {
-      const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-      const tokenAmount2 = TokenAmount.fromI32(randomToken(), 100)
+      const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+      const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 100)
 
       expect(tokenAmount1.equals(tokenAmount2)).toBe(false)
     })
@@ -223,7 +223,7 @@ describe('TokenAmount', () => {
 
   describe('notEquals', () => {
     it('returns false for token amounts with the same token and amount', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -231,7 +231,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns true for same tokens with different amounts', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -239,8 +239,8 @@ describe('TokenAmount', () => {
     })
 
     it('returns true for different tokens', () => {
-      const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-      const tokenAmount2 = TokenAmount.fromI32(randomToken(), 100)
+      const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+      const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 100)
 
       expect(tokenAmount1.notEquals(tokenAmount2)).toBe(true)
     })
@@ -248,7 +248,7 @@ describe('TokenAmount', () => {
 
   describe('lt', () => {
     it('returns true when the first amount is less than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -256,7 +256,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is equal to the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -264,7 +264,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is greater than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 200)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -273,8 +273,8 @@ describe('TokenAmount', () => {
 
     it('throws when comparing amounts of different tokens', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 200)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 200)
 
         tokenAmount1.lt(tokenAmount2)
       }).toThrow()
@@ -283,7 +283,7 @@ describe('TokenAmount', () => {
 
   describe('le', () => {
     it('returns true when the first amount is less than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -291,7 +291,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns true when the first amount is equal to the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -299,7 +299,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is greater than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 200)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -308,8 +308,8 @@ describe('TokenAmount', () => {
 
     it('throws when comparing amounts of different tokens', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 200)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 200)
 
         tokenAmount1.le(tokenAmount2)
       }).toThrow()
@@ -318,7 +318,7 @@ describe('TokenAmount', () => {
 
   describe('gt', () => {
     it('returns true when the first amount is greater than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 200)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -326,7 +326,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is equal to the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -334,7 +334,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is less than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -343,8 +343,8 @@ describe('TokenAmount', () => {
 
     it('throws when comparing amounts of different tokens', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 200)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 200)
 
         tokenAmount1.gt(tokenAmount2)
       }).toThrow()
@@ -353,7 +353,7 @@ describe('TokenAmount', () => {
 
   describe('ge', () => {
     it('returns true when the first amount is greater than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 200)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -361,7 +361,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns true when the first amount is equal to the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 100)
 
@@ -369,7 +369,7 @@ describe('TokenAmount', () => {
     })
 
     it('returns false when the first amount is less than the second for the same token', () => {
-      const token = randomToken()
+      const token = randomERC20Token()
       const tokenAmount1 = TokenAmount.fromI32(token, 100)
       const tokenAmount2 = TokenAmount.fromI32(token, 200)
 
@@ -378,8 +378,8 @@ describe('TokenAmount', () => {
 
     it('throws when comparing amounts of different tokens', () => {
       expect(() => {
-        const tokenAmount1 = TokenAmount.fromI32(randomToken(), 100)
-        const tokenAmount2 = TokenAmount.fromI32(randomToken(), 200)
+        const tokenAmount1 = TokenAmount.fromI32(randomERC20Token(), 100)
+        const tokenAmount2 = TokenAmount.fromI32(randomERC20Token(), 200)
 
         tokenAmount1.ge(tokenAmount2)
       }).toThrow()
@@ -388,42 +388,42 @@ describe('TokenAmount', () => {
 
   describe('toString', () => {
     it('handles zero correctly', () => {
-      const tokenAmount = TokenAmount.fromI32(randomToken(), 0)
+      const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 0)
 
       expect(tokenAmount.toString()).toBe('0 ' + tokenAmount.symbol)
     })
 
     it('handles small decimals correctly', () => {
       const amount = '123.45'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
     })
 
     it('handles large decimals correctly', () => {
       const amount = '0.123456789012345678'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
     })
 
     it('handles small values correctly', () => {
       const amount = '0.000000000000000005'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
     })
 
     it('handles integers correctly', () => {
       const amount = '5'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
     })
 
     it('handles large values correctly', () => {
       const amount = '5916498163948619246012640917204971'
-      const tokenAmount = TokenAmount.fromStringDecimal(randomToken(), amount)
+      const tokenAmount = TokenAmount.fromStringDecimal(randomERC20Token(), amount)
 
       expect(tokenAmount.toString()).toBe(amount + ' ' + tokenAmount.symbol)
     })
@@ -433,7 +433,7 @@ describe('TokenAmount', () => {
     describe('for ERC20 tokens', () => {
       describe('when zero', () => {
         it('returns 0', () => {
-          const tokenAmount = TokenAmount.fromI32(randomToken(), 0)
+          const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 0)
           const result = tokenAmount.toUsd()
           expect(result.toString()).toBe('0')
         })
@@ -443,7 +443,7 @@ describe('TokenAmount', () => {
         it('converts correctly for a token with less than standard decimals', () => {
           const price = 2
           const tokenDecimals: u8 = 6
-          const token = randomTokenWithPrice(tokenDecimals, price)
+          const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
           const decimalTokenAmount = 100
           const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
@@ -456,7 +456,7 @@ describe('TokenAmount', () => {
         it('converts correctly for a token with standard decimals', () => {
           const price = 5
           const tokenDecimals: u8 = STANDARD_DECIMALS
-          const token = randomTokenWithPrice(tokenDecimals, price)
+          const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
           const decimalTokenAmount = 100
           const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
@@ -469,7 +469,7 @@ describe('TokenAmount', () => {
         it('converts correctly for a token with more than standard decimals', () => {
           const price = 20
           const tokenDecimals: u8 = 20
-          const token = randomTokenWithPrice(tokenDecimals, price)
+          const token = randomERC20TokenWithPrice(tokenDecimals, price)
 
           const decimalTokenAmount = 100
           const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
