@@ -123,18 +123,17 @@ export namespace environment {
     timestamp: Date | null = null
   ): TokenAmount[] {
     const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType, timestamp)
-    const resultMap: Map<string, TokenAmount[]> = new Map()
+    const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {
         const tokenAmount = response[i][j].toTokenAmount()
         const mapKey = tokenAmount.token.address.toString()
-        if (!resultMap.has(mapKey)) {
-          resultMap.set(mapKey, [])
-        }
-        resultMap.get(mapKey).push(tokenAmount)
+        
+        if (resultMap.has(mapKey)) continue
+        resultMap.set(mapKey, tokenAmount)
       }
     }
-    return resultMap.values().map<TokenAmount>(group => group.pop())
+    return resultMap.values()
   }
 
   /**
