@@ -105,7 +105,7 @@ export namespace environment {
   }
 
   /**
-   * Tells the relevant tokens from different sources for an address at a specific timestamp grouped by token address.
+   * Tells the balances of an address for the specified tokens and chains.
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
@@ -121,7 +121,7 @@ export namespace environment {
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList,
     timestamp: Date | null = null
-  ): TokenAmount[][] {
+  ): TokenAmount[] {
     const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType, timestamp)
     const resultMap: Map<string, TokenAmount[]> = new Map()
     for (let i = 0; i < response.length; i++) {
@@ -134,7 +134,7 @@ export namespace environment {
         resultMap.get(mapKey).push(tokenAmount)
       }
     }
-    return resultMap.values()
+    return resultMap.values().map<TokenAmount>(group => group.pop())
   }
 
   /**

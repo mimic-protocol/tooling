@@ -19,7 +19,7 @@ export default function main(): void {
   const aaveContract = new AAVE(Address.fromString('0x794a61358d6845594f94dc1db02a252b5b4814ad'), chainId)
 
   aaveContract
-    .withdraw(USDCe.address, userTokens[0][0].amount, context.user)
+    .withdraw(USDCe.address, userTokens[0].amount, context.user)
     .addMaxFee(feeUsdt)
     .addUser(inputs.smartAccount)
     .build()
