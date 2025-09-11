@@ -1,0 +1,16 @@
+{
+  "environment": {
+    "_swap": "log",
+    "_transfer": "log",
+    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"HV1KXxWFaSeriyFvXyx48FqG9BoFbfinB8njCJonqP7K\", \"settlers\": [{\"address\": \"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\", \"chainId\": 507424}], \"configSig\": \"682ec8210b1ce912da4d2952\"}",
+    "_contractCall": {
+      "default": ""
+    }
+  },
+  "evm": {
+    "_keccak": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+    "_decode": {
+      "default": ""
+    }
+  }
+}
