@@ -3,7 +3,14 @@ import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetAccountsInfo, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
+import {
+  Call as CallQuery,
+  GetAccountsInfo,
+  GetAccountsInfoResponse,
+  GetPrice,
+  GetRelevantTokens,
+  GetRelevantTokensResponse
+} from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
@@ -167,10 +174,11 @@ export namespace environment {
   export function getAccountsInfo(
     publicKeys: Address[],
     timestamp: Date | null
-  ): string {
-    return _getAccountsInfo(
+  ): GetAccountsInfoResponse {
+    const responseStr = _getAccountsInfo(
       JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
     )
+    return JSON.parse<GetAccountsInfoResponse>(responseStr)
   }
 
   /**

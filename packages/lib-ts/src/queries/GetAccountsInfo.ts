@@ -21,3 +21,14 @@ export class GetAccountsInfo extends GetAccountsInfoBase {
       : new GetAccountsInfoBase(strPublicKeys)
   }
 }
+
+@json
+export class GetAccountsInfoResponse {
+  constructor(
+    public readonly executable: bool,
+    public readonly lamports: u64,
+    public readonly owner: string,
+    public readonly rentEpoch: u64,
+    public readonly data: u8[]
+  ) {}
+}
