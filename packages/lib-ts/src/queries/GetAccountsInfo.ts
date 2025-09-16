@@ -15,7 +15,7 @@ export class GetAccountsInfo extends GetAccountsInfoBase {
   }
 
   static from(publicKeys: Address[], timestamp: Date | null): GetAccountsInfoBase {
-    const strPublicKeys = publicKeys.map((pk) => pk.toString())
+    const strPublicKeys = publicKeys.map((pk: Address) => pk.toString())
     return timestamp
       ? new GetAccountsInfo(strPublicKeys, changetype<Date>(timestamp).getTime())
       : new GetAccountsInfoBase(strPublicKeys)
@@ -25,10 +25,10 @@ export class GetAccountsInfo extends GetAccountsInfoBase {
 @json
 export class GetAccountsInfoResponse {
   constructor(
-    public readonly executable: bool,
-    public readonly lamports: u64,
-    public readonly owner: string,
-    public readonly rentEpoch: u64,
-    public readonly data: u8[]
+    public executable: bool,
+    public lamports: u64,
+    public owner: string,
+    public rentEpoch: u64,
+    public data: u8[]
   ) {}
 }
