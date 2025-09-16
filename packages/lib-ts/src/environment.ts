@@ -3,7 +3,7 @@ import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
+import { Call as CallQuery, GetAccountsInfo, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
@@ -25,6 +25,9 @@ export namespace environment {
 
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
+
+  @external('environment', '_getAccountsInfo')
+  declare function _getAccountsInfo(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -152,6 +155,21 @@ export namespace environment {
   ): string {
     return _contractCall(
       JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
+    )
+  }
+
+  /**
+   * SVM - Gets on-chain account info
+   * @param publicKeys - Accounts to read from chain
+   * @param timestamp - The timestamp for the call context (optional)
+   * @returns The raw response from the underlying getMultipleAccountsInfo call
+   */
+  export function getAccountsInfo(
+    publicKeys: Address[],
+    timestamp: Date | null
+  ): string {
+    return _getAccountsInfo(
+      JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
     )
   }
 
