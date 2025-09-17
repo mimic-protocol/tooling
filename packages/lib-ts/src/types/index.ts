@@ -1,5 +1,6 @@
 import { JSON } from 'json-as'
 
+export * from './AccountInfo'
 export * from './Address'
 export * from './BigInt'
 export * from './ByteArray'

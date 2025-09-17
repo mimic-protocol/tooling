@@ -7,9 +7,10 @@ import {
   Call as CallQuery,
   GetAccountsInfo,
   GetAccountsInfoResponse,
+  GetAccountsInfoStringResponse,
   GetPrice,
   GetRelevantTokens,
-  GetRelevantTokensResponse
+  GetRelevantTokensResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
@@ -175,10 +176,14 @@ export namespace environment {
     publicKeys: Address[],
     timestamp: Date | null
   ): GetAccountsInfoResponse {
+    // There is a bug with json-as, so we have to do this with JSON booleans
     const responseStr = _getAccountsInfo(
       JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
     )
-    return JSON.parse<GetAccountsInfoResponse>(responseStr)
+      .replace("true",`"true"`)
+      .replace("false",`"false"`)
+
+    return JSON.parse<GetAccountsInfoStringResponse>(responseStr).toGetAccountsInfoResponse()
   }
 
   /**
