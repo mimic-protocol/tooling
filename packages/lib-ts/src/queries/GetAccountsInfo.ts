@@ -25,10 +25,18 @@ export class GetAccountsInfo extends GetAccountsInfoBase {
 @json
 export class GetAccountsInfoResponse {
   constructor(
+    public accountsInfo: AccountInfo,
+    public slot: string
+  ) {}
+}
+
+@json
+export class AccountInfo {
+  constructor(
     public executable: bool,
-    public lamports: u64,
     public owner: string,
-    public rentEpoch: u64,
-    public data: u8[]
+    public lamports: string,
+    public data: string,
+    public rentEpoch: string
   ) {}
 }
