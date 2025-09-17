@@ -14,6 +14,7 @@ import {
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
+import { log } from './log'
 
 export namespace environment {
   @external('environment', '_call')
@@ -180,8 +181,8 @@ export namespace environment {
     const responseStr = _getAccountsInfo(
       JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
     )
-      .replace("true",`"true"`)
-      .replace("false",`"false"`)
+      .replaceAll("true",`"true"`)
+      .replaceAll("false",`"false"`)
 
     return JSON.parse<GetAccountsInfoStringResponse>(responseStr).toGetAccountsInfoResponse()
   }
