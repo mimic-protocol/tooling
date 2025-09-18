@@ -71,6 +71,15 @@ export default {
           if (store.has(key)) return exports.__newString(store.get(key))
           throw new Error(`Contract call result not found for key: ${key}`)
         },
+        _getAccountsInfo: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = JSON.parse(paramsStr)
+          const publicKeys = params.publicKeys.join(',')
+          const key = `_getAccountsInfo:${publicKeys}`
+
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Get accounts info result not found for key: ${key}`)
+        },
         _getContext: () => {
           const key = `_getContext`
           if (store.has(key)) return exports.__newString(store.get(key))
@@ -97,6 +106,12 @@ export default {
           const key = `_evmDecode:${abiType}:${hex}`
           const decoded = exports.__getString(decodedPtr)
           store.set(key, decoded)
+        },
+        setGetAccountsInfo: (publicKeysPtr, accountsInfoPtr) => {
+          const publicKeys = exports.__getString(publicKeysPtr)
+          const accountsInfo = exports.__getString(accountsInfoPtr)
+          const key = `_getAccountsInfo:${publicKeys}`
+          store.set(key, accountsInfo)
         },
         _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, configSigPtr) => {
           const user = exports.__getString(userPtr)

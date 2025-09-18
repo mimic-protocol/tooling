@@ -1,7 +1,7 @@
 import { SVM_NATIVE_ADDRESS } from '../../src/helpers'
 import { SPLToken } from '../../src/tokens/SPLToken'
 import { ChainId } from '../../src/types'
-import { randomEvmAddress, randomSvmAddress } from '../helpers'
+import { randomEvmAddress, randomSvmAddress, setGetAccountsInfo } from '../helpers'
 
 describe('SPLToken', () => {
   describe('native', () => {
@@ -103,10 +103,52 @@ describe('SPLToken', () => {
       expect(token.decimals).toBe(9)
     })
 
-    it('returns set decimals when SPL', () => {
+    it('returns set decimals when SPL and set', () => {
       const token = SPLToken.fromAddress(randomSvmAddress(), ChainId.SOLANA_MAINNET, 6, 'USDC')
 
       expect(token.decimals).toBe(6)
+    })
+
+    it('returns queried decimals when SPL and not set - USDC', () => {
+      const addr = randomSvmAddress()
+      setGetAccountsInfo(
+        `${addr.toString()}`,
+        `{
+          "accountsInfo": [
+            {
+              "executable": false,
+              "rentEpoch": "1234",
+              "owner": "${randomSvmAddress()}",
+              "lamports": "100",
+              "data":"0x0100000098fe86e88d9be2ea8bc1cca4878b2988c240f52b8424bfb40ed1a2ddcb5e199b25dd8d661f3620000601010000006270aa8a59c59405b45286c86772e6cd126e9b8a5d3a38536d37f7b414e8b667"
+            }
+          ],
+          "slot":"12345678"
+        }`
+      )
+      const token = SPLToken.fromAddress(addr)
+      expect(token.decimals).toBe(6)
+    })
+
+    it('returns queried decimals when SPL and not set - BONK', () => {
+      const addr = randomSvmAddress()
+      setGetAccountsInfo(
+        `${addr.toString()}`,
+        `{
+          "accountsInfo": [
+            {
+              "executable": false,
+              "rentEpoch": "1234",
+              "owner": "${randomSvmAddress()}",
+              "lamports": "100",
+              "data":"0x0000000079595167da480c5ae1344501d211b7736340e3fbdf00ecde63b64dc88acc2f1c292e864bbf381e7a0501000000000000000000000000000000000000000000000000000000000000000000000000"
+            }
+          ],
+          "slot":"12345678"
+        }`
+      )
+      const token = SPLToken.fromAddress(addr)
+      expect(token.decimals).toBe(5)
     })
   })
 

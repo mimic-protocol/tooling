@@ -22,4 +22,10 @@ export class Option<T> {
     if (!this.isSome && !other.isSome) return true
     return this._value == other._value
   }
+
+  toString(): string {
+    if (!this.isSome) return 'None'
+    // @ts-expect-error: AssemblyScript lacks runtime reflection, so we assume toString exists
+    return `Some(${this._value.toString ? this._value.toString() : '[Object]'})`
+  }
 }

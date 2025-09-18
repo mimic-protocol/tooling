@@ -19,6 +19,26 @@ describe('BorshDecoder', () => {
     })
   })
 
+  describe('tryBool', () => {
+    it('deserializes bool (true)', () => {
+      const deserializer = BorshDeserializer.fromHex('0x01')
+      const value = deserializer.tryBool()
+      expect(value).toBe(true)
+    })
+
+    it('deserializes bool (false)', () => {
+      const deserializer = BorshDeserializer.fromHex('0x00')
+      const value = deserializer.tryBool()
+      expect(value).toBe(false)
+    })
+
+    it('throws if insufficient bytes', () => {
+      expect(() => {
+        BorshDeserializer.fromHex('0x').tryBool()
+      }).toThrow()
+    })
+  })
+
   describe('tryU8', () => {
     it('deserializes u8', () => {
       const deserializer = BorshDeserializer.fromHex('0xab')
@@ -96,6 +116,33 @@ describe('BorshDecoder', () => {
   })
 
   describe('tryOption', () => {
+    describe('bool', () => {
+      it('deserializes correctly (value)', () => {
+        const deserializer = BorshDeserializer.fromHex('0x0100000001')
+        const value = deserializer.tryOptionBool()
+        expect(value.isSome).toBeTruthy()
+        expect(value.unwrap()).toBe(true)
+      })
+
+      it('deserializes correctly (no value)', () => {
+        const deserializer = BorshDeserializer.fromHex('0x00000000')
+        const value = deserializer.tryOptionBool()
+        expect(value.isSome).toBeFalsy()
+      })
+
+      it('throws if insufficient bytes', () => {
+        expect(() => {
+          BorshDeserializer.fromHex('0x01000000').tryOptionBool()
+        }).toThrow()
+      })
+
+      it('throws if insufficient bytes 2', () => {
+        expect(() => {
+          BorshDeserializer.fromHex('0x000000').tryOptionBool()
+        }).toThrow()
+      })
+    })
+
     describe('u8', () => {
       it('deserializes correctly (value)', () => {
         const deserializer = BorshDeserializer.fromHex('0x01000000ab')
@@ -295,6 +342,42 @@ describe('BorshDecoder', () => {
       const value2 = deserializer.tryU16()
       expect(value2).toBe(0xefcd)
       expect(deserializer.isEmpty()).toBeTruthy()
+    })
+  })
+
+  describe('complex', () => {
+    it('deserializes a complex structure', () => {
+      const pubkeyHex = randomHex(64).slice(2, 66)
+      const pubkey = Address.fromHexString(pubkeyHex)
+      const deserializer = BorshDeserializer.fromHex(
+        `0x01abffee010203040102030405060708${pubkeyHex}010000000101000000ab0000000001000000010203040000000001000000${pubkeyHex}`
+      )
+
+      const value1 = deserializer.tryBool()
+      const value2 = deserializer.tryU8()
+      const value3 = deserializer.tryU16()
+      const value4 = deserializer.tryU32()
+      const value5 = deserializer.tryU64()
+      const value6 = deserializer.tryPubkey()
+      const value7 = deserializer.tryOptionBool()
+      const value8 = deserializer.tryOptionU8()
+      const value9 = deserializer.tryOptionU16()
+      const value10 = deserializer.tryOptionU32()
+      const value11 = deserializer.tryOptionU64()
+      const value12 = deserializer.tryOptionPubkey()
+
+      expect(value1).toBe(true)
+      expect(value2).toBe(0xab)
+      expect(value3).toBe(0xeeff)
+      expect(value4).toBe(0x04030201)
+      expect(value5.toString()).toBe('578437695752307201')
+      expect(value6).toBe(pubkey)
+      expect(value7.unwrap()).toBe(true)
+      expect(value8.unwrap()).toBe(0xab)
+      expect(value9.isSome).toBeFalsy()
+      expect(value10.unwrap()).toBe(0x04030201)
+      expect(value11.isSome).toBeFalsy()
+      expect(value12.unwrap()).toBe(pubkey)
     })
   })
 })

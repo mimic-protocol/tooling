@@ -8,5 +8,6 @@ export * from './Bytes'
 export * from './ChainId'
 export * from './EvmDecodeParam'
 export * from './EvmEncodeParam'
+export * from './Mint'
 export * from './Option'
 export { JSON }

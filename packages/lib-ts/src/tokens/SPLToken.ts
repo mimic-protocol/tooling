@@ -1,5 +1,6 @@
+import { environment } from '../environment'
 import { SVM_NATIVE_ADDRESS } from '../helpers'
-import { Address, ChainId } from '../types'
+import { Address, ChainId, Mint } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
@@ -27,8 +28,8 @@ export class SPLToken extends BlockchainToken {
   static fromAddress(
     address: Address,
     chainId: ChainId = ChainId.SOLANA_MAINNET,
-    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
-    symbol: string = BlockchainToken.EMPTY_SYMBOL
+    decimals: u8 = SPLToken.EMPTY_DECIMALS,
+    symbol: string = SPLToken.EMPTY_SYMBOL
   ): SPLToken {
     if (chainId != ChainId.SOLANA_MAINNET) throw new Error(`SPL tokens are only supported for Solana mainnet.`)
     return new SPLToken(address, decimals, symbol)
@@ -45,8 +46,8 @@ export class SPLToken extends BlockchainToken {
   static fromString(
     address: string,
     chainId: ChainId = ChainId.SOLANA_MAINNET,
-    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
-    symbol: string = BlockchainToken.EMPTY_SYMBOL
+    decimals: u8 = SPLToken.EMPTY_DECIMALS,
+    symbol: string = SPLToken.EMPTY_SYMBOL
   ): SPLToken {
     return SPLToken.fromAddress(Address.fromString(address), chainId, decimals, symbol)
   }
@@ -57,9 +58,24 @@ export class SPLToken extends BlockchainToken {
    * @param decimals - Number of decimal places
    * @param symbol - Token symbol
    */
-  constructor(address: Address, decimals: u8, symbol: string) {
+  constructor(address: Address, decimals: u8 = SPLToken.EMPTY_DECIMALS, symbol: string = SPLToken.EMPTY_SYMBOL) {
     if (!address.isSVM()) throw new Error(`Address ${address} must be an SVM address.`)
     super(address, decimals, symbol, ChainId.SOLANA_MAINNET)
+  }
+
+  /**
+   * Gets the token’s decimals (number of decimal places used).
+   * If decimals were not provided during construction, they will be lazily fetched
+   * The fetched value is parsed to `u8` and cached for future accesses.
+   * @returns A `u8` representing the number of decimals of the token.
+   */
+  get decimals(): u8 {
+    if (this._decimals == SPLToken.EMPTY_DECIMALS) {
+      const result = environment.getAccountsInfo([this.address], null)
+      const decimals = Mint.getDecimalsFromHex(result.accountsInfo[0].data)
+      this._decimals = decimals
+    }
+    return this._decimals
   }
 
   /**

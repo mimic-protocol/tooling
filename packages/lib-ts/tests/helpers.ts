@@ -101,6 +101,8 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
 
 export declare function setContractCall(to: string, chainId: ChainId, data: string, result: string): void
 
+export declare function setGetAccountsInfo(publicKeys: string, accountsInfo: string): void
+
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
 export declare function _setContext(

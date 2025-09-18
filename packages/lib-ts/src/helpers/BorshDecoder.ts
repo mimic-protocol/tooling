@@ -17,47 +17,52 @@ export class BorshDeserializer {
     return new BorshDeserializer(bytes)
   }
 
+  tryBool(): bool {
+    if (this._offset >= this.getBytesLength()) throw new Error('Insufficient bytes for bool')
+    const value = this._bytes.at(this._offset)
+    this._offset += 1
+    return value === 1
+  }
+
   tryU8(): u8 {
-    if (this._offset >= this.getBytesLength()) {
-      throw new Error('Insufficient bytes for u8')
-    }
+    if (this._offset >= this.getBytesLength()) throw new Error('Insufficient bytes for u8')
     const value = this._bytes.at(this._offset)
     this._offset += 1
     return value
   }
 
   tryU16(): u16 {
-    if (this._offset + 1 >= this.getBytesLength()) {
-      throw new Error('Insufficient bytes for u16')
-    }
+    if (this._offset + 1 >= this.getBytesLength()) throw new Error('Insufficient bytes for u16')
     const subarray = changetype<ByteArray>(this._bytes.subarray(this._offset, this._offset + 2))
     this._offset += 2
     return subarray.toU16()
   }
 
   tryU32(): u32 {
-    if (this._offset + 3 >= this.getBytesLength()) {
-      throw new Error('Insufficient bytes for u32')
-    }
+    if (this._offset + 3 >= this.getBytesLength()) throw new Error('Insufficient bytes for u32')
     const subarray = changetype<ByteArray>(this._bytes.subarray(this._offset, this._offset + 4))
     this._offset += 4
     return subarray.toU32()
   }
 
   tryU64(): u64 {
-    if (this._offset + 7 >= this.getBytesLength()) {
-      throw new Error('Insufficient bytes for u64')
-    }
+    if (this._offset + 7 >= this.getBytesLength()) throw new Error('Insufficient bytes for u64')
     const subarray = changetype<ByteArray>(this._bytes.subarray(this._offset, this._offset + 8))
     this._offset += 8
     return subarray.toU64()
   }
 
   tryPubkey(): Address {
-    if (this._offset + 31 >= this.getBytesLength()) {
-      throw new Error('Insufficient bytes for pubkey')
-    }
-    return Address.fromBytes(Bytes.fromUint8Array(this._bytes.subarray(this._offset, this._offset + 32)))
+    if (this._offset + 31 >= this.getBytesLength()) throw new Error('Insufficient bytes for pubkey')
+    const pubkey = Address.fromBytes(Bytes.fromUint8Array(this._bytes.subarray(this._offset, this._offset + 32)))
+    this._offset += 32
+    return pubkey
+  }
+
+  tryOptionBool(): Option<bool> {
+    const tag = this.tryU32()
+    if (tag === 0) return Option.none<bool>()
+    return Option.some<bool>(this.tryBool())
   }
 
   tryOptionU8(): Option<u8> {
