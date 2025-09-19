@@ -1,6 +1,8 @@
 import { Address, ByteArray, Bytes } from '../types'
 import { Option } from '../types/Option'
 
+import { bytesToStringNullTerminated } from './strings'
+
 export class BorshDeserializer {
   private _bytes: Uint8Array
   private _offset: u32 = 0
@@ -59,6 +61,15 @@ export class BorshDeserializer {
     return pubkey
   }
 
+  tryString(): string {
+    const length = this.tryU32()
+    if (this._offset + length - 1 >= this.getBytesLength())
+      throw new Error(`Insufficient bytes for string of size ${length}`)
+    const str = bytesToStringNullTerminated(this._bytes.subarray(this._offset, this._offset + length))
+    this._offset += length
+    return str
+  }
+
   tryOptionBool(): Option<bool> {
     const tag = this.tryU32()
     if (tag === 0) return Option.none<bool>()
@@ -110,5 +121,9 @@ export class BorshDeserializer {
 
   isEmpty(): bool {
     return this._offset >= this.getBytesLength()
+  }
+
+  getLength(): u32 {
+    return this._bytes.length
   }
 }

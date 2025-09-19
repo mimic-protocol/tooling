@@ -27,7 +27,7 @@ export class Address extends Bytes {
    * @param length 32 by default (SVM)
    * @returns Option.none with empty bytes
    */
-  static none(length = 32): Option<Address> {
+  static none(length: u32 = 32): Option<Address> {
     return Option.none<Address>(Address.fromBytes(new Bytes(length)))
   }
 
@@ -120,5 +120,12 @@ export class Address extends Bytes {
    */
   toString(): string {
     return this.isEVM() ? super.toHexString() : super.toBase58String()
+  }
+
+  /**
+   * Returns the address as its underlying bytes
+   */
+  toBytes(): Bytes {
+    return changetype<Bytes>(this.slice(0))
   }
 }

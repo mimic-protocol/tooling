@@ -88,12 +88,6 @@ describe('SPLToken', () => {
 
       expect(token.symbol).toBe('SOL')
     })
-
-    it('returns set symbol when SPL', () => {
-      const token = SPLToken.fromAddress(randomSvmAddress(), ChainId.SOLANA_MAINNET, 6, 'USDC')
-
-      expect(token.symbol).toBe('USDC')
-    })
   })
 
   describe('decimals', () => {

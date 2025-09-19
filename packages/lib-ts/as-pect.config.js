@@ -51,6 +51,11 @@ export default {
           return exports.__newString('0x')
         },
       },
+      svm: {
+        _findProgramAddress: (paramsPtr) => {
+          // todo
+        },
+      },
       environment: {
         _getPrice: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)

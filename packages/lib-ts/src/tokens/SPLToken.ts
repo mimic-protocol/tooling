@@ -1,9 +1,14 @@
 import { environment } from '../environment'
 import { SVM_NATIVE_ADDRESS } from '../helpers'
-import { Address, ChainId, Mint } from '../types'
+import { svm } from '../svm'
+import { Address, ChainId, Mint, TokenMetadataData } from '../types'
+import { Seed, SvmFindProgramAddressParams } from '../types/SvmFindProgramAddress'
 
 import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
+
+// eslint-disable-next-line no-secrets/no-secrets
+export const METADATA_PROGRAM_ID = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 
 /**
  * Represents a SPL token on the Solana network including data like symbol, decimals, and address.
@@ -76,6 +81,33 @@ export class SPLToken extends BlockchainToken {
       this._decimals = decimals
     }
     return this._decimals
+  }
+
+  /**
+   * Gets the token’s symbol (e.g., "SOL", "USDC").
+   * If the symbol was not provided during construction, it will be lazily fetched
+   * The fetched symbol is cached in the instance for future accesses.
+   * @returns A string containing the token symbol.
+   */
+  get symbol(): string {
+    if (this._symbol == SPLToken.EMPTY_SYMBOL) {
+      const result = environment.getAccountsInfo([this.getMetadataAddress()], null)
+      const data = result.accountsInfo[0].data
+      this._symbol =
+        data === '0x'
+          ? `${this.address.toString().slice(0, 5)}...${this.address.toString().slice(-5)}`
+          : TokenMetadataData.fromTokenMetadataHex(result.accountsInfo[0].data).symbol
+    }
+    return this._symbol
+  }
+
+  private getMetadataAddress(): Address {
+    return svm.findProgramAddress(
+      new SvmFindProgramAddressParams(
+        [Seed.fromString('metadata'), Seed.from(Address.fromString(METADATA_PROGRAM_ID)), Seed.from(this._address)],
+        METADATA_PROGRAM_ID
+      )
+    ).address
   }
 
   /**

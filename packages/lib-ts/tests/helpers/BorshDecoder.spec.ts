@@ -1,3 +1,4 @@
+import { bytesToHexString } from '../../src/helpers'
 import { BorshDeserializer } from '../../src/helpers/BorshDecoder'
 import { Address, Bytes } from '../../src/types'
 import { randomHex } from '../helpers'
@@ -111,6 +112,33 @@ describe('BorshDecoder', () => {
         const hex = randomHex(62)
         const deserializer = BorshDeserializer.fromHex(hex)
         deserializer.tryPubkey()
+      }).toThrow()
+    })
+  })
+
+  describe('tryString', () => {
+    it('deserializes string', () => {
+      const str = 'solana'
+      const encodedStr = bytesToHexString(Uint8Array.wrap(String.UTF8.encode(str)))
+      const deserializer = BorshDeserializer.fromHex('0x06000000' + encodedStr.slice(2))
+      const deserializedStr = deserializer.tryString()
+
+      expect(deserializedStr).toBe(str)
+    })
+
+    it('throws if insufficient bytes', () => {
+      expect(() => {
+        const str = 'solana'
+        const encodedStr = bytesToHexString(Uint8Array.wrap(String.UTF8.encode(str)))
+        const deserializer = BorshDeserializer.fromHex('0x06000000' + encodedStr.slice(4))
+        deserializer.tryString()
+      }).toThrow()
+    })
+
+    it('throws if insufficient bytes 2', () => {
+      expect(() => {
+        const deserializer = BorshDeserializer.fromHex('0x060000')
+        deserializer.tryString()
       }).toThrow()
     })
   })

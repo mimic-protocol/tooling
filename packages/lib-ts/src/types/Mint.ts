@@ -54,3 +54,28 @@ export class Mint {
     return `Mint { mintAuthority: ${this.mintAuthority}, supply: ${this.supply}, decimals: ${this.decimals}, isInitialized: ${this.isInitialized}, freezeAuthority: ${this.freezeAuthority} }`
   }
 }
+
+export class TokenMetadataData {
+  static DATA_OFFSET: u32 = 65
+
+  constructor(
+    public name: string,
+    public symbol: string,
+    public uri: string
+  ) {}
+
+  static fromTokenMetadataHex(hex: string): TokenMetadataData {
+    return this.fromTokenMetadataBytes(Bytes.fromHexString(hex))
+  }
+
+  static fromTokenMetadataBytes(bytes: Bytes): TokenMetadataData {
+    const deserializer = BorshDeserializer.fromBytes(bytes)
+    deserializer.setOffset(this.DATA_OFFSET)
+
+    return new TokenMetadataData(deserializer.tryString(), deserializer.tryString(), deserializer.tryString())
+  }
+
+  toString(): string {
+    return `TokenMetadata { name: ${this.name}, symbol: ${this.symbol}, uri: ${this.uri} }`
+  }
+}
