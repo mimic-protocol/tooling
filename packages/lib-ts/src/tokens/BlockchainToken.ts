@@ -86,4 +86,13 @@ export abstract class BlockchainToken extends Token {
   hasChain(chain: ChainId): boolean {
     return this._chainId === chain
   }
+
+  /**
+   * Tells the string representation of this token.
+   * @returns The token address and chain ID along with symbol if present
+   */
+  toString(): string {
+    const description = 'Token ' + this.address.toString() + ' on chain ' + this.chainId.toString()
+    return description + (this._symbol ? ' (' + this._symbol + ')' : '')
+  }
 }

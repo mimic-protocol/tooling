@@ -109,4 +109,12 @@ describe('DenominationToken', () => {
       })
     })
   })
+
+  describe('toString', () => {
+    it('returns USD', () => {
+      const usd = DenominationToken.USD()
+
+      expect(usd.toString()).toBe('USD')
+    })
+  })
 })

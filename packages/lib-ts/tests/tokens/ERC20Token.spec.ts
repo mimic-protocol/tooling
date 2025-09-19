@@ -266,4 +266,18 @@ describe('ERC20Token', () => {
       })
     })
   })
+
+  describe('toString', () => {
+    it('returns ETH for native', () => {
+      const token = ERC20Token.native(10)
+
+      expect(token.toString()).toBe('Token ' + token.address.toString() + ' on chain 10 (ETH)')
+    })
+
+    it('returns symbol for ERC20', () => {
+      const token = ERC20Token.fromAddress(randomEvmAddress(), 10, 6, 'USDC')
+
+      expect(token.toString()).toBe('Token ' + token.address.toString() + ' on chain 10 (USDC)')
+    })
+  })
 })
