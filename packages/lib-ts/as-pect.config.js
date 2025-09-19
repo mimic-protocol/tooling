@@ -52,7 +52,7 @@ export default {
         },
       },
       svm: {
-        _findProgramAddress: (paramsPtr) => {
+        _findProgramAddress: () => {
           // todo
         },
       },
