@@ -297,13 +297,13 @@ describe('SPLToken', () => {
     it('returns SOL for native', () => {
       const token = SPLToken.native()
 
-      expect(token.toString()).toBe('SOL')
+      expect(token.toString()).toBe('Token ' + token.address.toString() + ' on chain 507424 (SOL)')
     })
 
     it('returns symbol for SPL', () => {
       const token = SPLToken.fromAddress(randomSvmAddress(), ChainId.SOLANA_MAINNET, 6, 'USDC')
 
-      expect(token.toString()).toBe(token.symbol)
+      expect(token.toString()).toBe('Token ' + token.address.toString() + ' on chain 507424 (USDC)')
     })
   })
 })

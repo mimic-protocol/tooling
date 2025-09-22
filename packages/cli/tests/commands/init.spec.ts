@@ -11,6 +11,15 @@ describe('init', () => {
     if (fs.existsSync(commandPath)) fs.rmSync(commandPath, { recursive: true })
   })
 
+  const assertStdoutAndInitializedFiles = (stdout: string) => {
+    expect(stdout).to.include('New project initialized!')
+    expect(fs.existsSync(`${commandPath}/src/task.ts`)).to.be.true
+    expect(fs.existsSync(`${commandPath}/package.json`)).to.be.true
+    expect(fs.existsSync(`${commandPath}/manifest.yaml`)).to.be.true
+    expect(fs.existsSync(`${commandPath}/eslint.config.mjs`)).to.be.true
+    expect(fs.existsSync(`${commandPath}/.gitignore`)).to.be.true
+  }
+
   context('when force flag is not passed', () => {
     const command = ['init', `--directory ${commandPath}`]
 
@@ -18,9 +27,7 @@ describe('init', () => {
       it('creates the correct files', async () => {
         const { stdout, error } = await runCommand(command)
         expect(error).to.be.undefined
-        expect(stdout).to.include('New project initialized!')
-        expect(fs.existsSync(`${commandPath}/src/task.ts`)).to.be.true
-        expect(fs.existsSync(`${commandPath}/manifest.yaml`)).to.be.true
+        assertStdoutAndInitializedFiles(stdout)
       })
     })
 
@@ -54,22 +61,19 @@ describe('init', () => {
           fs.mkdirSync(commandPath)
         })
 
-        it("deletes the folder and it's contents", async () => {
+        it('deletes the folder and its contents', async () => {
           const { stdout, status } = runCommandWithUserInput(command, userResponse)
           expect(status).to.be.equal(0)
-          expect(stdout).to.include('New project initialized!')
-          expect(fs.existsSync(`${commandPath}/src/task.ts`)).to.be.true
-          expect(fs.existsSync(`${commandPath}/manifest.yaml`)).to.be.true
+          assertStdoutAndInitializedFiles(stdout)
         })
       })
 
       context('when the directory does not exist', () => {
-        it("deletes the folder and it's contents", async () => {
+        it('deletes the folder and its contents', async () => {
           const { stdout, status } = runCommandWithUserInput(command, userResponse)
+
           expect(status).to.be.equal(0)
-          expect(stdout).to.include('New project initialized!')
-          expect(fs.existsSync(`${commandPath}/src/task.ts`)).to.be.true
-          expect(fs.existsSync(`${commandPath}/manifest.yaml`)).to.be.true
+          assertStdoutAndInitializedFiles(stdout)
         })
       })
     })

@@ -59,4 +59,12 @@ export class DenominationToken extends Token {
   hasChain(chain: ChainId): boolean {
     return true
   }
+
+  /**
+   * Tells the string representation of this token.
+   * @returns The token symbol
+   */
+  toString(): string {
+    return this.symbol
+  }
 }
