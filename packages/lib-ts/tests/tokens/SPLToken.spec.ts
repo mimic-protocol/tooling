@@ -1,7 +1,8 @@
 import { SVM_NATIVE_ADDRESS } from '../../src/helpers'
-import { SPLToken } from '../../src/tokens/SPLToken'
-import { ChainId } from '../../src/types'
-import { randomEvmAddress, randomSvmAddress, setGetAccountsInfo } from '../helpers'
+import { METADATA_PROGRAM_ID, SPLToken } from '../../src/tokens/SPLToken'
+import { Address, ChainId, JSON } from '../../src/types'
+import { Seed, SvmFindProgramAddressParams } from '../../src/types/SvmFindProgramAddress'
+import { randomEvmAddress, randomHex, randomSvmAddress, setFindProgramAddress, setGetAccountsInfo } from '../helpers'
 
 describe('SPLToken', () => {
   describe('native', () => {
@@ -87,6 +88,69 @@ describe('SPLToken', () => {
       const token = SPLToken.native()
 
       expect(token.symbol).toBe('SOL')
+    })
+
+    it('returns decoded when SPL and has metadata', () => {
+      const addr = randomSvmAddress()
+      const token = SPLToken.fromAddress(addr)
+      const metadataAddr = randomSvmAddress()
+
+      const params = new SvmFindProgramAddressParams(
+        [Seed.fromString('metadata'), Seed.from(Address.fromString(METADATA_PROGRAM_ID)), Seed.from(addr)],
+        METADATA_PROGRAM_ID
+      )
+
+      const emptyStrHex = '00000000'
+      const mimicHex = '05000000' + '4d494d4943'
+      setFindProgramAddress(JSON.stringify(params), `{"address":"${metadataAddr.toString()}","bump":255}`)
+      setGetAccountsInfo(
+        `${metadataAddr.toString()}`,
+        `{
+          "accountsInfo": [
+            {
+              "executable": false,
+              "rentEpoch": "1234",
+              "owner": "${randomSvmAddress()}",
+              "lamports": "100",
+              "data":"${randomHex(130)}${emptyStrHex}${mimicHex}${emptyStrHex}"
+            }
+          ],
+          "slot":"12345678"
+        }`
+      )
+
+      expect(token.symbol).toBe('MIMIC')
+    })
+
+    it('returns token address abbreviation when SPL and no metadata', () => {
+      const addr = randomSvmAddress()
+      const token = SPLToken.fromAddress(addr)
+      const metadataAddr = randomSvmAddress()
+
+      const params = new SvmFindProgramAddressParams(
+        [Seed.fromString('metadata'), Seed.from(Address.fromString(METADATA_PROGRAM_ID)), Seed.from(addr)],
+        METADATA_PROGRAM_ID
+      )
+
+      setFindProgramAddress(JSON.stringify(params), `{"address":"${metadataAddr.toString()}","bump":255}`)
+      // In reality, the getAccountsInfo returns null and then a default value with data "0x". But this is easier to mock
+      setGetAccountsInfo(
+        `${metadataAddr.toString()}`,
+        `{
+          "accountsInfo": [
+            {
+              "executable": false,              // dont care
+              "rentEpoch": "1234",              // dont care
+              "owner": "${randomSvmAddress()}", // dont care
+              "lamports": "100",                // dont care
+              "data":"0x"
+            }
+          ],
+          "slot":"12345678"                     // dont care
+        }`
+      )
+
+      expect(token.symbol).toBe(`${addr.toString().slice(0, 5)}...${addr.toString().slice(-5)}`)
     })
   })
 

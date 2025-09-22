@@ -103,6 +103,8 @@ export declare function setContractCall(to: string, chainId: ChainId, data: stri
 
 export declare function setGetAccountsInfo(publicKeys: string, accountsInfo: string): void
 
+export declare function setFindProgramAddress(params: string, result: string): void
+
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
 export declare function _setContext(

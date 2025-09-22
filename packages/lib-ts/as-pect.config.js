@@ -52,8 +52,12 @@ export default {
         },
       },
       svm: {
-        _findProgramAddress: () => {
-          // todo
+        _findProgramAddress: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const key = `_findProgramAddress:${paramsStr}`
+
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Decoded value not found for key: ${key}`)
         },
       },
       environment: {
@@ -117,6 +121,12 @@ export default {
           const accountsInfo = exports.__getString(accountsInfoPtr)
           const key = `_getAccountsInfo:${publicKeys}`
           store.set(key, accountsInfo)
+        },
+        setFindProgramAddress: (paramsPtr, resultPtr) => {
+          const params = exports.__getString(paramsPtr)
+          const result = exports.__getString(resultPtr)
+          const key = `_findProgramAddress:${params}`
+          store.set(key, result)
         },
         _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, configSigPtr) => {
           const user = exports.__getString(userPtr)

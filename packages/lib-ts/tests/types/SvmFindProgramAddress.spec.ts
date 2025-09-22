@@ -16,6 +16,18 @@ describe('SvmFindProgramAddress', () => {
           `{"seeds":[${seeds.map((seed: Seed) => `{"hex":"${seed.hex}"}`).join(',')}],"programId":"${programId.toString()}"}`
         )
       })
+
+      it('serializes to JSON correctly 2', () => {
+        const seeds = [Seed.fromString('tag'), Seed.fromString('another tag'), Seed.from(randomSvmAddress())]
+        const programId = randomSvmAddress()
+
+        const params = new SvmFindProgramAddressParams(seeds, programId.toString())
+        const json = JSON.stringify(params)
+
+        expect(json).toBe(
+          `{"seeds":[${seeds.map((seed: Seed) => `{"hex":"${seed.hex}"}`).join(',')}],"programId":"${programId.toString()}"}`
+        )
+      })
     })
   })
 
