@@ -4,6 +4,11 @@ import { Byteable, bytesToHexString } from '../helpers'
 
 import { Address } from './Address'
 
+/**
+ * Type for findProgramAddress seeds
+ * As we need all seeds to be decoded as bytes in the same way as in Rust,
+ * this class provides a simple interface for end-users to abstract all this
+ */
 @json
 export class Seed {
   constructor(public readonly hex: string) {}

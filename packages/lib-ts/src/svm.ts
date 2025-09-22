@@ -8,7 +8,7 @@ export namespace svm {
 
   /**
    * Calculates PDA address
-   * @param callParameters - Seeds, program address, and optional bump
+   * @param params - Seeds, program address
    * @returns The PDA address as base58
    */
   export function findProgramAddress(params: SvmFindProgramAddressParams): SvmFindProgramAddressResult {

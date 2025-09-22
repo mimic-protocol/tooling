@@ -86,7 +86,8 @@ export class SPLToken extends BlockchainToken {
   /**
    * Gets the token’s symbol (e.g., "SOL", "USDC").
    * If the symbol was not provided during construction, it will be lazily fetched
-   * The fetched symbol is cached in the instance for future accesses.
+   * If the token doesn't have a symbol, an abbreviated address is returned
+   * The symbol is cached in the instance for future accesses.
    * @returns A string containing the token symbol.
    */
   get symbol(): string {
@@ -101,6 +102,9 @@ export class SPLToken extends BlockchainToken {
     return this._symbol
   }
 
+  /**
+   * Derives Metaplex Metadata address for this given token
+   */
   private getMetadataAddress(): Address {
     return svm.findProgramAddress(
       new SvmFindProgramAddressParams(

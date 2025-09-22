@@ -4,6 +4,9 @@ import { Address } from './Address'
 import { Bytes } from './Bytes'
 import { Option } from './Option'
 
+/**
+ * State layout for Mint TokenProgram PDAs
+ */
 export class Mint {
   static DECIMALS_OFFSET: u32 = 44
 
@@ -55,6 +58,9 @@ export class Mint {
   }
 }
 
+/**
+ * Partial state layout for Data Metaplex PDA (Metadata PDA "data" field)
+ */
 export class TokenMetadataData {
   static DATA_OFFSET: u32 = 65
 

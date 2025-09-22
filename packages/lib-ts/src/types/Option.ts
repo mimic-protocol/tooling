@@ -1,3 +1,7 @@
+/**
+ * Simple wrapper for Option<T> Rust types
+ * To be used in tandem with BorshDeserializer
+ */
 export class Option<T> {
   constructor(
     private _value: T,
