@@ -77,9 +77,7 @@ export abstract class Token {
 
   /**
    * Tells the string representation of this token.
-   * @returns The token symbol
+   * @returns The string representation of the token
    */
-  toString(): string {
-    return this.symbol
-  }
+  abstract toString(): string
 }
