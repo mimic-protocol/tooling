@@ -3,6 +3,10 @@ import { Option } from '../types/Option'
 
 import { bytesToStringNullTerminated } from './strings'
 
+/**
+ * Unsafe class to deserialize bytes into Rust-like types
+ * Should be used with caution! This will only throw if there are insufficient bytes for the type
+ */
 export class BorshDeserializer {
   private _bytes: Uint8Array
   private _offset: u32 = 0

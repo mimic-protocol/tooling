@@ -1,9 +1,9 @@
 import { bytesToHexString } from '../../src/helpers'
-import { BorshDeserializer } from '../../src/helpers/BorshDecoder'
+import { BorshDeserializer } from '../../src/helpers/BorshDeserializer'
 import { Address, Bytes } from '../../src/types'
 import { randomHex } from '../helpers'
 
-describe('BorshDecoder', () => {
+describe('BorshDeserializer', () => {
   describe('creation', () => {
     it('creates fromHex', () => {
       BorshDeserializer.fromHex('0x010203')
