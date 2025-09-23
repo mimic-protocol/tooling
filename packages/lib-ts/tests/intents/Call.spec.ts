@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { Call, CallBuilder, CallData, OperationType } from '../../src/intents'
+import { Call, CallBuilder, CallData, IntentEvent, OperationType } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomBytes, randomERC20Token, randomEvmAddress, randomSettler, setContext } from '../helpers'
@@ -33,8 +33,10 @@ describe('Call', () => {
     expect(call.maxFees[0].token).toBe(fee.token.address.toString())
     expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
+    expect(call.events.length).toBe(0)
+
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"events":[],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"0"}]}`
     )
   })
 
@@ -50,7 +52,18 @@ describe('Call', () => {
 
     setContext(1, 1, user.toString(), [settler], 'config-123')
 
-    const call = Call.create(chainId, target, calldata, fee, value, Address.fromString(settler.address), user, deadline)
+    const call = Call.create(
+      chainId,
+      target,
+      calldata,
+      fee,
+      value,
+      Address.fromString(settler.address),
+      user,
+      deadline,
+      null,
+      [new IntentEvent(Bytes.fromUTF8('topic'), Bytes.fromUTF8('data'))]
+    )
     expect(call.op).toBe(OperationType.Call)
     expect(call.user).toBe(user.toString())
     expect(call.settler).toBe(settler.address.toString())
@@ -67,8 +80,12 @@ describe('Call', () => {
     expect(call.maxFees[0].token).toBe(fee.token.address.toString())
     expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
+    expect(call.events.length).toBe(1)
+    expect(call.events[0].topic).toBe('0x746f706963')
+    expect(call.events[0].data).toBe('0x64617461')
+
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"events":[{"topic":"0x746f706963","data":"0x64617461"}],"chainId":${chainId},"calls":[{"target":"${target}","data":"${calldata.toHexString()}","value":"${value}"}]}`
     )
   })
 
@@ -103,8 +120,10 @@ describe('Call', () => {
     expect(call.maxFees[0].token).toBe(fee.token.address.toString())
     expect(call.maxFees[0].amount).toBe(fee.amount.toString())
 
+    expect(call.events.length).toBe(0)
+
     expect(JSON.stringify(call)).toBe(
-      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}]}`
+      `{"op":2,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"events":[],"chainId":${chainId},"calls":[{"target":"${callData1.target}","data":"${callData1.data}","value":"${callData1.value}"},{"target":"${callData2.target}","data":"${callData2.data}","value":"${callData2.value}"}]}`
     )
   })
 

@@ -1,8 +1,8 @@
 import { JSON } from 'json-as'
 
-import { OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
+import { IntentEvent, OperationType, Transfer, TransferBuilder, TransferData } from '../../src/intents'
 import { ERC20Token, SPLToken, TokenAmount } from '../../src/tokens'
-import { Address, BigInt, ChainId } from '../../src/types'
+import { Address, BigInt, Bytes, ChainId } from '../../src/types'
 import {
   randomERC20Token,
   randomEvmAddress,
@@ -43,8 +43,10 @@ describe('Transfer', () => {
       expect(transfer.maxFees[0].token).toBe(tokenAddress.toString())
       expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
+      expect(transfer.events.length).toBe(0)
+
       expect(JSON.stringify(transfer)).toBe(
-        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
+        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"events":[],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
       )
     })
 
@@ -68,7 +70,9 @@ describe('Transfer', () => {
         fee,
         Address.fromString(settler.address),
         user,
-        deadline
+        deadline,
+        null,
+        [new IntentEvent(Bytes.fromUTF8('topic'), Bytes.fromUTF8('data'))]
       )
 
       expect(transfer.op).toBe(OperationType.Transfer)
@@ -87,8 +91,12 @@ describe('Transfer', () => {
       expect(transfer.maxFees[0].token).toBe(tokenAddress.toString())
       expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
+      expect(transfer.events.length).toBe(1)
+      expect(transfer.events[0].topic).toBe('0x746f706963')
+      expect(transfer.events[0].data).toBe('0x64617461')
+
       expect(JSON.stringify(transfer)).toBe(
-        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
+        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"events":[{"topic":"0x746f706963","data":"0x64617461"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
       )
     })
   })
@@ -130,8 +138,10 @@ describe('Transfer', () => {
       expect(transfer.maxFees[0].token).toBe(fee.token.address.toString())
       expect(transfer.maxFees[0].amount).toBe(fee.amount.toString())
 
+      expect(transfer.events.length).toBe(0)
+
       expect(JSON.stringify(transfer)).toBe(
-        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}]}`
+        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[{"token":"${fee.token.address.toString()}","amount":"${fee.amount.toString()}"}],"events":[],"chainId":${chainId},"transfers":[{"token":"${transferData.token}","amount":"${transferData.amount}","recipient":"${transferData.recipient}"}]}`
       )
     })
   })
@@ -294,8 +304,10 @@ describe('Transfer - SVM support', () => {
       expect(transfer.maxFees[0].token).toBe(tokenAddress.toString())
       expect(transfer.maxFees[0].amount).toBe(fee.toString())
 
+      expect(transfer.events.length).toBe(0)
+
       expect(JSON.stringify(transfer)).toBe(
-        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
+        `{"op":1,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[{"token":"${tokenAddress}","amount":"${fee.toString()}"}],"events":[],"chainId":${chainId},"transfers":[{"token":"${tokenAddress}","amount":"${amount}","recipient":"${recipient}"}]}`
       )
     })
 

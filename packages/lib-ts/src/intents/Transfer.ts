@@ -1,8 +1,8 @@
 import { environment } from '../environment'
 import { ERC20Token, Token, TokenAmount } from '../tokens'
-import { Address, BigInt, ChainId } from '../types'
+import { Address, BigInt, Bytes, ChainId } from '../types'
 
-import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
+import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Transfer intents with token transfer operations.
@@ -174,11 +174,39 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
+   * Sets an event for the intent.
+   * @param topic - The topic to be indexed in the event
+   * @param data - The event data
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addEvent(topic: Bytes, data: Bytes): TransferBuilder {
+    return changetype<TransferBuilder>(super.addEvent(topic, data))
+  }
+
+  /**
+   * Sets multiple events for the intent.
+   * @param events - The list of events to be added
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addEvents(events: IntentEvent[]): TransferBuilder {
+    return changetype<TransferBuilder>(super.addEvents(events))
+  }
+
+  /**
    * Builds and returns the final Transfer intent.
    * @returns A new Transfer instance with all configured parameters
    */
   build(): Transfer {
-    return new Transfer(this.chainId, this.transfers, this.maxFees, this.settler, this.user, this.deadline, this.nonce)
+    return new Transfer(
+      this.chainId,
+      this.transfers,
+      this.maxFees,
+      this.settler,
+      this.user,
+      this.deadline,
+      this.nonce,
+      this.events
+    )
   }
 }
 
@@ -276,7 +304,8 @@ export class Transfer extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    events: IntentEvent[] | null = null
   ): Transfer {
     const transferAmount = TokenAmount.fromBigInt(token, amount)
     const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
@@ -288,7 +317,8 @@ export class Transfer extends Intent {
       settler,
       user,
       deadline,
-      nonce
+      nonce,
+      events
     )
   }
 
@@ -309,10 +339,11 @@ export class Transfer extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    events: IntentEvent[] | null = null
   ) {
     const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
-    super(OperationType.Transfer, chainId, fees, settler, user, deadline, nonce)
+    super(OperationType.Transfer, chainId, fees, settler, user, deadline, nonce, events)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 
