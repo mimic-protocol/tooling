@@ -190,7 +190,7 @@ export abstract class Intent {
     this.user = user ? user.toString() : context.user.toString()
     this.nonce = nonce
       ? nonce
-      : evm.keccak(`${context.configSig}${context.timestamp}${context.triggerData}${++INTENT_INDEX}`)
+      : evm.keccak(`${context.configSig}${context.timestamp}${context.trigger.data}${++INTENT_INDEX}`)
 
     if (!this.user || this.user == NULL_ADDRESS) throw new Error('A user must be specified')
     if (!this.settler || this.settler == NULL_ADDRESS) throw new Error('A settler contract must be specified')

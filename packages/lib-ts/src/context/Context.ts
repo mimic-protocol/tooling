@@ -21,6 +21,14 @@ export class Settler {
 }
 
 @json
+export class Trigger {
+  constructor(
+    public type: TriggerType,
+    public data: string
+  ) {}
+}
+
+@json
 export class SerializableContext {
   constructor(
     public readonly timestamp: u64,
@@ -28,8 +36,7 @@ export class SerializableContext {
     public user: string,
     public settlers: SerializableSettler[],
     public configSig: string,
-    public triggerType: TriggerType,
-    public triggerData: string
+    public trigger: Trigger
   ) {}
 }
 
@@ -40,8 +47,7 @@ export class Context {
     public user: Address,
     public settlers: Settler[],
     public configSig: string,
-    public triggerType: TriggerType,
-    public triggerData: string
+    public trigger: Trigger
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
@@ -51,8 +57,7 @@ export class Context {
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
       serializable.configSig,
-      serializable.triggerType,
-      serializable.triggerData
+      serializable.trigger
     )
   }
 
