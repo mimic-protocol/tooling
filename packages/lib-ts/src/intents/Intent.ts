@@ -88,7 +88,6 @@ export abstract class IntentBuilder {
    * @returns This IntentBuilder instance for method chaining
    */
   addEvent(topic: Bytes, data: Bytes): IntentBuilder {
-    // Check that data is not more than 256 bytes
     const event = new IntentEvent(topic, data)
     this.events.push(event)
     return this
