@@ -193,7 +193,6 @@ export class IntentEvent {
    * @param data - The event data
    */
   constructor(topic: Bytes, data: Bytes) {
-    // TODO: Check
     this.topic = topic.toHexString()
     this.data = data.toHexString()
   }
