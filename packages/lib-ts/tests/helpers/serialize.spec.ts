@@ -1,5 +1,6 @@
-import { NULL_ADDRESS, serialize } from '../../src/helpers'
+import { deserializeCronTriggerData, NULL_ADDRESS, serialize } from '../../src/helpers'
 import { Address, BigInt, Bytes } from '../../src/types'
+import { setEvmDecode } from '../helpers'
 
 describe('serialize', () => {
   describe('serialize', () => {
@@ -39,6 +40,15 @@ describe('serialize', () => {
         const serialized = serialize(num)
         expect(serialized).toBe('5')
       })
+    })
+  })
+
+  describe('deserializeCronTriggerData', () => {
+    it('decodes a uint256 correctly', () => {
+      const data = '0x0000000000000000000000000000000000000000000000000000019962bc6d60'
+      setEvmDecode('uint256', '0x0000000000000000000000000000000000000000000000000000019962bc6d60', '1758298140000')
+      const deserialized = deserializeCronTriggerData(data)
+      expect(deserialized.toString()).toBe('1758298140000')
     })
   })
 })
