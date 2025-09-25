@@ -42,8 +42,11 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
+
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -67,7 +70,9 @@ describe('Swap', () => {
       minAmountOut,
       Address.fromString(settler.address),
       user,
-      deadline
+      deadline,
+      null,
+      []
     )
     expect(swap.op).toBe(OperationType.Swap)
     expect(swap.user).toBe(user.toString())
@@ -87,8 +92,10 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
 
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -130,8 +137,10 @@ describe('Swap', () => {
     expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
     expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
 
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 
@@ -292,8 +301,11 @@ describe('Swap - SVM', () => {
     expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
+
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -337,8 +349,10 @@ describe('Swap - SVM', () => {
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
     expect(swap.tokensOut[0].recipient).toBe(user.toString())
 
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -380,8 +394,10 @@ describe('Swap - SVM', () => {
     expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
     expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
 
+    expect(swap.events.length).toBe(0)
+
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 

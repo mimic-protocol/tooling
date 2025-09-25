@@ -2,7 +2,7 @@ import { environment } from '../environment'
 import { evm } from '../evm'
 import { NULL_ADDRESS } from '../helpers'
 import { Token, TokenAmount } from '../tokens'
-import { Address, BigInt, ChainId } from '../types'
+import { Address, BigInt, Bytes, ChainId } from '../types'
 
 export enum OperationType {
   Swap,
@@ -21,6 +21,7 @@ export abstract class IntentBuilder {
   protected deadline: BigInt | null = null
   protected nonce: string | null = null
   protected maxFees: TokenAmount[] = []
+  protected events: IntentEvent[] = []
 
   /**
    * Sets the settler address for this intent.
@@ -77,6 +78,30 @@ export abstract class IntentBuilder {
    */
   addNonce(nonce: string): IntentBuilder {
     this.nonce = nonce
+    return this
+  }
+
+  /**
+   * Sets an event for the intent.
+   * @param topic - The topic to be indexed in the event
+   * @param data - The event data
+   * @returns This IntentBuilder instance for method chaining
+   */
+  addEvent(topic: Bytes, data: Bytes): IntentBuilder {
+    const event = new IntentEvent(topic, data)
+    this.events.push(event)
+    return this
+  }
+
+  /**
+   * Sets multiple events for the intent.
+   * @param events - The list of events to be added
+   * @returns This IntentBuilder instance for method chaining
+   */
+  addEvents(events: IntentEvent[]): IntentBuilder {
+    for (let i = 0; i < events.length; i++) {
+      this.events.push(events[i])
+    }
     return this
   }
 
@@ -153,6 +178,26 @@ export class MaxFee {
   }
 }
 
+/**
+ * Represents an intent event.
+ * Specifies the topic and data for the event. The topic is an indexed parameter for the EVM events.
+ */
+@json
+export class IntentEvent {
+  topic: string
+  data: string
+
+  /**
+   * Creates a new Intent Event instance.
+   * @param topic - the topic that is going to be index in the event
+   * @param data - The event data
+   */
+  constructor(topic: Bytes, data: Bytes) {
+    this.topic = topic.toHexString()
+    this.data = data.toHexString()
+  }
+}
+
 let INTENT_INDEX: u32 = 0
 @json
 export abstract class Intent {
@@ -162,6 +207,7 @@ export abstract class Intent {
   public deadline: string
   public nonce: string
   public maxFees: MaxFee[]
+  public events: IntentEvent[]
 
   /**
    * Creates a new intent.
@@ -180,7 +226,8 @@ export abstract class Intent {
     settler: Address | null,
     user: Address | null,
     deadline: BigInt | null,
-    nonce: string | null
+    nonce: string | null,
+    events: IntentEvent[] | null
   ) {
     const context = environment.getContext()
     this.op = op
@@ -188,6 +235,7 @@ export abstract class Intent {
     this.settler = settler ? settler.toString() : context.findSettler(chainId).toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()
     this.user = user ? user.toString() : context.user.toString()
+    this.events = events || []
     this.nonce = nonce
       ? nonce
       : evm.keccak(`${context.configSig}${context.timestamp}${context.trigger.data}${++INTENT_INDEX}`)

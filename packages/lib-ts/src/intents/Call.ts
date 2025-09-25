@@ -3,7 +3,7 @@ import { TokenAmount } from '../tokens'
 import { ChainId } from '../types'
 import { Address, BigInt, Bytes } from '../types'
 
-import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
+import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Call intents with contract call operations.
@@ -109,11 +109,39 @@ export class CallBuilder extends IntentBuilder {
   }
 
   /**
+   * Sets an event for the intent.
+   * @param topic - The topic to be indexed in the event
+   * @param data - The event data
+   * @returns This CallBuilder instance for method chaining
+   */
+  addEvent(topic: Bytes, data: Bytes): CallBuilder {
+    return changetype<CallBuilder>(super.addEvent(topic, data))
+  }
+
+  /**
+   * Sets multiple events for the intent.
+   * @param events - The list of events to be added
+   * @returns This CallBuilder instance for method chaining
+   */
+  addEvents(events: IntentEvent[]): CallBuilder {
+    return changetype<CallBuilder>(super.addEvents(events))
+  }
+
+  /**
    * Builds and returns the final Call intent.
    * @returns A new Call instance with all configured parameters
    */
   build(): Call {
-    return new Call(this.chainId, this.calls, this.maxFees, this.settler, this.user, this.deadline, this.nonce)
+    return new Call(
+      this.chainId,
+      this.calls,
+      this.maxFees,
+      this.settler,
+      this.user,
+      this.deadline,
+      this.nonce,
+      this.events
+    )
   }
 }
 
@@ -170,10 +198,11 @@ export class Call extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    events: IntentEvent[] | null = null
   ): Call {
     const callData = new CallData(target, data, value)
-    return new Call(chainId, [callData], [maxFee], settler, user, deadline, nonce)
+    return new Call(chainId, [callData], [maxFee], settler, user, deadline, nonce, events)
   }
 
   /**
@@ -193,10 +222,11 @@ export class Call extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    events: IntentEvent[] | null = null
   ) {
     const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
-    super(OperationType.Call, chainId, fees, settler, user, deadline, nonce)
+    super(OperationType.Call, chainId, fees, settler, user, deadline, nonce, events)
     if (calls.length === 0) throw new Error('Call list cannot be empty')
     if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
 
