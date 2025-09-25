@@ -28,12 +28,18 @@ export type Context = Partial<{
   configSig: string
 }>
 
-export type TokenPrice = {
+export type QueryMock<T, R> = {
+  request: T
+  response: R
+}
+
+export type GetPriceRequest = {
   token: string
   chainId: number
-  usdPrice: string
   timestamp?: number
 }
+
+export type GetPriceMock = QueryMock<GetPriceRequest, string[]>
 
 export type Token = {
   address: string
@@ -45,31 +51,37 @@ export type TokenAmount = {
   amount: string
 }
 
-export type RelevantTokens = {
+export type GetRelevantTokensRequest = {
   owner: string
   chainIds: number[]
   usdMinAmount: string
-  tokens: { address: string; chainId: number }[]
+  tokens: Token[]
   tokenFilter: number
   timestamp?: number
-  output: TokenAmount[]
 }
 
-export type ContractCall = {
+export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, TokenAmount[][]>
+
+export type ContractCallRequest = {
   to: string
   chainId: number
   timestamp?: number
   data: string
-  output: string
-  outputType: string
 }
+
+export type ContractCallResponse = {
+  abiType: string
+  value: string
+}
+
+export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
 
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
-  prices: TokenPrice[]
-  balances: RelevantTokens[]
-  calls: ContractCall[]
+  prices: GetPriceMock[]
+  balances: GetRelevantTokensMock[]
+  calls: ContractCallMock[]
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>

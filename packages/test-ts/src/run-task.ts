@@ -41,7 +41,10 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const relevantTokensResponse: Record<string, string> = {}
   if (balances.length > 0) {
     for (const balance of balances) {
-      const { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp, output } = balance
+      const {
+        request: { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp },
+        response,
+      } = balance
       const key = JSON.stringify({
         owner: owner.toLowerCase(),
         chainIds,
@@ -50,20 +53,23 @@ function generateMock(params: GenerateMockParams): MockConfig {
         tokenFilter,
         timestamp,
       })
-      relevantTokensResponse[key] = JSON.stringify(output)
+      relevantTokensResponse[key] = JSON.stringify(response)
     }
   }
   const _getRelevantTokens = { paramResponse: relevantTokensResponse }
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
-    for (const { token: address, chainId, timestamp, usdPrice } of prices) {
+    for (const {
+      request: { token: address, chainId, timestamp },
+      response,
+    } of prices) {
       const key = JSON.stringify({
         address: address.toLowerCase(),
         chainId,
         timestamp,
       })
-      priceResponse[key] = usdPrice
+      priceResponse[key] = JSON.stringify(response)
     }
   }
   const _getPrice = { paramResponse: priceResponse }
@@ -71,16 +77,19 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
   if (calls.length > 0) {
-    for (const { to, chainId, timestamp, data, output, outputType } of calls) {
+    for (const {
+      request: { to, chainId, timestamp, data },
+      response: { value, abiType },
+    } of calls) {
       const key = JSON.stringify({
         to: to.toLowerCase(),
         chainId,
-        ...(timestamp !== undefined && { timestamp }),
+        timestamp,
         data: data.toLowerCase(),
       })
-      callResponse[key] = output
-      const decodeKey = JSON.stringify({ abiType: outputType, value: output })
-      decodeResponse[decodeKey] = output
+      callResponse[key] = value
+      const decodeKey = JSON.stringify({ abiType, value })
+      decodeResponse[decodeKey] = value
     }
   }
   const _contractCall = { paramResponse: callResponse }
