@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/test-ts",
-  "version": "0.0.1-rc.17",
+  "version": "0.0.1-rc.18",
   "license": "GPL-3.0",
   "private": false,
   "main": "dist/index.js",
