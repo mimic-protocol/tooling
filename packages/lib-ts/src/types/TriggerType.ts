@@ -1,4 +1,4 @@
 export enum TriggerType {
-  CRON,
-  EVENT,
+  CRON = 0,
+  EVENT = 1,
 }
