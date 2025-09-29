@@ -21,19 +21,23 @@ export class Settler {
 }
 
 @json
-export class Trigger {
-  constructor(
-    public type: TriggerType,
-    public data: string
-  ) {}
-}
-
-@json
 export class SerializableTrigger {
   constructor(
     public type: u8,
     public data: string
   ) {}
+}
+
+@json
+export class Trigger {
+  constructor(
+    public type: TriggerType,
+    public data: string
+  ) {}
+
+  static fromSerializable(serializable: SerializableTrigger): Trigger {
+    return new Trigger(serializable.type, serializable.data)
+  }
 }
 
 @json
@@ -65,7 +69,7 @@ export class Context {
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
       serializable.configSig,
-      new Trigger(serializable.trigger.type, serializable.trigger.data)
+      Trigger.fromSerializable(serializable.trigger)
     )
   }
 
