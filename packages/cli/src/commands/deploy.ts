@@ -1,5 +1,6 @@
 import { Command, Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
+import { spawnSync } from 'child_process'
 import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
@@ -18,15 +19,26 @@ export default class Deploy extends Command {
     key: Flags.string({ char: 'k', description: 'Your account deployment key', required: true }),
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
+    'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { key, input: inputDir, output: outputDir } = flags
-
-    log.startAction('Validating')
+    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile } = flags
     const fullInputDir = resolve(inputDir)
     const fullOutputDir = resolve(outputDir)
+
+    if (!skipCompile) {
+      const codegen = spawnSync('yarn', ['mimic', 'codegen'], { stdio: 'inherit' })
+      if (codegen.status !== 0)
+        this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
+
+      const compile = spawnSync('yarn', ['mimic', 'compile', '--output', fullInputDir], { stdio: 'inherit' })
+      if (compile.status !== 0)
+        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the task source code'] })
+    }
+
+    log.startAction('Validating')
 
     if (!fs.existsSync(fullInputDir))
       this.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {

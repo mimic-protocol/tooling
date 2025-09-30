@@ -13,7 +13,7 @@ describe('deploy', () => {
 
   context('when passing a deployment key', () => {
     const key = '123'
-    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, `--key ${key}`]
+    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, `--key ${key}`, '--skip-compile']
 
     context('when input directory exists', () => {
       beforeEach('create input directory', () => {
@@ -60,7 +60,7 @@ describe('deploy', () => {
 
           context('when output directory does not exist', () => {
             const noOutDir = `${outputDir}/does-not-exist`
-            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, `--key ${key}`]
+            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, `--key ${key}`, '--skip-compile']
 
             it('saves the CID on a file', async () => {
               await runCommand(noOutDirCommand)
