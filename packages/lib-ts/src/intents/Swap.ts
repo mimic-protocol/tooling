@@ -1,8 +1,8 @@
 import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
-import { Address, BigInt, ChainId } from '../types'
+import { Address, BigInt, Bytes, ChainId } from '../types'
 
-import { Intent, IntentBuilder, MaxFee, OperationType } from './Intent'
+import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
 
 /**
  * Builder for creating Swap intents with token exchange operations.
@@ -216,6 +216,25 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
+   * Sets an event for the intent.
+   * @param topic - The topic to be indexed in the event
+   * @param data - The event data
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addEvent(topic: Bytes, data: Bytes): SwapBuilder {
+    return changetype<SwapBuilder>(super.addEvent(topic, data))
+  }
+
+  /**
+   * Sets multiple events for the intent.
+   * @param events - The list of events to be added
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addEvents(events: IntentEvent[]): SwapBuilder {
+    return changetype<SwapBuilder>(super.addEvents(events))
+  }
+
+  /**
    * Builds and returns the final Swap intent.
    * @returns A new Swap instance with all configured parameters
    */
@@ -231,7 +250,8 @@ export class SwapBuilder extends IntentBuilder {
       this.user,
       this.deadline,
       this.nonce,
-      this.maxFees
+      this.maxFees,
+      this.events
     )
   }
 }
@@ -388,13 +408,14 @@ export class Swap extends Intent {
     settler: Address | null = null,
     user: Address | null = null,
     deadline: BigInt | null = null,
-    nonce: string | null = null
+    nonce: string | null = null,
+    events: IntentEvent[] | null = null
   ): Swap {
     const context = environment.getContext()
     const recipient = user || context.user
     const swapIn = TokenIn.fromBigInt(tokenIn, amountIn)
     const swapOut = TokenOut.fromBigInt(tokenOut, minAmountOut, recipient)
-    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce)
+    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce, [], events)
   }
 
   /**
@@ -418,10 +439,11 @@ export class Swap extends Intent {
     user: Address | null = null,
     deadline: BigInt | null = null,
     nonce: string | null = null,
-    maxFees: TokenAmount[] | null = null
+    maxFees: TokenAmount[] | null = null,
+    events: IntentEvent[] | null = null
   ) {
     const fees: MaxFee[] = maxFees ? maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee)) : []
-    super(OperationType.Swap, sourceChain, fees, settler, user, deadline, nonce)
+    super(OperationType.Swap, sourceChain, fees, settler, user, deadline, nonce, events)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }

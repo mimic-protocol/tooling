@@ -1,4 +1,5 @@
 import { Address, ChainId } from '../types'
+import { TriggerType } from '../types/TriggerType'
 
 @json
 export class SerializableSettler {
@@ -20,13 +21,34 @@ export class Settler {
 }
 
 @json
+export class SerializableTrigger {
+  constructor(
+    public type: u8,
+    public data: string
+  ) {}
+}
+
+@json
+export class Trigger {
+  constructor(
+    public type: TriggerType,
+    public data: string
+  ) {}
+
+  static fromSerializable(serializable: SerializableTrigger): Trigger {
+    return new Trigger(serializable.type, serializable.data)
+  }
+}
+
+@json
 export class SerializableContext {
   constructor(
     public readonly timestamp: u64,
     public readonly consensusThreshold: u8,
     public user: string,
     public settlers: SerializableSettler[],
-    public configSig: string
+    public configSig: string,
+    public trigger: SerializableTrigger
   ) {}
 }
 
@@ -36,7 +58,8 @@ export class Context {
     public readonly consensusThreshold: u8,
     public user: Address,
     public settlers: Settler[],
-    public configSig: string
+    public configSig: string,
+    public trigger: Trigger
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
@@ -45,7 +68,8 @@ export class Context {
       serializable.consensusThreshold,
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
-      serializable.configSig
+      serializable.configSig,
+      Trigger.fromSerializable(serializable.trigger)
     )
   }
 
