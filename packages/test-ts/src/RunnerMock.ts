@@ -123,7 +123,7 @@ export default class RunnerMock {
     const variableImports: WebAssembly.ModuleImports = {}
     for (const moduleName of ['environment', 'evm'] as const) {
       const moduleMocks = mock[moduleName] ?? {}
-      const moduleImports: WebAssembly.ModuleImports = {}
+      const moduleImports: WebAssembly.ModuleImports = moduleName === 'evm' ? this.getDefaultEvmImports() : {}
 
       for (const [functionName, mockValue] of Object.entries(moduleMocks)) {
         moduleImports[functionName] = this.createMockFunction(functionName, mockValue)
@@ -142,6 +142,13 @@ export default class RunnerMock {
       env: this.ENV_IMPORTS,
       log: this.LOG_IMPORTS,
       index: variableImports,
+    }
+  }
+
+  private getDefaultEvmImports(): WebAssembly.ModuleImports {
+    return {
+      _decode: this.createMockFunction('_decode', { default: '' }),
+      _keccak: this.createMockFunction('_keccak', ''),
     }
   }
 
