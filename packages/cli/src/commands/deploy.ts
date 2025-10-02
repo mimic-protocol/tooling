@@ -19,12 +19,8 @@ export default class Deploy extends Command {
     key: Flags.string({ char: 'k', description: 'Your account deployment key', required: true }),
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
+    url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
-    url: Flags.string({
-      char: 'u',
-      description: `Mimic Registry base URL (default: ${MIMIC_REGISTRY_DEFAULT})`,
-      default: MIMIC_REGISTRY_DEFAULT,
-    }),
   }
 
   public async run(): Promise<void> {
