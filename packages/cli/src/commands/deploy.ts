@@ -8,7 +8,7 @@ import { join, resolve } from 'path'
 import { GENERIC_SUGGESTION } from '../errors'
 import log from '../log'
 
-const MIMIC_REGISTRY = 'https://api-protocol.mimic.fi'
+const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
 export default class Deploy extends Command {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
@@ -19,12 +19,13 @@ export default class Deploy extends Command {
     key: Flags.string({ char: 'k', description: 'Your account deployment key', required: true }),
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
+    url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile } = flags
+    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
     const fullInputDir = resolve(inputDir)
     const fullOutputDir = resolve(outputDir)
 
@@ -56,7 +57,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(neededFiles, key)
+    const CID = await this.uploadToRegistry(neededFiles, key, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
@@ -66,10 +67,10 @@ export default class Deploy extends Command {
     console.log(`Task deployed!`)
   }
 
-  private async uploadToRegistry(files: string[], key: string): Promise<string> {
+  private async uploadToRegistry(files: string[], key: string, registryUrl: string): Promise<string> {
     try {
       const form = filesToForm(files)
-      const { data } = await axios.post(`${MIMIC_REGISTRY}/tasks`, form, {
+      const { data } = await axios.post(`${registryUrl}/tasks`, form, {
         headers: {
           'x-api-key': key,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
