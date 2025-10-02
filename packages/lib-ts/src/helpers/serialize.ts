@@ -1,5 +1,5 @@
 import { evm } from '../evm'
-import { BigInt, EvmDecodeParam } from '../types'
+import { BigInt, Bytes, EvmDecodeParam } from '../types'
 
 export interface Stringable {
   toString(): string
@@ -7,6 +7,10 @@ export interface Stringable {
 
 export interface Serializable {
   serialize(): string
+}
+
+export interface Byteable {
+  toBytes(): Bytes
 }
 
 export function serialize<T extends Stringable>(elem: T): string {

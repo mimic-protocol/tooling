@@ -177,6 +177,29 @@ export class ByteArray extends Uint8Array implements Serializable {
   }
 
   /**
+   * Interprets the byte array as a little-endian U16.
+   * Throws in case of overflow.
+   */
+  toU16(): u16 {
+    for (let i = 2; i < this.length; i++) {
+      if (this[i] != 0) {
+        assert(false, 'overflow converting ' + this.toHexString() + ' to u16')
+      }
+    }
+    const paddedBytes = new Bytes(2)
+    paddedBytes[0] = 0
+    paddedBytes[1] = 0
+    const minLen = paddedBytes.length < this.length ? paddedBytes.length : this.length
+    for (let i = 0; i < minLen; i++) {
+      paddedBytes[i] = this[i]
+    }
+    let x: u16 = 0
+    x = (x | paddedBytes[1]) << 8
+    x = x | paddedBytes[0]
+    return x
+  }
+
+  /**
    * Interprets the byte array as a little-endian U32.
    * Throws in case of overflow.
    */

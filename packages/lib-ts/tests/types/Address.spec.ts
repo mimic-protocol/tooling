@@ -246,6 +246,34 @@ describe('Address', () => {
     })
   })
 
+  describe('toBytes', () => {
+    it('returns underlying bytes for EVM address', () => {
+      const bytes = randomBytes(40)
+      const address = Address.fromBytes(bytes)
+      const recoveredBytes = address.toBytes()
+      expect(bytes).toBe(recoveredBytes)
+    })
+
+    it('returns underlying bytes for SVM address', () => {
+      const bytes = randomBytes(64)
+      const address = Address.fromBytes(bytes)
+      const recoveredBytes = address.toBytes()
+      expect(bytes).toBe(recoveredBytes)
+    })
+
+    it('returns underlying bytes for SVM address - default', () => {
+      const address = Address.fromBase58String('11111111111111111111111111111111')
+      const recoveredBytes = address.toBytes()
+      expect(recoveredBytes).toBe(new Bytes(32))
+    })
+
+    it('returns underlying bytes for SVM address - token program', () => {
+      const address = Address.fromBase58String('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+      const recoveredBytes = address.toBytes()
+      expect(recoveredBytes.length).toBe(32)
+    })
+  })
+
   describe('isEVM / isSVM', () => {
     it('returns true / false when it is an EVM address', () => {
       const address = randomEvmAddress()
