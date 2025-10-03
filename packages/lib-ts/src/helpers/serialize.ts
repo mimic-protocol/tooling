@@ -1,6 +1,3 @@
-import { evm } from '../evm'
-import { BigInt, EvmDecodeParam } from '../types'
-
 export interface Stringable {
   toString(): string
 }
@@ -14,8 +11,4 @@ export function serialize<T extends Stringable>(elem: T): string {
   // @ts-ignore
   if (elem instanceof Serializable) return elem.serialize()
   return elem.toString()
-}
-
-export function deserializeCronTriggerData(data: string): BigInt {
-  return BigInt.fromString(evm.decode(new EvmDecodeParam('uint256', data)))
 }
