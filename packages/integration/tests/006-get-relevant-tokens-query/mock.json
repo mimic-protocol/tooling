@@ -7,10 +7,5 @@
     "_contractCall": {
       "default": ""
     }
-  },
-  "evm": {
-    "_decode": {
-      "default": ""
-    }
   }
 }
