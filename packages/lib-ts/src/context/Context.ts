@@ -1,5 +1,5 @@
 import { evm } from '../evm'
-import { Address, BigInt, Bytes, ChainId, EvmDecodeParam, JSON } from '../types'
+import { Address, BigInt, ChainId, EvmDecodeParam, JSON } from '../types'
 import { TriggerType } from '../types/TriggerType'
 
 @json
