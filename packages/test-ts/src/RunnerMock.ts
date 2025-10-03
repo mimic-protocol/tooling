@@ -147,8 +147,8 @@ export default class RunnerMock {
 
   private getDefaultEvmImports(): WebAssembly.ModuleImports {
     return {
-      _decode: this.createMockFunction('_decode', { default: '' }),
-      _keccak: this.createMockFunction('_keccak', ''),
+      _decode: this.createMockFunction('_decode', { default: '0x' }),
+      _keccak: this.createMockFunction('_keccak', '0xdefault0'),
     }
   }
 
