@@ -49,12 +49,12 @@ export class Trigger {
     return new Trigger(serializable.type, serializable.data)
   }
 
-  getEventData(): EventTriggerData {
-    return Trigger.deserializeEventTriggerData(this.data)
-  }
-
   getCronData(): BigInt {
     return Trigger.deserializeCronTriggerData(this.data)
+  }
+
+  getEventData(): EventTriggerData {
+    return Trigger.deserializeEventTriggerData(this.data)
   }
 
   static deserializeCronTriggerData(data: string): BigInt {
