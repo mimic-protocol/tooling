@@ -1,4 +1,4 @@
-import { type AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
 import AbiTypeConverter from './AbiTypeConverter'
 import EventHandler from './EventHandler'
@@ -94,7 +94,7 @@ export default class ContractClassGenerator {
     lines.push('')
   }
 
-  private getFunctions(): AbiFunctionItem[] {
+  private getFunctions(): AbiItem[] {
     return this.abi.filter((item) => item.type === 'function')
   }
 }
