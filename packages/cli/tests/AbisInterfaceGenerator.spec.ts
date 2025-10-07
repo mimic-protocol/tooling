@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 import { expect } from 'chai'
 
 import { getFunctionSelector } from '../src/helpers'
@@ -217,7 +218,7 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when generating contract call code', () => {
-    it('should generate a call to environment.contractCall with the correct parameters', () => {
+    it('should generate a call to environment.contractCall in the main method', () => {
       const functionName = 'getBalance'
       const abi = [
         createViewFunction(functionName, [{ name: 'owner', type: 'address' }], [{ name: 'balance', type: 'uint256' }]),
@@ -225,14 +226,14 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      const selector = getFunctionSelector(abi[0])
-
+      expect(result).to.contain(`const encodedData = this._encodeGetBalance(owner)`)
       expect(result).to.contain(
-        ` environment.contractCall(this._address, this._chainId, this._timestamp, '${selector}' + evm.encode([EvmEncodeParam.fromValue('address', owner)]))`
+        `const response = environment.contractCall(this._address, this._chainId, this._timestamp, encodedData.toHexString())`
       )
+      expect(result).to.contain(`return this._decodeGetBalance(response)`)
     })
 
-    it('should apply the correct conversions to parameters', () => {
+    it('should apply the correct conversions to parameters in encoded data method', () => {
       const abi = [
         createViewFunction(
           'getValues',
@@ -247,6 +248,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      expect(result).to.contain('_encodeGetValues(bigIntParam: BigInt, boolParam: bool, u8Param: u8): Bytes {')
       expect(result).to.contain('bigIntParam')
       expect(result).to.contain(`${LibTypes.Bytes}.fromBool(boolParam)`)
       expect(result).to.contain(`${LibTypes.BigInt}.fromU8(u8Param)`)
@@ -254,29 +256,37 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when handling return values', () => {
-    it('should correctly map individual return types', () => {
-      const returnTypes = ['address', 'uint256', 'bytes', 'bool', 'uint8', 'string']
-      const abi: AbiFunctionItem[] = []
-
-      for (const type of returnTypes) {
-        abi.push(createViewFunction(`get${type}`, [], [{ type }]))
-      }
+    it('should correctly map individual return types in decode methods', () => {
+      const abi = [
+        createViewFunction('getAddress', [], [{ type: 'address' }]),
+        createViewFunction('getUint256', [], [{ type: 'uint256' }]),
+        createViewFunction('getBytes', [], [{ type: 'bytes' }]),
+        createViewFunction('getBool', [], [{ type: 'bool' }]),
+        createViewFunction('getUint8', [], [{ type: 'uint8' }]),
+        createViewFunction('getString', [], [{ type: 'string' }]),
+      ]
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      expect(result).to.contain(`_decodeGetAddress(encodedResponse: string): Address {`)
       expect(result).to.contain(`return ${LibTypes.Address}.fromString(decodedResponse)`)
+      expect(result).to.contain(`_decodeGetUint256(encodedResponse: string): BigInt {`)
       expect(result).to.contain(`return ${LibTypes.BigInt}.fromString(decodedResponse)`)
+      expect(result).to.contain(`_decodeGetBytes(encodedResponse: string): Bytes {`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString(decodedResponse)`)
+      expect(result).to.contain(`_decodeGetBool(encodedResponse: string): bool {`)
       expect(result).to.contain(
         `return ${AssemblyPrimitiveTypes.u8}.parse(decodedResponse) as ${AssemblyPrimitiveTypes.bool}`
       )
+      expect(result).to.contain(`_decodeGetString(encodedResponse: string): string {`)
       expect(result).to.contain(`return decodedResponse`)
     })
 
-    it('should correctly map array return types', () => {
+    it('should correctly map array return types in decode methods', () => {
       const abi = [createViewFunction('getAddressArray', [], [{ name: 'addresses', type: 'address[]' }])]
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      expect(result).to.contain(`_decodeGetAddressArray(encodedResponse: string): Address[] {`)
       expect(result).to.contain(
         `return decodedResponse === '' ? [] : JSON.parse<${AssemblyPrimitiveTypes.string}[]>(decodedResponse).map<${LibTypes.Address}>(((item0: string) => ${LibTypes.Address}.fromString(item0)))`
       )
@@ -285,20 +295,22 @@ describe('AbisInterfaceGenerator', () => {
     it('should handle functions without return values', () => {
       const functionName = 'noReturn'
       const abi = [createViewFunction(functionName, [], [])]
-      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME).replace(/return.*\n/g, '')
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain(`${functionName}(): void {`)
-
+      expect(result).to.contain(`_encodeNoReturn(): Bytes {`)
+      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(
-        `environment.contractCall(this._address, this._chainId, this._timestamp, '${selector}')`
+        `environment.contractCall(this._address, this._chainId, this._timestamp, encodedData.toHexString())`
       )
+      expect(result).not.to.contain(`_decodeNoReturnResponse`)
     })
   })
 
   describe('when importing dependencies', () => {
-    it('should correctly import the used dependencies', () => {
+    it('should correctly import the used dependencies for read functions', () => {
       const abi = [
         createViewFunction(
           'getAllTypes',
@@ -314,6 +326,9 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).to.contain(`${LibTypes.Address}`)
       expect(importMatch).to.contain(`${LibTypes.BigInt}`)
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
+      expect(importMatch).to.contain('EvmDecodeParam')
+      expect(importMatch).to.contain('evm')
+      expect(importMatch).to.contain('environment')
     })
   })
 
@@ -415,7 +430,6 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain('toEvmEncodeParams(): EvmEncodeParam[] {')
       expect(result).to.contain(`EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(this.flag))`)
       expect(result).to.contain(`EvmEncodeParam.fromValue('string', ${LibTypes.Bytes}.fromUTF8(this.text))`)
-      // eslint-disable-next-line no-secrets/no-secrets
       expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', this.amount)`)
     })
 
@@ -477,7 +491,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`deposit(): CallBuilder {`)
     })
 
-    it('should generate proper encoded data for write functions', () => {
+    it('should generate proper encoded data method for write functions', () => {
       const abi = [
         createNonViewFunction('transfer', [
           { name: 'to', type: 'address' },
@@ -488,9 +502,9 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
       const selector = getFunctionSelector(abi[0])
 
+      expect(result).to.contain(`_encodeTransfer(to: Address, amount: BigInt): Bytes {`)
       expect(result).to.contain(
-        // eslint-disable-next-line no-secrets/no-secrets
-        `const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', amount)]))`
+        `return ${LibTypes.Bytes}.fromHexString('${selector}' + evm.encode([EvmEncodeParam.fromValue('address', to), EvmEncodeParam.fromValue('uint256', amount)]))`
       )
     })
 
@@ -504,6 +518,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      expect(result).to.contain(`const encodedData = this._encodeApprove(spender, amount)`)
       expect(result).to.contain(`return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
     })
 
@@ -514,7 +529,9 @@ describe('AbisInterfaceGenerator', () => {
       const selector = getFunctionSelector(abi[0])
 
       expect(result).to.contain('deposit(): CallBuilder {')
-      expect(result).to.contain(`const encodedData = ${LibTypes.Bytes}.fromHexString('${selector}')`)
+      expect(result).to.contain('_encodeDeposit(): Bytes {')
+      expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
+      expect(result).to.contain('const encodedData = this._encodeDeposit()')
       expect(result).not.to.contain('evm.encode')
     })
 
@@ -530,7 +547,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`deposit(amount: ${LibTypes.BigInt}): CallBuilder {`)
     })
 
-    it('should apply correct parameter conversions for write functions', () => {
+    it('should apply correct parameter conversions for write functions in encoded data method', () => {
       const abi = [
         createNonViewFunction('complexTransfer', [
           { name: 'to', type: 'address' },
@@ -542,8 +559,8 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
+      expect(result).to.contain(`_encodeComplexTransfer(to: Address, amount: BigInt, data: Bytes, flag: bool): Bytes {`)
       expect(result).to.contain(`EvmEncodeParam.fromValue('address', to)`)
-      // eslint-disable-next-line no-secrets/no-secrets
       expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', amount)`)
       expect(result).to.contain(`EvmEncodeParam.fromValue('bytes', data)`)
       expect(result).to.contain(`EvmEncodeParam.fromValue('bool', ${LibTypes.Bytes}.fromBool(flag))`)
@@ -558,6 +575,8 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).not.to.be.undefined
       expect(importMatch).to.contain('CallBuilder')
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
+      expect(importMatch).to.contain('evm')
+      expect(importMatch).to.contain('EvmEncodeParam')
     })
 
     it('should handle write functions with array parameters', () => {
@@ -586,7 +605,6 @@ describe('AbisInterfaceGenerator', () => {
         `EvmEncodeParam.fromValues('address[]', recipients.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
       )
       expect(result).to.contain(
-        // eslint-disable-next-line no-secrets/no-secrets
         `EvmEncodeParam.fromValues('uint256[]', amounts.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('uint256', s0)))`
       )
       expect(result).to.contain(
@@ -707,7 +725,6 @@ describe('AbisInterfaceGenerator', () => {
       )
 
       expect(result).to.contain(`EvmEncodeParam.fromValue('address', simpleAddress)`)
-      // eslint-disable-next-line no-secrets/no-secrets
       expect(result).to.contain(`EvmEncodeParam.fromValue('uint256', simpleAmount)`)
       expect(result).to.contain(
         `EvmEncodeParam.fromValues('address[]', addressArray.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValue('address', s0)))`
@@ -745,7 +762,6 @@ describe('AbisInterfaceGenerator', () => {
       )
 
       expect(result).to.contain(
-        // eslint-disable-next-line no-secrets/no-secrets
         `EvmEncodeParam.fromValues('uint256[][]', valueMatrix.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('uint256[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('uint256', s1)))))`
       )
       expect(result).to.contain(
@@ -754,6 +770,60 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(
         `EvmEncodeParam.fromValues('bytes[][]', data.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('bytes[]', s0.map<EvmEncodeParam>((s1) => EvmEncodeParam.fromValue('bytes', s1)))))`
       )
+    })
+  })
+
+  describe('when generating separated methods', () => {
+    it('should generate encoded data method for read functions', () => {
+      const abi = [createViewFunction('getBalance', [{ name: 'owner', type: 'address' }], [{ type: 'uint256' }])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('_encodeGetBalance(owner: Address): Bytes {')
+      expect(result).to.contain('_decodeGetBalance(encodedResponse: string): BigInt {')
+      expect(result).to.contain('getBalance(owner: Address): BigInt {')
+    })
+
+    it('should generate encoded data method for write functions', () => {
+      const abi = [
+        createNonViewFunction('transfer', [
+          { name: 'to', type: 'address' },
+          { name: 'amount', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('_encodeTransfer(to: Address, amount: BigInt): Bytes {')
+      expect(result).to.contain('transfer(to: Address, amount: BigInt): CallBuilder {')
+      expect(result).not.to.contain('_decodeTransferResponse')
+    })
+
+    it('should not generate decode method for void functions', () => {
+      const abi = [createViewFunction('validate', [{ name: 'data', type: 'bytes' }], [])]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      expect(result).to.contain('_encodeValidate(data: Bytes): Bytes {')
+      expect(result).to.contain('validate(data: Bytes): void {')
+      expect(result).not.to.contain('_decodeValidateResponse')
+    })
+
+    it('should generate main methods that call helper methods', () => {
+      const abi = [
+        createViewFunction('getValue', [], [{ type: 'uint256' }]),
+        createNonViewFunction('setValue', [{ name: 'value', type: 'uint256' }]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      // Read function should call both helpers
+      expect(result).to.contain('const encodedData = this._encodeGetValue()')
+      expect(result).to.contain('return this._decodeGetValue(response)')
+
+      // Write function should call encoded data helper
+      expect(result).to.contain('const encodedData = this._encodeSetValue(value)')
+      expect(result).to.contain('return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)')
     })
   })
 })

@@ -16,15 +16,129 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): void {
+    this.appendEncodedDataMethod(lines, fn, importManager, abiTypeConverter)
+
+    if (this.isWriteFunction(fn)) {
+      this.appendWriteMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+      return
+    }
+
+    this.appendDecodeResponseMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+    this.appendReadMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+  }
+
+  private static getCapitalizedName(fn: AbiFunctionItem): string {
+    const baseName = fn.escapedName || fn.name
+    return `${baseName.charAt(0).toUpperCase()}${baseName.slice(1)}`
+  }
+
+  private static appendWriteMethod(
+    lines: string[],
+    fn: AbiFunctionItem,
+    importManager: ImportManager,
+    tupleDefinitions: TupleDefinitionsMap,
+    abiTypeConverter: AbiTypeConverter
+  ): void {
     const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
     const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
 
     const methodName = fn.escapedName || fn.name
+    const capitalizedName = this.getCapitalizedName(fn)
+
     lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
 
+    lines.push(
+      `    const encodedData = this._encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+    )
+
+    importManager.addType(LibTypes.Bytes)
+    importManager.addType('CallBuilder')
+    lines.push(`    return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+
+    lines.push(`  }`)
+    lines.push('')
+  }
+
+  private static appendEncodedDataMethod(
+    lines: string[],
+    fn: AbiFunctionItem,
+    importManager: ImportManager,
+    abiTypeConverter: AbiTypeConverter
+  ): void {
+    const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
+    const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
+    const capitalizedName = this.getCapitalizedName(fn)
+
+    importManager.addType(LibTypes.Bytes)
+    lines.push(`  _encode${capitalizedName}(${methodParams}): Bytes {`)
+
     const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
-    this.appendFunctionBody(lines, fn, returnType, callArgs, importManager, abiTypeConverter)
+    const selector = getFunctionSelector(fn)
+    if (callArgs) importManager.addType('evm')
+
+    const encodedCall = `'${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''}`
+    lines.push(`    return Bytes.fromHexString(${encodedCall})`)
+
+    lines.push(`  }`)
+    lines.push('')
+  }
+
+  private static appendDecodeResponseMethod(
+    lines: string[],
+    fn: AbiFunctionItem,
+    importManager: ImportManager,
+    tupleDefinitions: TupleDefinitionsMap,
+    abiTypeConverter: AbiTypeConverter
+  ): void {
+    const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
+    if (returnType === 'void') return // No decode method needed for void functions
+
+    const capitalizedName = this.getCapitalizedName(fn)
+    importManager.addType('EvmDecodeParam')
+    importManager.addType('evm')
+
+    lines.push(`  _decode${capitalizedName}(encodedResponse: string): ${returnType} {`)
+
+    const decodeAbiType = this.getDecodeAbiType(fn)
+    lines.push(`    const decodedResponse = evm.decode(new EvmDecodeParam('${decodeAbiType}', encodedResponse))`)
+
+    const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
+    lines.push(`    return ${returnExpression}`)
+
+    lines.push(`  }`)
+    lines.push('')
+  }
+
+  private static appendReadMethod(
+    lines: string[],
+    fn: AbiFunctionItem,
+    importManager: ImportManager,
+    tupleDefinitions: TupleDefinitionsMap,
+    abiTypeConverter: AbiTypeConverter
+  ): void {
+    const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
+    const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
+    const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
+
+    const methodName = fn.escapedName || fn.name
+    const capitalizedName = this.getCapitalizedName(fn)
+
+    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
+
+    lines.push(
+      `    const encodedData = this._encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+    )
+
+    importManager.addType('environment')
+    const contractCallLine = `environment.contractCall(this._address, this._chainId, this._timestamp, encodedData.toHexString())`
+
+    if (returnType === 'void') {
+      lines.push(`    ${contractCallLine}`)
+    } else {
+      lines.push(`    const response = ${contractCallLine}`)
+      lines.push(`    return this._decode${capitalizedName}(response)`)
+    }
 
     lines.push(`  }`)
     lines.push('')
