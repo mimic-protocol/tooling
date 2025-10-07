@@ -32,6 +32,43 @@ export default class FunctionHandler {
     return ['nonpayable', 'payable'].includes(fn.stateMutability || '')
   }
 
+  public static getReturnType(
+    fn: AbiFunctionItem,
+    tupleDefinitions: TupleDefinitionsMap,
+    abiTypeConverter: AbiTypeConverter
+  ): string {
+    if (this.isWriteFunction(fn)) return 'CallBuilder'
+
+    if (!fn.outputs || fn.outputs.length === 0) return 'void'
+
+    if (fn.outputs.length === 1) return abiTypeConverter.mapAbiType(fn.outputs[0])
+
+    const name = TupleHandler.getOutputTupleClassName(fn.name)
+
+    const representativeOutputTuple: AbiParameter = {
+      name,
+      type: TUPLE_ABI_TYPE,
+      internalType: `struct ${name}`,
+      components: fn.outputs,
+    }
+
+    const tupleClassName = TupleHandler.getClassNameForTupleDefinition(representativeOutputTuple, tupleDefinitions)
+    if (tupleClassName) return tupleClassName
+
+    console.error(`Could not determine tuple class name for outputs of function ${fn.name}`)
+    return 'unknown'
+  }
+
+  public static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {
+    return inputs
+      .map((input) => {
+        const paramName = input.escapedName!
+        const type = abiTypeConverter.mapAbiType(input)
+        return `${paramName}: ${type}`
+      })
+      .join(', ')
+  }
+
   private static appendWriteMethod(
     lines: string[],
     fn: AbiFunctionItem,
@@ -94,42 +131,5 @@ export default class FunctionHandler {
 
     lines.push(`  }`)
     lines.push('')
-  }
-
-  public static getReturnType(
-    fn: AbiFunctionItem,
-    tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
-  ): string {
-    if (this.isWriteFunction(fn)) return 'CallBuilder'
-
-    if (!fn.outputs || fn.outputs.length === 0) return 'void'
-
-    if (fn.outputs.length === 1) return abiTypeConverter.mapAbiType(fn.outputs[0])
-
-    const name = TupleHandler.getOutputTupleClassName(fn.name)
-
-    const representativeOutputTuple: AbiParameter = {
-      name,
-      type: TUPLE_ABI_TYPE,
-      internalType: `struct ${name}`,
-      components: fn.outputs,
-    }
-
-    const tupleClassName = TupleHandler.getClassNameForTupleDefinition(representativeOutputTuple, tupleDefinitions)
-    if (tupleClassName) return tupleClassName
-
-    console.error(`Could not determine tuple class name for outputs of function ${fn.name}`)
-    return 'unknown'
-  }
-
-  public static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {
-    return inputs
-      .map((input) => {
-        const paramName = input.escapedName!
-        const type = abiTypeConverter.mapAbiType(input)
-        return `${paramName}: ${type}`
-      })
-      .join(', ')
   }
 }
