@@ -1,8 +1,6 @@
-import { getFunctionSelector } from '../../helpers'
-import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { type AbiFunctionItem, type AbiParameter, LibTypes } from '../../types'
 
 import type AbiTypeConverter from './AbiTypeConverter'
-import ArrayHandler from './ArrayHandler'
 import type ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
 import TupleHandler from './TupleHandler'
@@ -14,22 +12,24 @@ export default class FunctionHandler {
     fn: AbiFunctionItem,
     importManager: ImportManager,
     tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
+    abiTypeConverter: AbiTypeConverter,
+    contractName: string
   ): void {
-    this.appendEncodeMethod(lines, fn, importManager, abiTypeConverter)
-
     if (this.isWriteFunction(fn)) {
-      this.appendWriteMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+      this.appendWriteMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter, contractName)
       return
     }
 
-    this.appendDecodeMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
-    this.appendReadMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+    this.appendReadMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter, contractName)
   }
 
-  private static getCapitalizedName(fn: AbiFunctionItem): string {
+  public static getCapitalizedName(fn: AbiFunctionItem): string {
     const baseName = fn.escapedName || fn.name
     return `${baseName.charAt(0).toUpperCase()}${baseName.slice(1)}`
+  }
+
+  public static isWriteFunction(fn: AbiFunctionItem): boolean {
+    return ['nonpayable', 'payable'].includes(fn.stateMutability || '')
   }
 
   private static appendWriteMethod(
@@ -37,7 +37,8 @@ export default class FunctionHandler {
     fn: AbiFunctionItem,
     importManager: ImportManager,
     tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
+    abiTypeConverter: AbiTypeConverter,
+    contractName: string
   ): void {
     const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
@@ -49,7 +50,7 @@ export default class FunctionHandler {
     lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
 
     lines.push(
-      `    const encodedData = this._encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+      `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
     importManager.addType(LibTypes.Bytes)
@@ -60,62 +61,13 @@ export default class FunctionHandler {
     lines.push('')
   }
 
-  private static appendEncodeMethod(
-    lines: string[],
-    fn: AbiFunctionItem,
-    importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter
-  ): void {
-    const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
-    const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
-    const capitalizedName = this.getCapitalizedName(fn)
-
-    importManager.addType(LibTypes.Bytes)
-    lines.push(`  _encode${capitalizedName}(${methodParams}): Bytes {`)
-
-    const callArgs = this.generateCallArguments(inputs, importManager, abiTypeConverter)
-    const selector = getFunctionSelector(fn)
-    if (callArgs) importManager.addType('evm')
-
-    const encodedCall = `'${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''}`
-    lines.push(`    return Bytes.fromHexString(${encodedCall})`)
-
-    lines.push(`  }`)
-    lines.push('')
-  }
-
-  private static appendDecodeMethod(
-    lines: string[],
-    fn: AbiFunctionItem,
-    importManager: ImportManager,
-    tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
-  ): void {
-    const returnType = this.getReturnType(fn, tupleDefinitions, abiTypeConverter)
-    if (returnType === 'void') return // No decode method needed for void functions
-
-    const capitalizedName = this.getCapitalizedName(fn)
-    importManager.addType('EvmDecodeParam')
-    importManager.addType('evm')
-
-    lines.push(`  _decode${capitalizedName}(encodedResponse: string): ${returnType} {`)
-
-    const decodeAbiType = this.getDecodeAbiType(fn)
-    lines.push(`    const decodedResponse = evm.decode(new EvmDecodeParam('${decodeAbiType}', encodedResponse))`)
-
-    const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
-    lines.push(`    return ${returnExpression}`)
-
-    lines.push(`  }`)
-    lines.push('')
-  }
-
   private static appendReadMethod(
     lines: string[],
     fn: AbiFunctionItem,
     importManager: ImportManager,
     tupleDefinitions: TupleDefinitionsMap,
-    abiTypeConverter: AbiTypeConverter
+    abiTypeConverter: AbiTypeConverter,
+    contractName: string
   ): void {
     const inputs = NameManager.resolveParameterNames(fn.inputs || [], NameContext.FUNCTION_PARAMETER, 'param')
     const methodParams = this.generateMethodParams(inputs, abiTypeConverter)
@@ -127,7 +79,7 @@ export default class FunctionHandler {
     lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
 
     lines.push(
-      `    const encodedData = this._encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+      `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
     importManager.addType('environment')
@@ -137,7 +89,7 @@ export default class FunctionHandler {
       lines.push(`    ${contractCallLine}`)
     } else {
       lines.push(`    const response = ${contractCallLine}`)
-      lines.push(`    return this._decode${capitalizedName}(response)`)
+      lines.push(`    return ${contractName}Utils.decode${capitalizedName}(response)`)
     }
 
     lines.push(`  }`)
@@ -171,7 +123,7 @@ export default class FunctionHandler {
     return 'unknown'
   }
 
-  private static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {
+  public static generateMethodParams(inputs: AbiParameter[], abiTypeConverter: AbiTypeConverter): string {
     return inputs
       .map((input) => {
         const paramName = input.escapedName!
@@ -179,143 +131,5 @@ export default class FunctionHandler {
         return `${paramName}: ${type}`
       })
       .join(', ')
-  }
-
-  public static buildEvmEncodeParamCode(
-    valueIdentifier: string,
-    paramDefinition: AbiParameter,
-    abiTypeConverter: AbiTypeConverter,
-    importManager: ImportManager,
-    depth: number = 0
-  ): string {
-    importManager.addType('EvmEncodeParam')
-    const currentAbiTypeSignature = TupleHandler.isBaseTypeATuple(paramDefinition.type)
-      ? TupleHandler.mapTupleType(paramDefinition.type)
-      : paramDefinition.type
-
-    if (ArrayHandler.isArrayType(paramDefinition.type)) {
-      const elementLambdaVar = `s${depth}`
-
-      const elementAbiDefinition: AbiParameter = {
-        name: elementLambdaVar,
-        type: ArrayHandler.getArrayType(paramDefinition.type),
-        components: TupleHandler.isBaseTypeATuple(ArrayHandler.getArrayType(paramDefinition.type))
-          ? paramDefinition.components
-          : undefined,
-        internalType: paramDefinition.internalType
-          ? ArrayHandler.getArrayType(paramDefinition.internalType)
-          : undefined,
-      }
-
-      const nestedEvmParam = FunctionHandler.buildEvmEncodeParamCode(
-        elementLambdaVar,
-        elementAbiDefinition,
-        abiTypeConverter,
-        importManager,
-        depth + 1
-      )
-      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.map<EvmEncodeParam>((${elementLambdaVar}) => ${nestedEvmParam}))`
-    }
-
-    if (TupleHandler.isBaseTypeATuple(paramDefinition.type)) {
-      return `EvmEncodeParam.fromValues('${currentAbiTypeSignature}', ${valueIdentifier}.toEvmEncodeParams())`
-    }
-
-    const mappedParamType = abiTypeConverter.mapAbiType(paramDefinition)
-    const convertedValue = abiTypeConverter.toLibType(mappedParamType, valueIdentifier)
-    return `EvmEncodeParam.fromValue('${currentAbiTypeSignature}', ${convertedValue})`
-  }
-
-  private static generateCallArguments(
-    inputs: AbiParameter[],
-    importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter
-  ): string {
-    return inputs
-      .map((input) => {
-        const paramName = input.escapedName!
-        return FunctionHandler.buildEvmEncodeParamCode(paramName, input, abiTypeConverter, importManager, 0)
-      })
-      .join(', ')
-  }
-
-  private static getDecodeAbiType(fn: AbiFunctionItem): string {
-    const outputs = fn.outputs ?? []
-
-    if (outputs.length === 0) return '()'
-
-    if (outputs.length === 1) {
-      const [output] = outputs
-      const { type, components } = output
-
-      if (TupleHandler.isBaseTypeATuple(type) && components)
-        return TupleHandler.generateTupleTypeString(type, components)
-
-      return type
-    }
-
-    return TupleHandler.generateTupleTypeString(TUPLE_ABI_TYPE, outputs)
-  }
-
-  private static getReturnExpression(
-    currentType: string,
-    dataAccessString: string,
-    importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter,
-    depth: number = 0
-  ): string {
-    if (ArrayHandler.isArrayType(currentType)) {
-      importManager.addType('JSON')
-      const elementType = ArrayHandler.getArrayType(currentType)
-      const itemVar = `item${depth}`
-
-      const subLogic = this.getReturnExpression(elementType, itemVar, importManager, abiTypeConverter, depth + 1)
-      return `${dataAccessString} === '' ? [] : JSON.parse<${AssemblyPrimitiveTypes.string}[]>(${dataAccessString}).map<${elementType}>(((${itemVar}: ${AssemblyPrimitiveTypes.string}) => ${subLogic}))`
-    }
-
-    return abiTypeConverter.generateTypeConversion(currentType, dataAccessString, false, false)
-  }
-
-  private static appendFunctionBody(
-    lines: string[],
-    fn: AbiFunctionItem,
-    returnType: string,
-    callArgs: string,
-    importManager: ImportManager,
-    abiTypeConverter: AbiTypeConverter
-  ): void {
-    const selector = getFunctionSelector(fn)
-    if (callArgs) importManager.addType('evm')
-
-    const encodedCall = `'${selector}'${callArgs ? ` + evm.encode([${callArgs}])` : ''}`
-
-    if (this.isWriteFunction(fn)) {
-      importManager.addType(LibTypes.Bytes)
-      importManager.addType('CallBuilder')
-      lines.push(`    const encodedData = Bytes.fromHexString(${encodedCall})`)
-      lines.push(`    return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
-      return
-    }
-
-    importManager.addType('environment')
-    const contractCallCode = `environment.contractCall(this._address, this._chainId, this._timestamp, ${encodedCall})`
-
-    if (returnType === 'void') {
-      lines.push(`    ${contractCallCode}`)
-      return
-    }
-
-    importManager.addType('EvmDecodeParam')
-    const decodeAbiType = this.getDecodeAbiType(fn)
-
-    lines.push(`    const response = ${contractCallCode}`)
-    lines.push(`    const decodedResponse = evm.decode(new EvmDecodeParam('${decodeAbiType}', response))`)
-
-    const returnExpression = this.getReturnExpression(returnType, 'decodedResponse', importManager, abiTypeConverter)
-    lines.push(`    return ${returnExpression}`)
-  }
-
-  private static isWriteFunction(fn: AbiFunctionItem): boolean {
-    return ['nonpayable', 'payable'].includes(fn.stateMutability || '')
   }
 }

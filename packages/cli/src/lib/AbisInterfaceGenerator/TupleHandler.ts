@@ -3,7 +3,7 @@ import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes } from 
 
 import type AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
-import FunctionHandler from './FunctionHandler'
+import UtilsHandler from './UtilsHandler'
 import type ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
 import type { TupleDefinition, TupleDefinitionsMap } from './types'
@@ -289,7 +289,12 @@ export default class TupleHandler {
     return def.components.map((comp: AbiParameter) => {
       const fieldName = comp.escapedName!
       const valueAccessPath = `this.${fieldName}`
-      const paramCode = FunctionHandler.buildEvmEncodeParamCode(valueAccessPath, comp, abiTypeConverter, importManager)
+      const paramCode = UtilsHandler.buildEvmEncodeParamCode(
+        valueAccessPath,
+        comp,
+        abiTypeConverter,
+        importManager
+      )
       return `      ${paramCode},`
     })
   }
