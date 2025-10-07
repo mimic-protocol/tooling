@@ -16,14 +16,14 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): void {
-    this.appendEncodedDataMethod(lines, fn, importManager, abiTypeConverter)
+    this.appendEncodeMethod(lines, fn, importManager, abiTypeConverter)
 
     if (this.isWriteFunction(fn)) {
       this.appendWriteMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
       return
     }
 
-    this.appendDecodeResponseMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
+    this.appendDecodeMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
     this.appendReadMethod(lines, fn, importManager, tupleDefinitions, abiTypeConverter)
   }
 
@@ -60,7 +60,7 @@ export default class FunctionHandler {
     lines.push('')
   }
 
-  private static appendEncodedDataMethod(
+  private static appendEncodeMethod(
     lines: string[],
     fn: AbiFunctionItem,
     importManager: ImportManager,
@@ -84,7 +84,7 @@ export default class FunctionHandler {
     lines.push('')
   }
 
-  private static appendDecodeResponseMethod(
+  private static appendDecodeMethod(
     lines: string[],
     fn: AbiFunctionItem,
     importManager: ImportManager,
