@@ -73,19 +73,23 @@ export default class EventHandler {
         `  static decode(${topicsParam}: ${AssemblyPrimitiveTypes.string}[], ${dataParam}: ${AssemblyPrimitiveTypes.string}): ${def.className} {`
       )
 
+      const localVarMap = new Map<string, string>()
+
+      // Decode indexed parameters from topics
       if (indexedParams.length > 0) {
         lines.push(`    // Decode indexed parameters from topics`)
-        indexedParams.forEach((param, index) => {
-          const topicIndex = index + 1 // Skip topics[0] which is event signature
-          const fieldName = param.escapedName!
+        NameManager.resolveParameterNames(indexedParams, NameContext.LOCAL_VARIABLE).forEach((param, index) => {
+          const varName = param.escapedName!
+          localVarMap.set(indexedParams[index].escapedName!, varName)
           const mappedType = abiTypeConverter.mapAbiType(param)
-          const abiType = param.type
-          const rawValue = `evm.decode(new EvmDecodeParam('${abiType}', topics[${topicIndex}]))`
-          const parseLogic = abiTypeConverter.generateTypeConversion(mappedType, rawValue, false, false)
-          lines.push(`    const ${fieldName}: ${mappedType} = ${parseLogic}`)
+          const rawValue = `evm.decode(new EvmDecodeParam('${param.type}', topics[${index + 1}]))` // Skip topics[0] which is event signature
+          lines.push(
+            `    const ${varName}: ${mappedType} = ${abiTypeConverter.generateTypeConversion(mappedType, rawValue, false, false)}`
+          )
         })
       }
 
+      // Decode non-indexed parameters from data
       if (nonIndexedParams.length > 0) {
         lines.push(`    // Decode non-indexed parameters from data`)
         const dataAbiType =
@@ -97,35 +101,36 @@ export default class EventHandler {
               )
         lines.push(`    const decodedData = evm.decode(new EvmDecodeParam('${dataAbiType}', data))`)
 
+        const nonIndexedWithVarNames = NameManager.resolveParameterNames(nonIndexedParams, NameContext.LOCAL_VARIABLE)
         if (nonIndexedParams.length === 1) {
-          // Single non-indexed parameter
-          const param = nonIndexedParams[0]
-          const fieldName = param.escapedName!
+          const param = nonIndexedWithVarNames[0]
+          const varName = param.escapedName!
+          localVarMap.set(nonIndexedParams[0].escapedName!, varName)
           const mappedType = abiTypeConverter.mapAbiType(param)
-          const parseLogic = abiTypeConverter.generateTypeConversion(mappedType, 'decodedData', false, false)
-          lines.push(`    const ${fieldName}: ${mappedType} = ${parseLogic}`)
+          lines.push(
+            `    const ${varName}: ${mappedType} = ${abiTypeConverter.generateTypeConversion(mappedType, 'decodedData', false, false)}`
+          )
         } else {
-          // Multiple non-indexed parameters
           importManager.addType('JSON')
           lines.push(`    const dataParts = JSON.parse<${AssemblyPrimitiveTypes.string}[]>(decodedData)`)
-          nonIndexedParams.forEach((param, index) => {
-            const fieldName = param.escapedName!
+          nonIndexedWithVarNames.forEach((param, index) => {
+            const varName = param.escapedName!
+            localVarMap.set(nonIndexedParams[index].escapedName!, varName)
             const mappedType = abiTypeConverter.mapAbiType(param)
-            const dataAccess = `dataParts[${index}]`
             const parseLogic = TupleHandler.buildFieldParseLogic(
-              dataAccess,
+              `dataParts[${index}]`,
               param,
               mappedType,
               abiTypeConverter,
               importManager
             )
-            lines.push(`    const ${fieldName}: ${mappedType} = ${parseLogic}`)
+            lines.push(`    const ${varName}: ${mappedType} = ${parseLogic}`)
           })
         }
       }
 
-      const decodeConstructorArgs = def.components.map((c) => c.escapedName!).join(', ')
-      lines.push(`    return new ${def.className}(${decodeConstructorArgs})`)
+      const constructorArgs = def.components.map((c) => localVarMap.get(c.escapedName!) || c.escapedName!).join(', ')
+      lines.push(`    return new ${def.className}(${constructorArgs})`)
       lines.push(`  }`)
 
       lines.push(`}`)
