@@ -1,4 +1,5 @@
-import { Address, ChainId } from '../types'
+import { evm } from '../evm'
+import { Address, BigInt, ChainId, EvmDecodeParam, JSON } from '../types'
 import { TriggerType } from '../types/TriggerType'
 
 @json
@@ -28,6 +29,15 @@ export class SerializableTrigger {
   ) {}
 }
 
+export class EventTriggerData {
+  constructor(
+    public blockHash: string,
+    public index: BigInt,
+    public topics: string[],
+    public eventData: string
+  ) {}
+}
+
 @json
 export class Trigger {
   constructor(
@@ -37,6 +47,23 @@ export class Trigger {
 
   static fromSerializable(serializable: SerializableTrigger): Trigger {
     return new Trigger(serializable.type, serializable.data)
+  }
+
+  getCronData(): BigInt {
+    return Trigger.deserializeCronTriggerData(this.data)
+  }
+
+  getEventData(): EventTriggerData {
+    return Trigger.deserializeEventTriggerData(this.data)
+  }
+
+  static deserializeCronTriggerData(data: string): BigInt {
+    return BigInt.fromString(evm.decode(new EvmDecodeParam('uint256', data)))
+  }
+
+  static deserializeEventTriggerData(data: string): EventTriggerData {
+    const fields = JSON.parse<string[]>(evm.decode(new EvmDecodeParam('(bytes32,uint256,bytes32[],bytes)', data)))
+    return new EventTriggerData(fields[0], BigInt.fromString(fields[1]), JSON.parse<string[]>(fields[2]), fields[3])
   }
 }
 
