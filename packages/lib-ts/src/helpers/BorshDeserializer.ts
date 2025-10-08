@@ -1,7 +1,7 @@
 import { Address, ByteArray, Bytes } from '../types'
 import { Option } from '../types/Option'
 
-import { bytesToStringNullTerminated } from './strings'
+import { bytesToString } from './strings'
 
 /**
  * Unsafe class to deserialize bytes into Rust-like types
@@ -69,7 +69,7 @@ export class BorshDeserializer {
     const length = this.tryU32()
     if (this._offset + length - 1 >= this.getBytesLength())
       throw new Error(`Insufficient bytes for string of size ${length}`)
-    const str = bytesToStringNullTerminated(this._bytes.subarray(this._offset, this._offset + length))
+    const str = bytesToString(this._bytes.subarray(this._offset, this._offset + length), true)
     this._offset += length
     return str
   }

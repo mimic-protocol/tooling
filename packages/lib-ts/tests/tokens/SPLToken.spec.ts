@@ -1,6 +1,6 @@
 import { SVM_NATIVE_ADDRESS } from '../../src/helpers'
-import { METADATA_PROGRAM_ID, SPLToken } from '../../src/tokens/SPLToken'
-import { Address, ChainId, JSON } from '../../src/types'
+import { SPLToken } from '../../src/tokens/SPLToken'
+import { Address, ChainId, JSON, SvmTokenMetadataData } from '../../src/types'
 import { Seed, SvmFindProgramAddressParams } from '../../src/types/SvmFindProgramAddress'
 import { randomEvmAddress, randomHex, randomSvmAddress, setFindProgramAddress, setGetAccountsInfo } from '../helpers'
 
@@ -96,8 +96,12 @@ describe('SPLToken', () => {
       const metadataAddr = randomSvmAddress()
 
       const params = new SvmFindProgramAddressParams(
-        [Seed.fromString('metadata'), Seed.from(Address.fromString(METADATA_PROGRAM_ID)), Seed.from(addr)],
-        METADATA_PROGRAM_ID
+        [
+          Seed.fromString('metadata'),
+          Seed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+          Seed.from(addr),
+        ],
+        SvmTokenMetadataData.METADATA_PROGRAM_ID
       )
 
       const emptyStrHex = '00000000'
@@ -128,8 +132,12 @@ describe('SPLToken', () => {
       const metadataAddr = randomSvmAddress()
 
       const params = new SvmFindProgramAddressParams(
-        [Seed.fromString('metadata'), Seed.from(Address.fromString(METADATA_PROGRAM_ID)), Seed.from(addr)],
-        METADATA_PROGRAM_ID
+        [
+          Seed.fromString('metadata'),
+          Seed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+          Seed.from(addr),
+        ],
+        SvmTokenMetadataData.METADATA_PROGRAM_ID
       )
 
       setFindProgramAddress(JSON.stringify(params), `{"address":"${metadataAddr.toString()}","bump":255}`)

@@ -1,5 +1,10 @@
 import { JSON } from '../../src/types'
-import { Seed, SvmFindProgramAddressParams, SvmFindProgramAddressResult } from '../../src/types/SvmFindProgramAddress'
+import {
+  Seed,
+  SerializableSvmFindProgramAddressResult,
+  SvmFindProgramAddressParams,
+  SvmFindProgramAddressResult,
+} from '../../src/types/SvmFindProgramAddress'
 import { randomSvmAddress } from '../helpers'
 
 describe('SvmFindProgramAddress', () => {
@@ -36,7 +41,8 @@ describe('SvmFindProgramAddress', () => {
       const addr = randomSvmAddress()
       const bump: u8 = 255
       const json = `{"address":"${addr.toString()}","bump":${bump}}`
-      const output = SvmFindProgramAddressResult.fromString(json)
+      const parsed = JSON.parse<SerializableSvmFindProgramAddressResult>(json)
+      const output = SvmFindProgramAddressResult.fromSerializable(parsed)
 
       expect(output.address).toBe(addr)
       expect(output.bump).toBe(bump)

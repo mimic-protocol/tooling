@@ -1,5 +1,3 @@
-import { JSON } from 'json-as'
-
 import { Byteable, bytesToHexString } from '../helpers'
 
 import { Address } from './Address'
@@ -39,14 +37,13 @@ export class SvmFindProgramAddressResult {
     public bump: u8
   ) {}
 
-  static fromString(json: string): SvmFindProgramAddressResult {
-    const object = JSON.parse<SvmFindProgramAddressStringResult>(json)
-    return new SvmFindProgramAddressResult(Address.fromString(object.address), object.bump)
+  static fromSerializable(serializable: SerializableSvmFindProgramAddressResult): SvmFindProgramAddressResult {
+    return new SvmFindProgramAddressResult(Address.fromString(serializable.address), serializable.bump)
   }
 }
 
 @json
-class SvmFindProgramAddressStringResult {
+export class SerializableSvmFindProgramAddressResult {
   constructor(
     public address: string,
     public bump: u8

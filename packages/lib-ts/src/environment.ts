@@ -7,14 +7,13 @@ import {
   Call as CallQuery,
   GetAccountsInfo,
   GetAccountsInfoResponse,
-  GetAccountsInfoStringResponse,
   GetPrice,
   GetRelevantTokens,
   GetRelevantTokensResponse,
+  SerializableGetAccountsInfoResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
-import { log } from './log'
 
 export namespace environment {
   @external('environment', '_call')
@@ -184,7 +183,8 @@ export namespace environment {
       .replaceAll("true",`"true"`)
       .replaceAll("false",`"false"`)
 
-    return JSON.parse<GetAccountsInfoStringResponse>(responseStr).toGetAccountsInfoResponse()
+    const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
+    return GetAccountsInfoResponse.fromSerializable(response)
   }
 
   /**

@@ -1,4 +1,4 @@
-import { AccountInfo, Address } from '../types'
+import { Address, SerializableSvmAccountInfo, SvmAccountInfo } from '../types'
 
 @json
 class GetAccountsInfoBase {
@@ -23,45 +23,24 @@ export class GetAccountsInfo extends GetAccountsInfoBase {
 }
 
 // There is a bug with json-as, so this can't be parsed directly
-@json
 export class GetAccountsInfoResponse {
   constructor(
-    public accountsInfo: AccountInfo[],
-    public slot: string
-  ) {}
-}
-
-@json
-export class GetAccountsInfoStringResponse {
-  constructor(
-    public accountsInfo: AccountInfoString[],
+    public accountsInfo: SvmAccountInfo[],
     public slot: string
   ) {}
 
-  toGetAccountsInfoResponse(): GetAccountsInfoResponse {
+  static fromSerializable(serializable: SerializableGetAccountsInfoResponse): GetAccountsInfoResponse {
     return new GetAccountsInfoResponse(
-      this.accountsInfo.map((acc: AccountInfoString) => acc.toAccountInfo()),
-      this.slot
+      serializable.accountsInfo.map((acc: SerializableSvmAccountInfo) => SvmAccountInfo.fromSerializable(acc)),
+      serializable.slot
     )
   }
 }
 
 @json
-class AccountInfoString {
+export class SerializableGetAccountsInfoResponse {
   constructor(
-    public owner: string,
-    public lamports: string,
-    public data: string,
-    public rentEpoch: string,
-    public executable: string
+    public accountsInfo: SerializableSvmAccountInfo[],
+    public slot: string
   ) {}
-
-  toAccountInfo(): AccountInfo {
-    return new AccountInfo(this.owner, this.lamports, this.data, this.rentEpoch, this.parseBoolean(this.executable))
-  }
-
-  parseBoolean(boolean: string): boolean {
-    if (boolean !== 'true' && boolean !== 'false') throw new Error(`Invalid boolean: ${boolean}`)
-    return boolean === 'true'
-  }
 }
