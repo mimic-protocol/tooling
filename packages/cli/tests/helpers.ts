@@ -1,7 +1,8 @@
 import { runCommand } from '@oclif/test'
 import { expect } from 'chai'
 
-import { AbiFunctionItem, AbiParameter } from '../src/types'
+import { AbiItem } from '../src/lib/AbisInterfaceGenerator/types'
+import { AbiParameter } from '../src/types'
 
 export const itThrowsACliError = (command: string[], message: string, code?: string, suggestionsLen?: number) => {
   it('throws an error', async () => {
@@ -17,7 +18,7 @@ function createAbiFunctionItem(
   inputs: AbiParameter[],
   outputs: AbiParameter[],
   stateMutability: string
-): AbiFunctionItem {
+): AbiItem {
   return {
     type: 'function',
     name,
@@ -38,3 +39,9 @@ export const createNonViewFunction = (name: string, inputs: AbiParameter[] = [],
 
 export const createPayableFunction = (name: string, inputs: AbiParameter[] = [], outputs: AbiParameter[] = []) =>
   createAbiFunctionItem(name, inputs, outputs, 'payable')
+
+export const createEvent = (name: string, inputs: (AbiParameter & { indexed?: boolean })[] = []): AbiItem => ({
+  type: 'event',
+  name,
+  inputs,
+})

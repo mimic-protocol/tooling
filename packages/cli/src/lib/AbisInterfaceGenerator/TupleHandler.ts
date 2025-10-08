@@ -220,27 +220,7 @@ export default class TupleHandler {
     return `${pascalCase(fnNamePart)}Outputs`
   }
 
-  private static getTupleParseMethodBody(
-    def: TupleDefinition,
-    abiTypeConverter: AbiTypeConverter,
-    importManager: ImportManager
-  ): string[] {
-    return def.components.map((comp: AbiParameter, index: number) => {
-      const fieldName = comp.escapedName!
-      const mappedComponentType = abiTypeConverter.mapAbiType(comp)
-      const dataAccess = `parts[${index}]`
-      const parseLogic = this.buildFieldParseLogic(
-        dataAccess,
-        comp,
-        mappedComponentType,
-        abiTypeConverter,
-        importManager
-      )
-      return `    const ${fieldName}: ${mappedComponentType} = ${parseLogic};`
-    })
-  }
-
-  private static buildFieldParseLogic(
+  public static buildFieldParseLogic(
     dataAccessString: string,
     componentAbiParam: AbiParameter,
     mappedTargetType: string,
@@ -279,6 +259,26 @@ export default class TupleHandler {
     }
 
     return abiTypeConverter.generateTypeConversion(mappedTargetType, dataAccessString, false, false)
+  }
+
+  private static getTupleParseMethodBody(
+    def: TupleDefinition,
+    abiTypeConverter: AbiTypeConverter,
+    importManager: ImportManager
+  ): string[] {
+    return def.components.map((comp: AbiParameter, index: number) => {
+      const fieldName = comp.escapedName!
+      const mappedComponentType = abiTypeConverter.mapAbiType(comp)
+      const dataAccess = `parts[${index}]`
+      const parseLogic = this.buildFieldParseLogic(
+        dataAccess,
+        comp,
+        mappedComponentType,
+        abiTypeConverter,
+        importManager
+      )
+      return `    const ${fieldName}: ${mappedComponentType} = ${parseLogic};`
+    })
   }
 
   private static getTupleToEvmParamsMethodBody(

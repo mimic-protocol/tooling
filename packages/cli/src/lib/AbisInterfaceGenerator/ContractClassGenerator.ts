@@ -1,23 +1,26 @@
-import { type AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
 import AbiTypeConverter from './AbiTypeConverter'
+import EventHandler from './EventHandler'
 import FunctionHandler from './FunctionHandler'
 import ImportManager from './ImportManager'
 import NameManager from './NameManager'
 import TupleHandler from './TupleHandler'
-import type { TupleDefinitionsMap } from './types'
+import type { AbiItem, EventDefinitionsMap, TupleDefinitionsMap } from './types'
 import UtilsHandler from './UtilsHandler'
 
 export default class ContractClassGenerator {
-  private abi: AbiFunctionItem[]
+  private abi: AbiItem[]
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap
+  private eventDefinitions: EventDefinitionsMap
   private abiTypeConverter: AbiTypeConverter
 
-  constructor(abi: AbiFunctionItem[]) {
+  constructor(abi: AbiItem[]) {
     this.abi = abi
     this.importManager = new ImportManager()
     this.tupleDefinitions = TupleHandler.extractTupleDefinitions(this.abi)
+    this.eventDefinitions = EventHandler.extractEventDefinitions(this.abi)
     this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
   }
 
@@ -31,6 +34,11 @@ export default class ContractClassGenerator {
       this.importManager,
       this.abiTypeConverter
     )
+    const eventClassesCode = EventHandler.generateEventClassesCode(
+      this.eventDefinitions,
+      this.importManager,
+      this.abiTypeConverter
+    )
     // Note: this should be generated after any other generation
     const importsCode = this.importManager.generateImportsCode()
 
@@ -41,11 +49,12 @@ export default class ContractClassGenerator {
     result += separator + mainClassCode
     result += separator + utilsClassCode
     if (tupleClassesCode) result += separator + tupleClassesCode
+    if (eventClassesCode) result += separator + eventClassesCode
 
     return result.trim()
   }
 
-  private generateMainClass(contractName: string, functions: AbiFunctionItem[]): string {
+  private generateMainClass(contractName: string, functions: AbiItem[]): string {
     const lines: string[] = []
     this.appendClassDefinition(lines, contractName)
 
@@ -63,7 +72,7 @@ export default class ContractClassGenerator {
     return lines.join('\n')
   }
 
-  private generateUtilsClass(contractName: string, functions: AbiFunctionItem[]): string {
+  private generateUtilsClass(contractName: string, functions: AbiItem[]): string {
     return UtilsHandler.generate(
       contractName,
       functions,
@@ -106,7 +115,7 @@ export default class ContractClassGenerator {
     lines.push('')
   }
 
-  private getFunctions(): AbiFunctionItem[] {
+  private getFunctions(): AbiItem[] {
     return this.abi.filter((item) => item.type === 'function')
   }
 }
