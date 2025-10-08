@@ -469,7 +469,7 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when generating event classes', () => {
-    it('should generate an Event class with parse, decode and toEvmEncodeParams', () => {
+    it('should generate an Event class with decode method that handles topics and data', () => {
       const abi: AbiItem[] = [
         createEvent('Transfer', [
           { name: 'from', type: 'address', indexed: true },
@@ -484,23 +484,20 @@ describe('AbisInterfaceGenerator', () => {
       // Class name with Event suffix
       expect(result).to.contain('export class TransferEvent {')
 
-      // parse signature and basic structure
-      expect(result).to.contain('static parse(data: string): TransferEvent {')
-      expect(result).to.contain('const parts = JSON.parse<string[]>(data)')
-      expect(result).to.contain('if (parts.length !== 4) throw new Error("Invalid data for event parsing")')
+      // decode signature with topics and data parameters
+      expect(result).to.contain('static decode(topics: string[], data: string): TransferEvent {')
 
-      // decode signature and usage
-      expect(result).to.contain('static decode(data: string): TransferEvent {')
-      expect(result).to.contain("new EvmDecodeParam('(address,address,uint256,bool)', data)")
-      expect(result).to.contain('return TransferEvent.parse(decoded)')
+      // Should decode non-indexed parameters from data
+      expect(result).to.contain("new EvmDecodeParam('(uint256,bool)', data)")
+      expect(result).to.contain('// Decode non-indexed parameters from data')
 
-      // toEvmEncodeParams contains appropriate conversions
-      expect(result).to.contain('toEvmEncodeParams(): EvmEncodeParam[] {')
-      expect(result).to.contain("EvmEncodeParam.fromValue('address', this.from)")
-      expect(result).to.contain("EvmEncodeParam.fromValue('address', this.to)")
-      // eslint-disable-next-line no-secrets/no-secrets
-      expect(result).to.contain("EvmEncodeParam.fromValue('uint256', this.amount)")
-      expect(result).to.contain("EvmEncodeParam.fromValue('bool', Bytes.fromBool(this.confirmed))")
+      // Should decode indexed parameters from topics
+      expect(result).to.contain('// Decode indexed parameters from topics')
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[1]))")
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[2]))")
+
+      // Should return a new instance
+      expect(result).to.contain('return new TransferEvent(')
     })
 
     it('should generate Event classes for multiple events without duplicates', () => {
@@ -528,9 +525,14 @@ describe('AbisInterfaceGenerator', () => {
       // Only one class definition should exist
       expect(result.match(/export class ReserveDataUpdatedEvent \{/g)?.length).to.equal(1)
 
-      // decode must be present and correct
-      expect(result).to.contain('static decode(data: string): ReserveDataUpdatedEvent {')
-      expect(result).to.contain("new EvmDecodeParam('(address,uint256,uint256,uint256,uint256,uint256)', data)")
+      // decode must be present with topics and data parameters
+      expect(result).to.contain('static decode(topics: string[], data: string): ReserveDataUpdatedEvent {')
+
+      // Should decode indexed parameter from topics
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[1]))")
+
+      // Should decode non-indexed parameters from data
+      expect(result).to.contain("new EvmDecodeParam('(uint256,uint256,uint256,uint256,uint256)', data)")
     })
   })
 

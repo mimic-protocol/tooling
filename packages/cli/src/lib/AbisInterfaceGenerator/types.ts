@@ -16,7 +16,7 @@ export type TupleDefinition = {
 export type TupleDefinitionsMap = Map<string, TupleDefinition>
 export type EventDefinition = {
   className: string
-  components: AbiParameter[]
+  components: (AbiParameter & { indexed?: boolean })[]
 }
 export type EventDefinitionsMap = Map<string, EventDefinition>
 export const TUPLE_ABI_TYPE = 'tuple'
