@@ -16,15 +16,4 @@ export default function main(): void {
   const allowedTokens: BlockchainToken[] = [Ethereum.USDC, Ethereum.WBTC, Arbitrum.USDT, Arbitrum.DAI]
   environment.getRelevantTokens(userAddress, expectedChainIds, minUsdValue, excludedTokens)
   environment.getRelevantTokens(userAddress, expectedChainIds, minUsdValue, allowedTokens, ListType.AllowList)
-
-  // Case 4: with timestamp
-  const timestamp = Date.parse('2025-01-01')
-  environment.getRelevantTokens(
-    userAddress,
-    expectedChainIds,
-    minUsdValue,
-    allowedTokens,
-    ListType.AllowList,
-    timestamp
-  )
 }

@@ -42,7 +42,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
   if (balances.length > 0) {
     for (const balance of balances) {
       const {
-        request: { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp },
+        request: { owner, chainIds, usdMinAmount, tokens, tokenFilter },
         response,
       } = balance
       const key = JSON.stringify({
@@ -51,7 +51,6 @@ function generateMock(params: GenerateMockParams): MockConfig {
         usdMinAmount,
         tokens: tokens.map((token) => ({ ...token, address: token.address.toLowerCase() })),
         tokenFilter,
-        timestamp,
       })
       relevantTokensResponse[key] = JSON.stringify(response)
     }
