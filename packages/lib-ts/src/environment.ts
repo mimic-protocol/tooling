@@ -3,7 +3,14 @@ import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
+import {
+  Call as CallQuery,
+  SubgraphQuery,
+  GetPrice,
+  GetRelevantTokens,
+  GetRelevantTokensResponse,
+  SubgraphQueryResponse
+} from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
@@ -25,6 +32,9 @@ export namespace environment {
 
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
+
+  @external('environment', '_subgraphQuery')
+  declare function _subgraphQuery(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -153,6 +163,24 @@ export namespace environment {
     return _contractCall(
       JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
     )
+  }
+
+  /**
+   * Generates a subgraph query and returns the result.
+   * @param chainId - The blockchain network identifier
+   * @param timestamp - The timestamp for the query context (optional)
+   * @param subgraphId - The ID of the subgraph to be called
+   * @param query - The string representing the subgraph query to be executed
+   * @returns The subgraph query response
+   */
+  export function subgraphQuery(
+    chainId: ChainId,
+    timestamp: Date | null,
+    subgraphId: string,
+    query: string
+  ): SubgraphQueryResponse {
+    const responseStr = _subgraphQuery(JSON.stringify(new SubgraphQuery(chainId, timestamp, subgraphId, query)))
+    return JSON.parse<SubgraphQueryResponse>(responseStr)
   }
 
   /**

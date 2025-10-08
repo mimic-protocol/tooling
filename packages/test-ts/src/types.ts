@@ -76,12 +76,27 @@ export type ContractCallResponse = {
 
 export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
 
+export type SubgraphQueryRequest = {
+  chainId: number
+  timestamp: number
+  subgraphId: string
+  query: string
+}
+
+export type SubgraphQueryResponse = {
+  blockNumber: number
+  data: string
+}
+
+export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryResponse>
+
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
   prices: GetPriceMock[]
   balances: GetRelevantTokensMock[]
   calls: ContractCallMock[]
+  subgraphQueries: SubgraphQueryMock[]
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
