@@ -2,9 +2,16 @@ import { expect } from 'chai'
 
 import { getFunctionSelector } from '../src/helpers'
 import { AbisInterfaceGenerator } from '../src/lib'
-import { AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../src/types'
+import { AbiItem } from '../src/lib/AbisInterfaceGenerator/types'
+import { AssemblyPrimitiveTypes, LibTypes } from '../src/types'
 
-import { createNonViewFunction, createPayableFunction, createPureFunction, createViewFunction } from './helpers'
+import {
+  createEvent,
+  createNonViewFunction,
+  createPayableFunction,
+  createPureFunction,
+  createViewFunction,
+} from './helpers'
 
 const CONTRACT_NAME = 'TestContract'
 
@@ -63,7 +70,7 @@ describe('AbisInterfaceGenerator', () => {
   describe('when generating method names', () => {
     it('should generate methods with exact names from the ABI', () => {
       const functionNames = ['getBalance', 'getName', 'getUserDetails']
-      const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
+      const abi: AbiItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
@@ -72,7 +79,7 @@ describe('AbisInterfaceGenerator', () => {
 
     it('should respect method names with special characters', () => {
       const functionNames = ['get_balance', 'getName123', 'get$Info']
-      const abi: AbiFunctionItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
+      const abi: AbiItem[] = functionNames.map((name) => createViewFunction(name, [], [{ type: 'uint256' }]))
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
@@ -80,7 +87,7 @@ describe('AbisInterfaceGenerator', () => {
     })
 
     it('should handle duplicate method names', () => {
-      const abi: AbiFunctionItem[] = [
+      const abi: AbiItem[] = [
         createViewFunction('getData', [], [{ type: 'uint256' }]),
         createNonViewFunction('getData', [{ name: 'id', type: 'uint256' }]),
         createPayableFunction('getData', [
@@ -99,7 +106,7 @@ describe('AbisInterfaceGenerator', () => {
     })
 
     it('should handle mixed duplicate and unique method names', () => {
-      const abi: AbiFunctionItem[] = [
+      const abi: AbiItem[] = [
         createViewFunction('getBalance', [], [{ type: 'uint256' }]),
         createNonViewFunction('transfer', [{ name: 'to', type: 'address' }]),
         createViewFunction('getBalance', [{ name: 'owner', type: 'address' }], [{ type: 'uint256' }]),
@@ -120,7 +127,7 @@ describe('AbisInterfaceGenerator', () => {
     })
 
     it('should handle duplicate method names with reserved word conflicts', () => {
-      const abi: AbiFunctionItem[] = [
+      const abi: AbiItem[] = [
         createViewFunction('constructor', [], [{ type: 'uint256' }]),
         createNonViewFunction('constructor', [{ name: 'value', type: 'uint256' }]),
       ]
@@ -256,7 +263,7 @@ describe('AbisInterfaceGenerator', () => {
   describe('when handling return values', () => {
     it('should correctly map individual return types', () => {
       const returnTypes = ['address', 'uint256', 'bytes', 'bool', 'uint8', 'string']
-      const abi: AbiFunctionItem[] = []
+      const abi: AbiItem[] = []
 
       for (const type of returnTypes) {
         abi.push(createViewFunction(`get${type}`, [], [{ type }]))
@@ -458,6 +465,74 @@ describe('AbisInterfaceGenerator', () => {
 
       // Check constructor call
       expect(result).to.contain('return new Tuple0(id, account, active, data_var, description)')
+    })
+  })
+
+  describe('when generating event classes', () => {
+    it('should generate an Event class with decode method that handles topics and data', () => {
+      const abi: AbiItem[] = [
+        createEvent('Transfer', [
+          { name: 'from', type: 'address', indexed: true },
+          { name: 'to', type: 'address', indexed: true },
+          { name: 'amount', type: 'uint256' },
+          { name: 'confirmed', type: 'bool' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      // Class name with Event suffix
+      expect(result).to.contain('export class TransferEvent {')
+
+      // decode signature with topics and data parameters
+      expect(result).to.contain('static decode(topics: string[], data: string): TransferEvent {')
+
+      // Should decode non-indexed parameters from data
+      expect(result).to.contain("new EvmDecodeParam('(uint256,bool)', data)")
+      expect(result).to.contain('// Decode non-indexed parameters from data')
+
+      // Should decode indexed parameters from topics
+      expect(result).to.contain('// Decode indexed parameters from topics')
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[1]))")
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[2]))")
+
+      // Should return a new instance
+      expect(result).to.contain('return new TransferEvent(')
+    })
+
+    it('should generate Event classes for multiple events without duplicates', () => {
+      const abi: AbiItem[] = [
+        createEvent('ReserveDataUpdated', [
+          { name: 'reserve', type: 'address', indexed: true },
+          { name: 'liquidityRate', type: 'uint256' },
+          { name: 'stableBorrowRate', type: 'uint256' },
+          { name: 'variableBorrowRate', type: 'uint256' },
+          { name: 'liquidityIndex', type: 'uint256' },
+          { name: 'variableBorrowIndex', type: 'uint256' },
+        ]),
+        createEvent('ReserveDataUpdated', [
+          { name: 'reserve', type: 'address', indexed: true },
+          { name: 'liquidityRate', type: 'uint256' },
+          { name: 'stableBorrowRate', type: 'uint256' },
+          { name: 'variableBorrowRate', type: 'uint256' },
+          { name: 'liquidityIndex', type: 'uint256' },
+          { name: 'variableBorrowIndex', type: 'uint256' },
+        ]),
+      ]
+
+      const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
+
+      // Only one class definition should exist
+      expect(result.match(/export class ReserveDataUpdatedEvent \{/g)?.length).to.equal(1)
+
+      // decode must be present with topics and data parameters
+      expect(result).to.contain('static decode(topics: string[], data: string): ReserveDataUpdatedEvent {')
+
+      // Should decode indexed parameter from topics
+      expect(result).to.contain("evm.decode(new EvmDecodeParam('address', topics[1]))")
+
+      // Should decode non-indexed parameters from data
+      expect(result).to.contain("new EvmDecodeParam('(uint256,uint256,uint256,uint256,uint256)', data)")
     })
   })
 

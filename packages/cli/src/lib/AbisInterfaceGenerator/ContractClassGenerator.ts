@@ -1,22 +1,25 @@
-import { type AbiFunctionItem, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
 import AbiTypeConverter from './AbiTypeConverter'
+import EventHandler from './EventHandler'
 import FunctionHandler from './FunctionHandler'
 import ImportManager from './ImportManager'
 import NameManager from './NameManager'
 import TupleHandler from './TupleHandler'
-import type { TupleDefinitionsMap } from './types'
+import type { AbiItem, EventDefinitionsMap, TupleDefinitionsMap } from './types'
 
 export default class ContractClassGenerator {
-  private abi: AbiFunctionItem[]
+  private abi: AbiItem[]
   private importManager: ImportManager
   private tupleDefinitions: TupleDefinitionsMap
+  private eventDefinitions: EventDefinitionsMap
   private abiTypeConverter: AbiTypeConverter
 
-  constructor(abi: AbiFunctionItem[]) {
+  constructor(abi: AbiItem[]) {
     this.abi = abi
     this.importManager = new ImportManager()
     this.tupleDefinitions = TupleHandler.extractTupleDefinitions(this.abi)
+    this.eventDefinitions = EventHandler.extractEventDefinitions(this.abi)
     this.abiTypeConverter = new AbiTypeConverter(this.importManager, this.tupleDefinitions)
   }
 
@@ -24,6 +27,11 @@ export default class ContractClassGenerator {
     const mainClassCode = this.generateMainClass(contractName)
     const tupleClassesCode = TupleHandler.generateTupleClassesCode(
       this.tupleDefinitions,
+      this.importManager,
+      this.abiTypeConverter
+    )
+    const eventClassesCode = EventHandler.generateEventClassesCode(
+      this.eventDefinitions,
       this.importManager,
       this.abiTypeConverter
     )
@@ -35,6 +43,7 @@ export default class ContractClassGenerator {
     const separator = '\n\n'
     let result = notice + separator + importsCode + separator + mainClassCode
     if (tupleClassesCode) result += separator + tupleClassesCode
+    if (eventClassesCode) result += separator + eventClassesCode
 
     return result.trim()
   }
@@ -85,7 +94,7 @@ export default class ContractClassGenerator {
     lines.push('')
   }
 
-  private getFunctions(): AbiFunctionItem[] {
+  private getFunctions(): AbiItem[] {
     return this.abi.filter((item) => item.type === 'function')
   }
 }
