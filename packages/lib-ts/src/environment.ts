@@ -11,6 +11,8 @@ import {
   GetRelevantTokens,
   GetRelevantTokensResponse,
   SerializableGetAccountsInfoResponse,
+  SubgraphQuery,
+  SubgraphQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
@@ -33,6 +35,9 @@ export namespace environment {
 
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
+
+  @external('environment', '_subgraphQuery')
+  declare function _subgraphQuery(params: string): string
 
   @external('environment', '_getAccountsInfo')
   declare function _getAccountsInfo(params: string): string
@@ -167,11 +172,30 @@ export namespace environment {
   }
 
   /**
+   * Generates a subgraph query and returns the result.
+   * @param chainId - The blockchain network identifier
+   * @param subgraphId - The ID of the subgraph to be called
+   * @param query - The string representing the subgraph query to be executed
+   * @param timestamp - The timestamp for the query context (optional)
+   * @returns The subgraph query response
+   */
+  export function subgraphQuery(
+    chainId: ChainId,
+    subgraphId: string,
+    query: string,
+    timestamp: Date | null,
+  ): SubgraphQueryResponse {
+    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
+    return JSON.parse<SubgraphQueryResponse>(responseStr)
+  }
+   
+  /**
    * SVM - Gets on-chain account info
    * @param publicKeys - Accounts to read from chain
    * @param timestamp - The timestamp for the call context (optional)
    * @returns The raw response from the underlying getMultipleAccountsInfo call
    */
+
   export function getAccountsInfo(
     publicKeys: Address[],
     timestamp: Date | null
