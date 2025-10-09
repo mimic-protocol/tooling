@@ -1,3 +1,4 @@
 export * from './Call'
+export * from './GetAccountsInfo'
 export * from './GetPrice'
 export * from './GetRelevantTokens'

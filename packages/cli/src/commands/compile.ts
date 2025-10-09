@@ -21,25 +21,22 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
 
-    console.log(`Compiling AssemblyScript from ${taskFile}`)
-    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
+    const absTaskFile = path.resolve(taskFile)
+    const absOutputDir = path.resolve(outputDir)
+
+    if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
     const manifest = ManifestHandler.load(this, manifestDir)
     log.startAction('Compiling')
 
-    const wasmPath = path.join(outputDir, 'task.wasm')
-    const watPath = path.join(outputDir, 'task.wat')
-
     const ascArgs = [
       'asc',
-      taskFile,
+      absTaskFile,
       '--target',
       'release',
       '--outFile',
-      wasmPath,
-      '--textFile',
-      watPath,
+      path.join(absOutputDir, 'task.wasm'),
       '--optimize',
       '--exportRuntime',
       '--transform',

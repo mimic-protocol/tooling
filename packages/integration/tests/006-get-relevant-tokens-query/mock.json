@@ -3,9 +3,6 @@
     "_getRelevantTokens": {
       "log": true,
       "default": "[]"
-    },
-    "_contractCall": {
-      "default": ""
     }
   }
 }
