@@ -187,6 +187,9 @@ export namespace environment {
   ): SubgraphQueryResponse {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
     return JSON.parse<SubgraphQueryResponse>(responseStr)
+  }
+   
+  /**
    * SVM - Gets on-chain account info
    * @param publicKeys - Accounts to read from chain
    * @param timestamp - The timestamp for the call context (optional)

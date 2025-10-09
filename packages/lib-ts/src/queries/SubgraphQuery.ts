@@ -23,6 +23,7 @@ export class SubgraphQuery extends SubgraphQueryBase {
       ? new SubgraphQuery(chainId, changetype<Date>(timestamp).getTime(), subgraphId, query)
       : new SubgraphQueryBase(chainId, subgraphId, query)
   }
+}
 
 @json
 export class SubgraphQueryResponse {
