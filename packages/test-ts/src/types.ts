@@ -80,7 +80,7 @@ export type GenerateMockParams = {
   context: Context
   inputs: Inputs
   prices: GetPriceMock[]
-  balances: GetRelevantTokensMock[]
+  relevantTokens: GetRelevantTokensMock[]
   calls: ContractCallMock[]
 }
 
