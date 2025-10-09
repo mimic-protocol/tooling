@@ -1,7 +1,6 @@
 import { SVM_NATIVE_ADDRESS } from '../../src/helpers'
 import { SPLToken } from '../../src/tokens/SPLToken'
-import { Address, ChainId, JSON, SvmTokenMetadataData } from '../../src/types'
-import { Seed, SvmFindProgramAddressParams } from '../../src/types/SvmFindProgramAddress'
+import { Address, ChainId, SvmFindProgramAddressParams, SvmPdaSeed, SvmTokenMetadataData } from '../../src/types'
 import { randomEvmAddress, randomHex, randomSvmAddress, setFindProgramAddress, setGetAccountsInfo } from '../helpers'
 
 describe('SPLToken', () => {
@@ -97,16 +96,17 @@ describe('SPLToken', () => {
 
       const params = new SvmFindProgramAddressParams(
         [
-          Seed.fromString('metadata'),
-          Seed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
-          Seed.from(addr),
+          SvmPdaSeed.fromString('metadata'),
+          SvmPdaSeed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+          SvmPdaSeed.from(addr),
         ],
         SvmTokenMetadataData.METADATA_PROGRAM_ID
       )
+      const result = `{"address":"${metadataAddr.toString()}","bump":255}`
 
       const emptyStrHex = '00000000'
       const mimicHex = '05000000' + '4d494d4943'
-      setFindProgramAddress(JSON.stringify(params), `{"address":"${metadataAddr.toString()}","bump":255}`)
+      setFindProgramAddress(params.seeds, Address.fromBase58String(params.programId), result)
       setGetAccountsInfo(
         `${metadataAddr.toString()}`,
         `{
@@ -133,14 +133,15 @@ describe('SPLToken', () => {
 
       const params = new SvmFindProgramAddressParams(
         [
-          Seed.fromString('metadata'),
-          Seed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
-          Seed.from(addr),
+          SvmPdaSeed.fromString('metadata'),
+          SvmPdaSeed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+          SvmPdaSeed.from(addr),
         ],
         SvmTokenMetadataData.METADATA_PROGRAM_ID
       )
+      const result = `{"address":"${metadataAddr.toString()}","bump":255}`
 
-      setFindProgramAddress(JSON.stringify(params), `{"address":"${metadataAddr.toString()}","bump":255}`)
+      setFindProgramAddress(params.seeds, Address.fromString(params.programId), result)
       // In reality, the getAccountsInfo returns null and then a default value with data "0x". But this is easier to mock
       setGetAccountsInfo(
         `${metadataAddr.toString()}`,

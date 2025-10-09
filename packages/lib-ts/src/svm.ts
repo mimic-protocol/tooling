@@ -1,6 +1,12 @@
 import { JSON } from 'json-as'
 
-import { SerializableSvmFindProgramAddressResult, SvmFindProgramAddressParams, SvmFindProgramAddressResult } from './types/SvmFindProgramAddress'
+import {
+  Address,
+  SerializableSvmFindProgramAddressResult,
+  SvmFindProgramAddressParams,
+  SvmFindProgramAddressResult,
+  SvmPdaSeed,
+} from './types'
 
 export namespace svm {
   @external('svm', '_findProgramAddress')
@@ -11,7 +17,8 @@ export namespace svm {
    * @param params - Seeds, program address
    * @returns The PDA address as base58
    */
-  export function findProgramAddress(params: SvmFindProgramAddressParams): SvmFindProgramAddressResult {
+  export function findProgramAddress(seeds: SvmPdaSeed[], programId: Address): SvmFindProgramAddressResult {
+    const params = new SvmFindProgramAddressParams(seeds, programId.toBase58String())
     const result = _findProgramAddress(JSON.stringify(params))
     const parsed = JSON.parse<SerializableSvmFindProgramAddressResult>(result)
     return SvmFindProgramAddressResult.fromSerializable(parsed)

@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { serialize, Stringable } from '../helpers'
+import { serialize, Stringable } from '../../helpers'
 
 @json
 export class EvmEncodeParam {

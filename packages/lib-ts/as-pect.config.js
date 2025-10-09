@@ -122,11 +122,11 @@ export default {
           const key = `_getAccountsInfo:${publicKeys}`
           store.set(key, accountsInfo)
         },
-        setFindProgramAddress: (paramsPtr, resultPtr) => {
-          const params = exports.__getString(paramsPtr)
-          const result = exports.__getString(resultPtr)
-          const key = `_findProgramAddress:${params}`
-          store.set(key, result)
+        _setFindProgramAddress: (paramsPtr, resultPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const resultStr = exports.__getString(resultPtr)
+          const key = `_findProgramAddress:${paramsStr}`
+          store.set(key, resultStr)
         },
         _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, configSigPtr) => {
           const user = exports.__getString(userPtr)

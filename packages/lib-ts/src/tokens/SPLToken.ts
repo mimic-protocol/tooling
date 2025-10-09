@@ -1,8 +1,7 @@
 import { environment } from '../environment'
 import { SVM_NATIVE_ADDRESS } from '../helpers'
 import { svm } from '../svm'
-import { Address, ChainId, SvmMint, SvmTokenMetadataData } from '../types'
-import { Seed, SvmFindProgramAddressParams } from '../types/SvmFindProgramAddress'
+import { Address, ChainId, SvmMint, SvmPdaSeed, SvmTokenMetadataData } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
@@ -105,14 +104,12 @@ export class SPLToken extends BlockchainToken {
    */
   private getMetadataAddress(): Address {
     return svm.findProgramAddress(
-      new SvmFindProgramAddressParams(
-        [
-          Seed.fromString('metadata'),
-          Seed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
-          Seed.from(this._address),
-        ],
-        SvmTokenMetadataData.METADATA_PROGRAM_ID
-      )
+      [
+        SvmPdaSeed.fromString('metadata'),
+        SvmPdaSeed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+        SvmPdaSeed.from(this._address),
+      ],
+      Address.fromBase58String(SvmTokenMetadataData.METADATA_PROGRAM_ID)
     ).address
   }
 

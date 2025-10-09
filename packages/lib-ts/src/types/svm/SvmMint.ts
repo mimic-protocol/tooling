@@ -1,8 +1,8 @@
-import { BorshDeserializer } from '../helpers'
+import { BorshDeserializer } from '../../helpers'
 
-import { Address } from './Address'
-import { Bytes } from './Bytes'
-import { Option } from './Option'
+import { Address } from './../Address'
+import { Bytes } from './../Bytes'
+import { Option } from './../Option'
 
 /**
  * State layout for Mint TokenProgram PDAs

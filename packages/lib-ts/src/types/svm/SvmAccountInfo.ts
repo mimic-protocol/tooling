@@ -1,4 +1,4 @@
-import { stringToBool } from '../helpers'
+import { stringToBool } from '../../helpers'
 
 export class SvmAccountInfo {
   constructor(

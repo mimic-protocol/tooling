@@ -1,6 +1,6 @@
-import { BorshDeserializer } from '../helpers'
+import { BorshDeserializer } from '../../helpers'
 
-import { Bytes } from './Bytes'
+import { Bytes } from './../Bytes'
 
 /**
  * Partial state layout for Data Metaplex PDA (Metadata PDA "data" field)
