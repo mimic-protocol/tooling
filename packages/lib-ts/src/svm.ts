@@ -14,8 +14,9 @@ export namespace svm {
 
   /**
    * Calculates PDA address
-   * @param params - Seeds, program address
-   * @returns The PDA address as base58
+   * @param seeds - SvmPdaSeed array of seeds
+   * @param programId - Base programId to be derived of
+   * @returns The PDA address and bump
    */
   export function findProgramAddress(seeds: SvmPdaSeed[], programId: Address): SvmFindProgramAddressResult {
     const params = new SvmFindProgramAddressParams(seeds, programId.toBase58String())
