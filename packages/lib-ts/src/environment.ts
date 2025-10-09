@@ -168,18 +168,18 @@ export namespace environment {
   /**
    * Generates a subgraph query and returns the result.
    * @param chainId - The blockchain network identifier
-   * @param timestamp - The timestamp for the query context (optional)
    * @param subgraphId - The ID of the subgraph to be called
    * @param query - The string representing the subgraph query to be executed
+   * @param timestamp - The timestamp for the query context (optional)
    * @returns The subgraph query response
    */
   export function subgraphQuery(
     chainId: ChainId,
-    timestamp: Date | null,
     subgraphId: string,
-    query: string
+    query: string,
+    timestamp: Date | null,
   ): SubgraphQueryResponse {
-    const responseStr = _subgraphQuery(JSON.stringify(new SubgraphQuery(chainId, timestamp, subgraphId, query)))
+    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
     return JSON.parse<SubgraphQueryResponse>(responseStr)
   }
 
