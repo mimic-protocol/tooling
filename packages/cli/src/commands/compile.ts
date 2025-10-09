@@ -29,7 +29,6 @@ export default class Compile extends Command {
     log.startAction('Compiling')
 
     const wasmPath = path.join(outputDir, 'task.wasm')
-    const watPath = path.join(outputDir, 'task.wat')
 
     const ascArgs = [
       'asc',
@@ -38,8 +37,6 @@ export default class Compile extends Command {
       'release',
       '--outFile',
       wasmPath,
-      '--textFile',
-      watPath,
       '--optimize',
       '--exportRuntime',
       '--transform',

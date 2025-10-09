@@ -28,7 +28,6 @@ describe('compile', () => {
       expect(stdout).to.include('Build complete!')
 
       expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
-      expect(fs.existsSync(`${outputDir}/task.wat`)).to.be.true
       expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
 
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
