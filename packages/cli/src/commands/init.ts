@@ -22,18 +22,21 @@ export default class Init extends Command {
     const fullDirectory = path.resolve(directory)
     const templateDirectory = path.join(__dirname, '../templates')
 
-    if (force) {
-      const shouldDelete = await confirm({
-        message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(fullDirectory)}. This action is ${log.warnText('irreversible')}`,
-        default: false,
-      })
+    if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
+      const shouldDelete =
+        process.env.NODE_ENV === 'test'
+          ? true
+          : await confirm({
+              message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(fullDirectory)}. This action is ${log.warnText('irreversible')}`,
+              default: false,
+            })
       if (!shouldDelete) {
         console.log('You can remove the --force flag from your command')
         console.log('Stopping initialization...')
         this.exit(0)
       }
       log.startAction(`Deleting contents of ${fullDirectory}`)
-      if (fs.existsSync(fullDirectory)) fs.rmSync(fullDirectory, { recursive: true })
+      fs.rmSync(fullDirectory, { recursive: true })
     }
 
     log.startAction('Creating files')
