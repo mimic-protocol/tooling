@@ -1,7 +1,6 @@
 import { environment } from '../environment'
 import { TokenAmount } from '../tokens'
-import { ChainId } from '../types'
-import { Address, BigInt, Bytes } from '../types'
+import { Address, BigInt, Bytes, ChainId } from '../types'
 
 import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
 

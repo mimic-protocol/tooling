@@ -1,9 +1,15 @@
+import { Bytes } from '../types'
+
 export interface Stringable {
   toString(): string
 }
 
 export interface Serializable {
   serialize(): string
+}
+
+export interface Byteable {
+  toBytes(): Bytes
 }
 
 export function serialize<T extends Stringable>(elem: T): string {
