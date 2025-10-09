@@ -121,9 +121,9 @@ export default class RunnerMock {
     const importModules: Record<string, WebAssembly.ModuleImports> = {}
 
     const variableImports: WebAssembly.ModuleImports = {}
-    for (const moduleName of ['environment', 'evm'] as const) {
+    for (const moduleName of ['environment', 'evm', 'svm'] as const) {
       const moduleMocks = mock[moduleName] ?? {}
-      const moduleImports: WebAssembly.ModuleImports = moduleName === 'evm' ? this.getDefaultEvmImports() : {}
+      const moduleImports: WebAssembly.ModuleImports = this.getDefaultModuleImports(moduleName)
 
       for (const [functionName, mockValue] of Object.entries(moduleMocks)) {
         moduleImports[functionName] = this.createMockFunction(functionName, mockValue)
@@ -145,10 +145,37 @@ export default class RunnerMock {
     }
   }
 
+  private getDefaultModuleImports(moduleName: string): WebAssembly.ModuleImports {
+    if (moduleName === 'evm') return this.getDefaultEvmImports()
+    if (moduleName === 'svm') return this.getDefaultSvmImports()
+    if (moduleName === 'environment') return this.getDefaultEnvImports()
+    return {}
+  }
+
+  private getDefaultEnvImports(): WebAssembly.ModuleImports {
+    return {
+      _call: this.createLogFn('_call'),
+      _swap: this.createLogFn('_swap'),
+      _transfer: this.createLogFn('_transfer'),
+      _getPrice: this.createMockFunction('_getPrice', { default: '' }),
+      _getRelevantTokens: this.createMockFunction('_getRelevantTokens', { default: '' }),
+      _contractCall: this.createMockFunction('_contractCall', { default: '' }),
+      _getAccountsInfo: this.createMockFunction('_getAccountsInfo', { default: '' }),
+      _getContext: this.createMockFunction('_getContext', { default: '' }),
+    }
+  }
+
   private getDefaultEvmImports(): WebAssembly.ModuleImports {
     return {
+      _encode: this.createMockFunction('_encode', { default: '0x' }),
       _decode: this.createMockFunction('_decode', { default: '0x' }),
-      _keccak: this.createMockFunction('_keccak', '0xdefault0'),
+      _keccak: this.createMockFunction('_keccak', { default: '0xabcd' }),
+    }
+  }
+
+  private getDefaultSvmImports(): WebAssembly.ModuleImports {
+    return {
+      _findProgramAddress: this.createMockFunction('_findProgramAddress', { default: '' }),
     }
   }
 
