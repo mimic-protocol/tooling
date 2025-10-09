@@ -17,7 +17,12 @@ export class SubgraphQuery extends SubgraphQueryBase {
     super(chainId, subgraphId, query)
     this.timestamp = timestamp
   }
-}
+
+  static from(chainId: ChainId, subgraphId: string, query: string, timestamp: Date | null): SubgraphQueryBase {
+    return timestamp
+      ? new SubgraphQuery(chainId, changetype<Date>(timestamp).getTime(), subgraphId, query)
+      : new SubgraphQueryBase(chainId, subgraphId, query)
+  }
 
 @json
 export class SubgraphQueryResponse {
