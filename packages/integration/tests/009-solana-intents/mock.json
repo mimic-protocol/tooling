@@ -1,11 +1,5 @@
 {
   "environment": {
-    "_swap": "log",
-    "_transfer": "log",
-    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"HV1KXxWFaSeriyFvXyx48FqG9BoFbfinB8njCJonqP7K\", \"settlers\": [{\"address\": \"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\", \"chainId\": 507424}], \"configSig\": \"682ec8210b1ce912da4d2952\"}",
-    "_getAccountsInfo": "{}",
-    "_contractCall": {
-      "default": ""
-    }
+    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0\", \"settlers\": [{\"address\": \"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA\", \"chainId\": 507424}], \"configSig\": \"682ec8210b1ce912da4d2952\"}"
   }
 }
