@@ -5,11 +5,14 @@ import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
 import {
   Call as CallQuery,
-  SubgraphQuery,
+  GetAccountsInfo,
+  GetAccountsInfoResponse,
   GetPrice,
   GetRelevantTokens,
   GetRelevantTokensResponse,
-  SubgraphQueryResponse
+  SerializableGetAccountsInfoResponse,
+  SubgraphQuery,
+  SubgraphQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
@@ -35,6 +38,9 @@ export namespace environment {
 
   @external('environment', '_subgraphQuery')
   declare function _subgraphQuery(params: string): string
+
+  @external('environment', '_getAccountsInfo')
+  declare function _getAccountsInfo(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -181,6 +187,25 @@ export namespace environment {
   ): SubgraphQueryResponse {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
     return JSON.parse<SubgraphQueryResponse>(responseStr)
+   * SVM - Gets on-chain account info
+   * @param publicKeys - Accounts to read from chain
+   * @param timestamp - The timestamp for the call context (optional)
+   * @returns The raw response from the underlying getMultipleAccountsInfo call
+   */
+
+  export function getAccountsInfo(
+    publicKeys: Address[],
+    timestamp: Date | null
+  ): GetAccountsInfoResponse {
+    // There is a bug with json-as, so we have to do this with JSON booleans
+    const responseStr = _getAccountsInfo(
+      JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
+    )
+      .replaceAll("true",`"true"`)
+      .replaceAll("false",`"false"`)
+
+    const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
+    return GetAccountsInfoResponse.fromSerializable(response)
   }
 
   /**

@@ -1,5 +1,7 @@
+import { environment } from '../environment'
 import { SVM_NATIVE_ADDRESS } from '../helpers'
-import { Address, ChainId } from '../types'
+import { svm } from '../svm'
+import { Address, ChainId, SvmMint, SvmPdaSeed, SvmTokenMetadataData } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
 import { Token } from './Token'
@@ -27,8 +29,8 @@ export class SPLToken extends BlockchainToken {
   static fromAddress(
     address: Address,
     chainId: ChainId = ChainId.SOLANA_MAINNET,
-    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
-    symbol: string = BlockchainToken.EMPTY_SYMBOL
+    decimals: u8 = SPLToken.EMPTY_DECIMALS,
+    symbol: string = SPLToken.EMPTY_SYMBOL
   ): SPLToken {
     if (chainId != ChainId.SOLANA_MAINNET) throw new Error(`SPL tokens are only supported for Solana mainnet.`)
     return new SPLToken(address, decimals, symbol)
@@ -45,8 +47,8 @@ export class SPLToken extends BlockchainToken {
   static fromString(
     address: string,
     chainId: ChainId = ChainId.SOLANA_MAINNET,
-    decimals: u8 = BlockchainToken.EMPTY_DECIMALS,
-    symbol: string = BlockchainToken.EMPTY_SYMBOL
+    decimals: u8 = SPLToken.EMPTY_DECIMALS,
+    symbol: string = SPLToken.EMPTY_SYMBOL
   ): SPLToken {
     return SPLToken.fromAddress(Address.fromString(address), chainId, decimals, symbol)
   }
@@ -57,9 +59,58 @@ export class SPLToken extends BlockchainToken {
    * @param decimals - Number of decimal places
    * @param symbol - Token symbol
    */
-  constructor(address: Address, decimals: u8, symbol: string) {
+  constructor(address: Address, decimals: u8 = SPLToken.EMPTY_DECIMALS, symbol: string = SPLToken.EMPTY_SYMBOL) {
     if (!address.isSVM()) throw new Error(`Address ${address} must be an SVM address.`)
     super(address, decimals, symbol, ChainId.SOLANA_MAINNET)
+  }
+
+  /**
+   * Gets the token’s decimals (number of decimal places used).
+   * If decimals were not provided during construction, they will be lazily fetched
+   * The fetched value is parsed to `u8` and cached for future accesses.
+   * @returns A `u8` representing the number of decimals of the token.
+   */
+  get decimals(): u8 {
+    if (this._decimals == SPLToken.EMPTY_DECIMALS) {
+      const result = environment.getAccountsInfo([this.address], null)
+      const decimals = SvmMint.fromHex(result.accountsInfo[0].data).decimals
+      this._decimals = decimals
+    }
+    return this._decimals
+  }
+
+  /**
+   * Gets the token’s symbol (e.g., "SOL", "USDC").
+   * If the symbol was not provided during construction, it will be lazily fetched
+   * If the token doesn't have a symbol (TokenMetadata standard), an abbreviated address is returned
+   * The symbol is cached in the instance for future accesses.
+   * @returns A string containing the token symbol.
+   */
+  get symbol(): string {
+    if (this._symbol == SPLToken.EMPTY_SYMBOL) {
+      const result = environment.getAccountsInfo([this.getMetadataAddress()], null)
+      const data = result.accountsInfo[0].data
+      // Return placeholder symbol from address if TokenMetadata standard is not used
+      this._symbol =
+        data === '0x'
+          ? `${this.address.toString().slice(0, 5)}...${this.address.toString().slice(-5)}`
+          : SvmTokenMetadataData.fromTokenMetadataHex(result.accountsInfo[0].data).symbol
+    }
+    return this._symbol
+  }
+
+  /**
+   * Derives Metaplex Metadata address for this given token
+   */
+  private getMetadataAddress(): Address {
+    return svm.findProgramAddress(
+      [
+        SvmPdaSeed.fromString('metadata'),
+        SvmPdaSeed.from(Address.fromString(SvmTokenMetadataData.METADATA_PROGRAM_ID)),
+        SvmPdaSeed.from(this._address),
+      ],
+      Address.fromBase58String(SvmTokenMetadataData.METADATA_PROGRAM_ID)
+    ).address
   }
 
   /**

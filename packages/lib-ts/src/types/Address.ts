@@ -8,6 +8,7 @@ import { EVM_NATIVE_ADDRESS, isHex, USD_ADDRESS } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
+import { Option } from './Option'
 
 /**
  * Represents an EVM or SVM address, a fixed-length 20 or 32-byte value.
@@ -19,6 +20,15 @@ export class Address extends Bytes {
   static zero(): Address {
     const self = new ByteArray(20)
     return changetype<Address>(self)
+  }
+
+  /**
+   * Returns a None variant for the Option type, representing no address
+   * @param length 32 by default (SVM)
+   * @returns Option.none with empty bytes
+   */
+  static none(length: u32 = 32): Option<Address> {
+    return Option.none<Address>(Address.fromBytes(new Bytes(length)))
   }
 
   /**
@@ -110,5 +120,12 @@ export class Address extends Bytes {
    */
   toString(): string {
     return this.isEVM() ? super.toHexString() : super.toBase58String()
+  }
+
+  /**
+   * Returns the address as its underlying bytes
+   */
+  toBytes(): Bytes {
+    return changetype<Bytes>(this.slice(0))
   }
 }

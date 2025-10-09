@@ -1,9 +1,8 @@
-import type { AbiFunctionItem } from '../../types'
-
 import ContractClassGenerator from './ContractClassGenerator'
+import { AbiItem } from './types'
 
 export default {
-  generate(abi: AbiFunctionItem[], contractName: string): string {
+  generate(abi: AbiItem[], contractName: string): string {
     return new ContractClassGenerator(abi).generate(contractName)
   },
 }

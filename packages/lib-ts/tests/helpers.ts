@@ -3,7 +3,7 @@ import { JSON } from 'json-as'
 import { SerializableSettler } from '../src/context'
 import { STANDARD_DECIMALS } from '../src/helpers'
 import { BlockchainToken, ERC20Token, SPLToken, Token } from '../src/tokens'
-import { Address, BigInt, Bytes, ChainId } from '../src/types'
+import { Address, BigInt, Bytes, ChainId, SvmFindProgramAddressParams, SvmPdaSeed } from '../src/types'
 
 @json
 class Log {
@@ -100,6 +100,15 @@ export function setTokenPrice(token: Token, priceUsd: number): void {
 }
 
 export declare function setContractCall(to: string, chainId: ChainId, data: string, result: string): void
+
+export declare function setGetAccountsInfo(publicKeys: string, accountsInfo: string): void
+
+export function setFindProgramAddress(seeds: SvmPdaSeed[], programId: Address, result: string): void {
+  const params = new SvmFindProgramAddressParams(seeds, programId.toString())
+  _setFindProgramAddress(JSON.stringify(params), result)
+}
+
+declare function _setFindProgramAddress(params: string, result: string): void
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 

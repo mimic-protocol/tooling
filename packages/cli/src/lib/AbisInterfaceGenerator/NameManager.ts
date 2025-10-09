@@ -1,4 +1,6 @@
-import type { AbiFunctionItem, AbiParameter } from '../../types'
+import type { AbiParameter } from '../../types'
+
+import type { AbiItem } from './types'
 
 export enum NameContext {
   FUNCTION_PARAMETER = 'function_parameter',
@@ -67,7 +69,7 @@ export default class NameManager {
     }))
   }
 
-  public static resolveMethodNames(functions: AbiFunctionItem[]): AbiFunctionItem[] {
+  public static resolveMethodNames(functions: AbiItem[]): AbiItem[] {
     const methodNames = functions.map((fn) => fn.name)
     const resolvedNames = this.resolveNameConflicts(methodNames, NameContext.METHOD_NAME)
 
