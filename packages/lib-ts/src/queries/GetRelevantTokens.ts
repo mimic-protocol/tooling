@@ -6,7 +6,7 @@ import { Address, BigInt, ChainId } from '../types'
 class TokenQuery {
   constructor(
     public address: string,
-    public chainId: i32
+    public chainId: ChainId
   ) {}
 
   static fromToken(token: BlockchainToken): TokenQuery {
@@ -15,7 +15,7 @@ class TokenQuery {
 }
 
 @json
-class GetRelevantTokensBase {
+export class GetRelevantTokens {
   constructor(
     public readonly owner: string,
     public readonly chainIds: ChainId[],
@@ -23,51 +23,23 @@ class GetRelevantTokensBase {
     public readonly tokens: TokenQuery[],
     public readonly tokenFilter: ListType
   ) {}
-}
-
-@json
-export class GetRelevantTokens extends GetRelevantTokensBase {
-  public readonly timestamp: i64
-
-  constructor(
-    owner: string,
-    chainIds: ChainId[],
-    usdMinAmount: string,
-    tokens: TokenQuery[],
-    tokenFilter: ListType,
-    timestamp: i64
-  ) {
-    super(owner, chainIds, usdMinAmount, tokens, tokenFilter)
-    this.timestamp = timestamp
-  }
 
   static init(
     owner: Address,
     chainIds: ChainId[],
     usdMinAmount: USD,
     tokens: BlockchainToken[],
-    tokenFilter: ListType,
-    timestamp: Date | null = null
-  ): GetRelevantTokensBase {
+    tokenFilter: ListType
+  ): GetRelevantTokens {
     const ownerStr = owner.toString()
     const usdMinAmountStr = usdMinAmount.toString()
     const tokensQueries = tokens.map<TokenQuery>((token) => TokenQuery.fromToken(token))
-
-    return timestamp
-      ? new GetRelevantTokens(
-          ownerStr,
-          chainIds,
-          usdMinAmountStr,
-          tokensQueries,
-          tokenFilter,
-          changetype<Date>(timestamp).getTime()
-        )
-      : new GetRelevantTokensBase(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
+    return new GetRelevantTokens(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
   }
 }
 
 @json
-export class GetRelevantTokensResponse {
+export class RelevantTokenBalance {
   constructor(
     public token: TokenQuery,
     public amount: string
@@ -79,4 +51,12 @@ export class GetRelevantTokensResponse {
       BigInt.fromString(this.amount)
     )
   }
+}
+
+@json
+export class GetRelevantTokensResponse {
+  constructor(
+    public timestamp: i64,
+    public balances: RelevantTokenBalance[]
+  ) {}
 }

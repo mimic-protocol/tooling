@@ -10,6 +10,7 @@ import {
   GetPrice,
   GetRelevantTokens,
   GetRelevantTokensResponse,
+  RelevantTokenBalance,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
   SubgraphQueryResponse,
@@ -112,12 +113,12 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @param timestamp - The timestamp for relevant tokens query (optional, defaults to current time)
-   * @returns Array of TokenAmount objects representing the relevant tokens
+   * @returns Array of RelevantTokenBalance objects representing the relevant tokens
    */
-  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType, timestamp: Date | null): GetRelevantTokensResponse[][] {
-    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
-    return JSON.parse<GetRelevantTokensResponse[][]>(responseStr)
+  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
+    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responses = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
+    return responses.map((response: GetRelevantTokensResponse) => response.balances)
   }
 
   /**
@@ -127,7 +128,6 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @param timestamp - The timestamp for relevant tokens qery (optional, defaults to current time)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
   export function getRelevantTokens(
@@ -135,10 +135,9 @@ export namespace environment {
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
-    listType: ListType = ListType.DenyList,
-    timestamp: Date | null = null
+    listType: ListType = ListType.DenyList
   ): TokenAmount[] {
-    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType, timestamp)
+    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType)
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {

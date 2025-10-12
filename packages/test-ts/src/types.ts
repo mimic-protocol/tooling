@@ -57,7 +57,6 @@ export type GetRelevantTokensRequest = {
   usdMinAmount: string
   tokens: Token[]
   tokenFilter: number
-  timestamp?: number
 }
 
 export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, TokenAmount[][]>
