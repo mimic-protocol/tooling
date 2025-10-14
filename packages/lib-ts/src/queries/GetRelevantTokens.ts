@@ -6,7 +6,7 @@ import { Address, BigInt, ChainId } from '../types'
 class TokenQuery {
   constructor(
     public address: string,
-    public chainId: ChainId
+    public chainId: i32
   ) {}
 
   static fromToken(token: BlockchainToken): TokenQuery {
@@ -42,13 +42,13 @@ export class GetRelevantTokens {
 export class RelevantTokenBalance {
   constructor(
     public token: TokenQuery,
-    public amount: string
+    public balance: string
   ) {}
 
   toTokenAmount(): TokenAmount {
     return TokenAmount.fromBigInt(
       BlockchainToken.fromString(this.token.address, this.token.chainId),
-      BigInt.fromString(this.amount)
+      BigInt.fromString(this.balance)
     )
   }
 }
