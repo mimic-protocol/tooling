@@ -17,6 +17,7 @@ import {
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
+import { log } from './log'
 
 export namespace environment {
   @external('environment', '_evmCall')

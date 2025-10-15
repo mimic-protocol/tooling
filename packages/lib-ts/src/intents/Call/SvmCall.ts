@@ -147,21 +147,29 @@ export class SvmInstructionBuilder {
   }
 
   instruction(): SvmInstruction {
-    return new SvmInstruction(
-      this.programId,
-      this.accountsMeta,
-      this.data
-    )
+    return SvmInstruction.create(this.programId, this.accountsMeta, this.data)
   }
 }
 
 @json
 export class SvmInstruction {
   constructor(
-    public programId: Address,
+    public programId: string,
     public accountsMeta: SvmAccountMeta[],
-    public data: Bytes
+    public data: string
   ) {}
+
+  static create(
+    programId: Address,
+    accountsMeta: SvmAccountMeta[],
+    data: Bytes
+  ): SvmInstruction {
+    return new SvmInstruction(
+      programId.toBase58String(),
+      accountsMeta,
+      data.toHexString()
+    )
+  }
 }
 
 /**
@@ -192,7 +200,7 @@ export class SvmCall extends Intent {
     nonce: string | null = null,
     events: IntentEvent[] | null = null
   ): SvmCall {
-    const instruction = new SvmInstruction(programId, accountsMeta, data)
+    const instruction = SvmInstruction.create(programId, accountsMeta, data)
     return new SvmCall([instruction], [maxFee], settler, user, deadline, nonce, events)
   }
 
