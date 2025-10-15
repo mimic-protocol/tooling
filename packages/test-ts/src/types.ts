@@ -59,7 +59,17 @@ export type GetRelevantTokensRequest = {
   tokenFilter: number
 }
 
-export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, TokenAmount[][]>
+export type RelevantTokenBalance = {
+  token: Token
+  balance: string
+}
+
+export type GetRelevantTokensResponse = {
+  timestamp: number
+  balances: RelevantTokenBalance[]
+}
+
+export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
 
 export type ContractCallRequest = {
   to: string
