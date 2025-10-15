@@ -11,7 +11,7 @@ import { CallBuilder } from './CallBuilder'
  * Allows chaining multiple calls and configuring fees and settlement parameters.
  */
 export class SvmCallBuilder extends CallBuilder {
-  private instructions: SvmCallInstruction[] = []
+  private instructions: SvmInstruction[] = []
   /**
    * Creates a new SvmCallBuilder instance.
    */
@@ -24,7 +24,7 @@ export class SvmCallBuilder extends CallBuilder {
    * @param instruction - The instruction to add
    * @returns This SvmCallBuilder instance for method chaining
    */
-  addInstruction(instruction: SvmCallInstruction): SvmCallBuilder {
+  addInstruction(instruction: SvmInstruction): SvmCallBuilder {
     this.instructions.push(instruction)
     return this
   }
@@ -122,8 +122,41 @@ export class SvmCallBuilder extends CallBuilder {
   }
 }
 
+export class SvmInstructionBuilder {
+  private programId: Address = Address.zero(32)
+  private accountsMeta: SvmAccountMeta[] = []
+  private data: Bytes = Bytes.empty()
+
+  setProgram(programId: Address): SvmInstructionBuilder {
+    this.programId = programId
+    return this
+  }
+
+  setAccounts(accountsMeta: SvmAccountMeta[]): SvmInstructionBuilder {
+    this.accountsMeta = accountsMeta
+    return this
+  }
+
+  setDataFromBytes(data: Bytes): SvmInstructionBuilder {
+    this.data = data
+    return this
+  }
+
+  setDataFromHex(data: string): SvmInstructionBuilder {
+    return this.setDataFromBytes(Bytes.fromHexString(data))
+  }
+
+  instruction(): SvmInstruction {
+    return new SvmInstruction(
+      this.programId,
+      this.accountsMeta,
+      this.data
+    )
+  }
+}
+
 @json
-export class SvmCallInstruction {
+export class SvmInstruction {
   constructor(
     public programId: Address,
     public accountsMeta: SvmAccountMeta[],
@@ -137,7 +170,7 @@ export class SvmCallInstruction {
 @json
 export class SvmCall extends Intent {
   public chainId: ChainId
-  public instructions: SvmCallInstruction[]
+  public instructions: SvmInstruction[]
 
   /**
    * Creates a SvmCall intent with a single program call.
@@ -159,7 +192,7 @@ export class SvmCall extends Intent {
     nonce: string | null = null,
     events: IntentEvent[] | null = null
   ): SvmCall {
-    const instruction = new SvmCallInstruction(programId, accountsMeta, data)
+    const instruction = new SvmInstruction(programId, accountsMeta, data)
     return new SvmCall([instruction], [maxFee], settler, user, deadline, nonce, events)
   }
 
@@ -173,7 +206,7 @@ export class SvmCall extends Intent {
    * @param nonce - The nonce for replay protection (optional)
    */
   constructor(
-    instructions: SvmCallInstruction[],
+    instructions: SvmInstruction[],
     maxFees: TokenAmount[],
     settler: Address | null = null,
     user: Address | null = null,
