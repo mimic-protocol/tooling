@@ -1,5 +1,3 @@
-// eslint-disable no-secrets/no-secrets
-
 import {
   Address,
   BigInt,
@@ -15,7 +13,9 @@ import { SvmAccountMeta } from '@mimicprotocol/lib-ts/src/types/svm/SvmAccountMe
 
 export default function main(): void {
   const splToken = new SPLToken(Address.fromString('So11111111111111111111111111111111111111112'), 9, 'WSOL')
+  // eslint-disable-next-line no-secrets/no-secrets
   const tokenProgram = Address.fromString('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+  // eslint-disable-next-line no-secrets/no-secrets
   const solanaUser = Address.fromString('HV1KXxWFaSeriyFvXyx48FqG9BoFbfinB8njCJonqP7K')
 
   // Transfer

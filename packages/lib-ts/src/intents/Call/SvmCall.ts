@@ -159,16 +159,8 @@ export class SvmInstruction {
     public data: string
   ) {}
 
-  static create(
-    programId: Address,
-    accountsMeta: SvmAccountMeta[],
-    data: Bytes
-  ): SvmInstruction {
-    return new SvmInstruction(
-      programId.toBase58String(),
-      accountsMeta,
-      data.toHexString()
-    )
+  static create(programId: Address, accountsMeta: SvmAccountMeta[], data: Bytes): SvmInstruction {
+    return new SvmInstruction(programId.toBase58String(), accountsMeta, data.toHexString())
   }
 }
 
