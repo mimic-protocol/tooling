@@ -162,8 +162,8 @@ export namespace environment {
   export function contractCall(
     to: Address,
     chainId: ChainId,
-    timestamp: Date | null,
-    data: string
+    data: string,
+    timestamp: Date | null = null,
   ): string {
     return _contractCall(
       JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
@@ -182,7 +182,7 @@ export namespace environment {
     chainId: ChainId,
     subgraphId: string,
     query: string,
-    timestamp: Date | null,
+    timestamp: Date | null = null,
   ): SubgraphQueryResponse {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
     return JSON.parse<SubgraphQueryResponse>(responseStr)
@@ -197,7 +197,7 @@ export namespace environment {
 
   export function getAccountsInfo(
     publicKeys: Address[],
-    timestamp: Date | null
+    timestamp: Date | null = null,
   ): GetAccountsInfoResponse {
     // There is a bug with json-as, so we have to do this with JSON booleans
     const responseStr = _getAccountsInfo(
