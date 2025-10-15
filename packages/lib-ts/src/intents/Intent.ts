@@ -7,7 +7,8 @@ import { Address, BigInt, Bytes, ChainId } from '../types'
 export enum OperationType {
   Swap,
   Transfer,
-  Call,
+  EvmCall,
+  SvmCall,
 }
 
 const DEFAULT_DEADLINE = 5 * 60 // 5 minutes in seconds

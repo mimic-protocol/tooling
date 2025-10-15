@@ -92,7 +92,7 @@ export default class FunctionHandler {
 
     importManager.addType(LibTypes.Bytes)
     importManager.addType('CallBuilder')
-    lines.push(`    return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+    lines.push(`    return CallBuilder.forEvmChain(this._chainId).addCall(this._address, encodedData)`)
 
     lines.push(`  }`)
     lines.push('')

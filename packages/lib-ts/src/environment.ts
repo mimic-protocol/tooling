@@ -2,7 +2,7 @@ import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
-import { Swap, Transfer, Call } from './intents'
+import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   Call as CallQuery,
   GetAccountsInfo,
@@ -19,8 +19,11 @@ import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
 export namespace environment {
-  @external('environment', '_call')
-  declare function _call(params: string): void
+  @external('environment', '_evmCall')
+  declare function _evmCall(params: string): void
+
+  @external('environment', '_svmCall')
+  declare function _svmCall(params: string): void
 
   @external('environment', '_swap')
   declare function _swap(params: string): void
@@ -47,11 +50,19 @@ export namespace environment {
   declare function _getContext(): string
 
   /**
-   * Generates a Call intent containing contract calls on the blockchain.
-   * @param call - The Call intent to generate
+   * Generates a EVM Call intent containing contract calls on the blockchain.
+   * @param call - The EvmCall intent to generate
    */
-  export function call(call: Call): void {
-    _call(JSON.stringify(call))
+  export function evmCall(call: EvmCall): void {
+    _evmCall(JSON.stringify(call))
+  }
+
+  /**
+   * Generates a SVM Call intent containing contract calls on the blockchain.
+   * @param call - The SvmCall intent to generate
+   */
+  export function svmCall(call: SvmCall): void {
+    _svmCall(JSON.stringify(call))
   }
 
   /**
