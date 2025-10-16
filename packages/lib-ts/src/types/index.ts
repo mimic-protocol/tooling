@@ -8,4 +8,5 @@ export * from './ChainId'
 export * from './evm'
 export * from './Option'
 export * from './svm'
+export * from './TriggerType'
 export { JSON }

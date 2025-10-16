@@ -1,0 +1,3 @@
+version: 4.0.0
+name: Example task with cron trigger
+description: An example of how to parse cron trigger
