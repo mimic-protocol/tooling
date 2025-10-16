@@ -57,10 +57,19 @@ export type GetRelevantTokensRequest = {
   usdMinAmount: string
   tokens: Token[]
   tokenFilter: number
-  timestamp?: number
 }
 
-export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, TokenAmount[][]>
+export type RelevantTokenBalance = {
+  token: Token
+  balance: string
+}
+
+export type GetRelevantTokensResponse = {
+  timestamp: number
+  balances: RelevantTokenBalance[]
+}
+
+export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
 
 export type ContractCallRequest = {
   to: string
@@ -76,12 +85,27 @@ export type ContractCallResponse = {
 
 export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
 
+export type SubgraphQueryRequest = {
+  chainId: number
+  timestamp: number
+  subgraphId: string
+  query: string
+}
+
+export type SubgraphQueryResponse = {
+  blockNumber: number
+  data: string
+}
+
+export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryResponse>
+
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
   prices: GetPriceMock[]
   relevantTokens: GetRelevantTokensMock[]
   calls: ContractCallMock[]
+  subgraphQueries: SubgraphQueryMock[]
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>

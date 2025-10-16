@@ -9,14 +9,14 @@ export async function runTask(
   context: Context,
   optional: RunTaskOptionalParams = {}
 ): Promise<Output[]> {
-  const { prices = [], relevantTokens = [], calls = [], inputs = {} } = optional
+  const { prices = [], relevantTokens = [], calls = [], subgraphQueries = [], inputs = {} } = optional
 
   const taskPath = path.join(taskDir, 'build')
   const testDir = path.join(taskDir, 'tests')
   const logPath = path.join(testDir, 'test.log')
   const mockPath = path.join(testDir, 'mock.json')
 
-  const mock = generateMock({ context, prices, relevantTokens, calls, inputs })
+  const mock = generateMock({ context, prices, relevantTokens, calls, subgraphQueries, inputs })
 
   fs.mkdirSync(testDir, { recursive: true })
   fs.writeFileSync(mockPath, JSON.stringify(mock, null, 2))
@@ -36,13 +36,13 @@ export async function runTask(
 }
 
 function generateMock(params: GenerateMockParams): MockConfig {
-  const { context, prices, relevantTokens, inputs, calls } = params
+  const { context, prices, relevantTokens, inputs, calls, subgraphQueries } = params
 
   const relevantTokensResponse: Record<string, string> = {}
   if (relevantTokens.length > 0) {
     for (const relevantToken of relevantTokens) {
       const {
-        request: { owner, chainIds, usdMinAmount, tokens, tokenFilter, timestamp },
+        request: { owner, chainIds, usdMinAmount, tokens, tokenFilter },
         response,
       } = relevantToken
       const key = JSON.stringify({
@@ -51,7 +51,6 @@ function generateMock(params: GenerateMockParams): MockConfig {
         usdMinAmount,
         tokens: tokens.map((token) => ({ ...token, address: token.address.toLowerCase() })),
         tokenFilter,
-        timestamp,
       })
       relevantTokensResponse[key] = JSON.stringify(response)
     }
@@ -95,6 +94,19 @@ function generateMock(params: GenerateMockParams): MockConfig {
   const _contractCall = { paramResponse: callResponse }
   const _decode = { paramResponse: decodeResponse }
 
+  const subgraphQueryResponse: Record<string, string> = {}
+  if (subgraphQueries.length > 0) {
+    for (const subgraphQuery of subgraphQueries) {
+      const {
+        request: { chainId, timestamp, subgraphId, query },
+        response,
+      } = subgraphQuery
+      const key = JSON.stringify({ chainId, timestamp, subgraphId, query })
+      subgraphQueryResponse[key] = JSON.stringify(response)
+    }
+  }
+  const _subgraphQuery = { paramResponse: subgraphQueryResponse }
+
   const contextData: Required<Context> = {
     timestamp: context.timestamp || Date.now(),
     consensusThreshold: context.consensusThreshold || 1,
@@ -113,6 +125,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
     _getRelevantTokens,
     _getPrice,
     _contractCall,
+    _subgraphQuery,
     _call: 'log',
     _swap: 'log',
     _transfer: 'log',

@@ -1,13 +1,13 @@
 {
   "name": "@mimicprotocol/lib-ts",
-  "version": "0.0.1-rc.18",
+  "version": "0.0.1-rc.20",
   "license": "GPL-3.0",
   "private": false,
   "type": "module",
   "scripts": {
     "build": "asc index.ts -b build/lib.wasm --disableWarning 235 --noEmit --transform json-as/transform",
     "test": "asp",
-    "lint": "eslint . --ignore-pattern 'src/environment.ts' --ignore-pattern 'src/evm.ts' --ignore-pattern 'src/log.ts'"
+    "lint": "eslint . --ignore-pattern 'src/environment.ts' --ignore-pattern 'src/evm.ts' --ignore-pattern 'src/svm.ts' --ignore-pattern 'src/log.ts'"
   },
   "files": [
     "src",

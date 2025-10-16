@@ -3,7 +3,18 @@ import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
-import { Call as CallQuery, GetPrice, GetRelevantTokens, GetRelevantTokensResponse } from './queries'
+import {
+  Call as CallQuery,
+  GetAccountsInfo,
+  GetAccountsInfoResponse,
+  GetPrice,
+  GetRelevantTokens,
+  GetRelevantTokensResponse,
+  RelevantTokenBalance,
+  SerializableGetAccountsInfoResponse,
+  SubgraphQuery,
+  SubgraphQueryResponse,
+} from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId } from './types'
 
@@ -25,6 +36,12 @@ export namespace environment {
 
   @external('environment', '_contractCall')
   declare function _contractCall(params: string): string
+
+  @external('environment', '_subgraphQuery')
+  declare function _subgraphQuery(params: string): string
+
+  @external('environment', '_getAccountsInfo')
+  declare function _getAccountsInfo(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -96,12 +113,12 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @param timestamp - The timestamp for relevant tokens query (optional, defaults to current time)
-   * @returns Array of TokenAmount objects representing the relevant tokens
+   * @returns Array of RelevantTokenBalance objects representing the relevant tokens
    */
-  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType, timestamp: Date | null): GetRelevantTokensResponse[][] {
-    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType, timestamp)))
-    return JSON.parse<GetRelevantTokensResponse[][]>(responseStr)
+  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
+    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responses = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
+    return responses.map((response: GetRelevantTokensResponse) => response.balances)
   }
 
   /**
@@ -111,7 +128,6 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @param timestamp - The timestamp for relevant tokens qery (optional, defaults to current time)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
   export function getRelevantTokens(
@@ -119,10 +135,9 @@ export namespace environment {
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
-    listType: ListType = ListType.DenyList,
-    timestamp: Date | null = null
+    listType: ListType = ListType.DenyList
   ): TokenAmount[] {
-    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType, timestamp)
+    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType)
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {
@@ -147,12 +162,52 @@ export namespace environment {
   export function contractCall(
     to: Address,
     chainId: ChainId,
-    timestamp: Date | null,
-    data: string
+    data: string,
+    timestamp: Date | null = null,
   ): string {
     return _contractCall(
       JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
     )
+  }
+
+  /**
+   * Generates a subgraph query and returns the result.
+   * @param chainId - The blockchain network identifier
+   * @param subgraphId - The ID of the subgraph to be called
+   * @param query - The string representing the subgraph query to be executed
+   * @param timestamp - The timestamp for the query context (optional)
+   * @returns The subgraph query response
+   */
+  export function subgraphQuery(
+    chainId: ChainId,
+    subgraphId: string,
+    query: string,
+    timestamp: Date | null = null,
+  ): SubgraphQueryResponse {
+    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
+    return JSON.parse<SubgraphQueryResponse>(responseStr)
+  }
+   
+  /**
+   * SVM - Gets on-chain account info
+   * @param publicKeys - Accounts to read from chain
+   * @param timestamp - The timestamp for the call context (optional)
+   * @returns The raw response from the underlying getMultipleAccountsInfo call
+   */
+
+  export function getAccountsInfo(
+    publicKeys: Address[],
+    timestamp: Date | null = null,
+  ): GetAccountsInfoResponse {
+    // There is a bug with json-as, so we have to do this with JSON booleans
+    const responseStr = _getAccountsInfo(
+      JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
+    )
+      .replaceAll("true",`"true"`)
+      .replaceAll("false",`"false"`)
+
+    const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
+    return GetAccountsInfoResponse.fromSerializable(response)
   }
 
   /**

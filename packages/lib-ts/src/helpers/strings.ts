@@ -2,8 +2,8 @@ import { decode, encode } from 'as-base58/assembly/index'
 
 import { ByteArray } from '../types'
 
-export function bytesToString(bytes: Uint8Array): string {
-  return String.UTF8.decodeUnsafe(bytes.dataStart, bytes.length)
+export function bytesToString(bytes: Uint8Array, nullTerminated: bool = false): string {
+  return String.UTF8.decodeUnsafe(bytes.dataStart, bytes.length, nullTerminated)
 }
 
 export function bytesToHexString(bytes: Uint8Array): string {
@@ -19,6 +19,11 @@ export function bytesToBase58String(bytes: Uint8Array): string {
 export function bytesFromBase58String(base58: string): ByteArray {
   assert(isBase58(base58), `input ${base58} is not valid base58`)
   return changetype<ByteArray>(decode(base58))
+}
+
+export function stringToBool(str: string): bool {
+  if (str !== 'true' && str !== 'false') throw new Error(`Invalid boolean: ${str}`)
+  return str === 'true'
 }
 
 export function areAllZeros(str: string): boolean {

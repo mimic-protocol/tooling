@@ -37,8 +37,6 @@ export default class Compile extends Command {
       'release',
       '--outFile',
       path.join(absOutputDir, 'task.wasm'),
-      '--textFile',
-      path.join(absOutputDir, 'task.wat'),
       '--optimize',
       '--exportRuntime',
       '--transform',

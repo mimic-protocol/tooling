@@ -15,7 +15,7 @@ class TokenQuery {
 }
 
 @json
-class GetRelevantTokensBase {
+export class GetRelevantTokens {
   constructor(
     public readonly owner: string,
     public readonly chainIds: ChainId[],
@@ -23,60 +23,40 @@ class GetRelevantTokensBase {
     public readonly tokens: TokenQuery[],
     public readonly tokenFilter: ListType
   ) {}
-}
-
-@json
-export class GetRelevantTokens extends GetRelevantTokensBase {
-  public readonly timestamp: i64
-
-  constructor(
-    owner: string,
-    chainIds: ChainId[],
-    usdMinAmount: string,
-    tokens: TokenQuery[],
-    tokenFilter: ListType,
-    timestamp: i64
-  ) {
-    super(owner, chainIds, usdMinAmount, tokens, tokenFilter)
-    this.timestamp = timestamp
-  }
 
   static init(
     owner: Address,
     chainIds: ChainId[],
     usdMinAmount: USD,
     tokens: BlockchainToken[],
-    tokenFilter: ListType,
-    timestamp: Date | null = null
-  ): GetRelevantTokensBase {
+    tokenFilter: ListType
+  ): GetRelevantTokens {
     const ownerStr = owner.toString()
     const usdMinAmountStr = usdMinAmount.toString()
     const tokensQueries = tokens.map<TokenQuery>((token) => TokenQuery.fromToken(token))
+    return new GetRelevantTokens(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
+  }
+}
 
-    return timestamp
-      ? new GetRelevantTokens(
-          ownerStr,
-          chainIds,
-          usdMinAmountStr,
-          tokensQueries,
-          tokenFilter,
-          changetype<Date>(timestamp).getTime()
-        )
-      : new GetRelevantTokensBase(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
+@json
+export class RelevantTokenBalance {
+  constructor(
+    public token: TokenQuery,
+    public balance: string
+  ) {}
+
+  toTokenAmount(): TokenAmount {
+    return TokenAmount.fromBigInt(
+      BlockchainToken.fromString(this.token.address, this.token.chainId),
+      BigInt.fromString(this.balance)
+    )
   }
 }
 
 @json
 export class GetRelevantTokensResponse {
   constructor(
-    public token: TokenQuery,
-    public amount: string
+    public timestamp: i64,
+    public balances: RelevantTokenBalance[]
   ) {}
-
-  toTokenAmount(): TokenAmount {
-    return TokenAmount.fromBigInt(
-      BlockchainToken.fromString(this.token.address, this.token.chainId),
-      BigInt.fromString(this.amount)
-    )
-  }
 }
