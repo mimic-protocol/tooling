@@ -115,7 +115,7 @@ export class ERC20Token extends BlockchainToken {
    */
   get symbol(): string {
     if (this._symbol === ERC20Token.EMPTY_SYMBOL) {
-      const response = environment.contractCall(this.address, this.chainId, this._timestamp, '0x95d89b41')
+      const response = environment.contractCall(this.address, this.chainId, '0x95d89b41', this._timestamp)
       this._symbol = evm.decode(new EvmDecodeParam('string', response))
     }
     return this._symbol
@@ -130,7 +130,7 @@ export class ERC20Token extends BlockchainToken {
    */
   get decimals(): u8 {
     if (this._decimals == ERC20Token.EMPTY_DECIMALS) {
-      const result = environment.contractCall(this.address, this.chainId, this._timestamp, '0x313ce567')
+      const result = environment.contractCall(this.address, this.chainId, '0x313ce567', this._timestamp)
       this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
     }
     return this._decimals
