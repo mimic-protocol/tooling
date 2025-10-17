@@ -9,14 +9,14 @@ export async function runTask(
   context: Context,
   optional: RunTaskOptionalParams = {}
 ): Promise<Output[]> {
-  const { prices = [], balances = [], calls = [], subgraphQueries = [], inputs = {} } = optional
+  const { prices = [], relevantTokens = [], calls = [], subgraphQueries = [], inputs = {} } = optional
 
   const taskPath = path.join(taskDir, 'build')
   const testDir = path.join(taskDir, 'tests')
   const logPath = path.join(testDir, 'test.log')
   const mockPath = path.join(testDir, 'mock.json')
 
-  const mock = generateMock({ context, prices, balances, calls, subgraphQueries, inputs })
+  const mock = generateMock({ context, prices, relevantTokens, calls, subgraphQueries, inputs })
 
   fs.mkdirSync(testDir, { recursive: true })
   fs.writeFileSync(mockPath, JSON.stringify(mock, null, 2))
@@ -36,15 +36,15 @@ export async function runTask(
 }
 
 function generateMock(params: GenerateMockParams): MockConfig {
-  const { context, prices, balances, inputs, calls, subgraphQueries } = params
+  const { context, prices, relevantTokens, inputs, calls, subgraphQueries } = params
 
   const relevantTokensResponse: Record<string, string> = {}
-  if (balances.length > 0) {
-    for (const balance of balances) {
+  if (relevantTokens.length > 0) {
+    for (const relevantToken of relevantTokens) {
       const {
         request: { owner, chainIds, usdMinAmount, tokens, tokenFilter },
         response,
-      } = balance
+      } = relevantToken
       const key = JSON.stringify({
         owner: owner.toLowerCase(),
         chainIds,
