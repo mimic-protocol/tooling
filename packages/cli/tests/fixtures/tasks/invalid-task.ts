@@ -9,5 +9,5 @@ export default function main(): void {
   const maxFeeAmount = BigInt.zero().plus(BigInt.fromI32(undeclaredVariable))
   const maxFee = TokenAmount.fromBigInt(maxFeeToken, maxFeeAmount)
 
-  CallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
+  CallBuilder.forEvmChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
 }

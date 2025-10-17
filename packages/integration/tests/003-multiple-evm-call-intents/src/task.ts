@@ -8,11 +8,11 @@ export default function main(): void {
   const data = Bytes.empty()
 
   const fee1 = TokenAmount.fromI32(token, 10)
-  CallBuilder.forChain(inputs.chainId).addCall(target, data).addMaxFee(fee1).build().send()
+  CallBuilder.forEvmChain(inputs.chainId).addCall(target, data).addMaxFee(fee1).build().send()
 
   const fee2 = fee1.minus(TokenAmount.fromI32(token, 1))
-  CallBuilder.forChain(inputs.chainId).addCall(target, data).addMaxFee(fee2).build().send()
+  CallBuilder.forEvmChain(inputs.chainId).addCall(target, data).addMaxFee(fee2).build().send()
 
   const fee3 = fee1.minus(TokenAmount.fromI32(token, 2))
-  CallBuilder.forChain(inputs.chainId).addCall(target, data).addMaxFee(fee3).build().send()
+  CallBuilder.forEvmChain(inputs.chainId).addCall(target, data).addMaxFee(fee3).build().send()
 }

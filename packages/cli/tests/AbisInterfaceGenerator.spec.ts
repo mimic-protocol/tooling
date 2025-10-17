@@ -597,7 +597,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeApprove(spender, amount)`)
-      expect(result).to.contain(`return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+      expect(result).to.contain(`return CallBuilder.forEvmChain(this._chainId).addCall(this._address, encodedData)`)
     })
 
     it('should handle write functions without parameters', () => {
@@ -903,7 +903,7 @@ describe('AbisInterfaceGenerator', () => {
 
       // Write function should call encoded data helper
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeSetValue(value)`)
-      expect(result).to.contain('return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)')
+      expect(result).to.contain('return CallBuilder.forEvmChain(this._chainId).addCall(this._address, encodedData)')
     })
   })
 })

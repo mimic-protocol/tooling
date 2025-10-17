@@ -22,7 +22,7 @@ export default function main(): void {
   const bytes = Bytes.fromI32(123)
   const callFee = TokenAmount.fromI32(USDC, 10)
 
-  CallBuilder.forChain(chainId).addCall(target).addCall(target, bytes).addMaxFee(callFee).build().send()
+  CallBuilder.forEvmChain(chainId).addCall(target).addCall(target, bytes).addMaxFee(callFee).build().send()
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount).times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
