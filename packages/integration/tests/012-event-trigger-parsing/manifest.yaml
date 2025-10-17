@@ -1,0 +1,5 @@
+version: 4.0.0
+name: Example task with event trigger
+description: An example of how to parse event trigger
+abis:
+  - ERC20: ./abis/ERC20.json
