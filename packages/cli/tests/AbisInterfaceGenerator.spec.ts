@@ -225,7 +225,7 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when generating contract call code', () => {
-    it('should generate a call to environment.contractCall in the main method', () => {
+    it('should generate a call to environment.evmCallQuery in the main method', () => {
       const functionName = 'getBalance'
       const abi = [
         createViewFunction(functionName, [{ name: 'owner', type: 'address' }], [{ name: 'balance', type: 'uint256' }]),
@@ -235,7 +235,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeGetBalance(owner)`)
       expect(result).to.contain(
-        `const response = environment.contractCall(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
+        `const response = environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
       expect(result).to.contain(`return ${CONTRACT_NAME}Utils.decodeGetBalance(response)`)
       expect(result).to.contain(`export class ${CONTRACT_NAME}Utils {`)
@@ -313,7 +313,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`static encodeNoReturn(): Bytes {`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(
-        `environment.contractCall(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
+        `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
       expect(result).not.to.contain(`_decodeNoReturnResponse`)
     })

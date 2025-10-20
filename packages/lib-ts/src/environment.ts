@@ -4,12 +4,12 @@ import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, Call } from './intents'
 import {
-  Call as CallQuery,
-  GetAccountsInfo,
-  GetAccountsInfoResponse,
-  GetPrice,
-  GetRelevantTokens,
-  GetRelevantTokensResponse,
+  EvmCallQuery,
+  SvmAccountsInfoQuery,
+  SvmAccountsInfoQueryResponse,
+  TokenPriceQuery,
+  RelevantTokensQuery,
+  RelevantTokensQueryResponse,
   RelevantTokenBalance,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
@@ -28,20 +28,20 @@ export namespace environment {
   @external('environment', '_transfer')
   declare function _transfer(params: string): void
 
-  @external('environment', '_getPrice')
-  declare function _getPrice(params: string): string
+  @external('environment', '_tokenPriceQuery')
+  declare function _tokenPriceQuery(params: string): string
 
-  @external('environment', '_getRelevantTokens')
-  declare function _getRelevantTokens(params: string): string
+  @external('environment', '_relevantTokensQuery')
+  declare function _relevantTokensQuery(params: string): string
 
-  @external('environment', '_contractCall')
-  declare function _contractCall(params: string): string
+  @external('environment', '_evmCallQuery')
+  declare function _evmCallQuery(params: string): string
 
   @external('environment', '_subgraphQuery')
   declare function _subgraphQuery(params: string): string
 
-  @external('environment', '_getAccountsInfo')
-  declare function _getAccountsInfo(params: string): string
+  @external('environment', '_svmAccountsInfoQuery')
+  declare function _svmAccountsInfoQuery(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -76,10 +76,10 @@ export namespace environment {
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
    * @returns The token prices in USD
    */
-  export function getRawPrice(token: Token, timestamp: Date | null = null): USD[] {
+  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): USD[] {
     if (token.isUSD()) return [USD.fromI32(1)]
     else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
-    const prices = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
+    const prices = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(token as BlockchainToken, timestamp)))
     return JSON.parse<string[]>(prices).map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
   }
 
@@ -89,8 +89,8 @@ export namespace environment {
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
    * @returns The token median price in USD
    */
-  export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    const prices = getRawPrice(token, timestamp)
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): USD {
+    const prices = rawTokenPriceQuery(token, timestamp)
     if (prices.length === 0) throw new Error('Prices not found for token ' + token.toString())
 
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
@@ -115,10 +115,10 @@ export namespace environment {
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Array of RelevantTokenBalance objects representing the relevant tokens
    */
-  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
-    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    const responses = JSON.parse<GetRelevantTokensResponse[]>(responseStr)
-    return responses.map((response: GetRelevantTokensResponse) => response.balances)
+  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
+    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responses = JSON.parse<RelevantTokensQueryResponse[]>(responseStr)
+    return responses.map((response: RelevantTokensQueryResponse) => response.balances)
   }
 
   /**
@@ -130,14 +130,14 @@ export namespace environment {
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
-  export function getRelevantTokens(
+  export function relevantTokensQuery(
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList
   ): TokenAmount[] {
-    const response = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType)
+    const response = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {
@@ -159,15 +159,13 @@ export namespace environment {
    * @param data - The encoded function call data
    * @returns The raw response from the contract call
    */
-  export function contractCall(
+  export function evmCallQuery(
     to: Address,
     chainId: ChainId,
     data: string,
     timestamp: Date | null = null,
   ): string {
-    return _contractCall(
-      JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
-    )
+    return _evmCallQuery(JSON.stringify(EvmCallQuery.from(to, chainId, timestamp, data)))
   }
 
   /**
@@ -184,8 +182,8 @@ export namespace environment {
     query: string,
     timestamp: Date | null = null,
   ): SubgraphQueryResponse {
-    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
-    return JSON.parse<SubgraphQueryResponse>(responseStr)
+    const response = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
+    return JSON.parse<SubgraphQueryResponse>(response)
   }
    
   /**
@@ -195,19 +193,17 @@ export namespace environment {
    * @returns The raw response from the underlying getMultipleAccountsInfo call
    */
 
-  export function getAccountsInfo(
+  export function svmAccountsInfoQuery(
     publicKeys: Address[],
     timestamp: Date | null = null,
-  ): GetAccountsInfoResponse {
+  ): SvmAccountsInfoQueryResponse {
     // There is a bug with json-as, so we have to do this with JSON booleans
-    const responseStr = _getAccountsInfo(
-      JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
-    )
+    const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
       .replaceAll("true",`"true"`)
       .replaceAll("false",`"false"`)
 
     const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
-    return GetAccountsInfoResponse.fromSerializable(response)
+    return SvmAccountsInfoQueryResponse.fromSerializable(response)
   }
 
   /**

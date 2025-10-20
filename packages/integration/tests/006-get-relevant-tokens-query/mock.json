@@ -1,6 +1,6 @@
 {
   "environment": {
-    "_getRelevantTokens": {
+    "_relevantTokensQuery": {
       "log": true,
       "default": "[]"
     }

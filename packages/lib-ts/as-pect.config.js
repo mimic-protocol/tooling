@@ -61,30 +61,30 @@ export default {
         },
       },
       environment: {
-        _getPrice: (paramsPtr) => {
+        _tokenPriceQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
           const address = params.address.toLowerCase()
           const chainId = params.chainId
           const timestamp = params.timestamp
-          const key = `_getPrice:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
+          const key = `_tokenPriceQuery:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
           if (store.has(key)) return exports.__newString(`["${store.get(key)}"]`)
           throw new Error(`Price not found for key: ${key}`)
         },
-        _contractCall: (paramsPtr) => {
+        _evmCallQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
-          const key = `_contractCall:${params.to.toLowerCase()}:${params.chainId}:${params.data.toLowerCase()}`
+          const key = `_evmCallQuery:${params.to.toLowerCase()}:${params.chainId}:${params.data.toLowerCase()}`
 
           if (store.has(key)) return exports.__newString(store.get(key))
           throw new Error(`Contract call result not found for key: ${key}`)
         },
-        _getAccountsInfo: (paramsPtr) => {
+        _svmAccountsInfoQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
           const publicKeys = params.publicKeys.join(',')
-          const key = `_getAccountsInfo:${publicKeys}`
+          const key = `_svmAccountsInfoQuery:${publicKeys}`
 
           if (store.has(key)) return exports.__newString(store.get(key))
           throw new Error(`Get accounts info result not found for key: ${key}`)
@@ -99,14 +99,14 @@ export default {
         _setTokenPrice: (addressPtr, chainId, pricePtr) => {
           const address = exports.__getString(addressPtr).toLowerCase()
           const price = exports.__getString(pricePtr)
-          const baseKey = `_getPrice:${address}:${chainId}`
+          const baseKey = `_tokenPriceQuery:${address}:${chainId}`
           store.set(baseKey, price)
         },
         setContractCall: (toPtr, chainId, dataPtr, resultPtr) => {
           const to = exports.__getString(toPtr).toLowerCase()
           const data = exports.__getString(dataPtr).toLowerCase()
           const result = exports.__getString(resultPtr)
-          const key = `_contractCall:${to}:${chainId}:${data}`
+          const key = `_evmCallQuery:${to}:${chainId}:${data}`
           store.set(key, result)
         },
         setEvmDecode: (abiTypePtr, hexPtr, decodedPtr) => {
@@ -119,7 +119,7 @@ export default {
         setGetAccountsInfo: (publicKeysPtr, accountsInfoPtr) => {
           const publicKeys = exports.__getString(publicKeysPtr)
           const accountsInfo = exports.__getString(accountsInfoPtr)
-          const key = `_getAccountsInfo:${publicKeys}`
+          const key = `_svmAccountsInfoQuery:${publicKeys}`
           store.set(key, accountsInfo)
         },
         _setFindProgramAddress: (paramsPtr, resultPtr) => {

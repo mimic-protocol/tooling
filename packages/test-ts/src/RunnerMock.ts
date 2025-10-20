@@ -157,10 +157,10 @@ export default class RunnerMock {
       _call: this.createLogFn('_call'),
       _swap: this.createLogFn('_swap'),
       _transfer: this.createLogFn('_transfer'),
-      _getPrice: this.createMockFunction('_getPrice', { default: '' }),
-      _getRelevantTokens: this.createMockFunction('_getRelevantTokens', { default: '' }),
-      _contractCall: this.createMockFunction('_contractCall', { default: '' }),
-      _getAccountsInfo: this.createMockFunction('_getAccountsInfo', { default: '' }),
+      _tokenPriceQuery: this.createMockFunction('_tokenPriceQuery', { default: '' }),
+      _relevantTokensQuery: this.createMockFunction('_relevantTokensQuery', { default: '' }),
+      _evmCallQuery: this.createMockFunction('_evmCallQuery', { default: '' }),
+      _svmAccountsInfoQuery: this.createMockFunction('_svmAccountsInfoQuery', { default: '' }),
       _getContext: this.createMockFunction('_getContext', { default: '' }),
     }
   }
