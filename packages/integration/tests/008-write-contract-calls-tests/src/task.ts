@@ -12,7 +12,7 @@ export default function main(): void {
 
   const context = environment.getContext()
 
-  const userTokens = environment.getRelevantTokens(context.user, [chainId], USD.zero(), [aUSDC], ListType.AllowList)
+  const userTokens = environment.relevantTokensQuery(context.user, [chainId], USD.zero(), [aUSDC], ListType.AllowList)
 
   const feeUsdt = TokenAmount.fromStringDecimal(USDT, inputs.usdFeeAmount)
 
