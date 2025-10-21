@@ -1,3 +1,4 @@
+/* eslint-disable no-secrets/no-secrets */
 import { ManifestInputs } from '../types'
 
 export default {
@@ -36,18 +37,36 @@ function convertInputs(inputs: ManifestInputs): Record<string, string> {
 }
 
 function generateImports(inputs: Record<string, string>): string {
-  const typesToImport = new Set(Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt'))
+  const typesToImport = new Set(
+    Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt' || e === 'TokenAmount')
+  )
 
   if (typesToImport.size === 0) return ''
 
-  return `import { ${[...typesToImport].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+  const imports: string[] = [...typesToImport].sort()
+
+  // Add BlockchainToken for Token and TokenAmount types
+  const tokenTypes = new Set(Object.values(inputs).filter((type) => type === 'Token' || type === 'TokenAmount'))
+  if (tokenTypes.size > 0) {
+    imports.push('JSON')
+    imports.push('BlockchainToken')
+    if (tokenTypes.has('Token')) imports.push('SerializableToken')
+    if (tokenTypes.has('TokenAmount')) imports.push('SerializableTokenAmount')
+  }
+
+  return `import { ${imports.join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
 function generateInputsMapping(inputs: Record<string, string>, originalInputs: ManifestInputs): string {
   return Object.entries(inputs)
     .map(([name, type]) => {
       const declaration =
-        type === 'string' || type === 'Address' || type === 'Bytes' || type === 'BigInt'
+        type === 'string' ||
+        type === 'Address' ||
+        type === 'Bytes' ||
+        type === 'BigInt' ||
+        type === 'BlockchainToken' ||
+        type === 'TokenAmount'
           ? `var ${name}: string | null`
           : `const ${name}: ${type}`
 
@@ -83,6 +102,8 @@ function convertType(type: string): string {
 
   if (type.includes('address')) return 'Address'
   if (type.includes('bytes')) return 'Bytes'
+  if (type === 'Token') return 'BlockchainToken'
+  if (type === 'TokenAmount') return 'TokenAmount'
 
   return type
 }
@@ -95,7 +116,18 @@ function generateGetter(name: string, type: string): string {
   else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
   else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
   else if (type === 'BigInt') returnStr = `BigInt.fromString(${str}!)`
-  else returnStr = str
+  else if (type === 'BlockchainToken') {
+    returnStr = `((): BlockchainToken => {
+      const data = JSON.parse<SerializableToken>(${str}!)
+      return BlockchainToken.fromString(data.address, data.chainId)
+    })()`
+  } else if (type === 'TokenAmount') {
+    returnStr = `((): TokenAmount => {
+      const data = JSON.parse<SerializableTokenAmount>(${str}!)
+      const token = BlockchainToken.fromString(data.token.address, data.token.chainId)
+      return TokenAmount.fromStringDecimal(token, data.amount)
+    })()`
+  } else returnStr = str
 
   return `static get ${name}(): ${type} {
     return ${returnStr}

@@ -1,0 +1,20 @@
+{
+  "environment": {
+    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"0x756F45E3FA69347A9A973A725E3C98bC4db0b5a0\", \"settlers\": [{\"address\": \"0x6b175474e89094c44da98b954eedeac495271d0f\", \"chainId\": 10}], \"configSig\": \"682ec8210b1ce912da4d2952\"}"
+  },
+  "evm": {
+    "_decode": {
+      "default": "6"
+    }
+  },
+  "inputs": {
+    "amount": {
+      "token": {
+        "address": "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
+        "chainId": 10
+      },
+      "amount": "100.5"
+    },
+    "recipient": "0xdd4c30aa2f3284e462df0b45c99a7e6e9ea9d186"
+  }
+}

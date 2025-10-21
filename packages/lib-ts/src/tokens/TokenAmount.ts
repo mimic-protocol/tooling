@@ -1,7 +1,7 @@
 import { environment } from '../environment'
 import { BigInt } from '../types'
 
-import { Token } from './Token'
+import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
 /**
@@ -227,4 +227,12 @@ export class TokenAmount {
   private checkToken(other: Token, action: string): void {
     if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
   }
+}
+
+@json
+export class SerializableTokenAmount {
+  constructor(
+    public token: SerializableToken,
+    public amount: string
+  ) {}
 }
