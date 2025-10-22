@@ -1,6 +1,7 @@
 import { environment } from '../environment'
-import { BigInt } from '../types'
+import { BigInt, JSON } from '../types'
 
+import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
@@ -48,6 +49,17 @@ export class TokenAmount {
    */
   static fromBigInt(token: Token, amount: BigInt): TokenAmount {
     return new TokenAmount(token, amount)
+  }
+
+  /**
+   * Creates a TokenAmount from a serialized string.
+   * @param serialized - The serialized string to parse
+   * @returns A new TokenAmount instance
+   */
+  static fromSerializable(serialized: string): TokenAmount {
+    const data = JSON.parse<SerializableTokenAmount>(serialized)
+    const token = BlockchainToken.fromString(data.token.address, data.token.chainId)
+    return TokenAmount.fromStringDecimal(token, data.amount)
   }
 
   /**

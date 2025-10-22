@@ -1,4 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
 import { ManifestInputs } from '../types'
 
 export default {
@@ -38,23 +37,7 @@ function convertInputs(inputs: ManifestInputs): Record<string, string> {
 
 function generateImports(inputs: Record<string, string>): string {
   const IMPORTABLE_TYPES = new Set(['Address', 'Bytes', 'BigInt', 'TokenAmount', 'BlockchainToken'])
-  const imports = new Set<string>()
-
-  for (const type of Object.values(inputs)) {
-    if (!IMPORTABLE_TYPES.has(type)) continue
-
-    imports.add(type)
-
-    if (type === 'BlockchainToken') {
-      imports.add('JSON')
-      imports.add('SerializableToken')
-    } else if (type === 'TokenAmount') {
-      imports.add('JSON')
-      imports.add('SerializableTokenAmount')
-      imports.add('BlockchainToken')
-    }
-  }
-
+  const imports = new Set<string>(Object.values(inputs).filter((type) => IMPORTABLE_TYPES.has(type)))
   if (imports.size === 0) return ''
 
   return `import { ${[...imports].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
@@ -119,18 +102,9 @@ function generateGetter(name: string, type: string): string {
   else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
   else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
   else if (type === 'BigInt') returnStr = `BigInt.fromString(${str}!)`
-  else if (type === 'BlockchainToken') {
-    returnStr = `((): BlockchainToken => {
-      const data = JSON.parse<SerializableToken>(${str}!)
-      return BlockchainToken.fromString(data.address, data.chainId)
-    })()`
-  } else if (type === 'TokenAmount') {
-    returnStr = `((): TokenAmount => {
-      const data = JSON.parse<SerializableTokenAmount>(${str}!)
-      const token = BlockchainToken.fromString(data.token.address, data.token.chainId)
-      return TokenAmount.fromStringDecimal(token, data.amount)
-    })()`
-  } else returnStr = str
+  else if (type === 'BlockchainToken') returnStr = `BlockchainToken.fromSerializable(${str}!)`
+  else if (type === 'TokenAmount') returnStr = `TokenAmount.fromSerializable(${str}!)`
+  else returnStr = str
 
   return `static get ${name}(): ${type} {
     return ${returnStr}

@@ -1,8 +1,8 @@
-import { Address, ChainId } from '../types'
+import { Address, ChainId, JSON } from '../types'
 
 import { ERC20Token } from './ERC20Token'
 import { SPLToken } from './SPLToken'
-import { Token } from './Token'
+import { SerializableToken, Token } from './Token'
 
 /**
  * Represents a token on a blockchain network
@@ -47,6 +47,16 @@ export abstract class BlockchainToken extends Token {
     symbol: string = BlockchainToken.EMPTY_SYMBOL
   ): BlockchainToken {
     return BlockchainToken.fromAddress(Address.fromString(address), chainId, decimals, symbol)
+  }
+
+  /**
+   * Creates a BlockchainToken from a serialized string.
+   * @param serialized - The serialized string to parse
+   * @returns A new BlockchainToken instance
+   */
+  static fromSerializable(serialized: string): BlockchainToken {
+    const data = JSON.parse<SerializableToken>(serialized)
+    return BlockchainToken.fromString(data.address, data.chainId)
   }
 
   /**
