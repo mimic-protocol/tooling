@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes, CallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, Bytes, EvmCallBuilder, NULL_ADDRESS, Token, TokenAmount } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
   const settler = Address.fromString(NULL_ADDRESS)
@@ -9,5 +9,5 @@ export default function main(): void {
   const maxFeeAmount = BigInt.zero().plus(BigInt.fromI32(undeclaredVariable))
   const maxFee = TokenAmount.fromBigInt(maxFeeToken, maxFeeAmount)
 
-  CallBuilder.forEvmChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
+  EvmCallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
 }

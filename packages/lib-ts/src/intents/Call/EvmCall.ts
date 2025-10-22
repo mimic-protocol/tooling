@@ -1,15 +1,14 @@
 import { environment } from '../../environment'
 import { TokenAmount } from '../../tokens'
 import { Address, BigInt, Bytes, ChainId } from '../../types'
-import { Intent, IntentEvent, MaxFee, OperationType } from '../Intent'
-
-import { CallBuilder } from './CallBuilder'
+import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../Intent'
 
 /**
  * Builder for creating EVM Call intents with contract call operations.
  * Allows chaining multiple contract calls and configuring fees and settlement parameters.
  */
-export class EvmCallBuilder extends CallBuilder {
+export class EvmCallBuilder extends IntentBuilder {
+  private chainId: ChainId
   private calls: EvmCallData[] = []
 
   /**
@@ -26,7 +25,8 @@ export class EvmCallBuilder extends CallBuilder {
    * @param chainId - The EVM blockchain network identifier
    */
   constructor(chainId: ChainId) {
-    super(chainId)
+    super()
+    this.chainId = chainId
   }
 
   /**

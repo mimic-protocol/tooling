@@ -2,21 +2,22 @@ import { environment } from '../../environment'
 import { TokenAmount } from '../../tokens'
 import { Address, BigInt, Bytes, ChainId } from '../../types'
 import { SvmAccountMeta } from '../../types/svm/SvmAccountMeta'
-import { Intent, IntentEvent, MaxFee, OperationType } from '../Intent'
-
-import { CallBuilder } from './CallBuilder'
+import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../Intent'
 
 /**
  * Builder for creating SVM Call intents with program call operations.
  * Allows chaining multiple calls and configuring fees and settlement parameters.
  */
-export class SvmCallBuilder extends CallBuilder {
+export class SvmCallBuilder extends IntentBuilder {
+  private chainId: ChainId
   private instructions: SvmInstruction[] = []
+
   /**
    * Creates a new SvmCallBuilder instance.
    */
   constructor() {
-    super(ChainId.SOLANA_MAINNET)
+    super()
+    this.chainId = ChainId.SOLANA_MAINNET
   }
 
   /**

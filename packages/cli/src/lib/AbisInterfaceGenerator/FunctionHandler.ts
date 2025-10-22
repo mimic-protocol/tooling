@@ -37,7 +37,7 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): string {
-    if (this.isWriteFunction(fn)) return 'CallBuilder'
+    if (this.isWriteFunction(fn)) return 'EvmCallBuilder'
 
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
@@ -91,8 +91,8 @@ export default class FunctionHandler {
     )
 
     importManager.addType(LibTypes.Bytes)
-    importManager.addType('CallBuilder')
-    lines.push(`    return CallBuilder.forEvmChain(this._chainId).addCall(this._address, encodedData)`)
+    importManager.addType('EvmCallBuilder')
+    lines.push(`    return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
 
     lines.push(`  }`)
     lines.push('')

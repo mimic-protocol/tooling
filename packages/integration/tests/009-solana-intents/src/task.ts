@@ -1,9 +1,9 @@
 import {
   Address,
   BigInt,
-  CallBuilder,
   ChainId,
   SPLToken,
+  SvmCallBuilder,
   SvmInstructionBuilder,
   SwapBuilder,
   TokenAmount,
@@ -47,7 +47,7 @@ export default function main(): void {
     .setDataFromHex('0xabcd')
     .instruction()
 
-  CallBuilder.forSvmChain()
+  new SvmCallBuilder()
     .addInstruction(ix)
     .addUser(solanaUser)
     .addMaxFee(new TokenAmount(splToken, BigInt.fromI32(1)))

@@ -1,6 +1,6 @@
 import { SerializableSettler } from '../../src/context'
 import { NULL_ADDRESS } from '../../src/helpers'
-import { CallBuilder } from '../../src/intents'
+import { EvmCallBuilder } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomERC20Token, randomSettler, setContext } from '../helpers'
@@ -25,7 +25,7 @@ describe('IntentBuilder', () => {
 
         setContext(0, 1, '0x0000000000000000000000000000000000000000', [], '1')
 
-        const builder = CallBuilder.forEvmChain(chainId)
+        const builder = EvmCallBuilder.forChain(chainId)
           .addCall(target, Bytes.fromHexString('0x1234'), BigInt.fromString('1'))
           .addUser(user)
           .addSettler(settler)
@@ -50,7 +50,7 @@ describe('IntentBuilder', () => {
 
         setContext(0, 1, userAddressStr, [settler], 'config-transfer')
 
-        const builder = CallBuilder.forEvmChain(chainId).addCall(target).addMaxFee(fee)
+        const builder = EvmCallBuilder.forChain(chainId).addCall(target).addMaxFee(fee)
 
         const call = builder.build()
         expect(call.user).toBe(userAddressStr)
@@ -69,7 +69,7 @@ describe('IntentBuilder', () => {
         setContext(0, 1, userAddressStr, [settler], 'config-call')
 
         expect(() => {
-          const builder = CallBuilder.forEvmChain(chainId)
+          const builder = EvmCallBuilder.forChain(chainId)
           builder.build()
         }).toThrow('A settler contract must be specified')
       })
@@ -84,7 +84,7 @@ describe('IntentBuilder', () => {
       setContext(0, 1, userAddressStr, [settler], 'config-call')
 
       expect(() => {
-        const builder = CallBuilder.forEvmChain(chainId)
+        const builder = EvmCallBuilder.forChain(chainId)
         builder.build()
       }).toThrow('A user must be specified')
     })

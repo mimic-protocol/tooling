@@ -1,7 +1,7 @@
-import { Address, Bytes, CallBuilder, DenominationToken, environment, evm, TokenAmount } from '@mimicprotocol/lib-ts'
+import { Address, Bytes, DenominationToken, environment, evm, EvmCallBuilder, TokenAmount } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
-  CallBuilder.forEvmChain(1)
+  EvmCallBuilder.forChain(1)
     .addMaxFee(TokenAmount.fromStringDecimal(DenominationToken.USD(), '1'))
     .addCall(Address.fromString('0x0000000000000000000000000000000000000001'), Bytes.empty())
     .addUser(environment.getContext().user)

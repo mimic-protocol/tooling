@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { CallBuilder, EvmCall, EvmCallData, IntentEvent, OperationType } from '../../src/intents'
+import { EvmCall, EvmCallBuilder, EvmCallData, IntentEvent, OperationType } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomBytes, randomERC20Token, randomEvmAddress, randomSettler, setContext } from '../helpers'
@@ -141,7 +141,7 @@ describe('Call', () => {
   })
 })
 
-describe('CallBuilder', () => {
+describe('EvmCallBuilder', () => {
   const chainId = 1
   const target1Str = '0x0000000000000000000000000000000000000001'
   const target2Str = '0x0000000000000000000000000000000000000002'
@@ -150,7 +150,7 @@ describe('CallBuilder', () => {
     const target1 = Address.fromString(target1Str)
     const target2 = Address.fromString(target2Str)
 
-    const builder = CallBuilder.forEvmChain(chainId)
+    const builder = EvmCallBuilder.forChain(chainId)
     builder.addCall(target1, randomBytes(2), BigInt.fromString('1'))
     builder.addCall(target2, randomBytes(2), BigInt.fromString('2'))
     builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 100))
@@ -164,7 +164,7 @@ describe('CallBuilder', () => {
   it('adds call with default data and value', () => {
     const target = Address.fromString(target1Str)
 
-    const builder = CallBuilder.forEvmChain(chainId)
+    const builder = EvmCallBuilder.forChain(chainId)
     builder.addCall(target) // default Bytes.empty and BigInt.zero
     builder.addMaxFee(TokenAmount.fromI32(randomERC20Token(chainId), 100))
 
@@ -176,7 +176,7 @@ describe('CallBuilder', () => {
   it('throws if fee token chainId mismatches constructor chainId', () => {
     expect(() => {
       const fee = TokenAmount.fromI32(randomERC20Token(2), 9)
-      CallBuilder.forEvmChain(chainId).addMaxFee(fee)
+      EvmCallBuilder.forChain(chainId).addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain as the one requested for the call')
   })
 })
