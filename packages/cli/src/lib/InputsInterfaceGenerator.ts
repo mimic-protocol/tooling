@@ -37,24 +37,27 @@ function convertInputs(inputs: ManifestInputs): Record<string, string> {
 }
 
 function generateImports(inputs: Record<string, string>): string {
-  const typesToImport = new Set(
-    Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt' || e === 'TokenAmount')
-  )
+  const IMPORTABLE_TYPES = new Set(['Address', 'Bytes', 'BigInt', 'TokenAmount', 'BlockchainToken'])
+  const imports = new Set<string>()
 
-  if (typesToImport.size === 0) return ''
+  for (const type of Object.values(inputs)) {
+    if (!IMPORTABLE_TYPES.has(type)) continue
 
-  const imports: string[] = [...typesToImport].sort()
+    imports.add(type)
 
-  // Add BlockchainToken for Token and TokenAmount types
-  const tokenTypes = new Set(Object.values(inputs).filter((type) => type === 'Token' || type === 'TokenAmount'))
-  if (tokenTypes.size > 0) {
-    imports.push('JSON')
-    imports.push('BlockchainToken')
-    if (tokenTypes.has('Token')) imports.push('SerializableToken')
-    if (tokenTypes.has('TokenAmount')) imports.push('SerializableTokenAmount')
+    if (type === 'BlockchainToken') {
+      imports.add('JSON')
+      imports.add('SerializableToken')
+    } else if (type === 'TokenAmount') {
+      imports.add('JSON')
+      imports.add('SerializableTokenAmount')
+      imports.add('BlockchainToken')
+    }
   }
 
-  return `import { ${imports.join(', ')} } from '@mimicprotocol/lib-ts'`
+  if (imports.size === 0) return ''
+
+  return `import { ${[...imports].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
 function generateInputsMapping(inputs: Record<string, string>, originalInputs: ManifestInputs): string {
