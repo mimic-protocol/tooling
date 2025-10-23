@@ -36,18 +36,23 @@ function convertInputs(inputs: ManifestInputs): Record<string, string> {
 }
 
 function generateImports(inputs: Record<string, string>): string {
-  const typesToImport = new Set(Object.values(inputs).filter((e) => e === 'Address' || e === 'Bytes' || e === 'BigInt'))
+  const IMPORTABLE_TYPES = new Set(['Address', 'Bytes', 'BigInt', 'TokenAmount', 'BlockchainToken'])
+  const imports = new Set<string>(Object.values(inputs).filter((type) => IMPORTABLE_TYPES.has(type)))
+  if (imports.size === 0) return ''
 
-  if (typesToImport.size === 0) return ''
-
-  return `import { ${[...typesToImport].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
+  return `import { ${[...imports].sort().join(', ')} } from '@mimicprotocol/lib-ts'`
 }
 
 function generateInputsMapping(inputs: Record<string, string>, originalInputs: ManifestInputs): string {
   return Object.entries(inputs)
     .map(([name, type]) => {
       const declaration =
-        type === 'string' || type === 'Address' || type === 'Bytes' || type === 'BigInt'
+        type === 'string' ||
+        type === 'Address' ||
+        type === 'Bytes' ||
+        type === 'BigInt' ||
+        type === 'BlockchainToken' ||
+        type === 'TokenAmount'
           ? `var ${name}: string | null`
           : `const ${name}: ${type}`
 
@@ -83,6 +88,8 @@ function convertType(type: string): string {
 
   if (type.includes('address')) return 'Address'
   if (type.includes('bytes')) return 'Bytes'
+  if (type === 'Token') return 'BlockchainToken'
+  if (type === 'TokenAmount') return 'TokenAmount'
 
   return type
 }
@@ -95,6 +102,8 @@ function generateGetter(name: string, type: string): string {
   else if (type === 'Address') returnStr = `Address.fromString(${str}!)`
   else if (type === 'Bytes') returnStr = `Bytes.fromHexString(${str}!)`
   else if (type === 'BigInt') returnStr = `BigInt.fromString(${str}!)`
+  else if (type === 'BlockchainToken') returnStr = `BlockchainToken.fromSerializable(${str}!)`
+  else if (type === 'TokenAmount') returnStr = `TokenAmount.fromSerializable(${str}!)`
   else returnStr = str
 
   return `static get ${name}(): ${type} {
