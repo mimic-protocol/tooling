@@ -159,7 +159,8 @@ export default class RunnerMock {
 
   private getDefaultEnvImports(): WebAssembly.ModuleImports {
     return {
-      _call: this.createLogFn('_call'),
+      _evmCall: this.createLogFn('_evmCall'),
+      _svmCall: this.createLogFn('_svmCall'),
       _swap: this.createLogFn('_swap'),
       _transfer: this.createLogFn('_transfer'),
       _getPrice: this.createMockFunction('_getPrice', { default: '' }),

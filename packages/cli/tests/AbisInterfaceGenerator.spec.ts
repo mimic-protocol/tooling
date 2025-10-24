@@ -100,9 +100,9 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`getData(): ${LibTypes.BigInt} {`)
-      expect(result).to.contain(`getData_1(id: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`getData_1(id: ${LibTypes.BigInt}): EvmCallBuilder {`)
       expect(result).to.contain(
-        `getData_2(id: ${LibTypes.BigInt}, flag: ${AssemblyPrimitiveTypes.bool}): CallBuilder {`
+        `getData_2(id: ${LibTypes.BigInt}, flag: ${AssemblyPrimitiveTypes.bool}): EvmCallBuilder {`
       )
     })
 
@@ -121,10 +121,10 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`getBalance(): ${LibTypes.BigInt} {`)
-      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): EvmCallBuilder {`)
       expect(result).to.contain(`getBalance_1(owner: ${LibTypes.Address}): ${LibTypes.BigInt} {`)
       expect(result).to.contain(`getName(): ${AssemblyPrimitiveTypes.string} {`)
-      expect(result).to.contain(`transfer_1(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`transfer_1(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): EvmCallBuilder {`)
     })
 
     it('should handle duplicate method names with reserved word conflicts', () => {
@@ -136,7 +136,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`constructor_(): ${LibTypes.BigInt} {`)
-      expect(result).to.contain(`constructor_1(value: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`constructor_1(value: ${LibTypes.BigInt}): EvmCallBuilder {`)
     })
   })
 
@@ -554,7 +554,7 @@ describe('AbisInterfaceGenerator', () => {
   })
 
   describe('when handling write functions', () => {
-    it('should generate methods that return CallBuilder type', () => {
+    it('should generate methods that return EvmCallBuilder type', () => {
       const abi = [
         createNonViewFunction('transfer', [
           { name: 'to', type: 'address' },
@@ -565,8 +565,8 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`transfer(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): CallBuilder {`)
-      expect(result).to.contain(`deposit(): CallBuilder {`)
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}): EvmCallBuilder {`)
+      expect(result).to.contain(`deposit(): EvmCallBuilder {`)
     })
 
     it('should generate proper encoded data method for write functions', () => {
@@ -586,7 +586,7 @@ describe('AbisInterfaceGenerator', () => {
       )
     })
 
-    it('should generate CallBuilder with proper chain and fee configuration', () => {
+    it('should generate EvmCallBuilder with proper chain and fee configuration', () => {
       const abi = [
         createNonViewFunction('approve', [
           { name: 'spender', type: 'address' },
@@ -597,7 +597,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeApprove(spender, amount)`)
-      expect(result).to.contain(`return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+      expect(result).to.contain(`return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
     })
 
     it('should handle write functions without parameters', () => {
@@ -606,7 +606,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
       const selector = getFunctionSelector(abi[0])
 
-      expect(result).to.contain('deposit(): CallBuilder {')
+      expect(result).to.contain('deposit(): EvmCallBuilder {')
       expect(result).to.contain('static encodeDeposit(): Bytes {')
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeDeposit()`)
@@ -621,8 +621,8 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): CallBuilder {`)
-      expect(result).to.contain(`deposit(amount: ${LibTypes.BigInt}): CallBuilder {`)
+      expect(result).to.contain(`transfer(to: ${LibTypes.Address}): EvmCallBuilder {`)
+      expect(result).to.contain(`deposit(amount: ${LibTypes.BigInt}): EvmCallBuilder {`)
     })
 
     it('should apply correct parameter conversions for write functions in encoded data method', () => {
@@ -653,7 +653,7 @@ describe('AbisInterfaceGenerator', () => {
       const importMatch = result.match(/import \{ ([A-Za-z, ]+) \} from '@mimicprotocol\/lib-ts'/)?.toString()
 
       expect(importMatch).not.to.be.undefined
-      expect(importMatch).to.contain('CallBuilder')
+      expect(importMatch).to.contain('EvmCallBuilder')
       expect(importMatch).to.contain(`${LibTypes.Bytes}`)
       expect(importMatch).to.contain('evm')
       expect(importMatch).to.contain('EvmEncodeParam')
@@ -675,10 +675,10 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `batchTransfer(recipients: ${LibTypes.Address}[], amounts: ${LibTypes.BigInt}[], flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+        `batchTransfer(recipients: ${LibTypes.Address}[], amounts: ${LibTypes.BigInt}[], flags: ${AssemblyPrimitiveTypes.bool}[]): EvmCallBuilder {`
       )
       expect(result).to.contain(
-        `depositMultiple(tokens: ${LibTypes.Address}[], values: ${LibTypes.BigInt}[]): CallBuilder {`
+        `depositMultiple(tokens: ${LibTypes.Address}[], values: ${LibTypes.BigInt}[]): EvmCallBuilder {`
       )
 
       expect(result).to.contain(
@@ -721,8 +721,8 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain('createUser(userData: UserInfo): CallBuilder {')
-      expect(result).to.contain('updateProfile(profile: Tuple1): CallBuilder {')
+      expect(result).to.contain('createUser(userData: UserInfo): EvmCallBuilder {')
+      expect(result).to.contain('updateProfile(profile: Tuple1): EvmCallBuilder {')
 
       expect(result).to.contain(`EvmEncodeParam.fromValues('()', userData.toEvmEncodeParams())`)
       expect(result).to.contain(`EvmEncodeParam.fromValues('()', profile.toEvmEncodeParams())`)
@@ -767,8 +767,8 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain('processOrders(orders: Tuple0[]): CallBuilder {')
-      expect(result).to.contain('complexOperation(data: Tuple1): CallBuilder {')
+      expect(result).to.contain('processOrders(orders: Tuple0[]): EvmCallBuilder {')
+      expect(result).to.contain('complexOperation(data: Tuple1): EvmCallBuilder {')
 
       expect(result).to.contain(
         `EvmEncodeParam.fromValues('()[]', orders.map<EvmEncodeParam>((s0) => EvmEncodeParam.fromValues('()', s0.toEvmEncodeParams())))`
@@ -801,7 +801,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `mixedFunction(simpleAddress: ${LibTypes.Address}, simpleAmount: ${LibTypes.BigInt}, addressArray: ${LibTypes.Address}[], userInfo: Tuple0, flags: ${AssemblyPrimitiveTypes.bool}[]): CallBuilder {`
+        `mixedFunction(simpleAddress: ${LibTypes.Address}, simpleAmount: ${LibTypes.BigInt}, addressArray: ${LibTypes.Address}[], userInfo: Tuple0, flags: ${AssemblyPrimitiveTypes.bool}[]): EvmCallBuilder {`
       )
 
       expect(result).to.contain(`EvmEncodeParam.fromValue('address', simpleAddress)`)
@@ -831,10 +831,10 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain(
-        `batchOperations(addressMatrix: ${LibTypes.Address}[][], valueMatrix: ${LibTypes.BigInt}[][], flagMatrix: ${AssemblyPrimitiveTypes.bool}[][]): CallBuilder {`
+        `batchOperations(addressMatrix: ${LibTypes.Address}[][], valueMatrix: ${LibTypes.BigInt}[][], flagMatrix: ${AssemblyPrimitiveTypes.bool}[][]): EvmCallBuilder {`
       )
       expect(result).to.contain(
-        `processMatrix(data: ${LibTypes.Bytes}[][], ids: ${LibTypes.BigInt}[][]): CallBuilder {`
+        `processMatrix(data: ${LibTypes.Bytes}[][], ids: ${LibTypes.BigInt}[][]): EvmCallBuilder {`
       )
 
       expect(result).to.contain(
@@ -875,7 +875,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain('static encodeTransfer(to: Address, amount: BigInt): Bytes {')
-      expect(result).to.contain('transfer(to: Address, amount: BigInt): CallBuilder {')
+      expect(result).to.contain('transfer(to: Address, amount: BigInt): EvmCallBuilder {')
       expect(result).not.to.contain('_decodeTransferResponse')
     })
 
@@ -903,7 +903,7 @@ describe('AbisInterfaceGenerator', () => {
 
       // Write function should call encoded data helper
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeSetValue(value)`)
-      expect(result).to.contain('return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)')
+      expect(result).to.contain('return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData)')
     })
   })
 })

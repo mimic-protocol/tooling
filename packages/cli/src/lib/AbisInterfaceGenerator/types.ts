@@ -7,7 +7,7 @@ export type ImportedTypes =
   | 'EvmEncodeParam'
   | 'EvmDecodeParam'
   | 'JSON'
-  | 'CallBuilder'
+  | 'EvmCallBuilder'
 export type MapBaseTypeCallback = (param: AbiParameter) => string
 export type TupleDefinition = {
   className: string

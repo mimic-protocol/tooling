@@ -15,10 +15,10 @@ import { Option } from './Option'
  */
 export class Address extends Bytes {
   /**
-   * Returns an EVM zero address (20 bytes filled with zeroes).
+   * Returns a zero address (default 20 bytes filled with zeroes).
    */
-  static zero(): Address {
-    const self = new ByteArray(20)
+  static zero(length: i32 = 20): Address {
+    const self = new ByteArray(length)
     return changetype<Address>(self)
   }
 
