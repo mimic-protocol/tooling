@@ -235,7 +235,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeGetBalance(owner)`)
       expect(result).to.contain(
-        `const response = environment.contractCall(this._address, this._chainId, this._timestamp, encodedData.toHexString())`
+        `const response = environment.contractCall(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
       expect(result).to.contain(`return ${CONTRACT_NAME}Utils.decodeGetBalance(response)`)
       expect(result).to.contain(`export class ${CONTRACT_NAME}Utils {`)
@@ -313,7 +313,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(`static encodeNoReturn(): Bytes {`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(
-        `environment.contractCall(this._address, this._chainId, this._timestamp, encodedData.toHexString())`
+        `environment.contractCall(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
       expect(result).not.to.contain(`_decodeNoReturnResponse`)
     })
