@@ -120,7 +120,7 @@ export default class FunctionHandler {
     )
 
     importManager.addType('environment')
-    const contractCallLine = `environment.contractCall(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
+    const contractCallLine = `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
 
     if (returnType === 'void') {
       lines.push(`    ${contractCallLine}`)

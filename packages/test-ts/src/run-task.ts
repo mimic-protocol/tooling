@@ -55,7 +55,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       relevantTokensResponse[key] = JSON.stringify(response)
     }
   }
-  const _getRelevantTokens = { paramResponse: relevantTokensResponse }
+  const _relevantTokensQuery = { paramResponse: relevantTokensResponse }
 
   const priceResponse: Record<string, string> = {}
   if (prices.length > 0) {
@@ -71,7 +71,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       priceResponse[key] = JSON.stringify(response)
     }
   }
-  const _getPrice = { paramResponse: priceResponse }
+  const _tokenPriceQuery = { paramResponse: priceResponse }
 
   const callResponse: Record<string, string> = {}
   const decodeResponse: Record<string, string> = {}
@@ -91,7 +91,7 @@ function generateMock(params: GenerateMockParams): MockConfig {
       decodeResponse[decodeKey] = value
     }
   }
-  const _contractCall = { paramResponse: callResponse }
+  const _evmCallQuery = { paramResponse: callResponse }
   const _decode = { paramResponse: decodeResponse }
 
   const subgraphQueryResponse: Record<string, string> = {}
@@ -122,9 +122,9 @@ function generateMock(params: GenerateMockParams): MockConfig {
 
   const environment = {
     _getContext: JSON.stringify(contextData),
-    _getRelevantTokens,
-    _getPrice,
-    _contractCall,
+    _relevantTokensQuery,
+    _tokenPriceQuery,
+    _evmCallQuery,
     _subgraphQuery,
     _call: 'log',
     _swap: 'log',

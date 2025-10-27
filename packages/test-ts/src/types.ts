@@ -33,13 +33,13 @@ export type QueryMock<T, R> = {
   response: R
 }
 
-export type GetPriceRequest = {
+export type TokenPriceQueryParams = {
   token: string
   chainId: number
   timestamp?: number
 }
 
-export type GetPriceMock = QueryMock<GetPriceRequest, string[]>
+export type TokenPriceQueryMock = QueryMock<TokenPriceQueryParams, string[]>
 
 export type Token = {
   address: string
@@ -51,7 +51,7 @@ export type TokenAmount = {
   amount: string
 }
 
-export type GetRelevantTokensRequest = {
+export type RelevantTokensQueryParams = {
   owner: string
   chainIds: number[]
   usdMinAmount: string
@@ -59,52 +59,52 @@ export type GetRelevantTokensRequest = {
   tokenFilter: number
 }
 
-export type RelevantTokenBalance = {
+export type TokenBalance = {
   token: Token
   balance: string
 }
 
-export type GetRelevantTokensResponse = {
+export type RelevantTokensQueryResult = {
   timestamp: number
-  balances: RelevantTokenBalance[]
+  balances: TokenBalance[]
 }
 
-export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
+export type RelevantTokensQueryMock = QueryMock<RelevantTokensQueryParams, RelevantTokensQueryResult[]>
 
-export type ContractCallRequest = {
+export type EvmCallQueryParams = {
   to: string
   chainId: number
   timestamp?: number
   data: string
 }
 
-export type ContractCallResponse = {
+export type EvmCallQueryResult = {
   abiType: string
   value: string
 }
 
-export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
+export type EvmCallQueryMock = QueryMock<EvmCallQueryParams, EvmCallQueryResult>
 
-export type SubgraphQueryRequest = {
+export type SubgraphQueryParams = {
   chainId: number
   timestamp: number
   subgraphId: string
   query: string
 }
 
-export type SubgraphQueryResponse = {
+export type SubgraphQueryResult = {
   blockNumber: number
   data: string
 }
 
-export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryResponse>
+export type SubgraphQueryMock = QueryMock<SubgraphQueryParams, SubgraphQueryResult>
 
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
-  prices: GetPriceMock[]
-  relevantTokens: GetRelevantTokensMock[]
-  calls: ContractCallMock[]
+  prices: TokenPriceQueryMock[]
+  relevantTokens: RelevantTokensQueryMock[]
+  calls: EvmCallQueryMock[]
   subgraphQueries: SubgraphQueryMock[]
 }
 
