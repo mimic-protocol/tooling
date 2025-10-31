@@ -42,6 +42,22 @@ export class TokenAmount {
   }
 
   /**
+   * Calculates the minimum output amount based on input amount and slippage tolerance.
+   * Formula: minAmountOut = amountIn * (100 - slippage) / 100
+   *
+   * @param amountIn - The input token amount
+   * @param slippage - The slippage percentage (0-100, e.g., 5 for 5%)
+   * @returns A new TokenAmount representing the minimum output amount
+   */
+  static fromSlippage(amountIn: TokenAmount, slippage: i32): TokenAmount {
+    if (slippage < 0 || slippage > 100) {
+      throw new Error('Slippage must be between 0 and 100')
+    }
+    const slippagePct = BigInt.fromI32(100).minus(BigInt.fromI32(slippage))
+    return amountIn.times(slippagePct).div(BigInt.fromI32(100))
+  }
+
+  /**
    * Creates a TokenAmount from a BigInt amount.
    * @param token - The token to create an amount for
    * @param amount - The amount in the token's smallest unit (e.g., wei for ETH)
