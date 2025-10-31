@@ -4,6 +4,7 @@ import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { execBinCommand, installDependencies } from '../lib/packageManager'
 import log from '../log'
 
 export default class Init extends Command {
@@ -86,17 +87,11 @@ export default class Init extends Command {
 
   installDependencies(fullDirectory: string) {
     if (process.env.NODE_ENV === 'test') return
-    spawnSync('yarn', ['install'], {
-      cwd: fullDirectory,
-      stdio: 'inherit',
-    })
+    installDependencies(fullDirectory)
   }
 
   runCodegen(fullDirectory: string) {
     if (process.env.NODE_ENV === 'test') return
-    spawnSync('yarn', ['codegen'], {
-      cwd: fullDirectory,
-      stdio: 'inherit',
-    })
+    execBinCommand('mimic', ['codegen'], fullDirectory)
   }
 }
