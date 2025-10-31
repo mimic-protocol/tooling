@@ -51,6 +51,14 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
+   * Returns a copy of the transfers array.
+   * @returns A copy of the transfers array
+   */
+  getTransfers(): TransferData[] {
+    return this.transfers.slice(0)
+  }
+
+  /**
    * Adds a transfer from a TokenAmount.
    * @param tokenAmount - The token amount to transfer (must be on same chain)
    * @param recipient - The address to receive the tokens

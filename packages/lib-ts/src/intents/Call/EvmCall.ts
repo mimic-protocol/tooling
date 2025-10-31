@@ -42,6 +42,14 @@ export class EvmCallBuilder extends IntentBuilder {
   }
 
   /**
+   * Returns a copy of the calls array.
+   * @returns A copy of the calls array
+   */
+  getCalls(): EvmCallData[] {
+    return this.calls.slice(0)
+  }
+
+  /**
    * Sets the settler address for this intent.
    * @param settler - The settler address as an Address instance
    * @returns This EvmCallBuilder instance for method chaining

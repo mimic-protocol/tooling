@@ -65,6 +65,14 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
+   * Returns a copy of the tokens in array.
+   * @returns A copy of the tokens in array
+   */
+  getTokensIn(): TokenIn[] {
+    return this.tokensIn.slice(0)
+  }
+
+  /**
    * Adds an output token to the swap.
    * @param tokenOut - The token output configuration
    * @returns This SwapBuilder instance for method chaining
@@ -82,6 +90,14 @@ export class SwapBuilder extends IntentBuilder {
   addTokensOut(tokensOut: TokenOut[]): SwapBuilder {
     for (let i = 0; i < tokensOut.length; i++) this.addTokenOut(tokensOut[i])
     return this
+  }
+
+  /**
+   * Returns a copy of the tokens out array.
+   * @returns A copy of the tokens out array
+   */
+  getTokensOut(): TokenOut[] {
+    return this.tokensOut.slice(0)
   }
 
   /**

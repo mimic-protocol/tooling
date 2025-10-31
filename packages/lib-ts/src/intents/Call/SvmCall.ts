@@ -31,6 +31,14 @@ export class SvmCallBuilder extends IntentBuilder {
   }
 
   /**
+   * Returns a copy of the instructions array.
+   * @returns A copy of the instructions array
+   */
+  getInstructions(): SvmInstruction[] {
+    return this.instructions.slice(0)
+  }
+
+  /**
    * Sets the settler address for this intent.
    * @param settler - The settler address as an Address instance
    * @returns This SvmCallBuilder instance for method chaining
