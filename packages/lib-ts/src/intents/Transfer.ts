@@ -9,8 +9,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Int
  * Supports multiple transfers within a single transaction on the same chain.
  */
 export class TransferBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private transfers: TransferData[] = []
+  protected chainId: ChainId
+  protected transfers: TransferData[] = []
 
   /**
    * Creates a TransferBuilder for a specific chain.

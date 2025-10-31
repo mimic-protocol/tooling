@@ -9,10 +9,10 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Int
  * Supports both single-chain and cross-chain swaps with multiple input and output tokens.
  */
 export class SwapBuilder extends IntentBuilder {
-  private sourceChain: ChainId
-  private destinationChain: ChainId
-  private tokensIn: TokenIn[] = []
-  private tokensOut: TokenOut[] = []
+  protected sourceChain: ChainId
+  protected destinationChain: ChainId
+  protected tokensIn: TokenIn[] = []
+  protected tokensOut: TokenOut[] = []
 
   /**
    * Creates a SwapBuilder for a single-chain swap.
