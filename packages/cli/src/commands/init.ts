@@ -20,7 +20,14 @@ export default class Init extends Command {
     const { flags } = await this.parse(Init)
     const { directory, force } = flags
     const fullDirectory = path.resolve(directory)
-    const templateDirectory = path.join(__dirname, '../templates')
+    const originalCwd = process.cwd()
+
+    const needsCwdChange = originalCwd === fullDirectory || originalCwd.startsWith(fullDirectory + path.sep)
+
+    if (needsCwdChange) {
+      const parentDir = path.dirname(fullDirectory)
+      process.chdir(parentDir)
+    }
 
     if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
       const shouldDelete =
@@ -51,7 +58,25 @@ export default class Init extends Command {
       })
     }
 
-    fs.cpSync(templateDirectory, fullDirectory, { recursive: true })
+    if (fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length === 0) {
+      fs.rmSync(fullDirectory, { recursive: true })
+    }
+
+    if (!fs.existsSync(fullDirectory)) {
+      fs.mkdirSync(fullDirectory, { recursive: true })
+    }
+
+    const clone = spawnSync('git', ['clone', 'https://github.com/mimic-protocol/init-template.git', fullDirectory], {
+      stdio: 'inherit',
+    })
+
+    if ((clone as unknown as { status?: number }).status !== 0) {
+      this.error('Failed to clone template repository. Ensure git is installed and accessible.')
+    }
+
+    // Remove .git to make it a fresh project repo
+    const gitDir = path.join(fullDirectory, '.git')
+    if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
 
     this.installDependencies(fullDirectory)
     this.runCodegen(fullDirectory)
@@ -68,6 +93,7 @@ export default class Init extends Command {
   }
 
   runCodegen(fullDirectory: string) {
+    if (process.env.NODE_ENV === 'test') return
     spawnSync('yarn', ['codegen'], {
       cwd: fullDirectory,
       stdio: 'inherit',
