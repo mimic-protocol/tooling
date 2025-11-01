@@ -9,8 +9,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../In
  * Allows chaining multiple calls and configuring fees and settlement parameters.
  */
 export class SvmCallBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private instructions: SvmInstruction[] = []
+  protected chainId: ChainId
+  protected instructions: SvmInstruction[] = []
 
   /**
    * Creates a new SvmCallBuilder instance.
@@ -28,6 +28,14 @@ export class SvmCallBuilder extends IntentBuilder {
   addInstruction(instruction: SvmInstruction): SvmCallBuilder {
     this.instructions.push(instruction)
     return this
+  }
+
+  /**
+   * Returns a copy of the instructions array.
+   * @returns A copy of the instructions array
+   */
+  getInstructions(): SvmInstruction[] {
+    return this.instructions.slice(0)
   }
 
   /**
@@ -124,9 +132,9 @@ export class SvmCallBuilder extends IntentBuilder {
 }
 
 export class SvmInstructionBuilder {
-  private programId: Address = Address.zero(32)
-  private accountsMeta: SvmAccountMeta[] = []
-  private data: Bytes = Bytes.empty()
+  protected programId: Address = Address.zero(32)
+  protected accountsMeta: SvmAccountMeta[] = []
+  protected data: Bytes = Bytes.empty()
 
   setProgram(programId: Address): SvmInstructionBuilder {
     this.programId = programId

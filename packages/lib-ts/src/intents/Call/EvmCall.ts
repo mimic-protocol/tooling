@@ -8,8 +8,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../In
  * Allows chaining multiple contract calls and configuring fees and settlement parameters.
  */
 export class EvmCallBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private calls: EvmCallData[] = []
+  protected chainId: ChainId
+  protected calls: EvmCallData[] = []
 
   /**
    * Creates a EvmCallBuilder for the specified EVM blockchain network.
@@ -39,6 +39,14 @@ export class EvmCallBuilder extends IntentBuilder {
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): EvmCallBuilder {
     this.calls.push(new EvmCallData(target, data, value))
     return this
+  }
+
+  /**
+   * Returns a copy of the calls array.
+   * @returns A copy of the calls array
+   */
+  getCalls(): EvmCallData[] {
+    return this.calls.slice(0)
   }
 
   /**
