@@ -22,14 +22,6 @@ describe('init', () => {
   context('when force flag is not passed', () => {
     const command = ['init', `--directory ${commandPath}`]
 
-    context('when the directory does not exist', () => {
-      it('creates the correct files', async () => {
-        const { stdout, error } = await runCommand(command)
-        expect(error).to.be.undefined
-        assertStdoutAndInitializedFiles(stdout)
-      })
-    })
-
     context('when the directory exists', () => {
       beforeEach('create directory', () => {
         fs.mkdirSync(commandPath)

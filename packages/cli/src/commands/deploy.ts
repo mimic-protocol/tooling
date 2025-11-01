@@ -1,11 +1,11 @@
 import { Command, Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
-import { spawnSync } from 'child_process'
 import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
+import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
@@ -30,11 +30,11 @@ export default class Deploy extends Command {
     const fullOutputDir = resolve(outputDir)
 
     if (!skipCompile) {
-      const codegen = spawnSync('yarn', ['mimic', 'codegen'], { stdio: 'inherit' })
+      const codegen = execBinCommand('mimic', ['codegen'], process.cwd())
       if (codegen.status !== 0)
         this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
 
-      const compile = spawnSync('yarn', ['mimic', 'compile', '--output', fullInputDir], { stdio: 'inherit' })
+      const compile = execBinCommand('mimic', ['compile', '--output', fullInputDir], process.cwd())
       if (compile.status !== 0)
         this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the task source code'] })
     }
