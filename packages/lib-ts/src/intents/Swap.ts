@@ -65,6 +65,25 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds the tokens in from another SwapBuilder to this SwapBuilder.
+   * @param builder - The SwapBuilder to add the tokens in from
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addTokensInFromBuilder(builder: SwapBuilder): SwapBuilder {
+    return this.addTokensIn(builder.getTokensIn())
+  }
+
+  /**
+   * Adds the tokens in from multiple SwapBuilders to this SwapBuilder.
+   * @param builders - The SwapBuilders to add the tokens in from
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addTokensInFromBuilders(builders: SwapBuilder[]): SwapBuilder {
+    for (let i = 0; i < builders.length; i++) this.addTokensInFromBuilder(builders[i])
+    return this
+  }
+
+  /**
    * Returns a copy of the tokens in array.
    * @returns A copy of the tokens in array
    */
@@ -89,6 +108,25 @@ export class SwapBuilder extends IntentBuilder {
    */
   addTokensOut(tokensOut: SwapTokenOut[]): SwapBuilder {
     for (let i = 0; i < tokensOut.length; i++) this.addTokenOut(tokensOut[i])
+    return this
+  }
+
+  /**
+   * Adds the tokens out from another SwapBuilder to this SwapBuilder.
+   * @param builder - The SwapBuilder to add the tokens out from
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addTokensOutFromBuilder(builder: SwapBuilder): SwapBuilder {
+    return this.addTokensOut(builder.getTokensOut())
+  }
+
+  /**
+   * Adds the tokens out from multiple SwapBuilders to this SwapBuilder.
+   * @param builders - The SwapBuilders to add the tokens out from
+   * @returns This SwapBuilder instance for method chaining
+   */
+  addTokensOutFromBuilders(builders: SwapBuilder[]): SwapBuilder {
+    for (let i = 0; i < builders.length; i++) this.addTokensOutFromBuilder(builders[i])
     return this
   }
 

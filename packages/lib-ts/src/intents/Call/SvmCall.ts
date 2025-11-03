@@ -49,6 +49,25 @@ export class SvmCallBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds the instructions from another SvmCallBuilder to this SvmCallBuilder.
+   * @param builder - The SvmCallBuilder to add the instructions from
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructionsFromBuilder(builder: SvmCallBuilder): SvmCallBuilder {
+    return this.addInstructions(builder.getInstructions())
+  }
+
+  /**
+   * Adds the instructions from multiple SvmCallBuilders to this SvmCallBuilder.
+   * @param builders - The SvmCallBuilders to add the instructions from
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructionsFromBuilders(builders: SvmCallBuilder[]): SvmCallBuilder {
+    for (let i = 0; i < builders.length; i++) this.addInstructionsFromBuilder(builders[i])
+    return this
+  }
+
+  /**
    * Returns a copy of the instructions array.
    * @returns A copy of the instructions array
    */

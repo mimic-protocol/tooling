@@ -51,6 +51,25 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds the transfers from another TransferBuilder to this TransferBuilder.
+   * @param builder - The TransferBuilder to add the transfers from
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addTransfersFromBuilder(builder: TransferBuilder): TransferBuilder {
+    return this.addTransfers(builder.getTransfers())
+  }
+
+  /**
+   * Adds the transfers from multiple TransferBuilders to this TransferBuilder.
+   * @param builders - The TransferBuilders to add the transfers from
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addTransfersFromBuilders(builders: TransferBuilder[]): TransferBuilder {
+    for (let i = 0; i < builders.length; i++) this.addTransfersFromBuilder(builders[i])
+    return this
+  }
+
+  /**
    * Returns a copy of the transfers array.
    * @returns A copy of the transfers array
    */

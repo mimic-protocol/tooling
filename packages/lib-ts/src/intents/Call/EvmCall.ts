@@ -57,6 +57,25 @@ export class EvmCallBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds the calls from another EvmCallBuilder to this EvmCallBuilder.
+   * @param builder - The EvmCallBuilder to add the calls from
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCallsFromBuilder(builder: EvmCallBuilder): EvmCallBuilder {
+    return this.addCalls(builder.getCalls())
+  }
+
+  /**
+   * Adds the calls from multiple EvmCallBuilders to this EvmCallBuilder.
+   * @param builders - The EvmCallBuilders to add the calls from
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCallsFromBuilders(builders: EvmCallBuilder[]): EvmCallBuilder {
+    for (let i = 0; i < builders.length; i++) this.addCallsFromBuilder(builders[i])
+    return this
+  }
+
+  /**
    * Returns a copy of the calls array.
    * @returns A copy of the calls array
    */
