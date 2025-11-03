@@ -38,7 +38,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param sourceChain - The source blockchain network identifier
    * @param destinationChain - The destination blockchain network identifier
    */
-  constructor(sourceChain: ChainId, destinationChain: ChainId) {
+  private constructor(sourceChain: ChainId, destinationChain: ChainId) {
     super()
     this.sourceChain = sourceChain
     this.destinationChain = destinationChain

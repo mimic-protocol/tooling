@@ -15,7 +15,7 @@ export class SvmCallBuilder extends IntentBuilder {
   /**
    * Creates a new SvmCallBuilder instance.
    */
-  constructor() {
+  private constructor() {
     super()
     this.chainId = ChainId.SOLANA_MAINNET
   }

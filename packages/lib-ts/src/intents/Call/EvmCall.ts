@@ -24,7 +24,7 @@ export class EvmCallBuilder extends IntentBuilder {
    * Creates a new EvmCallBuilder instance.
    * @param chainId - The EVM blockchain network identifier
    */
-  constructor(chainId: ChainId) {
+  private constructor(chainId: ChainId) {
     super()
     this.chainId = chainId
   }

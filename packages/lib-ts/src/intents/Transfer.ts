@@ -25,7 +25,7 @@ export class TransferBuilder extends IntentBuilder {
    * Creates a new TransferBuilder instance.
    * @param chainId - The blockchain network identifier
    */
-  constructor(chainId: ChainId) {
+  private constructor(chainId: ChainId) {
     super()
     this.chainId = chainId
   }
