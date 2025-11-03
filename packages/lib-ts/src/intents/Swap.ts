@@ -11,8 +11,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Int
 export class SwapBuilder extends IntentBuilder {
   protected sourceChain: ChainId
   protected destinationChain: ChainId
-  protected tokensIn: TokenIn[] = []
-  protected tokensOut: TokenOut[] = []
+  protected tokensIn: SwapTokenIn[] = []
+  protected tokensOut: SwapTokenOut[] = []
 
   /**
    * Creates a SwapBuilder for a single-chain swap.
@@ -49,7 +49,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param tokenIn - The token input configuration
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokenIn(tokenIn: TokenIn): SwapBuilder {
+  addTokenIn(tokenIn: SwapTokenIn): SwapBuilder {
     this.tokensIn.push(tokenIn)
     return this
   }
@@ -59,7 +59,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param tokensIn - Array of token input configurations
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokensIn(tokensIn: TokenIn[]): SwapBuilder {
+  addTokensIn(tokensIn: SwapTokenIn[]): SwapBuilder {
     for (let i = 0; i < tokensIn.length; i++) this.addTokenIn(tokensIn[i])
     return this
   }
@@ -68,7 +68,7 @@ export class SwapBuilder extends IntentBuilder {
    * Returns a copy of the tokens in array.
    * @returns A copy of the tokens in array
    */
-  getTokensIn(): TokenIn[] {
+  getTokensIn(): SwapTokenIn[] {
     return this.tokensIn.slice(0)
   }
 
@@ -77,7 +77,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param tokenOut - The token output configuration
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokenOut(tokenOut: TokenOut): SwapBuilder {
+  addTokenOut(tokenOut: SwapTokenOut): SwapBuilder {
     this.tokensOut.push(tokenOut)
     return this
   }
@@ -87,7 +87,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param tokensOut - Array of token output configurations
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokensOut(tokensOut: TokenOut[]): SwapBuilder {
+  addTokensOut(tokensOut: SwapTokenOut[]): SwapBuilder {
     for (let i = 0; i < tokensOut.length; i++) this.addTokenOut(tokensOut[i])
     return this
   }
@@ -96,7 +96,7 @@ export class SwapBuilder extends IntentBuilder {
    * Returns a copy of the tokens out array.
    * @returns A copy of the tokens out array
    */
-  getTokensOut(): TokenOut[] {
+  getTokensOut(): SwapTokenOut[] {
     return this.tokensOut.slice(0)
   }
 
@@ -107,7 +107,7 @@ export class SwapBuilder extends IntentBuilder {
    */
   addTokenInFromTokenAmount(tokenAmount: TokenAmount): SwapBuilder {
     if (!tokenAmount.token.hasChain(this.sourceChain)) throw new Error('Tokens in must be on the same chain')
-    return this.addTokenIn(TokenIn.fromTokenAmount(tokenAmount))
+    return this.addTokenIn(SwapTokenIn.fromTokenAmount(tokenAmount))
   }
 
   /**
@@ -128,7 +128,7 @@ export class SwapBuilder extends IntentBuilder {
    */
   addTokenInFromStringDecimal(token: Token, amount: string): SwapBuilder {
     if (!token.hasChain(this.sourceChain)) throw new Error('Tokens in must be on the source chain')
-    return this.addTokenIn(TokenIn.fromStringDecimal(token, amount))
+    return this.addTokenIn(SwapTokenIn.fromStringDecimal(token, amount))
   }
 
   /**
@@ -140,7 +140,7 @@ export class SwapBuilder extends IntentBuilder {
   addTokenOutFromTokenAmount(tokenAmount: TokenAmount, recipient: Address): SwapBuilder {
     if (!tokenAmount.token.hasChain(this.destinationChain))
       throw new Error('Tokens out must be on the destination chain')
-    return this.addTokenOut(TokenOut.fromTokenAmount(tokenAmount, recipient))
+    return this.addTokenOut(SwapTokenOut.fromTokenAmount(tokenAmount, recipient))
   }
 
   /**
@@ -163,7 +163,7 @@ export class SwapBuilder extends IntentBuilder {
    */
   addTokenOutFromStringDecimal(token: Token, amount: string, recipient: Address): SwapBuilder {
     if (!token.hasChain(this.destinationChain)) throw new Error('Tokens out must be on the destination chain')
-    return this.addTokenOut(TokenOut.fromStringDecimal(token, amount, recipient))
+    return this.addTokenOut(SwapTokenOut.fromStringDecimal(token, amount, recipient))
   }
 
   /**
@@ -277,7 +277,7 @@ export class SwapBuilder extends IntentBuilder {
  * Specifies the token address and amount to be swapped.
  */
 @json
-export class TokenIn {
+export class SwapTokenIn {
   token: string
   amount: string
 
@@ -286,8 +286,8 @@ export class TokenIn {
    * @param tokenAmount - The token amount to swap from
    * @returns A new TokenIn instance
    */
-  static fromTokenAmount(tokenAmount: TokenAmount): TokenIn {
-    return new TokenIn(tokenAmount.token.address, tokenAmount.amount)
+  static fromTokenAmount(tokenAmount: TokenAmount): SwapTokenIn {
+    return new SwapTokenIn(tokenAmount.token.address, tokenAmount.amount)
   }
 
   /**
@@ -296,7 +296,7 @@ export class TokenIn {
    * @param amount - The amount as a whole number
    * @returns A new TokenIn instance
    */
-  static fromI32(token: Token, amount: i32): TokenIn {
+  static fromI32(token: Token, amount: i32): SwapTokenIn {
     return this.fromTokenAmount(TokenAmount.fromI32(token, amount))
   }
 
@@ -306,7 +306,7 @@ export class TokenIn {
    * @param amount - The amount in the token's smallest unit
    * @returns A new TokenIn instance
    */
-  static fromBigInt(token: Token, amount: BigInt): TokenIn {
+  static fromBigInt(token: Token, amount: BigInt): SwapTokenIn {
     return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount))
   }
 
@@ -316,7 +316,7 @@ export class TokenIn {
    * @param amount - The amount as a decimal string
    * @returns A new TokenIn instance
    */
-  static fromStringDecimal(token: Token, amount: string): TokenIn {
+  static fromStringDecimal(token: Token, amount: string): SwapTokenIn {
     return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount))
   }
 
@@ -336,7 +336,7 @@ export class TokenIn {
  * Specifies the token address, minimum amount to receive, and recipient.
  */
 @json
-export class TokenOut {
+export class SwapTokenOut {
   token: string
   minAmount: string
   recipient: string
@@ -347,8 +347,8 @@ export class TokenOut {
    * @param recipient - The address to receive the tokens
    * @returns A new TokenOut instance
    */
-  static fromTokenAmount(tokenAmount: TokenAmount, recipient: Address): TokenOut {
-    return new TokenOut(tokenAmount.token.address, tokenAmount.amount, recipient)
+  static fromTokenAmount(tokenAmount: TokenAmount, recipient: Address): SwapTokenOut {
+    return new SwapTokenOut(tokenAmount.token.address, tokenAmount.amount, recipient)
   }
 
   /**
@@ -358,7 +358,7 @@ export class TokenOut {
    * @param recipient - The address to receive the tokens
    * @returns A new TokenOut instance
    */
-  static fromI32(token: Token, amount: i32, recipient: Address): TokenOut {
+  static fromI32(token: Token, amount: i32, recipient: Address): SwapTokenOut {
     return this.fromTokenAmount(TokenAmount.fromI32(token, amount), recipient)
   }
 
@@ -369,7 +369,7 @@ export class TokenOut {
    * @param recipient - The address to receive the tokens
    * @returns A new TokenOut instance
    */
-  static fromBigInt(token: Token, amount: BigInt, recipient: Address): TokenOut {
+  static fromBigInt(token: Token, amount: BigInt, recipient: Address): SwapTokenOut {
     return this.fromTokenAmount(TokenAmount.fromBigInt(token, amount), recipient)
   }
 
@@ -380,7 +380,7 @@ export class TokenOut {
    * @param recipient - The address to receive the tokens
    * @returns A new TokenOut instance
    */
-  static fromStringDecimal(token: Token, amount: string, recipient: Address): TokenOut {
+  static fromStringDecimal(token: Token, amount: string, recipient: Address): SwapTokenOut {
     return this.fromTokenAmount(TokenAmount.fromStringDecimal(token, amount), recipient)
   }
 
@@ -429,8 +429,8 @@ export class Swap extends Intent {
   ): Swap {
     const context = environment.getContext()
     const recipient = user || context.user
-    const swapIn = TokenIn.fromBigInt(tokenIn, amountIn)
-    const swapOut = TokenOut.fromBigInt(tokenOut, minAmountOut, recipient)
+    const swapIn = SwapTokenIn.fromBigInt(tokenIn, amountIn)
+    const swapOut = SwapTokenOut.fromBigInt(tokenOut, minAmountOut, recipient)
     return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce, [], events)
   }
 
@@ -448,8 +448,8 @@ export class Swap extends Intent {
    */
   constructor(
     public sourceChain: ChainId,
-    public tokensIn: TokenIn[],
-    public tokensOut: TokenOut[],
+    public tokensIn: SwapTokenIn[],
+    public tokensOut: SwapTokenOut[],
     public destinationChain: ChainId,
     settler: Address | null = null,
     user: Address | null = null,

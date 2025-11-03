@@ -13,6 +13,14 @@ export class SvmCallBuilder extends IntentBuilder {
   protected instructions: SvmInstruction[] = []
 
   /**
+   * Creates a SvmCallBuilder for Solana mainnet.
+   * @returns A new SvmCallBuilder instance
+   */
+  static forChain(): SvmCallBuilder {
+    return new SvmCallBuilder()
+  }
+
+  /**
    * Creates a new SvmCallBuilder instance.
    */
   private constructor() {
@@ -27,6 +35,16 @@ export class SvmCallBuilder extends IntentBuilder {
    */
   addInstruction(instruction: SvmInstruction): SvmCallBuilder {
     this.instructions.push(instruction)
+    return this
+  }
+
+  /**
+   * Adds multiple instructions to the intent.
+   * @param instructions - The instructions to add
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructions(instructions: SvmInstruction[]): SvmCallBuilder {
+    for (let i = 0; i < instructions.length; i++) this.addInstruction(instructions[i])
     return this
   }
 

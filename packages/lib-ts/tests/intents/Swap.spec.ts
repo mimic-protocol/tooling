@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
+import { OperationType, Swap, SwapBuilder, SwapTokenIn as TokenIn, SwapTokenOut as TokenOut } from '../../src/intents'
 import { ERC20Token, SPLToken, TokenAmount } from '../../src/tokens'
 import { Address, BigInt, ChainId } from '../../src/types'
 import {

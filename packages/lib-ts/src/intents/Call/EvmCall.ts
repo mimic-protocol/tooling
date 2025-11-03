@@ -42,6 +42,21 @@ export class EvmCallBuilder extends IntentBuilder {
   }
 
   /**
+   * Adds multiple contract calls to the intent.
+   * @param calls - The contract calls to add
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCalls(calls: EvmCallData[]): EvmCallBuilder {
+    for (let i = 0; i < calls.length; i++)
+      this.addCall(
+        Address.fromString(calls[i].target),
+        Bytes.fromHexString(calls[i].data),
+        BigInt.fromString(calls[i].value)
+      )
+    return this
+  }
+
+  /**
    * Returns a copy of the calls array.
    * @returns A copy of the calls array
    */
