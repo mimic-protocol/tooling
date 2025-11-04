@@ -2,6 +2,8 @@ import { Command, Flags } from '@oclif/core'
 import { spawnSync } from 'child_process'
 import * as path from 'path'
 
+import { execBinCommand } from '../lib/packageManager'
+
 export default class Test extends Command {
   static override description = 'Runs task tests'
 
@@ -23,14 +25,13 @@ export default class Test extends Command {
     const testPath = path.join(baseDir, 'tests')
 
     if (!flags.skipCompile) {
-      this.runOrExit('yarn', ['mimic', 'codegen'], baseDir)
-      this.runOrExit('yarn', ['mimic', 'compile'], baseDir)
+      const cg = execBinCommand('mimic', ['codegen'], baseDir)
+      if (cg.status !== 0) this.exit(cg.status ?? 1)
+      const cp = execBinCommand('mimic', ['compile'], baseDir)
+      if (cp.status !== 0) this.exit(cp.status ?? 1)
     }
 
-    const result = spawnSync('yarn', ['tsx', './node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], {
-      cwd: baseDir,
-      stdio: 'inherit',
-    })
+    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
     this.exit(result.status ?? 1)
   }
 }
