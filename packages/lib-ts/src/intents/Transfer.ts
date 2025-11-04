@@ -9,8 +9,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Int
  * Supports multiple transfers within a single transaction on the same chain.
  */
 export class TransferBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private transfers: TransferData[] = []
+  protected chainId: ChainId
+  protected transfers: TransferData[] = []
 
   /**
    * Creates a TransferBuilder for a specific chain.
@@ -25,7 +25,7 @@ export class TransferBuilder extends IntentBuilder {
    * Creates a new TransferBuilder instance.
    * @param chainId - The blockchain network identifier
    */
-  constructor(chainId: ChainId) {
+  private constructor(chainId: ChainId) {
     super()
     this.chainId = chainId
   }
@@ -48,6 +48,33 @@ export class TransferBuilder extends IntentBuilder {
   addTransfers(transfers: TransferData[]): TransferBuilder {
     for (let i = 0; i < transfers.length; i++) this.transfers.push(transfers[i])
     return this
+  }
+
+  /**
+   * Adds the transfers from another TransferBuilder to this TransferBuilder.
+   * @param builder - The TransferBuilder to add the transfers from
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addTransfersFromBuilder(builder: TransferBuilder): TransferBuilder {
+    return this.addTransfers(builder.getTransfers())
+  }
+
+  /**
+   * Adds the transfers from multiple TransferBuilders to this TransferBuilder.
+   * @param builders - The TransferBuilders to add the transfers from
+   * @returns This TransferBuilder instance for method chaining
+   */
+  addTransfersFromBuilders(builders: TransferBuilder[]): TransferBuilder {
+    for (let i = 0; i < builders.length; i++) this.addTransfersFromBuilder(builders[i])
+    return this
+  }
+
+  /**
+   * Returns a copy of the transfers array.
+   * @returns A copy of the transfers array
+   */
+  getTransfers(): TransferData[] {
+    return this.transfers.slice(0)
   }
 
   /**

@@ -9,13 +9,21 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../In
  * Allows chaining multiple calls and configuring fees and settlement parameters.
  */
 export class SvmCallBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private instructions: SvmInstruction[] = []
+  protected chainId: ChainId
+  protected instructions: SvmInstruction[] = []
+
+  /**
+   * Creates a SvmCallBuilder for Solana mainnet.
+   * @returns A new SvmCallBuilder instance
+   */
+  static forChain(): SvmCallBuilder {
+    return new SvmCallBuilder()
+  }
 
   /**
    * Creates a new SvmCallBuilder instance.
    */
-  constructor() {
+  private constructor() {
     super()
     this.chainId = ChainId.SOLANA_MAINNET
   }
@@ -28,6 +36,43 @@ export class SvmCallBuilder extends IntentBuilder {
   addInstruction(instruction: SvmInstruction): SvmCallBuilder {
     this.instructions.push(instruction)
     return this
+  }
+
+  /**
+   * Adds multiple instructions to the intent.
+   * @param instructions - The instructions to add
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructions(instructions: SvmInstruction[]): SvmCallBuilder {
+    for (let i = 0; i < instructions.length; i++) this.addInstruction(instructions[i])
+    return this
+  }
+
+  /**
+   * Adds the instructions from another SvmCallBuilder to this SvmCallBuilder.
+   * @param builder - The SvmCallBuilder to add the instructions from
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructionsFromBuilder(builder: SvmCallBuilder): SvmCallBuilder {
+    return this.addInstructions(builder.getInstructions())
+  }
+
+  /**
+   * Adds the instructions from multiple SvmCallBuilders to this SvmCallBuilder.
+   * @param builders - The SvmCallBuilders to add the instructions from
+   * @returns This SvmCallBuilder instance for method chaining
+   */
+  addInstructionsFromBuilders(builders: SvmCallBuilder[]): SvmCallBuilder {
+    for (let i = 0; i < builders.length; i++) this.addInstructionsFromBuilder(builders[i])
+    return this
+  }
+
+  /**
+   * Returns a copy of the instructions array.
+   * @returns A copy of the instructions array
+   */
+  getInstructions(): SvmInstruction[] {
+    return this.instructions.slice(0)
   }
 
   /**
@@ -124,9 +169,9 @@ export class SvmCallBuilder extends IntentBuilder {
 }
 
 export class SvmInstructionBuilder {
-  private programId: Address = Address.zero(32)
-  private accountsMeta: SvmAccountMeta[] = []
-  private data: Bytes = Bytes.empty()
+  protected programId: Address = Address.zero(32)
+  protected accountsMeta: SvmAccountMeta[] = []
+  protected data: Bytes = Bytes.empty()
 
   setProgram(programId: Address): SvmInstructionBuilder {
     this.programId = programId

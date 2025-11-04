@@ -6,3 +6,4 @@ inputs:
   - usdFeeAmount: string
 abis:
   - AAVE: ./abis/AAVE.json
+  - WETH: ./abis/WETH.json

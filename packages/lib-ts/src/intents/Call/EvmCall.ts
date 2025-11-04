@@ -8,8 +8,8 @@ import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../In
  * Allows chaining multiple contract calls and configuring fees and settlement parameters.
  */
 export class EvmCallBuilder extends IntentBuilder {
-  private chainId: ChainId
-  private calls: EvmCallData[] = []
+  protected chainId: ChainId
+  protected calls: EvmCallData[] = []
 
   /**
    * Creates a EvmCallBuilder for the specified EVM blockchain network.
@@ -24,7 +24,7 @@ export class EvmCallBuilder extends IntentBuilder {
    * Creates a new EvmCallBuilder instance.
    * @param chainId - The EVM blockchain network identifier
    */
-  constructor(chainId: ChainId) {
+  private constructor(chainId: ChainId) {
     super()
     this.chainId = chainId
   }
@@ -39,6 +39,48 @@ export class EvmCallBuilder extends IntentBuilder {
   addCall(target: Address, data: Bytes = Bytes.empty(), value: BigInt = BigInt.zero()): EvmCallBuilder {
     this.calls.push(new EvmCallData(target, data, value))
     return this
+  }
+
+  /**
+   * Adds multiple contract calls to the intent.
+   * @param calls - The contract calls to add
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCalls(calls: EvmCallData[]): EvmCallBuilder {
+    for (let i = 0; i < calls.length; i++)
+      this.addCall(
+        Address.fromString(calls[i].target),
+        Bytes.fromHexString(calls[i].data),
+        BigInt.fromString(calls[i].value)
+      )
+    return this
+  }
+
+  /**
+   * Adds the calls from another EvmCallBuilder to this EvmCallBuilder.
+   * @param builder - The EvmCallBuilder to add the calls from
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCallsFromBuilder(builder: EvmCallBuilder): EvmCallBuilder {
+    return this.addCalls(builder.getCalls())
+  }
+
+  /**
+   * Adds the calls from multiple EvmCallBuilders to this EvmCallBuilder.
+   * @param builders - The EvmCallBuilders to add the calls from
+   * @returns This EvmCallBuilder instance for method chaining
+   */
+  addCallsFromBuilders(builders: EvmCallBuilder[]): EvmCallBuilder {
+    for (let i = 0; i < builders.length; i++) this.addCallsFromBuilder(builders[i])
+    return this
+  }
+
+  /**
+   * Returns a copy of the calls array.
+   * @returns A copy of the calls array
+   */
+  getCalls(): EvmCallData[] {
+    return this.calls.slice(0)
   }
 
   /**
