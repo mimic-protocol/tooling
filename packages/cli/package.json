@@ -27,6 +27,7 @@
     "form-data": "^4.0.1",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
+    "simple-git": "^3.30.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

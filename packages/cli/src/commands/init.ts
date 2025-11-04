@@ -1,8 +1,8 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
-import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import simpleGit from 'simple-git'
 
 import { execBinCommand, installDependencies } from '../lib/packageManager'
 import log from '../log'
@@ -67,12 +67,10 @@ export default class Init extends Command {
       fs.mkdirSync(fullDirectory, { recursive: true })
     }
 
-    const clone = spawnSync('git', ['clone', 'https://github.com/mimic-protocol/init-template.git', fullDirectory], {
-      stdio: 'inherit',
-    })
-
-    if ((clone as unknown as { status?: number }).status !== 0) {
-      this.error('Failed to clone template repository. Ensure git is installed and accessible.')
+    try {
+      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', fullDirectory)
+    } catch (error) {
+      this.error(`Failed to clone template repository. Details: ${error}`)
     }
 
     // Remove .git to make it a fresh project repo
