@@ -84,7 +84,12 @@ export default class FunctionHandler {
     const methodName = fn.escapedName || fn.name
     const capitalizedName = this.getCapitalizedName(fn)
 
-    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
+    const isPayable = fn.stateMutability === 'payable'
+    const fullMethodParams = methodParams.concat(
+      isPayable ? `${methodParams.length > 0 ? ', ' : ''}value: ${LibTypes.BigInt}` : ''
+    )
+
+    lines.push(`  ${methodName}(${fullMethodParams}): ${returnType} {`)
 
     lines.push(
       `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
@@ -92,7 +97,11 @@ export default class FunctionHandler {
 
     importManager.addType(LibTypes.Bytes)
     importManager.addType('EvmCallBuilder')
-    lines.push(`    return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+    if (isPayable) importManager.addType(LibTypes.BigInt)
+
+    lines.push(
+      `    return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? ', value' : ''})`
+    )
 
     lines.push(`  }`)
     lines.push('')
