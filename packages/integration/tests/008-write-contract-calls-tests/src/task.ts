@@ -1,6 +1,7 @@
-import { Address, environment, ERC20Token, ListType, Optimism, TokenAmount, USD } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment, ERC20Token, ListType, Optimism, TokenAmount, USD } from '@mimicprotocol/lib-ts'
 
 import { AAVE } from './types/AAVE'
+import { WETH } from './types/WETH'
 import { inputs } from './types'
 
 export default function main(): void {
@@ -8,6 +9,7 @@ export default function main(): void {
 
   const USDCe = ERC20Token.fromString('0x7f5c764cbc14f9669b88837ca1490cca17c31607', chainId)
   const aUSDC = ERC20Token.fromString('0x625e7708f30ca75bfd92586e17077590c60eb4cd', chainId)
+  const weth = new WETH(Address.fromString('0x4200000000000000000000000000000000000006'), chainId)
   const USDT = Optimism.USDT
 
   const context = environment.getContext()
@@ -24,4 +26,6 @@ export default function main(): void {
     .addUser(inputs.smartAccount)
     .build()
     .send()
+
+  weth.deposit(new BigInt(10)).addMaxFee(feeUsdt).addUser(inputs.smartAccount).build().send()
 }
