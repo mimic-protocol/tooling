@@ -27,5 +27,5 @@ export default function main(): void {
     .build()
     .send()
 
-  weth.deposit(new BigInt(10)).addMaxFee(feeUsdt).addUser(inputs.smartAccount).build().send()
+  weth.deposit(BigInt.fromI32(10)).addMaxFee(feeUsdt).addUser(inputs.smartAccount).build().send()
 }
