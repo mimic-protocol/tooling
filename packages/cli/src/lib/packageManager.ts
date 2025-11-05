@@ -32,11 +32,11 @@ export const detectPackageManager = (cwd: string): PackageManager => {
 
 export const installDependencies = (cwd: string): SpawnSyncReturns<Buffer> => {
   const pm = detectPackageManager(cwd)
-  if (pm === 'npm') return spawnSync('npm', ['install'], { cwd, stdio: 'inherit' })
+  if (pm === 'npm') return spawnSync('npm', ['install', '--legacy-peer-deps'], { cwd, stdio: 'inherit' })
   if (pm === 'pnpm') return spawnSync('pnpm', ['install'], { cwd, stdio: 'inherit' })
   if (pm === 'yarn') return spawnSync('yarn', ['install'], { cwd, stdio: 'inherit' })
   if (pm === 'bun') return spawnSync('bun', ['install'], { cwd, stdio: 'inherit' })
-  return spawnSync('npm', ['install'], { cwd, stdio: 'inherit' })
+  return spawnSync('npm', ['install', '--legacy-peer-deps'], { cwd, stdio: 'inherit' })
 }
 
 export const execBinCommand = (bin: string, args: string[], cwd: string): SpawnSyncReturns<Buffer> => {
