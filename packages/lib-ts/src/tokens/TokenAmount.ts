@@ -42,19 +42,38 @@ export class TokenAmount {
   }
 
   /**
-   * Calculates the minimum output amount based on input amount and slippage tolerance.
-   * Formula: minAmountOut = amountIn * (100 - slippage) / 100
+   * Calculates the minimum output amount using basis points (bps).
+   * Formula: minAmountOut = amountIn * (10000 - bps) / 10000
    *
    * @param amountIn - The input token amount
-   * @param slippage - The slippage percentage (0-100, e.g., 5 for 5%)
+   * @param slippageBps - Slippage in basis points (0-10000). Example: 50 bps = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
-  static fromSlippage(amountIn: TokenAmount, slippage: i32): TokenAmount {
-    if (slippage < 0 || slippage > 100) {
-      throw new Error('Slippage must be between 0 and 100')
+  static fromSlippageBps(amountIn: TokenAmount, slippageBps: i32): TokenAmount {
+    if (slippageBps < 0 || slippageBps > 10000) {
+      throw new Error('Slippage bps must be between 0 and 10000')
     }
-    const slippagePct = BigInt.fromI32(100).minus(BigInt.fromI32(slippage))
-    return amountIn.times(slippagePct).div(BigInt.fromI32(100))
+    return this._fromSlippageWithScale(amountIn, BigInt.fromI32(slippageBps), 10000)
+  }
+
+  /**
+   * Calculates the minimum output amount from a percentage string.
+   * Formula: minAmountOut = amountIn * (100 - percent) / 100
+   *
+   * @param amountIn - The input token amount
+   * @param slippagePercent - Slippage as a decimal percent string.
+   * Example:
+   *  - "0.5" => 0.5%
+   *  - "1"   => 1%
+   * @returns A new TokenAmount representing the minimum output amount
+   */
+  static fromSlippagePercentString(amountIn: TokenAmount, slippagePercent: string): TokenAmount {
+    const bps = BigInt.fromStringDecimal(slippagePercent, 2)
+    const maxBps = BigInt.fromI32(10000)
+    if (bps.isNegative() || BigInt.compare(bps, maxBps) > 0) {
+      throw new Error('Slippage percent must be between 0 and 100')
+    }
+    return this._fromSlippageWithScale(amountIn, bps, 10000)
   }
 
   /**
@@ -254,6 +273,12 @@ export class TokenAmount {
 
   private checkToken(other: Token, action: string): void {
     if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
+  }
+
+  private static _fromSlippageWithScale(amountIn: TokenAmount, value: BigInt, scale: i32): TokenAmount {
+    const scaleBI = BigInt.fromI32(scale)
+    const factor = scaleBI.minus(value)
+    return amountIn.times(factor).div(scaleBI)
   }
 }
 
