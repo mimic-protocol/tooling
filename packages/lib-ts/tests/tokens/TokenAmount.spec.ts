@@ -600,6 +600,14 @@ describe('TokenAmount', () => {
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
+    it('throws for values with more than 2 decimal places', () => {
+      expect(() => {
+        const token = randomERC20Token()
+        const amountIn = TokenAmount.fromI32(token, 100)
+        TokenAmount.fromSlippagePercentString(amountIn, '0.123456')
+      }).toThrow('Too many decimal places. Max allowed: 2, found: 6')
+    })
+
     it('throws for malformed string', () => {
       expect(() => {
         const token = randomERC20Token()
