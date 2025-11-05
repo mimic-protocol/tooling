@@ -5,6 +5,8 @@ import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
+const BPS_SCALE: i32 = 10000
+
 /**
  * Represents an amount of a specific token, combining the token metadata with a quantity.
  * Supports arithmetic operations, comparisons, and conversions between tokens and USD.
@@ -50,10 +52,10 @@ export class TokenAmount {
    * @returns A new TokenAmount representing the minimum output amount
    */
   static fromSlippageBps(amountIn: TokenAmount, slippageBps: i32): TokenAmount {
-    if (slippageBps < 0 || slippageBps > 10000) {
-      throw new Error('Slippage bps must be between 0 and 10000')
+    if (slippageBps < 0 || slippageBps > BPS_SCALE) {
+      throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
     }
-    return this._fromSlippageWithScale(amountIn, BigInt.fromI32(slippageBps), 10000)
+    return this._fromSlippageWithScale(amountIn, BigInt.fromI32(slippageBps), BPS_SCALE)
   }
 
   /**
@@ -69,11 +71,11 @@ export class TokenAmount {
    */
   static fromSlippagePercentString(amountIn: TokenAmount, slippagePercent: string): TokenAmount {
     const bps = BigInt.fromStringDecimal(slippagePercent, 2)
-    const maxBps = BigInt.fromI32(10000)
+    const maxBps = BigInt.fromI32(BPS_SCALE)
     if (bps.isNegative() || BigInt.compare(bps, maxBps) > 0) {
       throw new Error('Slippage percent must be between 0 and 100')
     }
-    return this._fromSlippageWithScale(amountIn, bps, 10000)
+    return this._fromSlippageWithScale(amountIn, bps, BPS_SCALE)
   }
 
   /**
