@@ -1,7 +1,7 @@
-import { spawnSync, SpawnSyncReturns } from 'child_process'
+import { SpawnSyncReturns } from 'child_process'
+import { sync as spawnSync } from 'cross-spawn'
 import * as fs from 'fs'
 import * as path from 'path'
-
 type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun'
 
 const detectFromUserAgent = (): PackageManager | undefined => {
