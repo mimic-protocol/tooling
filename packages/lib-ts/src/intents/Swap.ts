@@ -153,30 +153,23 @@ export class SwapBuilder extends IntentBuilder {
   /**
    * Adds an output token from a slippage percentage string.
    * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippagePercent - The slippage percentage as a decimal string
+   * @param slippage - The slippage percentage as a decimal string
    * @param recipient - The address to receive the tokens
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokenOutFromSlippagePercentString(
-    tokenAmount: TokenAmount,
-    slippagePercent: string,
-    recipient: Address
-  ): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(
-      TokenAmount.fromSlippagePercentString(tokenAmount, slippagePercent),
-      recipient
-    )
+  addTokenOutFromSlippagePercent(tokenAmount: TokenAmount, slippage: string, recipient: Address): SwapBuilder {
+    return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippagePercentage(tokenAmount, slippage), recipient)
   }
 
   /**
    * Adds an output token from a slippage basis points.
    * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippageBps - The slippage basis points (0-10000)
+   * @param slippage - The slippage basis points (0-10000)
    * @param recipient - The address to receive the tokens
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokenOutFromSlippageBps(tokenAmount: TokenAmount, slippageBps: i32, recipient: Address): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippageBps(tokenAmount, slippageBps), recipient)
+  addTokenOutFromSlippageBps(tokenAmount: TokenAmount, slippage: i32, recipient: Address): SwapBuilder {
+    return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippageBps(tokenAmount, slippage), recipient)
   }
 
   /**

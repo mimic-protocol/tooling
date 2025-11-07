@@ -5,7 +5,7 @@ import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
-const BPS_SCALE: i32 = 10000
+const BPS_SCALE = BigInt.fromI32(10_000)
 
 /**
  * Represents an amount of a specific token, combining the token metadata with a quantity.
@@ -45,37 +45,34 @@ export class TokenAmount {
 
   /**
    * Calculates the minimum output amount using basis points (bps).
-   * Formula: minAmountOut = amountIn * (10000 - bps) / 10000
+   * Formula: minAmountOut = amountOut * (10000 - bps) / 10000
    *
-   * @param amountIn - The input token amount
-   * @param slippageBps - Slippage in basis points (0-10000). Example: 50 bps = 0.5%
+   * @param amountOut - The output token amount
+   * @param slippage - Slippage in basis points (0-10000). Example: 50 bps = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
-  static fromSlippageBps(amountIn: TokenAmount, slippageBps: i32): TokenAmount {
-    if (slippageBps < 0 || slippageBps > BPS_SCALE) {
+  static fromSlippageBps(amountOut: TokenAmount, slippage: i32): TokenAmount {
+    const slippageBpsBI = BigInt.fromI32(slippage)
+    if (slippageBpsBI.isNegative() || slippageBpsBI.gt(BPS_SCALE))
       throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
-    }
-    return this._fromSlippageWithScale(amountIn, BigInt.fromI32(slippageBps), BPS_SCALE)
+    return this.fromSlippageWithScale(amountOut, slippageBpsBI)
   }
 
   /**
    * Calculates the minimum output amount from a percentage string.
-   * Formula: minAmountOut = amountIn * (100 - percent) / 100
+   * Formula: minAmountOut = amountOut * (100 - percent) / 100
    *
-   * @param amountIn - The input token amount
-   * @param slippagePercent - Slippage as a decimal percent string.
+   * @param amountOut - The output token amount
+   * @param slippage - Slippage as a decimal percent string.
    * Example:
    *  - "0.5" => 0.5%
    *  - "1"   => 1%
    * @returns A new TokenAmount representing the minimum output amount
    */
-  static fromSlippagePercentString(amountIn: TokenAmount, slippagePercent: string): TokenAmount {
-    const bps = BigInt.fromStringDecimal(slippagePercent, 2)
-    const maxBps = BigInt.fromI32(BPS_SCALE)
-    if (bps.isNegative() || BigInt.compare(bps, maxBps) > 0) {
-      throw new Error('Slippage percent must be between 0 and 100')
-    }
-    return this._fromSlippageWithScale(amountIn, bps, BPS_SCALE)
+  static fromSlippagePercentage(amountOut: TokenAmount, slippage: string): TokenAmount {
+    const bps = BigInt.fromStringDecimal(slippage, 2)
+    if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percent must be between 0 and 100')
+    return this.fromSlippageWithScale(amountOut, bps)
   }
 
   /**
@@ -277,10 +274,9 @@ export class TokenAmount {
     if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
   }
 
-  private static _fromSlippageWithScale(amountIn: TokenAmount, value: BigInt, scale: i32): TokenAmount {
-    const scaleBI = BigInt.fromI32(scale)
-    const factor = scaleBI.minus(value)
-    return amountIn.times(factor).div(scaleBI)
+  private static fromSlippageWithScale(amountIn: TokenAmount, value: BigInt): TokenAmount {
+    const factor = BPS_SCALE.minus(value)
+    return amountIn.times(factor).div(BPS_SCALE)
   }
 }
 

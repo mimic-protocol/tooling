@@ -566,21 +566,21 @@ describe('TokenAmount', () => {
     it('applies 0.5% correctly from string', () => {
       const token = randomERC20Token()
       const amountIn = TokenAmount.fromI32(token, 1000)
-      const result = TokenAmount.fromSlippagePercentString(amountIn, '0.5')
+      const result = TokenAmount.fromSlippagePercentage(amountIn, '0.5')
       expect(result.toString()).toBe('995 ' + token.symbol)
     })
 
     it('applies 0% correctly from string', () => {
       const token = randomERC20Token()
       const amountIn = TokenAmount.fromI32(token, 777)
-      const result = TokenAmount.fromSlippagePercentString(amountIn, '0')
+      const result = TokenAmount.fromSlippagePercentage(amountIn, '0')
       expect(result.toString()).toBe('777 ' + token.symbol)
     })
 
     it('applies 100% correctly from string', () => {
       const token = randomERC20Token()
       const amountIn = TokenAmount.fromI32(token, 555)
-      const result = TokenAmount.fromSlippagePercentString(amountIn, '100')
+      const result = TokenAmount.fromSlippagePercentage(amountIn, '100')
       expect(result.toString()).toBe('0 ' + token.symbol)
     })
 
@@ -588,7 +588,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountIn = TokenAmount.fromI32(token, 100)
-        TokenAmount.fromSlippagePercentString(amountIn, '-1')
+        TokenAmount.fromSlippagePercentage(amountIn, '-1')
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
@@ -596,7 +596,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountIn = TokenAmount.fromI32(token, 100)
-        TokenAmount.fromSlippagePercentString(amountIn, '100.01')
+        TokenAmount.fromSlippagePercentage(amountIn, '100.01')
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
@@ -604,7 +604,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountIn = TokenAmount.fromI32(token, 100)
-        TokenAmount.fromSlippagePercentString(amountIn, '0.123456')
+        TokenAmount.fromSlippagePercentage(amountIn, '0.123456')
       }).toThrow('Too many decimal places. Max allowed: 2, found: 6')
     })
 
@@ -612,7 +612,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountIn = TokenAmount.fromI32(token, 100)
-        TokenAmount.fromSlippagePercentString(amountIn, '1.2.3')
+        TokenAmount.fromSlippagePercentage(amountIn, '1.2.3')
       }).toThrow()
     })
   })
