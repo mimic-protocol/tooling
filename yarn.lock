@@ -407,10 +407,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@mimicprotocol/runner-node@0.0.1-rc.1":
-  version "0.0.1-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node/-/runner-node-0.0.1-rc.1.tgz#2eac1dfc05dec27ce12d84d7e852084d92cbb1f8"
-  integrity sha512-WAz6OWRR2Pkw36073e8+jFmrgnzfBjWS0EB4juxmOIvGuXsg4qBvXVeyn99IvISlbnQKx7O57ZCu29V4ozqvng==
+"@mimicprotocol/runner-node@^0.0.1-rc.4":
+  version "0.0.1-rc.4"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node/-/runner-node-0.0.1-rc.4.tgz#acab4f87e9b76fdd5be2739c0b7ed5cd2c4f870a"
+  integrity sha512-0jpYnqmJbIpQQ638x2gz7PhdoutVVscrcVp1Eh51S4vxzcFhK+zyf9LgMDacmr014gFUgRKD7hfK+0GpGs090g==
 
 "@mimicprotocol/sdk@^0.0.1-rc.16":
   version "0.0.1-rc.19"
