@@ -1,9 +1,10 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
-import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import simpleGit from 'simple-git'
 
+import { execBinCommand, installDependencies } from '../lib/packageManager'
 import log from '../log'
 
 export default class Init extends Command {
@@ -20,7 +21,14 @@ export default class Init extends Command {
     const { flags } = await this.parse(Init)
     const { directory, force } = flags
     const fullDirectory = path.resolve(directory)
-    const templateDirectory = path.join(__dirname, '../templates')
+    const originalCwd = process.cwd()
+
+    const needsCwdChange = originalCwd === fullDirectory || originalCwd.startsWith(fullDirectory + path.sep)
+
+    if (needsCwdChange) {
+      const parentDir = path.dirname(fullDirectory)
+      process.chdir(parentDir)
+    }
 
     if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
       const shouldDelete =
@@ -51,7 +59,23 @@ export default class Init extends Command {
       })
     }
 
-    fs.cpSync(templateDirectory, fullDirectory, { recursive: true })
+    if (fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length === 0) {
+      fs.rmSync(fullDirectory, { recursive: true })
+    }
+
+    if (!fs.existsSync(fullDirectory)) {
+      fs.mkdirSync(fullDirectory, { recursive: true })
+    }
+
+    try {
+      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', fullDirectory)
+    } catch (error) {
+      this.error(`Failed to clone template repository. Details: ${error}`)
+    }
+
+    // Remove .git to make it a fresh project repo
+    const gitDir = path.join(fullDirectory, '.git')
+    if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
 
     this.installDependencies(fullDirectory)
     this.runCodegen(fullDirectory)
@@ -61,16 +85,11 @@ export default class Init extends Command {
 
   installDependencies(fullDirectory: string) {
     if (process.env.NODE_ENV === 'test') return
-    spawnSync('yarn', ['install'], {
-      cwd: fullDirectory,
-      stdio: 'inherit',
-    })
+    installDependencies(fullDirectory)
   }
 
   runCodegen(fullDirectory: string) {
-    spawnSync('yarn', ['codegen'], {
-      cwd: fullDirectory,
-      stdio: 'inherit',
-    })
+    if (process.env.NODE_ENV === 'test') return
+    execBinCommand('mimic', ['codegen'], fullDirectory)
   }
 }

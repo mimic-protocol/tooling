@@ -47,7 +47,7 @@ export default function main(): void {
     .setDataFromHex('0xabcd')
     .instruction()
 
-  new SvmCallBuilder()
+  SvmCallBuilder.forChain()
     .addInstruction(ix)
     .addUser(solanaUser)
     .addMaxFee(new TokenAmount(splToken, BigInt.fromI32(1)))
