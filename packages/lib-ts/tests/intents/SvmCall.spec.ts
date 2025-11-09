@@ -183,7 +183,7 @@ describe('SvmCallBuilder', () => {
     const instruction1 = SvmInstruction.create(programId1, accountsMeta1, data1)
     const instruction2 = SvmInstruction.create(programId2, accountsMeta2, data2)
 
-    const builder = new SvmCallBuilder()
+    const builder = SvmCallBuilder.forChain()
     builder.addInstruction(instruction1)
     builder.addInstruction(instruction2)
     builder.addMaxFee(TokenAmount.fromI32(randomSPLToken(ChainId.SOLANA_MAINNET), 100))
@@ -200,7 +200,7 @@ describe('SvmCallBuilder', () => {
     const data = randomBytes(32)
     const instruction = SvmInstruction.create(programId, accountsMeta, data)
 
-    const builder = new SvmCallBuilder()
+    const builder = SvmCallBuilder.forChain()
     builder.addInstruction(instruction)
     builder.addMaxFee(TokenAmount.fromI32(randomSPLToken(ChainId.SOLANA_MAINNET), 100))
 
@@ -220,7 +220,7 @@ describe('SvmCallBuilder', () => {
     const data = randomBytes(32)
     const instruction = SvmInstruction.create(programId, accountsMeta, data)
 
-    const builder = new SvmCallBuilder()
+    const builder = SvmCallBuilder.forChain()
     builder.addSettler(settler)
     builder.addUser(user)
     builder.addDeadline(deadline)
@@ -242,7 +242,7 @@ describe('SvmCallBuilder', () => {
   it('throws if fee token chainId mismatches Solana chainId', () => {
     expect(() => {
       const fee = TokenAmount.fromI32(randomSPLToken(ChainId.ETHEREUM), 9)
-      new SvmCallBuilder().addMaxFee(fee)
+      SvmCallBuilder.forChain().addMaxFee(fee)
     }).toThrow('Fee token must be on the same chain')
   })
 })

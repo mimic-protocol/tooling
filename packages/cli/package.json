@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "0.0.1-rc.22",
+  "version": "0.0.1-rc.25",
   "license": "GPL-3.0",
   "private": false,
   "type": "commonjs",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "rm -rf dist && tsc && cp -r src/templates dist/templates",
+    "build": "rm -rf dist && tsc",
     "start": "yarn build && node ./bin/run.js",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
     "lint": "eslint ."
@@ -27,6 +27,7 @@
     "form-data": "^4.0.1",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
+    "simple-git": "^3.30.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

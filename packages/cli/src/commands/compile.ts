@@ -1,9 +1,9 @@
 import { Command, Flags } from '@oclif/core'
-import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 
 import ManifestHandler from '../lib/ManifestHandler'
+import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
 export default class Compile extends Command {
@@ -31,7 +31,6 @@ export default class Compile extends Command {
     log.startAction('Compiling')
 
     const ascArgs = [
-      'asc',
       absTaskFile,
       '--target',
       'release',
@@ -43,7 +42,7 @@ export default class Compile extends Command {
       'json-as/transform',
     ]
 
-    const result = spawnSync('yarn', ascArgs, { stdio: 'inherit' })
+    const result = execBinCommand('asc', ascArgs, process.cwd())
     if (result.status !== 0) {
       this.error('AssemblyScript compilation failed', {
         code: 'BuildError',

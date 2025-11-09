@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { OperationType, Swap, SwapBuilder, TokenIn, TokenOut } from '../../src/intents'
+import { OperationType, Swap, SwapBuilder, SwapTokenIn, SwapTokenOut } from '../../src/intents'
 import { ERC20Token, SPLToken, TokenAmount } from '../../src/tokens'
 import { Address, BigInt, ChainId } from '../../src/types'
 import {
@@ -105,8 +105,8 @@ describe('Swap', () => {
     const user = randomEvmAddress()
     const settler = randomSettler(sourceChain)
     const deadline = BigInt.fromI32(999999)
-    const tokenIn = TokenIn.fromI32(randomERC20Token(sourceChain), 10)
-    const tokenOut = TokenOut.fromI32(randomERC20Token(destinationChain), 100, randomEvmAddress())
+    const tokenIn = SwapTokenIn.fromI32(randomERC20Token(sourceChain), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomERC20Token(destinationChain), 100, randomEvmAddress())
 
     setContext(1, 1, user.toString(), [settler], 'config-456')
 
@@ -144,16 +144,16 @@ describe('Swap', () => {
     )
   })
 
-  it('throws an error when TokenIn list is empty', () => {
+  it('throws an error when SwapTokenIn list is empty', () => {
     expect(() => {
-      const tokensOut = [TokenOut.fromI32(randomERC20Token(), 10, randomEvmAddress())]
+      const tokensOut = [SwapTokenOut.fromI32(randomERC20Token(), 10, randomEvmAddress())]
       new Swap(1, [], tokensOut, 10)
     }).toThrow('TokenIn list cannot be empty')
   })
 
-  it('throws an error when TokenOut list is empty', () => {
+  it('throws an error when SwapTokenOut list is empty', () => {
     expect(() => {
-      const tokensIn = [TokenIn.fromI32(randomERC20Token(), 10)]
+      const tokensIn = [SwapTokenIn.fromI32(randomERC20Token(), 10)]
       new Swap(1, tokensIn, [], 10)
     }).toThrow('TokenOut list cannot be empty')
   })
@@ -208,7 +208,7 @@ describe('SwapBuilder', () => {
     expect(swap.tokensOut[0].minAmount).toBe('1')
   })
 
-  it('throws if TokenIn chainId does not match sourceChain', () => {
+  it('throws if SwapTokenIn chainId does not match sourceChain', () => {
     expect(() => {
       const token = ERC20Token.fromString(tokenInAddressStr, 999) // wrong chain
       const builder = SwapBuilder.forChains(sourceChain, destinationChain)
@@ -216,7 +216,7 @@ describe('SwapBuilder', () => {
     }).toThrow('Tokens in must be on the source chain')
   })
 
-  it('throws if TokenOut chainId does not match destinationChain', () => {
+  it('throws if SwapTokenOut chainId does not match destinationChain', () => {
     expect(() => {
       const recipient = Address.fromString(recipientAddressStr)
       const token = ERC20Token.fromString(tokenOutAddressStr, 5) // wrong chain
@@ -245,7 +245,7 @@ describe('SwapBuilder', () => {
     expect(swap.tokensOut.length).toBe(1)
   })
 
-  it('throws if no TokenIn is added before build', () => {
+  it('throws if no SwapTokenIn is added before build', () => {
     expect(() => {
       const tokenOut = ERC20Token.fromString(tokenOutAddressStr, destinationChain)
       const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '1')
@@ -258,7 +258,7 @@ describe('SwapBuilder', () => {
     }).toThrow('Tokens in and out are required')
   })
 
-  it('throws if no TokenOut is added before build', () => {
+  it('throws if no SwapTokenOut is added before build', () => {
     expect(() => {
       const tokenIn = ERC20Token.fromString(tokenInAddressStr, sourceChain)
       const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
@@ -362,8 +362,8 @@ describe('Swap - SVM', () => {
     const user = randomSvmAddress()
     const settler = randomSettler(sourceChain)
     const deadline = BigInt.fromI32(999999)
-    const tokenIn = TokenIn.fromI32(randomSPLToken(sourceChain), 10)
-    const tokenOut = TokenOut.fromI32(randomSPLToken(destinationChain), 100, randomSvmAddress())
+    const tokenIn = SwapTokenIn.fromI32(randomSPLToken(sourceChain), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomSPLToken(destinationChain), 100, randomSvmAddress())
 
     setContext(1, 1, user.toString(), [settler], 'config-456')
 
@@ -401,16 +401,16 @@ describe('Swap - SVM', () => {
     )
   })
 
-  it('throws an error when TokenIn list is empty', () => {
+  it('throws an error when SwapTokenIn list is empty', () => {
     expect(() => {
-      const tokensOut = [TokenOut.fromI32(randomSPLToken(), 10, randomSvmAddress())]
+      const tokensOut = [SwapTokenOut.fromI32(randomSPLToken(), 10, randomSvmAddress())]
       new Swap(1, [], tokensOut, 10)
     }).toThrow('TokenIn list cannot be empty')
   })
 
-  it('throws an error when TokenOut list is empty', () => {
+  it('throws an error when SwapTokenOut list is empty', () => {
     expect(() => {
-      const tokensIn = [TokenIn.fromI32(randomSPLToken(), 10)]
+      const tokensIn = [SwapTokenIn.fromI32(randomSPLToken(), 10)]
       new Swap(1, tokensIn, [], 10)
     }).toThrow('TokenOut list cannot be empty')
   })
@@ -465,7 +465,7 @@ describe('SwapBuilder - SVM', () => {
     expect(swap.tokensOut[0].minAmount).toBe('1')
   })
 
-  it('throws if TokenIn chainId does not match sourceChain', () => {
+  it('throws if SwapTokenIn chainId does not match sourceChain', () => {
     expect(() => {
       const token = SPLToken.fromString(tokenInAddressStr, 999) // wrong chain
       const builder = SwapBuilder.forChains(sourceChain, destinationChain)
@@ -473,7 +473,7 @@ describe('SwapBuilder - SVM', () => {
     }).toThrow('Tokens in must be on the source chain')
   })
 
-  it('throws if TokenOut chainId does not match destinationChain', () => {
+  it('throws if SwapTokenOut chainId does not match destinationChain', () => {
     expect(() => {
       const recipient = Address.fromString(recipientAddressStr)
       const token = SPLToken.fromString(tokenOutAddressStr, 5) // wrong chain
@@ -502,7 +502,7 @@ describe('SwapBuilder - SVM', () => {
     expect(swap.tokensOut.length).toBe(1)
   })
 
-  it('throws if no TokenIn is added before build', () => {
+  it('throws if no SwapTokenIn is added before build', () => {
     expect(() => {
       const tokenOut = SPLToken.fromString(tokenOutAddressStr, destinationChain)
       const tokenOutAmount = TokenAmount.fromStringDecimal(tokenOut, '1')
@@ -515,7 +515,7 @@ describe('SwapBuilder - SVM', () => {
     }).toThrow('Tokens in and out are required')
   })
 
-  it('throws if no TokenOut is added before build', () => {
+  it('throws if no SwapTokenOut is added before build', () => {
     expect(() => {
       const tokenIn = SPLToken.fromString(tokenInAddressStr, sourceChain)
       const tokenInAmount = TokenAmount.fromStringDecimal(tokenIn, '1')
