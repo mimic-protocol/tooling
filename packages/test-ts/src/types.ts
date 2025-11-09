@@ -1,3 +1,4 @@
+import { AnyOracleResponse } from '@mimicprotocol/sdk'
 import { z } from 'zod'
 
 import {
@@ -26,6 +27,7 @@ export type Context = Partial<{
     chainId: number
   }>
   configSig: string
+  trigger: { type: number; data: string }
 }>
 
 export type QueryMock<T, R> = {
@@ -71,17 +73,20 @@ export type GetRelevantTokensResponse = {
 
 export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
 
+export type ContractCallTypedValue = {
+  abiType: string
+  value: string
+}
+
 export type ContractCallRequest = {
   to: string
   chainId: number
   timestamp?: number
-  data: string
+  fnSelector: string
+  params?: ContractCallTypedValue[]
 }
 
-export type ContractCallResponse = {
-  abiType: string
-  value: string
-}
+export type ContractCallResponse = ContractCallTypedValue
 
 export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
 
@@ -110,33 +115,42 @@ export type GenerateMockParams = {
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
 
-export type Intent = {
+export type IntentBase = {
   op: number
   settler: string
   user: string
   deadline: string
   nonce: string
   maxFees: { token: string; amount: string }[]
+  events: { topic: string; data: string }[]
 }
 
-export type Transfer = Intent & {
-  type: 'transfer'
+export type Transfer = IntentBase & {
   chainId: number
   transfers: { token: string; amount: string; recipient: string }[]
 }
 
-export type Swap = Intent & {
-  type: 'swap'
+export type Swap = IntentBase & {
   sourceChain: number
   destinationChain: number
   tokensIn: { token: string; amount: string }[]
   tokensOut: { token: string; minAmount: string; recipient: string }[]
 }
 
-export type Call = Intent & {
-  type: 'call'
+export type Call = IntentBase & {
   chainId: number
   calls: { target: string; data: string; value: string }[]
 }
 
-export type Output = Transfer | Swap | Call
+export type Intent = Transfer | Swap | Call
+
+export type OracleResponse = AnyOracleResponse
+
+export type RunTaskResult = {
+  success: boolean
+  timestamp: number
+  fuelUsed: number
+  oracleResponses: OracleResponse[]
+  intents: Intent[]
+  logs: string[]
+}
