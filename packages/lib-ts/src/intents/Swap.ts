@@ -164,7 +164,7 @@ export class SwapBuilder extends IntentBuilder {
   /**
    * Adds an output token from a slippage basis points.
    * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippage - The slippage basis points (0-10000)
+   * @param slippage - The slippage basis points (0-10000). Example: 50 = 0.5%
    * @param recipient - The address to receive the tokens
    * @returns This SwapBuilder instance for method chaining
    */
