@@ -52,9 +52,8 @@ export class TokenAmount {
    * @returns A new TokenAmount representing the minimum output amount
    */
   static fromSlippageBps(amountOut: TokenAmount, slippage: i32): TokenAmount {
-    const slippageBpsBI = BigInt.fromI32(slippage)
-    if (slippageBpsBI.isNegative() || slippageBpsBI.gt(BPS_SCALE))
-      throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
+    const slippageBI = BigInt.fromI32(slippage)
+    if (slippageBI.isNegative() || slippageBI.gt(BPS_SCALE)) throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
     return this.fromSlippageWithScale(amountOut, slippageBpsBI)
   }
 
