@@ -63,10 +63,7 @@ export class TokenAmount {
    * Formula: minAmountOut = amountOut * (100 - percent) / 100
    *
    * @param amountOut - The output token amount
-   * @param slippage - Slippage as a decimal percent string.
-   * Example:
-   *  - "0.5" => 0.5%
-   *  - "1"   => 1%
+   * @param slippage - Slippage percentage as a decimal string. Example: '0.5' = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
   static fromSlippagePercentage(amountOut: TokenAmount, slippage: string): TokenAmount {
