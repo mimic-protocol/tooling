@@ -153,7 +153,7 @@ export class SwapBuilder extends IntentBuilder {
   /**
    * Adds an output token from a slippage percentage string.
    * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippage - The slippage percentage as a decimal string
+   * @param slippage - The slippage percentage as a decimal string. Example: '0.5' = 0.5%
    * @param recipient - The address to receive the tokens
    * @returns This SwapBuilder instance for method chaining
    */
