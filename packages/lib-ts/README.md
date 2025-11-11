@@ -57,7 +57,7 @@ import { environment, ERC20Token } from '@mimicprotocol/lib-ts'
 
 const USDC = ERC20Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 1)
 
-environment.getPrice(USDC, new Date(1744818017000))
+environment.tokenPriceQuery(USDC, new Date(1744818017000))
 ```
 
 For full task development guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)

@@ -109,13 +109,13 @@ export class ERC20Token extends BlockchainToken {
   /**
    * Gets the token’s symbol (e.g., "ETH", "USDC").
    * If the symbol was not provided during construction, it will be lazily fetched
-   * via a `contractCall` to the token’s `symbol()` function (ERC-20 standard, selector `0x95d89b41`).
+   * via a `evmCallQuery` to the token’s `symbol()` function (ERC-20 standard, selector `0x95d89b41`).
    * The fetched symbol is cached in the instance for future accesses.
    * @returns A string containing the token symbol.
    */
   get symbol(): string {
     if (this._symbol === ERC20Token.EMPTY_SYMBOL) {
-      const response = environment.contractCall(this.address, this.chainId, '0x95d89b41', this._timestamp)
+      const response = environment.evmCallQuery(this.address, this.chainId, '0x95d89b41', this._timestamp)
       this._symbol = evm.decode(new EvmDecodeParam('string', response))
     }
     return this._symbol
@@ -124,13 +124,13 @@ export class ERC20Token extends BlockchainToken {
   /**
    * Gets the token’s decimals (number of decimal places used).
    * If decimals were not provided during construction, they will be lazily fetched
-   * via a `contractCall` to the token’s `decimals()` function (ERC-20 standard, selector `0x313ce567`).
+   * via a `evmCallQuery` to the token’s `decimals()` function (ERC-20 standard, selector `0x313ce567`).
    * The fetched value is parsed to `u8` and cached for future accesses.
    * @returns A `u8` representing the number of decimals of the token.
    */
   get decimals(): u8 {
     if (this._decimals == ERC20Token.EMPTY_DECIMALS) {
-      const result = environment.contractCall(this.address, this.chainId, '0x313ce567', this._timestamp)
+      const result = environment.evmCallQuery(this.address, this.chainId, '0x313ce567', this._timestamp)
       this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
     }
     return this._decimals
