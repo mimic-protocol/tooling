@@ -592,7 +592,7 @@ describe('TokenAmount', () => {
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
-    it('throws for percent bigger than 100', () => {
+    it('throws for percentage bigger than 100', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
