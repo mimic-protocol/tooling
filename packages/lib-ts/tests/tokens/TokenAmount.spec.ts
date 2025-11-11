@@ -562,7 +562,7 @@ describe('TokenAmount', () => {
     })
   })
 
-  describe('fromSlippagePercent', () => {
+  describe('fromSlippagePercentage', () => {
     it('applies 0.5% correctly from string', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 1000)
