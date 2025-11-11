@@ -53,8 +53,9 @@ export class TokenAmount {
    */
   static fromSlippageBps(amountOut: TokenAmount, slippage: i32): TokenAmount {
     const slippageBI = BigInt.fromI32(slippage)
-    if (slippageBI.isNegative() || slippageBI.gt(BPS_SCALE)) throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
-    return this.fromSlippageWithScale(amountOut, slippageBpsBI)
+    if (slippageBI.isNegative() || slippageBI.gt(BPS_SCALE))
+      throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
+    return this.fromSlippage(amountOut, slippageBI)
   }
 
   /**
@@ -68,7 +69,7 @@ export class TokenAmount {
   static fromSlippagePercentage(amountOut: TokenAmount, slippage: string): TokenAmount {
     const bps = BigInt.fromStringDecimal(slippage, 2)
     if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percentage must be between 0 and 100')
-    return this.fromSlippageWithScale(amountOut, bps)
+    return this.fromSlippage(amountOut, bps)
   }
 
   /**
@@ -272,7 +273,7 @@ export class TokenAmount {
 
   private static fromSlippage(amount: TokenAmount, value: BigInt): TokenAmount {
     const factor = BPS_SCALE.minus(value)
-    return amountIn.times(factor).div(BPS_SCALE)
+    return amount.times(factor).div(BPS_SCALE)
   }
 }
 
