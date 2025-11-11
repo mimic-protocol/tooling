@@ -10,7 +10,20 @@ export const ParameterizedResponseValidator = z
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
-export const InputsValidator = z.record(z.string(), z.union([z.number(), z.string()]))
+export const TokenTypeValidator = z.object({
+  address: z.string(),
+  chainId: z.number(),
+})
+
+export const TokenAmountTypeValidator = z.object({
+  token: TokenTypeValidator,
+  amount: z.string(),
+})
+
+export const InputsValidator = z.record(
+  z.string(),
+  z.union([z.number(), z.string(), TokenTypeValidator, TokenAmountTypeValidator])
+)
 
 export const MockFunctionResponseValidator = z.union([z.string(), ParameterizedResponseValidator, z.literal('log')])
 

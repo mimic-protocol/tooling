@@ -81,3 +81,11 @@ export abstract class Token {
    */
   abstract toString(): string
 }
+
+@json
+export class SerializableToken {
+  constructor(
+    public address: string,
+    public chainId: i32
+  ) {}
+}

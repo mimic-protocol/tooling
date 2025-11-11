@@ -37,7 +37,7 @@ export default class FunctionHandler {
     tupleDefinitions: TupleDefinitionsMap,
     abiTypeConverter: AbiTypeConverter
   ): string {
-    if (this.isWriteFunction(fn)) return 'CallBuilder'
+    if (this.isWriteFunction(fn)) return 'EvmCallBuilder'
 
     if (!fn.outputs || fn.outputs.length === 0) return 'void'
 
@@ -84,15 +84,24 @@ export default class FunctionHandler {
     const methodName = fn.escapedName || fn.name
     const capitalizedName = this.getCapitalizedName(fn)
 
-    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
+    const isPayable = fn.stateMutability === 'payable'
+    const fullMethodParams = methodParams.concat(
+      isPayable ? `${methodParams.length > 0 ? ', ' : ''}value: ${LibTypes.BigInt}` : ''
+    )
+
+    lines.push(`  ${methodName}(${fullMethodParams}): ${returnType} {`)
 
     lines.push(
       `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
     importManager.addType(LibTypes.Bytes)
-    importManager.addType('CallBuilder')
-    lines.push(`    return CallBuilder.forChain(this._chainId).addCall(this._address, encodedData)`)
+    importManager.addType('EvmCallBuilder')
+    if (isPayable) importManager.addType(LibTypes.BigInt)
+
+    lines.push(
+      `    return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? ', value' : ''})`
+    )
 
     lines.push(`  }`)
     lines.push('')

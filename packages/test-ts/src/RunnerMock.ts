@@ -52,6 +52,11 @@ export default class RunnerMock {
 
       let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(this.mockFolder, 'mock.json'), MockConfigValidator)
       inputs = inputs || {}
+      for (const [key, value] of Object.entries(inputs)) {
+        if (typeof value === 'object' && value !== null) {
+          inputs[key] = JSON.stringify(value)
+        }
+      }
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
       const wasmBuffer = fs.readFileSync(taskPath)
@@ -154,7 +159,8 @@ export default class RunnerMock {
 
   private getDefaultEnvImports(): WebAssembly.ModuleImports {
     return {
-      _call: this.createLogFn('_call'),
+      _evmCall: this.createLogFn('_evmCall'),
+      _svmCall: this.createLogFn('_svmCall'),
       _swap: this.createLogFn('_swap'),
       _transfer: this.createLogFn('_transfer'),
       _tokenPriceQuery: this.createMockFunction('_tokenPriceQuery', { default: '' }),

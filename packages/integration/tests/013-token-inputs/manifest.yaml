@@ -1,0 +1,6 @@
+version: 1.0.0
+name: Token Inputs Test
+description: Test task demonstrating Token and TokenAmount inputs
+inputs:
+  - amount: TokenAmount
+  - recipient: address

@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "0.0.1-rc.20",
+  "version": "0.0.1-rc.27",
   "license": "GPL-3.0",
   "private": false,
   "type": "commonjs",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "rm -rf dist && tsc && cp -r src/templates dist/templates",
+    "build": "rm -rf dist && tsc",
     "start": "yarn build && node ./bin/run.js",
     "test": "yarn build && ts-mocha ./tests --recursive --extension .spec.ts --exit --timeout 5000",
     "lint": "eslint ."
@@ -23,15 +23,18 @@
     "@oclif/core": "^4.2.2",
     "@oclif/plugin-not-found": "^3.2.38",
     "axios": "^1.7.9",
+    "cross-spawn": "^7.0.6",
     "ethers": "^6.13.5",
     "form-data": "^4.0.1",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
+    "simple-git": "^3.30.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@oclif/test": "^4.1.7",
     "@types/chai": "^4.3.5",
+    "@types/cross-spawn": "^6.0.6",
     "@types/express": "4.17.17",
     "@types/js-yaml": "^4.0.9",
     "@types/lodash": "^4.17.15",
