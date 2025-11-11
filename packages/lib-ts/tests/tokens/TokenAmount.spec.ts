@@ -584,7 +584,7 @@ describe('TokenAmount', () => {
       expect(result.toString()).toBe('0 ' + token.symbol)
     })
 
-    it('throws for negative percent string', () => {
+    it('throws for negative percentage string', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
