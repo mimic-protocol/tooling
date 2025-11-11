@@ -48,7 +48,7 @@ export class TokenAmount {
    * Formula: minAmountOut = amountOut * (10000 - bps) / 10000
    *
    * @param amountOut - The output token amount
-   * @param slippage - Slippage in basis points (0-10000). Example: 50 bps = 0.5%
+   * @param slippage - Slippage in basis points (0-10000). Example: 50 = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
   static fromSlippageBps(amountOut: TokenAmount, slippage: i32): TokenAmount {
