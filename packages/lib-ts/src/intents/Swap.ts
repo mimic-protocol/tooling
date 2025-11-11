@@ -157,7 +157,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param recipient - The address to receive the tokens
    * @returns This SwapBuilder instance for method chaining
    */
-  addTokenOutFromSlippagePercent(tokenAmount: TokenAmount, slippage: string, recipient: Address): SwapBuilder {
+  addTokenOutFromSlippagePercentage(tokenAmount: TokenAmount, slippage: string, recipient: Address): SwapBuilder {
     return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippagePercentage(tokenAmount, slippage), recipient)
   }
 
