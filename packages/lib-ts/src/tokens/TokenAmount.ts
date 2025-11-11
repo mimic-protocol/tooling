@@ -271,7 +271,7 @@ export class TokenAmount {
     if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
   }
 
-  private static fromSlippageWithScale(amountIn: TokenAmount, value: BigInt): TokenAmount {
+  private static fromSlippage(amount: TokenAmount, value: BigInt): TokenAmount {
     const factor = BPS_SCALE.minus(value)
     return amountIn.times(factor).div(BPS_SCALE)
   }
