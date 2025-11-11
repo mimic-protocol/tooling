@@ -68,7 +68,7 @@ export class TokenAmount {
    */
   static fromSlippagePercentage(amountOut: TokenAmount, slippage: string): TokenAmount {
     const bps = BigInt.fromStringDecimal(slippage, 2)
-    if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percent must be between 0 and 100')
+    if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percentage must be between 0 and 100')
     return this.fromSlippageWithScale(amountOut, bps)
   }
 
