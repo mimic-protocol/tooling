@@ -523,25 +523,25 @@ describe('TokenAmount', () => {
     })
   })
 
-  describe('toMinAmountBps', () => {
+  describe('applySlippageBps', () => {
     it('applies 0.5% (50 bps) correctly', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 1000)
-      const result = amountOut.toMinAmountBps(50)
+      const result = amountOut.applySlippageBps(50)
       expect(result.toString()).toBe('995 ' + token.symbol)
     })
 
     it('applies 0% (0 bps) as identity', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 1234)
-      const result = amountOut.toMinAmountBps(0)
+      const result = amountOut.applySlippageBps(0)
       expect(result.toString()).toBe('1234 ' + token.symbol)
     })
 
     it('applies 100% (10000 bps) to zero', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 999)
-      const result = amountOut.toMinAmountBps(10000)
+      const result = amountOut.applySlippageBps(10000)
       expect(result.toString()).toBe('0 ' + token.symbol)
     })
 
@@ -549,7 +549,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountBps(-1)
+        amountOut.applySlippageBps(-1)
       }).toThrow('Slippage bps must be between 0 and 10000')
     })
 
@@ -557,30 +557,30 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountBps(10001)
+        amountOut.applySlippageBps(10001)
       }).toThrow('Slippage bps must be between 0 and 10000')
     })
   })
 
-  describe('toMinAmountPercentage', () => {
+  describe('applySlippagePercentage', () => {
     it('applies 0.5% correctly from string', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 1000)
-      const result = amountOut.toMinAmountPercentage('0.5')
+      const result = amountOut.applySlippagePercentage('0.5')
       expect(result.toString()).toBe('995 ' + token.symbol)
     })
 
     it('applies 0% correctly from string', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 777)
-      const result = amountOut.toMinAmountPercentage('0')
+      const result = amountOut.applySlippagePercentage('0')
       expect(result.toString()).toBe('777 ' + token.symbol)
     })
 
     it('applies 100% correctly from string', () => {
       const token = randomERC20Token()
       const amountOut = TokenAmount.fromI32(token, 555)
-      const result = amountOut.toMinAmountPercentage('100')
+      const result = amountOut.applySlippagePercentage('100')
       expect(result.toString()).toBe('0 ' + token.symbol)
     })
 
@@ -588,7 +588,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountPercentage('-1')
+        amountOut.applySlippagePercentage('-1')
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
@@ -596,7 +596,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountPercentage('100.01')
+        amountOut.applySlippagePercentage('100.01')
       }).toThrow('Slippage percent must be between 0 and 100')
     })
 
@@ -604,7 +604,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountPercentage('0.123456')
+        amountOut.applySlippagePercentage('0.123456')
       }).toThrow('Too many decimal places. Max allowed: 2, found: 6')
     })
 
@@ -612,7 +612,7 @@ describe('TokenAmount', () => {
       expect(() => {
         const token = randomERC20Token()
         const amountOut = TokenAmount.fromI32(token, 100)
-        amountOut.toMinAmountPercentage('1.2.3')
+        amountOut.applySlippagePercentage('1.2.3')
       }).toThrow()
     })
   })

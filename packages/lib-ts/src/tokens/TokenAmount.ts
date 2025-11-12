@@ -241,7 +241,7 @@ export class TokenAmount {
    * @param slippage - Slippage in basis points (0-10000). Example: 50 = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
-  toMinAmountBps(slippage: i32): TokenAmount {
+  applySlippageBps(slippage: i32): TokenAmount {
     const slippageBI = BigInt.fromI32(slippage)
     if (slippageBI.isNegative() || slippageBI.gt(BPS_SCALE))
       throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
@@ -255,7 +255,7 @@ export class TokenAmount {
    * @param slippage - Slippage percentage as a decimal string. Example: '0.5' = 0.5%
    * @returns A new TokenAmount representing the minimum output amount
    */
-  toMinAmountPercentage(slippage: string): TokenAmount {
+  applySlippagePercentage(slippage: string): TokenAmount {
     const bps = BigInt.fromStringDecimal(slippage, 2)
     if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percentage must be between 0 and 100')
     return this.applySlippage(bps)
