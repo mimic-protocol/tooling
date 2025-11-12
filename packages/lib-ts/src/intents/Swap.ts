@@ -158,7 +158,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenOutFromSlippagePercentage(tokenAmount: TokenAmount, slippage: string, recipient: Address): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippagePercentage(tokenAmount, slippage), recipient)
+    return this.addTokenOutFromTokenAmount(tokenAmount.toMinAmountPercentage(slippage), recipient)
   }
 
   /**
@@ -169,7 +169,7 @@ export class SwapBuilder extends IntentBuilder {
    * @returns This SwapBuilder instance for method chaining
    */
   addTokenOutFromSlippageBps(tokenAmount: TokenAmount, slippage: i32, recipient: Address): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(TokenAmount.fromSlippageBps(tokenAmount, slippage), recipient)
+    return this.addTokenOutFromTokenAmount(tokenAmount.toMinAmountBps(slippage), recipient)
   }
 
   /**
