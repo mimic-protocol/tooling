@@ -151,28 +151,6 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
-   * Adds an output token from a slippage percentage string.
-   * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippage - The slippage percentage as a decimal string. Example: '0.5' = 0.5%
-   * @param recipient - The address to receive the tokens
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addTokenOutFromSlippagePercentage(tokenAmount: TokenAmount, slippage: string, recipient: Address): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(tokenAmount.toMinAmountPercentage(slippage), recipient)
-  }
-
-  /**
-   * Adds an output token from a slippage basis points.
-   * @param tokenAmount - The token amount to receive (must be on destination chain)
-   * @param slippage - The slippage basis points (0-10000). Example: 50 = 0.5%
-   * @param recipient - The address to receive the tokens
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addTokenOutFromSlippageBps(tokenAmount: TokenAmount, slippage: i32, recipient: Address): SwapBuilder {
-    return this.addTokenOutFromTokenAmount(tokenAmount.toMinAmountBps(slippage), recipient)
-  }
-
-  /**
    * Sets the settler address for this intent.
    * @param settler - The settler address as an Address instance
    * @returns This SwapBuilder instance for method chaining
