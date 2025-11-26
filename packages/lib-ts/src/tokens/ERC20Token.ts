@@ -24,6 +24,7 @@ export class ERC20Token extends BlockchainToken {
     switch (chainId) {
       case ChainId.ETHEREUM:
       case ChainId.BASE:
+      case ChainId.BASE_SEPOLIA:
       case ChainId.ARBITRUM:
       case ChainId.OPTIMISM:
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'ETH')
