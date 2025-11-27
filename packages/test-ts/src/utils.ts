@@ -20,6 +20,8 @@ import {
   ValidationErrorContext,
 } from './types'
 
+const SIGNER = new OracleSigner(EthersSigner.fromPrivateKey(Wallet.createRandom().privateKey))
+
 export function toIntents(intentsJson: string) {
   const raw = JSON.parse(intentsJson)
   return raw.map((intent: Partial<Intent>) => {
@@ -118,8 +120,7 @@ function addOracleResponse<T extends OracleQueryName>(
   params: OracleQueryParams<T>,
   value: OracleQueryResult<T>
 ) {
-  const signer = new OracleSigner(EthersSigner.fromPrivateKey(Wallet.createRandom().privateKey))
-  const hash = signer.getQueryHash(params, queryName)
+  const hash = SIGNER.getQueryHash(params, queryName)
   const response = {
     result: { value },
     query: { params, name: queryName, hash },

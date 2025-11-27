@@ -18,5 +18,5 @@ export const relevantTokensQueryProcessor: QueryProcessor<
     ...req,
     usdMinAmount: req.usdMinAmount.toString(),
   }),
-  transformResponse: (res) => res[0] || '',
+  transformResponse: (res) => res[0],
 }
