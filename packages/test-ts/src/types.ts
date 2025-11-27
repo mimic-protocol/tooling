@@ -1,4 +1,4 @@
-import { AnyOracleResponse } from '@mimicprotocol/sdk'
+import { AnyOracleResponse, OracleQueryName, OracleQueryParams, OracleQueryResult } from '@mimicprotocol/sdk'
 import { z } from 'zod'
 
 import {
@@ -35,6 +35,20 @@ export type Context = z.infer<typeof ContextValidator>
 export type QueryMock<T, R> = {
   request: T
   response: R
+}
+
+export type QueryProcessor<
+  TRequest,
+  TResponse,
+  TParams extends OracleQueryParams<OracleQueryName>,
+  TValue extends OracleQueryResult<OracleQueryName>,
+> = {
+  queryName: OracleQueryName
+  queryTypeLabel: string
+  requestValidator: z.ZodType<TRequest>
+  responseValidator: z.ZodType<TResponse>
+  transformParams: (request: TRequest, contextTimestamp: number) => TParams
+  transformResponse: (response: TResponse) => TValue
 }
 
 export type GetPriceRequest = z.infer<typeof GetPriceRequestValidator>
@@ -116,4 +130,12 @@ export type RunTaskResult = {
   oracleResponses: OracleResponse[]
   intents: Intent[]
   logs: string[]
+}
+
+export type ValidationErrorContext = {
+  entryIndex?: number
+  queryType?: string
+  validationTarget?: 'request' | 'response'
+  request?: Record<string, unknown>
+  [key: string]: unknown
 }
