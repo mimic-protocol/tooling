@@ -26,6 +26,7 @@ export async function runTask(
 ): Promise<RunTaskResult> {
   const taskPath = path.join(taskDir, 'task.wasm')
   const inputs = optional.inputs || {}
+  const showLogs = optional.showLogs ?? true
 
   const contextResult = ContextValidator.safeParse(context)
   if (!contextResult.success) {
@@ -42,7 +43,7 @@ export async function runTask(
   const result = await runExecution(taskPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
   const logs: string[] = JSON.parse(result.logsJson)
 
-  if (!result.success && logs.length > 0) {
+  if (showLogs && !result.success && logs.length > 0) {
     console.log('The execution produced the following logs, which may indicate a problem:\n')
     for (const log of logs) {
       console.log(`- ${log}`)

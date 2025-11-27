@@ -88,6 +88,7 @@ export type GenerateMockParams = {
   relevantTokens: GetRelevantTokensMock[]
   calls: ContractCallMock[]
   subgraphQueries: SubgraphQueryMock[]
+  showLogs: boolean
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
