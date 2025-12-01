@@ -592,6 +592,17 @@ describe('BigInt', () => {
     })
   })
 
+  describe('maxUint256', () => {
+    it('returns a 32-byte BigInt where all bytes are one', () => {
+      const maxUint256BigInt = BigInt.maxUint256()
+      expect(maxUint256BigInt.length).toBe(33) // 0x + 32 bytes
+      for (let i = 0; i < maxUint256BigInt.length - 1; i++) {
+        expect(maxUint256BigInt[i]).toBe(255)
+      }
+      expect(maxUint256BigInt[32]).toBe(0)
+    })
+  })
+
   describe('toStringDecimal', () => {
     describe('when converting zero', () => {
       it('returns zero', () => {

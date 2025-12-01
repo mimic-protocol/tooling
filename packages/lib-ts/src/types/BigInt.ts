@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { areAllZeros, bytesToHexString, isHex, normalizeScientificNotation } from '../helpers'
+import { areAllZeros, bytesToHexString, isHex, MAX_UINT256_HEX, normalizeScientificNotation } from '../helpers'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'
@@ -20,6 +20,13 @@ export class BigInt extends Uint8Array {
    */
   static zero(): BigInt {
     return BigInt.fromI32(0)
+  }
+
+  /**
+   * Returns a BigInt initialized to the maximum value for a 256-bit unsigned integer.
+   */
+  static maxUint256(): BigInt {
+    return BigInt.fromHexString(MAX_UINT256_HEX)
   }
 
   /**
