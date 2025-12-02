@@ -97,6 +97,19 @@ describe('ERC20Token', () => {
       })
     })
 
+    describe('when the chain id is base sepolia', () => {
+      const chainId = ChainId.BASE_SEPOLIA
+
+      it('returns the expected token', () => {
+        const token = ERC20Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('ETH')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
     describe('when the chain id is arbitrum', () => {
       const chainId = ChainId.ARBITRUM
 

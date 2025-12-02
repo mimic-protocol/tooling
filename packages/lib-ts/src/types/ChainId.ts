@@ -7,6 +7,7 @@ export enum ChainId {
   OPTIMISM = 10,
   ARBITRUM = 42161,
   BASE = 8453,
+  BASE_SEPOLIA = 84532,
   GNOSIS = 100,
   SOLANA_MAINNET = 507424,
   SONIC = 146,

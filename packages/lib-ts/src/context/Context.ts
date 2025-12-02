@@ -50,10 +50,12 @@ export class Trigger {
   }
 
   getCronData(): BigInt {
+    if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, trigger type is not cron")
     return Trigger.deserializeCronTriggerData(this.data)
   }
 
   getEventData(): EventTriggerData {
+    if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, trigger type is not event")
     return Trigger.deserializeEventTriggerData(this.data)
   }
 
