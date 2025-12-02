@@ -22,7 +22,7 @@ export const contractCallQueryProcessor: QueryProcessor<
       to: req.to,
       chainId: req.chainId,
       data,
-      timestamp: req.timestamp || timestamp,
+      timestamp: req.timestamp ?? timestamp,
     }
   },
   transformResponse: (res) => AbiCoder.defaultAbiCoder().encode([res.abiType], [res.value]),

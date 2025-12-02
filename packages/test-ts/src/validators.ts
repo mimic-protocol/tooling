@@ -3,11 +3,20 @@ import {
   BigIntegerValidator,
   ChainIdValidator,
   HexValidator,
-  NaturalNumberValidator,
+  OracleEvmCallRequestValidator,
+  OracleRelevantTokenResultValidator,
+  OracleRelevantTokensRequestValidator,
+  OracleRelevantTokensResultValidator,
+  OracleSubgraphQueryRequestValidator,
+  OracleSubgraphQueryResultValidator,
+  OracleTokenPriceRequestValidator,
+  OracleTokenPriceResultValidator,
+  PastTimestamp,
   PositiveNumberValidator,
   SolidityTypeValidator,
   StringValidator,
   TimestampValidator,
+  TokenIdValidator,
   TriggerType,
 } from '@mimicprotocol/sdk'
 import { z } from 'zod'
@@ -41,18 +50,9 @@ export const ParameterizedResponseValidator = z
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
-export const BigInt18DecimalsValidator = StringValidator.regex(
-  /^\d+$/,
-  'Value must be a valid bigint in 18 decimal format'
-)
+export const TokenTypeValidator = TokenIdValidator
 
-export const TokenTypeValidator = z.object({
-  address: AddressValidator,
-  chainId: ChainIdValidator,
-})
-
-export const TokenAmountTypeValidator = z.object({
-  token: TokenTypeValidator,
+export const TokenAmountTypeValidator = OracleRelevantTokenResultValidator.omit({ balance: true }).extend({
   amount: BigIntegerValidator,
 })
 
@@ -67,60 +67,33 @@ export const MockSectionValidator = z.record(MockFunctionResponseValidator)
 
 export const MockConfigValidator = z.record(z.union([MockSectionValidator, InputsValidator]))
 
-export const GetPriceRequestValidator = z.object({
-  token: AddressValidator,
-  chainId: ChainIdValidator,
-  timestamp: TimestampValidator.optional(),
+export const GetPriceRequestValidator = OracleTokenPriceRequestValidator.omit({ timestamp: true }).extend({
+  timestamp: PastTimestamp.optional(),
 })
 
 export const GetPriceResponseValidator = z
-  .array(BigInt18DecimalsValidator)
-  .min(1, 'Response must contain at least one element (bigint in 18 decimal format)')
+  .array(OracleTokenPriceResultValidator.regex(/^\d+$/, 'Value must be a valid bigint in 18 decimal format'))
+  .min(1, 'Response must contain at least one element')
 
-export enum ListType {
-  AllowList = 0,
-  DenyList = 1,
-}
+export const RelevantTokensRequestValidator = OracleRelevantTokensRequestValidator
 
-export const RelevantTokensRequestValidator = z.object({
-  owner: AddressValidator,
-  chainIds: z.array(ChainIdValidator),
-  usdMinAmount: PositiveNumberValidator,
-  tokens: z.array(TokenTypeValidator),
-  tokenFilter: z.nativeEnum(ListType),
-})
+export const RelevantTokenBalanceValidator = OracleRelevantTokenResultValidator
 
-export const RelevantTokenBalanceValidator = z.object({
-  token: TokenTypeValidator,
-  balance: BigIntegerValidator,
-})
-
-export const RelevantTokensResponseValidator = z.object({
-  timestamp: TimestampValidator,
-  balances: z.array(RelevantTokenBalanceValidator),
-})
+export const RelevantTokensResponseValidator = OracleRelevantTokensResultValidator
 
 export const ContractCallTypedValueValidator = z.object({
   abiType: SolidityTypeValidator,
   value: StringValidator,
 })
 
-export const ContractCallRequestValidator = z.object({
-  to: AddressValidator,
-  chainId: ChainIdValidator,
-  timestamp: TimestampValidator.optional(),
+export const ContractCallRequestValidator = OracleEvmCallRequestValidator.omit({ data: true, timestamp: true }).extend({
+  timestamp: PastTimestamp.optional(),
   fnSelector: HexValidator,
   params: z.array(ContractCallTypedValueValidator).optional(),
 })
 
-export const SubgraphQueryRequestValidator = z.object({
-  chainId: ChainIdValidator,
-  subgraphId: StringValidator,
-  query: StringValidator,
-  timestamp: TimestampValidator,
+export const SubgraphQueryRequestValidator = OracleSubgraphQueryRequestValidator.omit({ timestamp: true }).extend({
+  timestamp: PastTimestamp.optional(),
 })
 
-export const SubgraphQueryResponseValidator = z.object({
-  blockNumber: NaturalNumberValidator,
-  data: StringValidator,
-})
+export const SubgraphQueryResponseValidator = OracleSubgraphQueryResultValidator

@@ -60,7 +60,7 @@ export default class RunnerMock {
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
       const wasmBuffer = fs.readFileSync(taskPath)
-      const wasmModule = new WebAssembly.Module(wasmBuffer)
+      const wasmModule = new WebAssembly.Module(wasmBuffer as never)
       const instance = new WebAssembly.Instance(wasmModule, imports)
 
       this.patchStringInputs(inputs as WebAssembly.ModuleImports, imports, instance)

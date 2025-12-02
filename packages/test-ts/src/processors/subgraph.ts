@@ -13,6 +13,9 @@ export const subgraphQueryProcessor: QueryProcessor<
   queryTypeLabel: 'subgraph query entry',
   requestValidator: SubgraphQueryRequestValidator,
   responseValidator: SubgraphQueryResponseValidator,
-  transformParams: (req) => req,
+  transformParams: (req, timestamp) => ({
+    ...req,
+    timestamp: req.timestamp ?? timestamp,
+  }),
   transformResponse: (res) => res,
 }

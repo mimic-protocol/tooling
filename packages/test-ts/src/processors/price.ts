@@ -14,11 +14,8 @@ export const priceQueryProcessor: QueryProcessor<
   requestValidator: GetPriceRequestValidator,
   responseValidator: GetPriceResponseValidator,
   transformParams: (req, timestamp) => ({
-    token: {
-      address: req.token,
-      chainId: req.chainId,
-    },
-    timestamp: req.timestamp || timestamp,
+    token: req.token,
+    timestamp: req.timestamp ?? timestamp,
   }),
   transformResponse: (res) => res[0],
 }
