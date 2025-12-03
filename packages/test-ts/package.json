@@ -15,9 +15,8 @@
   ],
   "dependencies": {
     "@mimicprotocol/runner-node": "^0.0.1-rc.7",
-    "@mimicprotocol/sdk": "^0.0.1-rc.16",
-    "ethers": "^6.15.0",
-    "zod": "^3.23.8"
+    "@mimicprotocol/sdk": "^0.0.1-rc.24",
+    "ethers": "^6.15.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.5",

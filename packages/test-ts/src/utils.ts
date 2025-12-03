@@ -5,9 +5,9 @@ import {
   OracleQueryParams,
   OracleQueryResult,
   OracleSigner,
+  z,
 } from '@mimicprotocol/sdk'
 import { Wallet } from 'ethers'
-import { ZodError } from 'zod'
 
 import {
   Call,
@@ -35,7 +35,7 @@ export function toIntents(intentsJson: string) {
   })
 }
 
-export function formatValidationError(error: ZodError, context?: ValidationErrorContext): Error {
+export function formatValidationError(error: z.ZodError, context?: ValidationErrorContext): Error {
   const parts: string[] = []
 
   const validationTarget = context?.validationTarget ? ` (${context.validationTarget})` : ''

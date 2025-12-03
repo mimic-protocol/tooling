@@ -1,6 +1,6 @@
+import { z } from '@mimicprotocol/sdk'
 import * as fs from 'fs'
 import { join } from 'path'
-import type { ZodType } from 'zod'
 
 import { MockConfig, MockResponseValue, ParameterizedResponse } from './types'
 import { MockConfigValidator, ParameterizedResponseValidator } from './validators'
@@ -71,7 +71,7 @@ export default class RunnerMock {
     }
   }
 
-  private readJsonFile<T>(filePath: string, validator?: ZodType<T>): T {
+  private readJsonFile<T>(filePath: string, validator?: z.ZodType<T>): T {
     try {
       const rawData = fs.readFileSync(filePath, 'utf8')
       const parsedData = JSON.parse(rawData)

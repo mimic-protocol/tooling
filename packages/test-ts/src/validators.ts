@@ -1,6 +1,5 @@
 import {
   AddressValidator,
-  BigIntegerValidator,
   ChainIdValidator,
   HexValidator,
   OracleEvmCallRequestValidator,
@@ -16,10 +15,11 @@ import {
   SolidityTypeValidator,
   StringValidator,
   TimestampValidator,
-  TokenIdValidator,
+  TokenAmountValidator,
+  TokenValidator,
   TriggerType,
+  z,
 } from '@mimicprotocol/sdk'
-import { z } from 'zod'
 
 export const ContextValidator = z
   .object({
@@ -50,22 +50,20 @@ export const ParameterizedResponseValidator = z
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
-export const TokenTypeValidator = TokenIdValidator
-
-export const TokenAmountTypeValidator = OracleRelevantTokenResultValidator.omit({ balance: true }).extend({
-  amount: BigIntegerValidator,
-})
-
 export const InputsValidator = z.record(
   z.string(),
-  z.union([z.number(), z.string(), TokenTypeValidator, TokenAmountTypeValidator])
+  z.union([z.number(), z.string(), TokenValidator, TokenAmountValidator])
 )
+
+// ========= Mocks =========
 
 export const MockFunctionResponseValidator = z.union([z.string(), ParameterizedResponseValidator, z.literal('log')])
 
 export const MockSectionValidator = z.record(MockFunctionResponseValidator)
 
 export const MockConfigValidator = z.record(z.union([MockSectionValidator, InputsValidator]))
+
+// ========= Token Price =========
 
 export const GetPriceRequestValidator = OracleTokenPriceRequestValidator.omit({ timestamp: true }).extend({
   timestamp: PastTimestamp.optional(),
@@ -75,11 +73,15 @@ export const GetPriceResponseValidator = z
   .array(OracleTokenPriceResultValidator.regex(/^\d+$/, 'Value must be a valid bigint in 18 decimal format'))
   .min(1, 'Response must contain at least one element')
 
+// ========= Relevant Tokens =========
+
 export const RelevantTokensRequestValidator = OracleRelevantTokensRequestValidator
 
 export const RelevantTokenBalanceValidator = OracleRelevantTokenResultValidator
 
 export const RelevantTokensResponseValidator = OracleRelevantTokensResultValidator
+
+// ========= Evm Call =========
 
 export const ContractCallTypedValueValidator = z.object({
   abiType: SolidityTypeValidator,
@@ -91,6 +93,8 @@ export const ContractCallRequestValidator = OracleEvmCallRequestValidator.omit({
   fnSelector: HexValidator,
   params: z.array(ContractCallTypedValueValidator).optional(),
 })
+
+// ========= Subgraph Query =========
 
 export const SubgraphQueryRequestValidator = OracleSubgraphQueryRequestValidator.omit({ timestamp: true }).extend({
   timestamp: PastTimestamp.optional(),

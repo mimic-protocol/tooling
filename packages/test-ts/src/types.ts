@@ -1,5 +1,12 @@
-import { AnyOracleResponse, OracleQueryName, OracleQueryParams, OracleQueryResult } from '@mimicprotocol/sdk'
-import { z } from 'zod'
+import {
+  AnyOracleResponse,
+  OracleQueryName,
+  OracleQueryParams,
+  OracleQueryResult,
+  TokenAmountValidator,
+  TokenValidator,
+  z,
+} from '@mimicprotocol/sdk'
 
 import {
   ContextValidator,
@@ -16,8 +23,6 @@ import {
   RelevantTokensResponseValidator,
   SubgraphQueryRequestValidator,
   SubgraphQueryResponseValidator,
-  TokenAmountTypeValidator,
-  TokenTypeValidator,
 } from './validators'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -56,9 +61,9 @@ export type GetPriceResponse = z.infer<typeof GetPriceResponseValidator>
 
 export type GetPriceMock = QueryMock<GetPriceRequest, GetPriceResponse>
 
-export type Token = z.infer<typeof TokenTypeValidator>
+export type Token = z.infer<typeof TokenValidator>
 
-export type TokenAmount = z.infer<typeof TokenAmountTypeValidator>
+export type TokenAmount = z.infer<typeof TokenAmountValidator>
 
 export type GetRelevantTokensRequest = z.infer<typeof RelevantTokensRequestValidator>
 

@@ -1,5 +1,4 @@
-import { OracleQueryParams, OracleQueryResult } from '@mimicprotocol/sdk'
-import { z } from 'zod'
+import { OracleQueryParams, OracleQueryResult, z } from '@mimicprotocol/sdk'
 
 import { GetRelevantTokensRequest, GetRelevantTokensResponse, QueryProcessor } from '../types'
 import { RelevantTokensRequestValidator, RelevantTokensResponseValidator } from '../validators'
