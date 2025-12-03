@@ -1,19 +1,19 @@
 import { OracleQueryParams, OracleQueryResult } from '@mimicprotocol/sdk'
 import { AbiCoder, concat } from 'ethers'
 
-import { ContractCallRequest, ContractCallResponse, QueryProcessor } from '../types'
-import { ContractCallRequestValidator, ContractCallTypedValueValidator } from '../validators'
+import { EvmCallRequest, EvmCallResponse, QueryProcessor } from '../types'
+import { EvmCallRequestValidator, EvmCallTypedValueValidator } from '../validators'
 
 export const contractCallQueryProcessor: QueryProcessor<
-  ContractCallRequest,
-  ContractCallResponse,
+  EvmCallRequest,
+  EvmCallResponse,
   OracleQueryParams<'EvmCallQuery'>,
   OracleQueryResult<'EvmCallQuery'>
 > = {
   queryName: 'EvmCallQuery',
   queryTypeLabel: 'contract call entry',
-  requestValidator: ContractCallRequestValidator,
-  responseValidator: ContractCallTypedValueValidator,
+  requestValidator: EvmCallRequestValidator,
+  responseValidator: EvmCallTypedValueValidator,
   transformParams: (req, timestamp) => {
     const data = req.params
       ? concat([req.fnSelector, ...req.params.map((p) => AbiCoder.defaultAbiCoder().encode([p.abiType], [p.value]))])

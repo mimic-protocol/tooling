@@ -65,11 +65,11 @@ export const MockConfigValidator = z.record(z.union([MockSectionValidator, Input
 
 // ========= Token Price =========
 
-export const GetPriceRequestValidator = OracleTokenPriceRequestValidator.omit({ timestamp: true }).extend({
+export const TokenPriceRequestValidator = OracleTokenPriceRequestValidator.omit({ timestamp: true }).extend({
   timestamp: PastTimestamp.optional(),
 })
 
-export const GetPriceResponseValidator = z
+export const TokenPriceResponseValidator = z
   .array(OracleTokenPriceResultValidator.regex(/^\d+$/, 'Value must be a valid bigint in 18 decimal format'))
   .min(1, 'Response must contain at least one element')
 
@@ -83,15 +83,15 @@ export const RelevantTokensResponseValidator = OracleRelevantTokensResultValidat
 
 // ========= Evm Call =========
 
-export const ContractCallTypedValueValidator = z.object({
+export const EvmCallTypedValueValidator = z.object({
   abiType: SolidityTypeValidator,
   value: StringValidator,
 })
 
-export const ContractCallRequestValidator = OracleEvmCallRequestValidator.omit({ data: true, timestamp: true }).extend({
+export const EvmCallRequestValidator = OracleEvmCallRequestValidator.omit({ data: true, timestamp: true }).extend({
   timestamp: PastTimestamp.optional(),
   fnSelector: HexValidator,
-  params: z.array(ContractCallTypedValueValidator).optional(),
+  params: z.array(EvmCallTypedValueValidator).optional(),
 })
 
 // ========= Subgraph Query =========

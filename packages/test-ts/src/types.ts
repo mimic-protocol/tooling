@@ -10,10 +10,8 @@ import {
 
 import {
   ContextValidator,
-  ContractCallRequestValidator,
-  ContractCallTypedValueValidator,
-  GetPriceRequestValidator,
-  GetPriceResponseValidator,
+  EvmCallRequestValidator,
+  EvmCallTypedValueValidator,
   InputsValidator,
   MockConfigValidator,
   MockFunctionResponseValidator,
@@ -23,6 +21,8 @@ import {
   RelevantTokensResponseValidator,
   SubgraphQueryRequestValidator,
   SubgraphQueryResponseValidator,
+  TokenPriceRequestValidator,
+  TokenPriceResponseValidator,
 } from './validators'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -56,30 +56,30 @@ export type QueryProcessor<
   transformResponse: (response: TResponse) => TValue
 }
 
-export type GetPriceRequest = z.infer<typeof GetPriceRequestValidator>
-export type GetPriceResponse = z.infer<typeof GetPriceResponseValidator>
+export type TokenPriceRequest = z.infer<typeof TokenPriceRequestValidator>
+export type TokenPriceResponse = z.infer<typeof TokenPriceResponseValidator>
 
-export type GetPriceMock = QueryMock<GetPriceRequest, GetPriceResponse>
+export type TokenPriceMock = QueryMock<TokenPriceRequest, TokenPriceResponse>
 
 export type Token = z.infer<typeof TokenValidator>
 
 export type TokenAmount = z.infer<typeof TokenAmountValidator>
 
-export type GetRelevantTokensRequest = z.infer<typeof RelevantTokensRequestValidator>
+export type RelevantTokensRequest = z.infer<typeof RelevantTokensRequestValidator>
 
 export type RelevantTokenBalance = z.infer<typeof RelevantTokenBalanceValidator>
 
-export type GetRelevantTokensResponse = z.infer<typeof RelevantTokensResponseValidator>
+export type RelevantTokensResponse = z.infer<typeof RelevantTokensResponseValidator>
 
-export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
+export type RelevantTokensMock = QueryMock<RelevantTokensRequest, RelevantTokensResponse[]>
 
-export type ContractCallTypedValue = z.infer<typeof ContractCallTypedValueValidator>
+export type EvmCallTypedValue = z.infer<typeof EvmCallTypedValueValidator>
 
-export type ContractCallRequest = z.infer<typeof ContractCallRequestValidator>
+export type EvmCallRequest = z.infer<typeof EvmCallRequestValidator>
 
-export type ContractCallResponse = ContractCallTypedValue
+export type EvmCallResponse = EvmCallTypedValue
 
-export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
+export type EvmCallMock = QueryMock<EvmCallRequest, EvmCallResponse>
 
 export type SubgraphQueryRequest = z.infer<typeof SubgraphQueryRequestValidator>
 export type SubgraphQueryResponse = z.infer<typeof SubgraphQueryResponseValidator>
@@ -89,11 +89,11 @@ export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryRes
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
-  prices: GetPriceMock[]
-  relevantTokens: GetRelevantTokensMock[]
-  calls: ContractCallMock[]
+  prices: TokenPriceMock[]
+  relevantTokens: RelevantTokensMock[]
+  calls: EvmCallMock[]
   subgraphQueries: SubgraphQueryMock[]
-  showLogs: boolean // parameter to control logging of failed task executions
+  showLogs: boolean
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>

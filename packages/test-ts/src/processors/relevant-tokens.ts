@@ -1,11 +1,11 @@
 import { OracleQueryParams, OracleQueryResult, z } from '@mimicprotocol/sdk'
 
-import { GetRelevantTokensRequest, GetRelevantTokensResponse, QueryProcessor } from '../types'
+import { QueryProcessor, RelevantTokensRequest, RelevantTokensResponse } from '../types'
 import { RelevantTokensRequestValidator, RelevantTokensResponseValidator } from '../validators'
 
 export const relevantTokensQueryProcessor: QueryProcessor<
-  GetRelevantTokensRequest,
-  GetRelevantTokensResponse[],
+  RelevantTokensRequest,
+  RelevantTokensResponse[],
   OracleQueryParams<'RelevantTokensQuery'>,
   OracleQueryResult<'RelevantTokensQuery'>
 > = {
@@ -13,9 +13,6 @@ export const relevantTokensQueryProcessor: QueryProcessor<
   queryTypeLabel: 'relevant tokens entry',
   requestValidator: RelevantTokensRequestValidator,
   responseValidator: z.array(RelevantTokensResponseValidator),
-  transformParams: (req) => ({
-    ...req,
-    usdMinAmount: req.usdMinAmount.toString(),
-  }),
+  transformParams: (req) => req,
   transformResponse: (res) => res[0],
 }
