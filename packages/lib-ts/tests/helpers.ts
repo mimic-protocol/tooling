@@ -77,14 +77,14 @@ export function randomSPLToken(chainId: ChainId = randomChainId(), decimals: u8 
   return SPLToken.fromAddress(randomSvmAddress(), chainId, decimals, 'TEST')
 }
 
-export function randomERC20TokenWithPrice(decimals: u8, priceUsd: number): ERC20Token {
+export function randomERC20TokenWithPrice(decimals: u8, priceUsd: i32): ERC20Token {
   const chainId = randomChainId()
   const token = randomERC20Token(chainId, decimals)
   setTokenPrice(token, priceUsd)
   return token
 }
 
-export function randomSPLTokenWithPrice(decimals: u8, priceUsd: number): SPLToken {
+export function randomSPLTokenWithPrice(decimals: u8, priceUsd: i32): SPLToken {
   const chainId = randomChainId()
   const token = randomSPLToken(chainId, decimals)
   setTokenPrice(token, priceUsd)
@@ -93,9 +93,10 @@ export function randomSPLTokenWithPrice(decimals: u8, priceUsd: number): SPLToke
 
 declare function _setTokenPrice(address: string, chainId: ChainId, price: string): void
 
-export function setTokenPrice(token: Token, priceUsd: number): void {
+export function setTokenPrice(token: Token, priceUsd: i32): void {
   if (!(token instanceof BlockchainToken)) throw new Error('token must be Blockchaintoken')
-  const priceStr = (priceUsd * 10 ** STANDARD_DECIMALS).toString()
+  const priceInt = BigInt.fromI32(priceUsd)
+  const priceStr = priceInt.upscale(STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), (token as BlockchainToken).chainId, priceStr)
 }
 

@@ -1,30 +1,25 @@
 import { JSON } from 'json-as'
 
-import { replaceJsonBooleans, stringToBool } from '../helpers'
+import { replaceJsonBooleans } from '../helpers'
 
 @json
-@final
-export class QueryResponseSerializable<T> {
+class QueryResponseBase {
   constructor(
-    public success: string,
-    public data: T,
+    public success: string, // boolean as string due to json-as bug
     public error: string
   ) {}
+
+  static fromJson<T extends QueryResponseBase>(json: string): T {
+    return JSON.parse<T>(replaceJsonBooleans(json))
+  }
 }
 
-export class QueryResponse<T> {
-  constructor(
-    public success: bool,
-    public data: T,
-    public error: string
-  ) {}
+@json
+export class PriceQueryResponse extends QueryResponseBase {
+  public data: string[]
 
-  static fromJson<T>(json: string): QueryResponse<T> {
-    const fixedJson = replaceJsonBooleans(json)
-    return this.fromSerializable<T>(JSON.parse<QueryResponseSerializable<T>>(fixedJson))
-  }
-
-  static fromSerializable<T>(serializable: QueryResponseSerializable<T>): QueryResponse<T> {
-    return new QueryResponse<T>(stringToBool(serializable.success), serializable.data, serializable.error)
+  constructor(success: string, data: string[], error: string) {
+    super(success, error)
+    this.data = data
   }
 }

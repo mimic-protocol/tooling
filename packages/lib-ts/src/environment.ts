@@ -17,7 +17,7 @@ import {
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { QueryResponse } from './types/QueryResponse'
+import { PriceQueryResponse } from './types/QueryResponse'
 import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
@@ -94,11 +94,11 @@ export namespace environment {
     else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
     const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    const response = QueryResponse.fromJson<string[]>(responseStr)
+    const parsed = PriceQueryResponse.fromJson<PriceQueryResponse>(responseStr)
     
-    if (!response.success) return Result.err<USD[], string>(response.error.length > 0 ? response.error : 'Unknown error getting price')
+    if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
     
-    const prices = response.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+    const prices = parsed.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
     return Result.ok<USD[], string>(prices)
   }
 
