@@ -1,5 +1,4 @@
 import { BlockchainToken } from '../tokens'
-import { QueryResponse, QueryResponseSerializable } from '../types/QueryResponse'
 
 @json
 class TokenPriceQueryBase {
@@ -27,7 +26,3 @@ export class TokenPriceQuery extends TokenPriceQueryBase {
       : new TokenPriceQueryBase(address, chainId)
   }
 }
-
-@json
-export class GetPriceResponseSerializable extends QueryResponseSerializable<string[]> {}
-export class GetPriceResponse extends QueryResponse<string[]> {}
