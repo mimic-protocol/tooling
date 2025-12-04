@@ -18,6 +18,7 @@ import {
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
 import { QueryResponse } from './types/QueryResponse'
+import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -225,13 +226,10 @@ export namespace environment {
     timestamp: Date | null = null,
   ): GetAccountsInfoResponse {
     // There is a bug with json-as, so we have to do this with JSON booleans
-    const responseStr = _getAccountsInfo(
-      JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp))
-    )
-      .replaceAll("true",`"true"`)
-      .replaceAll("false",`"false"`)
+    const responseStr = _getAccountsInfo(JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp)))
+    const fixedResponseStr = replaceJsonBooleans(responseStr)
 
-    const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
+    const response = JSON.parse<SerializableGetAccountsInfoResponse>(fixedResponseStr)
     return GetAccountsInfoResponse.fromSerializable(response)
   }
 
