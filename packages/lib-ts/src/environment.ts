@@ -8,8 +8,6 @@ import {
   GetAccountsInfo,
   GetAccountsInfoResponse,
   GetPrice,
-  GetPriceResponse,
-  GetPriceResponseSerializable,
   GetRelevantTokens,
   GetRelevantTokensResponse,
   RelevantTokenBalance,
@@ -19,6 +17,7 @@ import {
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
+import { QueryResponse } from './types/QueryResponse'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -93,12 +92,8 @@ export namespace environment {
     if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
     else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
-    const responseStr = 
-      _getPrice(JSON.stringify(GetPrice.fromToken(changetype<BlockchainToken>(token), timestamp)))
-        .replaceAll("true","\"true\"")
-        .replaceAll("false","\"false\"")
-        
-    const response = GetPriceResponse.fromSerializable<string[]>(JSON.parse<GetPriceResponseSerializable>(responseStr))
+    const responseStr = _getPrice(JSON.stringify(GetPrice.fromToken(changetype<BlockchainToken>(token), timestamp)))
+    const response = QueryResponse.fromJson<string[]>(responseStr)
     
     if (!response.success) return Result.err<USD[], string>(response.error.length > 0 ? response.error : 'Unknown error getting price')
     
