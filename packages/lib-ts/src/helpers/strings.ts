@@ -26,6 +26,45 @@ export function stringToBool(str: string): bool {
   return str === 'true'
 }
 
+/**
+ * Workaround for json-as boolean bug:
+ * Converts JSON boolean values (true/false) into their string equivalents ("true"/"false")
+ * without touching occurrences inside JSON strings or keys.
+ *
+ * This function assumes compact JSON (no newlines between the boolean and the delimiter).
+ */
+export function replaceJsonBooleans(json: string): string {
+  return (
+    json
+      // true after ':' (object property values)
+      .replaceAll(':true', ':"true"')
+      .replaceAll(':true,', ':"true",')
+      .replaceAll(':true}', ':"true"}')
+      .replaceAll(':true]', ':"true"]')
+      .replaceAll(': true,', ': "true",')
+      .replaceAll(': true}', ': "true"}')
+      .replaceAll(': true]', ': "true"]')
+      // true in arrays
+      .replaceAll('[true,', '["true",')
+      .replaceAll('[true]', '["true"]')
+      .replaceAll(',true,', ',"true",')
+      .replaceAll(',true]', ',"true"]')
+      // false after ':' (object property values)
+      .replaceAll(':false', ':"false"')
+      .replaceAll(':false,', ':"false",')
+      .replaceAll(':false}', ':"false"}')
+      .replaceAll(':false]', ':"false"]')
+      .replaceAll(': false,', ': "false",')
+      .replaceAll(': false}', ': "false"}')
+      .replaceAll(': false]', ': "false"]')
+      // false in arrays
+      .replaceAll('[false,', '["false",')
+      .replaceAll('[false]', '["false"]')
+      .replaceAll(',false,', ',"false",')
+      .replaceAll(',false]', ',"false"]')
+  )
+}
+
 export function areAllZeros(str: string): boolean {
   for (let i = 0; i < str.length; i++) if (str.charCodeAt(i) !== 48) return false
   return true

@@ -1,6 +1,6 @@
 import { JSON } from 'json-as'
 
-import { stringToBool } from '../helpers'
+import { replaceJsonBooleans, stringToBool } from '../helpers'
 
 @json
 @final
@@ -20,9 +20,8 @@ export class QueryResponse<T> {
   ) {}
 
   static fromJson<T>(json: string): QueryResponse<T> {
-    return this.fromSerializable<T>(
-      JSON.parse<QueryResponseSerializable<T>>(json.replaceAll('true', `"true"`).replaceAll('false', `"false"`))
-    )
+    const fixedJson = replaceJsonBooleans(json)
+    return this.fromSerializable<T>(JSON.parse<QueryResponseSerializable<T>>(fixedJson))
   }
 
   static fromSerializable<T>(serializable: QueryResponseSerializable<T>): QueryResponse<T> {
