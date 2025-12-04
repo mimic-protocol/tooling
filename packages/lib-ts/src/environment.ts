@@ -8,6 +8,8 @@ import {
   GetAccountsInfo,
   GetAccountsInfoResponse,
   GetPrice,
+  GetPriceResponse,
+  GetPriceResponseSerializable,
   GetRelevantTokens,
   GetRelevantTokensResponse,
   RelevantTokenBalance,
@@ -16,8 +18,7 @@ import {
   SubgraphQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId } from './types'
-import { log } from './log'
+import { Address, BigInt, ChainId, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -86,36 +87,53 @@ export namespace environment {
    * Tells the prices from different sources for a token in USD at a specific timestamp.
    * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns The token prices in USD
+   * @returns Result containing either an array of USD prices or an error string
    */
-  export function getRawPrice(token: Token, timestamp: Date | null = null): USD[] {
-    if (token.isUSD()) return [USD.fromI32(1)]
-    else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
-    const prices = _getPrice(JSON.stringify(GetPrice.fromToken(token as BlockchainToken, timestamp)))
-    return JSON.parse<string[]>(prices).map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+  export function getRawPrice(token: Token, timestamp: Date | null = null): Result<USD[], string> {
+    if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
+    else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
+    
+    const responseStr = 
+      _getPrice(JSON.stringify(GetPrice.fromToken(changetype<BlockchainToken>(token), timestamp)))
+        .replaceAll("true","\"true\"")
+        .replaceAll("false","\"false\"")
+        
+    const response = GetPriceResponse.fromSerializable<string[]>(JSON.parse<GetPriceResponseSerializable>(responseStr))
+    
+    if (!response.success) return Result.err<USD[], string>(response.error.length > 0 ? response.error : 'Unknown error getting price')
+    
+    const prices = response.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+    return Result.ok<USD[], string>(prices)
   }
 
   /**
    * Tells the median price from different sources for a token in USD at a specific timestamp.
    * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns The token median price in USD
+   * @returns Result containing either the median USD price or an error string
    */
-  export function getPrice(token: Token, timestamp: Date | null = null): USD {
-    const prices = getRawPrice(token, timestamp)
-    if (prices.length === 0) throw new Error('Prices not found for token ' + token.toString())
+  export function getPrice(token: Token, timestamp: Date | null = null): Result<USD, string> {
+    const pricesResult = getRawPrice(token, timestamp)
+    
+    if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
+    
+    const prices = pricesResult.value
+    if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
 
     const length = sortedPrices.length
+    let median: USD
     if (length % 2 === 1) {
-      return sortedPrices[length / 2]
+      median = sortedPrices[length / 2]
     } else {
       const left = sortedPrices[length / 2 - 1]
       const right = sortedPrices[length / 2]
       const sum = left.plus(right)
-      return sum.div(BigInt.fromI32(2))
+      median = sum.div(BigInt.fromI32(2))
     }
+    
+    return Result.ok<USD, string>(median)
   }
 
   /**
