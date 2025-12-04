@@ -54,7 +54,7 @@ export class RelevantTokenBalance {
 }
 
 @json
-export class RelevantTokensQueryResponse {
+export class GetRelevantTokensResponse {
   constructor(
     public timestamp: i64,
     public balances: RelevantTokenBalance[]

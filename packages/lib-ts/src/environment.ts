@@ -9,7 +9,7 @@ import {
   SvmAccountsInfoQueryResponse,
   TokenPriceQuery,
   RelevantTokensQuery,
-  RelevantTokensQueryResponse,
+  GetRelevantTokensResponse,
   RelevantTokenBalance,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
@@ -17,7 +17,7 @@ import {
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { PriceQueryResponse } from './types/QueryResponse'
+import { PriceQueryResponse, RelevantTokensQueryResponse } from './types/QueryResponse'
 import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
@@ -139,12 +139,16 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Array of RelevantTokenBalance objects representing the relevant tokens
+   * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
    */
-  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
+  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<RelevantTokenBalance[][], string> {
     const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    const responses = JSON.parse<RelevantTokensQueryResponse[]>(responseStr)
-    return responses.map((response: RelevantTokensQueryResponse) => response.balances)
+    const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
+    
+    if (parsed.success !== 'true') return Result.err<RelevantTokenBalance[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
+    
+    const responses = parsed.data
+    return Result.ok<RelevantTokenBalance[][], string>(responses.map<RelevantTokenBalance[]>((response: GetRelevantTokensResponse) => response.balances))
   }
 
   /**
@@ -162,8 +166,12 @@ export namespace environment {
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList
-  ): TokenAmount[] {
-    const response = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+  ): Result<TokenAmount[], string> {
+    const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+    
+    if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
+    
+    const response = responseResult.value
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {
@@ -174,7 +182,8 @@ export namespace environment {
         resultMap.set(mapKey, tokenAmount)
       }
     }
-    return resultMap.values()
+    
+    return Result.ok<TokenAmount[], string>(resultMap.values())
   }
 
   /**
