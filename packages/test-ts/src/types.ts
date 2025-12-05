@@ -1,11 +1,28 @@
-import { AnyOracleResponse } from '@mimicprotocol/sdk'
-import { z } from 'zod'
+import {
+  AnyOracleResponse,
+  OracleQueryName,
+  OracleQueryParams,
+  OracleQueryResult,
+  TokenAmountValidator,
+  TokenValidator,
+  z,
+} from '@mimicprotocol/sdk'
 
 import {
+  ContextValidator,
+  EvmCallRequestValidator,
+  EvmCallTypedValueValidator,
   InputsValidator,
   MockConfigValidator,
   MockFunctionResponseValidator,
   ParameterizedResponseValidator,
+  RelevantTokenBalanceValidator,
+  RelevantTokensRequestValidator,
+  RelevantTokensResponseValidator,
+  SubgraphQueryRequestValidator,
+  SubgraphQueryResponseValidator,
+  TokenPriceRequestValidator,
+  TokenPriceResponseValidator,
 } from './validators'
 
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -18,99 +35,65 @@ export type MockConfig = z.output<typeof MockConfigValidator>
 
 export type Inputs = z.infer<typeof InputsValidator>
 
-export type Context = Partial<{
-  timestamp: number
-  consensusThreshold: number
-  user: string
-  settlers: Array<{
-    address: string
-    chainId: number
-  }>
-  configSig: string
-  trigger: { type: number; data: string }
-}>
+export type Context = z.infer<typeof ContextValidator>
 
 export type QueryMock<T, R> = {
   request: T
   response: R
 }
 
-export type GetPriceRequest = {
-  token: string
-  chainId: number
-  timestamp?: number
+export type QueryProcessor<
+  TRequest,
+  TResponse,
+  TParams extends OracleQueryParams<OracleQueryName>,
+  TValue extends OracleQueryResult<OracleQueryName>,
+> = {
+  queryName: OracleQueryName
+  queryTypeLabel: string
+  requestValidator: z.ZodType<TRequest>
+  responseValidator: z.ZodType<TResponse>
+  transformParams: (request: TRequest, contextTimestamp: number) => TParams
+  transformResponse: (response: TResponse) => TValue
 }
 
-export type GetPriceMock = QueryMock<GetPriceRequest, string[]>
+export type TokenPriceRequest = z.infer<typeof TokenPriceRequestValidator>
+export type TokenPriceResponse = z.infer<typeof TokenPriceResponseValidator>
 
-export type Token = {
-  address: string
-  chainId: number
-}
+export type TokenPriceMock = QueryMock<TokenPriceRequest, TokenPriceResponse>
 
-export type TokenAmount = {
-  token: Token
-  amount: string
-}
+export type Token = z.infer<typeof TokenValidator>
 
-export type GetRelevantTokensRequest = {
-  owner: string
-  chainIds: number[]
-  usdMinAmount: string
-  tokens: Token[]
-  tokenFilter: number
-}
+export type TokenAmount = z.infer<typeof TokenAmountValidator>
 
-export type RelevantTokenBalance = {
-  token: Token
-  balance: string
-}
+export type RelevantTokensRequest = z.infer<typeof RelevantTokensRequestValidator>
 
-export type GetRelevantTokensResponse = {
-  timestamp: number
-  balances: RelevantTokenBalance[]
-}
+export type RelevantTokenBalance = z.infer<typeof RelevantTokenBalanceValidator>
 
-export type GetRelevantTokensMock = QueryMock<GetRelevantTokensRequest, GetRelevantTokensResponse[]>
+export type RelevantTokensResponse = z.infer<typeof RelevantTokensResponseValidator>
 
-export type ContractCallTypedValue = {
-  abiType: string
-  value: string
-}
+export type RelevantTokensMock = QueryMock<RelevantTokensRequest, RelevantTokensResponse[]>
 
-export type ContractCallRequest = {
-  to: string
-  chainId: number
-  timestamp?: number
-  fnSelector: string
-  params?: ContractCallTypedValue[]
-}
+export type EvmCallTypedValue = z.infer<typeof EvmCallTypedValueValidator>
 
-export type ContractCallResponse = ContractCallTypedValue
+export type EvmCallRequest = z.infer<typeof EvmCallRequestValidator>
 
-export type ContractCallMock = QueryMock<ContractCallRequest, ContractCallResponse>
+export type EvmCallResponse = EvmCallTypedValue
 
-export type SubgraphQueryRequest = {
-  chainId: number
-  timestamp: number
-  subgraphId: string
-  query: string
-}
+export type EvmCallMock = QueryMock<EvmCallRequest, EvmCallResponse>
 
-export type SubgraphQueryResponse = {
-  blockNumber: number
-  data: string
-}
+export type SubgraphQueryRequest = z.infer<typeof SubgraphQueryRequestValidator>
+export type SubgraphQueryResponse = z.infer<typeof SubgraphQueryResponseValidator>
 
 export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryResponse>
 
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
-  prices: GetPriceMock[]
-  relevantTokens: GetRelevantTokensMock[]
-  calls: ContractCallMock[]
+  prices: TokenPriceMock[]
+  relevantTokens: RelevantTokensMock[]
+  calls: EvmCallMock[]
   subgraphQueries: SubgraphQueryMock[]
+  showLogs: boolean
 }
 
 export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
@@ -153,4 +136,12 @@ export type RunTaskResult = {
   oracleResponses: OracleResponse[]
   intents: Intent[]
   logs: string[]
+}
+
+export type ValidationErrorContext = {
+  entryIndex?: number
+  queryType?: string
+  validationTarget?: 'request' | 'response'
+  request?: Record<string, unknown>
+  [key: string]: unknown
 }

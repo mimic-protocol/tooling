@@ -1,6 +1,6 @@
+import { z } from '@mimicprotocol/sdk'
 import * as fs from 'fs'
 import { join } from 'path'
-import type { ZodType } from 'zod'
 
 import { MockConfig, MockResponseValue, ParameterizedResponse } from './types'
 import { MockConfigValidator, ParameterizedResponseValidator } from './validators'
@@ -60,7 +60,7 @@ export default class RunnerMock {
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
       const wasmBuffer = fs.readFileSync(taskPath)
-      const wasmModule = new WebAssembly.Module(wasmBuffer)
+      const wasmModule = new WebAssembly.Module(wasmBuffer as never)
       const instance = new WebAssembly.Instance(wasmModule, imports)
 
       this.patchStringInputs(inputs as WebAssembly.ModuleImports, imports, instance)
@@ -71,7 +71,7 @@ export default class RunnerMock {
     }
   }
 
-  private readJsonFile<T>(filePath: string, validator?: ZodType<T>): T {
+  private readJsonFile<T>(filePath: string, validator?: z.ZodType<T>): T {
     try {
       const rawData = fs.readFileSync(filePath, 'utf8')
       const parsedData = JSON.parse(rawData)
