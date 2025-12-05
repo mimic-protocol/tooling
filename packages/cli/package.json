@@ -57,5 +57,8 @@
     "plugins": [
       "@oclif/plugin-not-found"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
