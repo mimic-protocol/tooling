@@ -41,10 +41,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --ignore-scripts
 
-      - name: Build essentials (sdk + helpers)
-        run: yarn build:essentials
+      - name: Build
+        run: yarn build
 
-      - name: Create Release PR or Publish (SDK)
+      - name: Create Release PR or Publish
         id: changesets
         uses: changesets/action@v1
         with:
