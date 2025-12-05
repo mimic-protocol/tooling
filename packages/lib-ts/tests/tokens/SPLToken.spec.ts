@@ -277,6 +277,7 @@ describe('SPLToken', () => {
 
         expect(token.hasChain(ChainId.ARBITRUM)).toBe(false)
         expect(token.hasChain(ChainId.BASE)).toBe(false)
+        expect(token.hasChain(ChainId.BASE_SEPOLIA)).toBe(false)
         expect(token.hasChain(ChainId.ETHEREUM)).toBe(false)
         expect(token.hasChain(ChainId.GNOSIS)).toBe(false)
         expect(token.hasChain(ChainId.OPTIMISM)).toBe(false)
@@ -295,6 +296,7 @@ describe('SPLToken', () => {
 
         expect(token.hasChain(ChainId.ARBITRUM)).toBe(false)
         expect(token.hasChain(ChainId.BASE)).toBe(false)
+        expect(token.hasChain(ChainId.BASE_SEPOLIA)).toBe(false)
         expect(token.hasChain(ChainId.ETHEREUM)).toBe(false)
         expect(token.hasChain(ChainId.GNOSIS)).toBe(false)
         expect(token.hasChain(ChainId.OPTIMISM)).toBe(false)

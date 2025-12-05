@@ -5,6 +5,8 @@ import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
+const BPS_SCALE = BigInt.fromI32(10_000)
+
 /**
  * Represents an amount of a specific token, combining the token metadata with a quantity.
  * Supports arithmetic operations, comparisons, and conversions between tokens and USD.
@@ -232,12 +234,44 @@ export class TokenAmount {
     return this.toUsd().toTokenAmount(other)
   }
 
+  /**
+   * Calculates the minimum output amount using basis points (bps).
+   * Formula: minAmountOut = amountOut * (10000 - bps) / 10000
+   *
+   * @param slippage - Slippage in basis points (0-10000). Example: 50 = 0.5%
+   * @returns A new TokenAmount representing the minimum output amount
+   */
+  applySlippageBps(slippage: i32): TokenAmount {
+    const slippageBI = BigInt.fromI32(slippage)
+    if (slippageBI.isNegative() || slippageBI.gt(BPS_SCALE))
+      throw new Error(`Slippage bps must be between 0 and ${BPS_SCALE}`)
+    return this.applySlippage(slippageBI)
+  }
+
+  /**
+   * Calculates the minimum output amount from a percentage string.
+   * Formula: minAmountOut = amountOut * (100 - percent) / 100
+   *
+   * @param slippage - Slippage percentage as a decimal string. Example: '0.5' = 0.5%
+   * @returns A new TokenAmount representing the minimum output amount
+   */
+  applySlippagePercentage(slippage: string): TokenAmount {
+    const bps = BigInt.fromStringDecimal(slippage, 2)
+    if (bps.isNegative() || bps.gt(BPS_SCALE)) throw new Error('Slippage percentage must be between 0 and 100')
+    return this.applySlippage(bps)
+  }
+
   private amountCompare(other: TokenAmount): i32 {
     return BigInt.compare(this._amount, other.amount)
   }
 
   private checkToken(other: Token, action: string): void {
     if (!this.token.equals(other)) throw new Error(`Cannot ${action} different tokens`)
+  }
+
+  private applySlippage(value: BigInt): TokenAmount {
+    const factor = BPS_SCALE.minus(value)
+    return this.times(factor).div(BPS_SCALE)
   }
 }
 
