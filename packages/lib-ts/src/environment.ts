@@ -4,20 +4,21 @@ import { Context, SerializableContext } from './context'
 import { ListType } from './helpers'
 import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
-  Call as CallQuery,
-  GetAccountsInfo,
-  GetAccountsInfoResponse,
-  GetPrice,
-  GetRelevantTokens,
-  GetRelevantTokensResponse,
+  EvmCallQuery,
+  RelevantTokensQuery,
+  RelevantTokensResponse,
   RelevantTokenBalance,
+  RelevantTokensQueryResponse,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
+  SvmAccountsInfoQuery,
+  SvmAccountsInfoQueryResponse,
   SubgraphQueryResponse,
+  TokenPriceQuery,
+  TokenPriceQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { PriceQueryResponse, RelevantTokensQueryResponse } from './types/QueryResponse'
 import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
@@ -33,20 +34,20 @@ export namespace environment {
   @external('environment', '_transfer')
   declare function _transfer(params: string): void
 
-  @external('environment', '_getPrice')
-  declare function _getPrice(params: string): string
+  @external('environment', '_tokenPriceQuery')
+  declare function _tokenPriceQuery(params: string): string
 
-  @external('environment', '_getRelevantTokens')
-  declare function _getRelevantTokens(params: string): string
+  @external('environment', '_relevantTokensQuery')
+  declare function _relevantTokensQuery(params: string): string
 
-  @external('environment', '_contractCall')
-  declare function _contractCall(params: string): string
+  @external('environment', '_evmCallQuery')
+  declare function _evmCallQuery(params: string): string
 
   @external('environment', '_subgraphQuery')
   declare function _subgraphQuery(params: string): string
 
-  @external('environment', '_getAccountsInfo')
-  declare function _getAccountsInfo(params: string): string
+  @external('environment', '_svmAccountsInfoQuery')
+  declare function _svmAccountsInfoQuery(params: string): string
 
   @external('environment', '_getContext')
   declare function _getContext(): string
@@ -89,12 +90,12 @@ export namespace environment {
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
    * @returns Result containing either an array of USD prices or an error string
    */
-  export function getRawPrice(token: Token, timestamp: Date | null = null): Result<USD[], string> {
+  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD[], string> {
     if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
     else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
-    const responseStr = _getPrice(JSON.stringify(GetPrice.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    const parsed = PriceQueryResponse.fromJson<PriceQueryResponse>(responseStr)
+    const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
+    const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
     
     if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
     
@@ -108,8 +109,8 @@ export namespace environment {
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
    * @returns Result containing either the median USD price or an error string
    */
-  export function getPrice(token: Token, timestamp: Date | null = null): Result<USD, string> {
-    const pricesResult = getRawPrice(token, timestamp)
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD, string> {
+    const pricesResult = rawTokenPriceQuery(token, timestamp)
     
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
@@ -141,14 +142,14 @@ export namespace environment {
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
    */
-  export function getRawRelevantTokens(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<RelevantTokenBalance[][], string> {
-    const responseStr = _getRelevantTokens(JSON.stringify(GetRelevantTokens.init(address, chainIds, usdMinAmount, tokensList, listType)))
+  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<RelevantTokenBalance[][], string> {
+    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
     const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
     
     if (parsed.success !== 'true') return Result.err<RelevantTokenBalance[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
     
     const responses = parsed.data
-    return Result.ok<RelevantTokenBalance[][], string>(responses.map((response: GetRelevantTokensResponse) => response.balances))
+    return Result.ok<RelevantTokenBalance[][], string>(responses.map((response: RelevantTokensResponse) => response.balances))
   }
 
   /**
@@ -160,14 +161,14 @@ export namespace environment {
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Array of TokenAmount objects representing the relevant tokens
    */
-  export function getRelevantTokens(
+  export function relevantTokensQuery(
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList
   ): Result<TokenAmount[], string> {
-    const responseResult = getRawRelevantTokens(address, chainIds, usdMinAmount, tokensList, listType)
+    const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
     
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
     
@@ -194,15 +195,13 @@ export namespace environment {
    * @param data - The encoded function call data
    * @returns The raw response from the contract call
    */
-  export function contractCall(
+  export function evmCallQuery(
     to: Address,
     chainId: ChainId,
     data: string,
     timestamp: Date | null = null,
   ): string {
-    return _contractCall(
-      JSON.stringify(CallQuery.from(to, chainId, timestamp, data))
-    )
+    return _evmCallQuery(JSON.stringify(EvmCallQuery.from(to, chainId, timestamp, data)))
   }
 
   /**
@@ -219,8 +218,8 @@ export namespace environment {
     query: string,
     timestamp: Date | null = null,
   ): SubgraphQueryResponse {
-    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
-    return JSON.parse<SubgraphQueryResponse>(responseStr)
+    const response = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
+    return JSON.parse<SubgraphQueryResponse>(response)
   }
    
   /**
@@ -230,16 +229,16 @@ export namespace environment {
    * @returns The raw response from the underlying getMultipleAccountsInfo call
    */
 
-  export function getAccountsInfo(
+  export function svmAccountsInfoQuery(
     publicKeys: Address[],
     timestamp: Date | null = null,
-  ): GetAccountsInfoResponse {
+  ): SvmAccountsInfoQueryResponse {
     // There is a bug with json-as, so we have to do this with JSON booleans
-    const responseStr = _getAccountsInfo(JSON.stringify(GetAccountsInfo.from(publicKeys, timestamp)))
+    const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
     const fixedResponseStr = replaceJsonBooleans(responseStr)
 
     const response = JSON.parse<SerializableGetAccountsInfoResponse>(fixedResponseStr)
-    return GetAccountsInfoResponse.fromSerializable(response)
+    return SvmAccountsInfoQueryResponse.fromSerializable(response)
   }
 
   /**

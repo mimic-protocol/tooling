@@ -1,7 +1,7 @@
 import { BlockchainToken } from '../tokens'
 
 @json
-class GetPriceBase {
+class TokenPriceQueryBase {
   constructor(
     public readonly address: string,
     public readonly chainId: i32
@@ -9,7 +9,7 @@ class GetPriceBase {
 }
 
 @json
-export class GetPrice extends GetPriceBase {
+export class TokenPriceQuery extends TokenPriceQueryBase {
   public readonly timestamp: i64
 
   constructor(address: string, chainId: i32, timestamp: i64) {
@@ -17,12 +17,12 @@ export class GetPrice extends GetPriceBase {
     this.timestamp = timestamp
   }
 
-  static fromToken(token: BlockchainToken, timestamp: Date | null): GetPriceBase {
+  static fromToken(token: BlockchainToken, timestamp: Date | null): TokenPriceQueryBase {
     const address = token.address.toString()
     const chainId = token.chainId
 
     return timestamp
-      ? new GetPrice(address, chainId, changetype<Date>(timestamp).getTime())
-      : new GetPriceBase(address, chainId)
+      ? new TokenPriceQuery(address, chainId, changetype<Date>(timestamp).getTime())
+      : new TokenPriceQueryBase(address, chainId)
   }
 }

@@ -194,7 +194,7 @@ export class USD {
    */
   toTokenAmount(token: Token): TokenAmount {
     if (this.isZero()) return TokenAmount.fromI32(token, 0)
-    const tokenPriceResult = environment.getPrice(token)
+    const tokenPriceResult = environment.tokenPriceQuery(token)
     if (tokenPriceResult.isError) throw new Error(tokenPriceResult.error)
 
     const tokenPrice = tokenPriceResult.value

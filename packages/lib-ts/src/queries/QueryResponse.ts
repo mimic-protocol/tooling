@@ -1,7 +1,8 @@
 import { JSON } from 'json-as'
 
 import { replaceJsonBooleans } from '../helpers'
-import { GetRelevantTokensResponse } from '../queries'
+
+import { RelevantTokensResponse } from './RelevantTokensQuery'
 
 @json
 class QueryResponseBase {
@@ -16,7 +17,7 @@ class QueryResponseBase {
 }
 
 @json
-export class PriceQueryResponse extends QueryResponseBase {
+export class TokenPriceQueryResponse extends QueryResponseBase {
   public data: string[]
 
   constructor(success: string, data: string[], error: string) {
@@ -27,9 +28,9 @@ export class PriceQueryResponse extends QueryResponseBase {
 
 @json
 export class RelevantTokensQueryResponse extends QueryResponseBase {
-  public data: GetRelevantTokensResponse[]
+  public data: RelevantTokensResponse[]
 
-  constructor(success: string, data: GetRelevantTokensResponse[], error: string) {
+  constructor(success: string, data: RelevantTokensResponse[], error: string) {
     super(success, error)
     this.data = data
   }
