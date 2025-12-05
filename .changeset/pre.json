@@ -7,5 +7,7 @@
     "@mimicprotocol/lib-ts": "0.0.1-rc.25",
     "@mimicprotocol/test-ts": "0.0.1-rc.25"
   },
-  "changesets": []
+  "changesets": [
+    "pretty-feet-shop"
+  ]
 }
