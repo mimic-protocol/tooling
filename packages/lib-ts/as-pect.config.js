@@ -69,8 +69,22 @@ export default {
           const timestamp = params.timestamp
           const key = `_tokenPriceQuery:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
-          if (store.has(key)) return exports.__newString(`["${store.get(key)}"]`)
-          throw new Error(`Price not found for key: ${key}`)
+          if (store.has(key)) {
+            const response = JSON.stringify({
+              success: true,
+              data: [store.get(key).toString()],
+              error: '',
+            })
+            return exports.__newString(response)
+          }
+
+          return exports.__newString(
+            JSON.stringify({
+              success: false,
+              data: [],
+              error: `Price not found for key: ${key}`,
+            })
+          )
         },
         _evmCallQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)

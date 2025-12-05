@@ -1,4 +1,5 @@
 export * from './EvmCallQuery'
+export * from './QueryResponse'
 export * from './RelevantTokensQuery'
 export * from './SubgraphQuery'
 export * from './SvmAccountsInfoQuery'

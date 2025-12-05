@@ -5,19 +5,21 @@ import { ListType } from './helpers'
 import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
-  SvmAccountsInfoQuery,
-  SvmAccountsInfoQueryResponse,
-  TokenPriceQuery,
   RelevantTokensQuery,
-  RelevantTokensQueryResponse,
+  RelevantTokensResponse,
   RelevantTokenBalance,
+  RelevantTokensQueryResponse,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
+  SvmAccountsInfoQuery,
+  SvmAccountsInfoQueryResponse,
   SubgraphQueryResponse,
+  TokenPriceQuery,
+  TokenPriceQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId } from './types'
-import { log } from './log'
+import { Address, BigInt, ChainId, Result } from './types'
+import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -86,36 +88,49 @@ export namespace environment {
    * Tells the prices from different sources for a token in USD at a specific timestamp.
    * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns The token prices in USD
+   * @returns Result containing either an array of USD prices or an error string
    */
-  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): USD[] {
-    if (token.isUSD()) return [USD.fromI32(1)]
-    else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
-    const prices = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(token as BlockchainToken, timestamp)))
-    return JSON.parse<string[]>(prices).map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD[], string> {
+    if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
+    else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
+    
+    const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
+    const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
+    
+    if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
+    
+    const prices = parsed.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+    return Result.ok<USD[], string>(prices)
   }
 
   /**
    * Tells the median price from different sources for a token in USD at a specific timestamp.
    * @param token - The token to get the price of
    * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns The token median price in USD
+   * @returns Result containing either the median USD price or an error string
    */
-  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): USD {
-    const prices = rawTokenPriceQuery(token, timestamp)
-    if (prices.length === 0) throw new Error('Prices not found for token ' + token.toString())
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD, string> {
+    const pricesResult = rawTokenPriceQuery(token, timestamp)
+    
+    if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
+    
+    const prices = pricesResult.value
+    if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
 
     const length = sortedPrices.length
+    let median: USD
     if (length % 2 === 1) {
-      return sortedPrices[length / 2]
+      median = sortedPrices[length / 2]
     } else {
       const left = sortedPrices[length / 2 - 1]
       const right = sortedPrices[length / 2]
       const sum = left.plus(right)
-      return sum.div(BigInt.fromI32(2))
+      median = sum.div(BigInt.fromI32(2))
     }
+    
+    return Result.ok<USD, string>(median)
   }
 
   /**
@@ -125,12 +140,16 @@ export namespace environment {
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Array of RelevantTokenBalance objects representing the relevant tokens
+   * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
    */
-  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): RelevantTokenBalance[][] {
+  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<RelevantTokenBalance[][], string> {
     const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    const responses = JSON.parse<RelevantTokensQueryResponse[]>(responseStr)
-    return responses.map((response: RelevantTokensQueryResponse) => response.balances)
+    const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
+    
+    if (parsed.success !== 'true') return Result.err<RelevantTokenBalance[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
+    
+    const responses = parsed.data
+    return Result.ok<RelevantTokenBalance[][], string>(responses.map((response: RelevantTokensResponse) => response.balances))
   }
 
   /**
@@ -148,8 +167,12 @@ export namespace environment {
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
     listType: ListType = ListType.DenyList
-  ): TokenAmount[] {
-    const response = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+  ): Result<TokenAmount[], string> {
+    const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+    
+    if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
+    
+    const response = responseResult.value
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {
@@ -160,7 +183,8 @@ export namespace environment {
         resultMap.set(mapKey, tokenAmount)
       }
     }
-    return resultMap.values()
+    
+    return Result.ok<TokenAmount[], string>(resultMap.values())
   }
 
   /**
@@ -211,10 +235,9 @@ export namespace environment {
   ): SvmAccountsInfoQueryResponse {
     // There is a bug with json-as, so we have to do this with JSON booleans
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
-      .replaceAll("true",`"true"`)
-      .replaceAll("false",`"false"`)
+    const fixedResponseStr = replaceJsonBooleans(responseStr)
 
-    const response = JSON.parse<SerializableGetAccountsInfoResponse>(responseStr)
+    const response = JSON.parse<SerializableGetAccountsInfoResponse>(fixedResponseStr)
     return SvmAccountsInfoQueryResponse.fromSerializable(response)
   }
 
