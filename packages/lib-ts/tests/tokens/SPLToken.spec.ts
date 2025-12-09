@@ -141,21 +141,21 @@ describe('SPLToken', () => {
       )
       const result = `{"address":"${metadataAddr.toString()}","bump":255}`
 
-      setFindProgramAddress(params.seeds, Address.fromString(params.programId), result)
+      setFindProgramAddress(params.seeds, Address.fromBase58String(params.programId), result)
       // In reality, the svmAccountsInfoQuery returns null and then a default value with data "0x". But this is easier to mock
       setGetAccountsInfo(
         `${metadataAddr.toString()}`,
         `{
           "accountsInfo": [
             {
-              "executable": false,              // dont care
-              "rentEpoch": "1234",              // dont care
-              "owner": "${randomSvmAddress()}", // dont care
-              "lamports": "100",                // dont care
+              "executable": false,
+              "rentEpoch": "1234",
+              "owner": "${randomSvmAddress()}",
+              "lamports": "100",
               "data":"0x"
             }
           ],
-          "slot":"12345678"                     // dont care
+          "slot":"12345678"
         }`
       )
 
