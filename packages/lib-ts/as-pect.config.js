@@ -70,29 +70,18 @@ export default {
           const key = `_tokenPriceQuery:${address}:${chainId}${timestamp ? `:${timestamp}` : ''}`
 
           if (store.has(key)) {
-            const response = JSON.stringify({
-              success: true,
-              data: [store.get(key).toString()],
-              error: '',
-            })
+            const response = JSON.stringify(Result.ok([store.get(key).toString()]))
             return exports.__newString(response)
           }
-
-          return exports.__newString(
-            JSON.stringify({
-              success: false,
-              data: [],
-              error: `Price not found for key: ${key}`,
-            })
-          )
+          return exports.__newString(JSON.stringify(Result.err(`Price not found for key: ${key}`)))
         },
         _evmCallQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
           const key = `_evmCallQuery:${params.to.toLowerCase()}:${params.chainId}:${params.data.toLowerCase()}`
 
-          if (store.has(key)) return exports.__newString(store.get(key))
-          throw new Error(`Contract call result not found for key: ${key}`)
+          if (store.has(key)) return exports.__newString(JSON.stringify(Result.ok(store.get(key))))
+          return exports.__newString(JSON.stringify(Result.err(`Contract call result not found for key: ${key}`)))
         },
         _svmAccountsInfoQuery: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
@@ -100,8 +89,13 @@ export default {
           const publicKeys = params.publicKeys.join(',')
           const key = `_svmAccountsInfoQuery:${publicKeys}`
 
-          if (store.has(key)) return exports.__newString(store.get(key))
-          throw new Error(`Get accounts info result not found for key: ${key}`)
+          if (store.has(key)) {
+            const storedValue = store.get(key)
+            const accountsInfoData = typeof storedValue === 'string' ? JSON.parse(storedValue) : storedValue
+            return exports.__newString(JSON.stringify(Result.ok(accountsInfoData)))
+          }
+
+          return exports.__newString(JSON.stringify(Result.err(`Get accounts info result not found for key: ${key}`)))
         },
         _getContext: () => {
           const key = `_getContext`
@@ -181,4 +175,20 @@ export default {
    * Specify if the binary wasm file should be written to the file system.
    */
   outputBinary: false,
+}
+
+class Result {
+  constructor(success, data, error) {
+    this.success = success
+    this.data = data
+    this.error = error
+  }
+
+  static ok(data) {
+    return new Result(true, data, '')
+  }
+
+  static err(error) {
+    return new Result(false, '', error)
+  }
 }
