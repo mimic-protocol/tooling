@@ -15,13 +15,12 @@ import {
   SvmAccountsInfoQueryResult,
   SubgraphQueryResult,
   TokenPriceQuery,
-  TokenPriceQueryResponse,
   EvmCallQueryResponse,
-  SubgraphQueryResponse, 
+  SubgraphQueryResponse,
+  TokenPriceQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { replaceJsonBooleans } from './helpers'
 
 export namespace environment {
   @external('environment', '_evmCall')
