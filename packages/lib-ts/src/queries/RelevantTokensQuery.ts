@@ -1,6 +1,6 @@
 import { ListType } from '../helpers'
 import { BlockchainToken, TokenAmount, USD } from '../tokens'
-import { Address, BigInt, ChainId } from '../types'
+import { Address, BigInt, ChainId, QueryResponseBase } from '../types'
 
 @json
 class TokenQuery {
@@ -59,4 +59,14 @@ export class RelevantTokensQueryResult {
     public timestamp: i64,
     public balances: TokenBalanceQuery[]
   ) {}
+}
+
+@json
+export class RelevantTokensQueryResponse extends QueryResponseBase {
+  public data: RelevantTokensQueryResult[]
+
+  constructor(success: string, data: RelevantTokensQueryResult[], error: string) {
+    super(success, error)
+    this.data = data
+  }
 }
