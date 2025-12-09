@@ -1,5 +1,6 @@
 import { environment } from '../environment'
 import { SVM_NATIVE_ADDRESS } from '../helpers'
+import { log } from '../log'
 import { svm } from '../svm'
 import { Address, ChainId, SvmMint, SvmPdaSeed, SvmTokenMetadataData } from '../types'
 
@@ -73,7 +74,14 @@ export class SPLToken extends BlockchainToken {
   get decimals(): u8 {
     if (this._decimals == SPLToken.EMPTY_DECIMALS) {
       const result = environment.svmAccountsInfoQuery([this.address])
-      if (result.isError) throw new Error(result.error)
+      if (result.isError) {
+        log.warning('Failed to get decimals for token {} on chain {}: {}', [
+          this.address.toString(),
+          this.chainId.toString(),
+          result.error,
+        ])
+        return SPLToken.EMPTY_DECIMALS
+      }
       const decimals = SvmMint.fromHex(result.value.accountsInfo[0].data).decimals
       this._decimals = decimals
     }
@@ -90,7 +98,14 @@ export class SPLToken extends BlockchainToken {
   get symbol(): string {
     if (this._symbol == SPLToken.EMPTY_SYMBOL) {
       const result = environment.svmAccountsInfoQuery([this.getMetadataAddress()])
-      if (result.isError) throw new Error(result.error)
+      if (result.isError) {
+        log.warning('Failed to get symbol for token {} on chain {}: {}', [
+          this.address.toString(),
+          this.chainId.toString(),
+          result.error,
+        ])
+        return SPLToken.EMPTY_SYMBOL
+      }
       const data = result.value.accountsInfo[0].data
       // Return placeholder symbol from address if TokenMetadata standard is not used
       this._symbol =
