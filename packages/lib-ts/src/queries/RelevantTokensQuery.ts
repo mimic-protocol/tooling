@@ -39,7 +39,7 @@ export class RelevantTokensQuery {
 }
 
 @json
-export class RelevantTokenBalance {
+export class TokenBalanceQuery {
   constructor(
     public token: TokenQuery,
     public balance: string
@@ -54,9 +54,9 @@ export class RelevantTokenBalance {
 }
 
 @json
-export class GetRelevantTokensResponse {
+export class RelevantTokensQueryResult {
   constructor(
     public timestamp: i64,
-    public balances: RelevantTokenBalance[]
+    public balances: TokenBalanceQuery[]
   ) {}
 }
