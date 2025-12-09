@@ -219,7 +219,7 @@ export class TokenAmount {
    */
   toUsd(): USD {
     if (this.isZero()) return USD.zero()
-    const tokenPrice = environment.getPrice(this.token)
+    const tokenPrice = environment.tokenPriceQuery(this.token)
     const amountUsd = this.amount.times(tokenPrice.value).downscale(this.decimals)
     return USD.fromBigInt(amountUsd)
   }

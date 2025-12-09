@@ -72,7 +72,7 @@ export class SPLToken extends BlockchainToken {
    */
   get decimals(): u8 {
     if (this._decimals == SPLToken.EMPTY_DECIMALS) {
-      const result = environment.getAccountsInfo([this.address])
+      const result = environment.svmAccountsInfoQuery([this.address])
       const decimals = SvmMint.fromHex(result.accountsInfo[0].data).decimals
       this._decimals = decimals
     }
@@ -88,7 +88,7 @@ export class SPLToken extends BlockchainToken {
    */
   get symbol(): string {
     if (this._symbol == SPLToken.EMPTY_SYMBOL) {
-      const result = environment.getAccountsInfo([this.getMetadataAddress()])
+      const result = environment.svmAccountsInfoQuery([this.getMetadataAddress()])
       const data = result.accountsInfo[0].data
       // Return placeholder symbol from address if TokenMetadata standard is not used
       this._symbol =
