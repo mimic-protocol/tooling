@@ -99,7 +99,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`getData(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getData(): Result<${LibTypes.BigInt}, string> {`)
       expect(result).to.contain(`getData_1(id: ${LibTypes.BigInt}): EvmCallBuilder {`)
       expect(result).to.contain(
         `getData_2(id: ${LibTypes.BigInt}, flag: ${AssemblyPrimitiveTypes.bool}, value: ${LibTypes.BigInt}): EvmCallBuilder {`
@@ -120,10 +120,10 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`getBalance(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`getBalance(): Result<${LibTypes.BigInt}, string> {`)
       expect(result).to.contain(`transfer(to: ${LibTypes.Address}): EvmCallBuilder {`)
-      expect(result).to.contain(`getBalance_1(owner: ${LibTypes.Address}): ${LibTypes.BigInt} {`)
-      expect(result).to.contain(`getName(): ${AssemblyPrimitiveTypes.string} {`)
+      expect(result).to.contain(`getBalance_1(owner: ${LibTypes.Address}): Result<${LibTypes.BigInt}, string> {`)
+      expect(result).to.contain(`getName(): Result<${AssemblyPrimitiveTypes.string}, string> {`)
       expect(result).to.contain(
         `transfer_1(to: ${LibTypes.Address}, amount: ${LibTypes.BigInt}, value: ${LibTypes.BigInt}): EvmCallBuilder {`
       )
@@ -137,7 +137,7 @@ describe('AbisInterfaceGenerator', () => {
 
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
-      expect(result).to.contain(`constructor_(): ${LibTypes.BigInt} {`)
+      expect(result).to.contain(`constructor_(): Result<${LibTypes.BigInt}, string> {`)
       expect(result).to.contain(`constructor_1(value: ${LibTypes.BigInt}): EvmCallBuilder {`)
     })
   })
@@ -239,7 +239,9 @@ describe('AbisInterfaceGenerator', () => {
       expect(result).to.contain(
         `const response = environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
-      expect(result).to.contain(`return ${CONTRACT_NAME}Utils.decodeGetBalance(response)`)
+      expect(result).to.contain(`if (response.isError) return Result.err<${LibTypes.BigInt}, string>(response.error)`)
+      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetBalance(response.value)`)
+      expect(result).to.contain(`return Result.ok<${LibTypes.BigInt}, string>(decoded)`)
       expect(result).to.contain(`export class ${CONTRACT_NAME}Utils {`)
       expect(result).to.contain(`static encodeGetBalance(owner: Address): Bytes {`)
       expect(result).to.contain(`static decodeGetBalance(encodedResponse: string): BigInt {`)
@@ -311,12 +313,14 @@ describe('AbisInterfaceGenerator', () => {
 
       const selector = getFunctionSelector(abi[0])
 
-      expect(result).to.contain(`${functionName}(): void {`)
+      expect(result).to.contain(`${functionName}(): Result<void, string> {`)
       expect(result).to.contain(`static encodeNoReturn(): Bytes {`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(
         `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
+      expect(result).to.contain(`if (response.isError) return Result.err<void, string>(response.error)`)
+      expect(result).to.contain(`return Result.ok<void, string>(changetype<void>(0))`)
       expect(result).not.to.contain(`_decodeNoReturnResponse`)
     })
   })
@@ -341,6 +345,7 @@ describe('AbisInterfaceGenerator', () => {
       expect(importMatch).to.contain('EvmDecodeParam')
       expect(importMatch).to.contain('evm')
       expect(importMatch).to.contain('environment')
+      expect(importMatch).to.contain('Result')
     })
   })
 
@@ -863,7 +868,7 @@ describe('AbisInterfaceGenerator', () => {
 
       expect(result).to.contain('static encodeGetBalance(owner: Address): Bytes {')
       expect(result).to.contain('static decodeGetBalance(encodedResponse: string): BigInt {')
-      expect(result).to.contain('getBalance(owner: Address): BigInt {')
+      expect(result).to.contain('getBalance(owner: Address): Result<BigInt, string> {')
     })
 
     it('should generate encoded data method for write functions', () => {
@@ -887,7 +892,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain('static encodeValidate(data: Bytes): Bytes {')
-      expect(result).to.contain('validate(data: Bytes): void {')
+      expect(result).to.contain('validate(data: Bytes): Result<void, string> {')
       expect(result).not.to.contain('_decodeValidateResponse')
     })
 
@@ -901,7 +906,9 @@ describe('AbisInterfaceGenerator', () => {
 
       // Read function should call both helpers
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeGetValue()`)
-      expect(result).to.contain(`return ${CONTRACT_NAME}Utils.decodeGetValue(response)`)
+      expect(result).to.contain(`if (response.isError) return Result.err<${LibTypes.BigInt}, string>(response.error)`)
+      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetValue(response.value)`)
+      expect(result).to.contain(`return Result.ok<${LibTypes.BigInt}, string>(decoded)`)
 
       // Write function should call encoded data helper
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeSetValue(value)`)
