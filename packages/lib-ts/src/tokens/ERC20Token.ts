@@ -1,6 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { EVM_NATIVE_ADDRESS } from '../helpers'
+import { log } from '../log'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
@@ -117,7 +118,15 @@ export class ERC20Token extends BlockchainToken {
   get symbol(): string {
     if (this._symbol === ERC20Token.EMPTY_SYMBOL) {
       const response = environment.evmCallQuery(this.address, this.chainId, '0x95d89b41', this._timestamp)
-      this._symbol = evm.decode(new EvmDecodeParam('string', response))
+      if (response.isError) {
+        log.warning('Failed to get symbol for token {} on chain {}: {}', [
+          this.address.toString(),
+          this.chainId.toString(),
+          response.error,
+        ])
+        return ERC20Token.EMPTY_SYMBOL
+      }
+      this._symbol = evm.decode(new EvmDecodeParam('string', response.value))
     }
     return this._symbol
   }
@@ -132,7 +141,15 @@ export class ERC20Token extends BlockchainToken {
   get decimals(): u8 {
     if (this._decimals == ERC20Token.EMPTY_DECIMALS) {
       const result = environment.evmCallQuery(this.address, this.chainId, '0x313ce567', this._timestamp)
-      this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
+      if (result.isError) {
+        log.warning('Failed to get decimals for token {} on chain {}: {}', [
+          this.address.toString(),
+          this.chainId.toString(),
+          result.error,
+        ])
+        return ERC20Token.EMPTY_DECIMALS
+      }
+      this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result.value)))
     }
     return this._decimals
   }
