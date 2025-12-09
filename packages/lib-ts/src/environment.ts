@@ -11,13 +11,12 @@ import {
   RelevantTokensQuery,
   RelevantTokensQueryResult,
   TokenBalanceQuery,
-  SubgraphQueryResult,
   SubgraphQuery,
-  SerializableGetAccountsInfoResponse,
+  SvmAccountsInfoQueryResult,
+  SubgraphQueryResult,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { replaceJsonBooleans } from './helpers'
 import { EvmCallQueryResponse, PriceQueryResponse, RelevantTokensQueryResponse, SubgraphQueryResponse } from './types/QueryResponse'
 
 export namespace environment {
@@ -230,19 +229,19 @@ export namespace environment {
    * SVM - Gets on-chain account info
    * @param publicKeys - Accounts to read from chain
    * @param timestamp - The timestamp for the call context (optional)
-   * @returns The raw response from the underlying getMultipleAccountsInfo call
+   * @returns Result containing either the account info result or an error string
    */
-
   export function svmAccountsInfoQuery(
     publicKeys: Address[],
     timestamp: Date | null = null,
-  ): SvmAccountsInfoQueryResponse {
-    // There is a bug with json-as, so we have to do this with JSON booleans
+  ): Result<SvmAccountsInfoQueryResult, string> {
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
-    const fixedResponseStr = replaceJsonBooleans(responseStr)
-
-    const response = JSON.parse<SerializableGetAccountsInfoResponse>(fixedResponseStr)
-    return SvmAccountsInfoQueryResponse.fromSerializable(response)
+    const parsed = SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr)
+    
+    if (parsed.success !== 'true') return Result.err<SvmAccountsInfoQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting SVM accounts info')
+    
+    const result = SvmAccountsInfoQueryResult.fromSerializable(parsed.data)
+    return Result.ok<SvmAccountsInfoQueryResult, string>(result)
   }
 
   /**
