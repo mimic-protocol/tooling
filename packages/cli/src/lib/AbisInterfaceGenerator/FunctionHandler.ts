@@ -122,20 +122,27 @@ export default class FunctionHandler {
     const methodName = fn.escapedName || fn.name
     const capitalizedName = this.getCapitalizedName(fn)
 
-    lines.push(`  ${methodName}(${methodParams}): ${returnType} {`)
+    importManager.addType('environment')
+    importManager.addType('Result')
+
+    const resultReturnType = returnType === 'void' ? 'Result<void, string>' : `Result<${returnType}, string>`
+    lines.push(`  ${methodName}(${methodParams}): ${resultReturnType} {`)
 
     lines.push(
       `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
-    importManager.addType('environment')
     const contractCallLine = `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
 
     if (returnType === 'void') {
-      lines.push(`    ${contractCallLine}`)
+      lines.push(`    const response = ${contractCallLine}`)
+      lines.push(`    if (response.isError) return Result.err<void, string>(response.error)`)
+      lines.push(`    return Result.ok<void, string>(changetype<void>(0))`)
     } else {
       lines.push(`    const response = ${contractCallLine}`)
-      lines.push(`    return ${contractName}Utils.decode${capitalizedName}(response)`)
+      lines.push(`    if (response.isError) return Result.err<${returnType}, string>(response.error)`)
+      lines.push(`    const decoded = ${contractName}Utils.decode${capitalizedName}(response.value)`)
+      lines.push(`    return Result.ok<${returnType}, string>(decoded)`)
     }
 
     lines.push(`  }`)
