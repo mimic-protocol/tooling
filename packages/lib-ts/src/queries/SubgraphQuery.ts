@@ -26,7 +26,7 @@ export class SubgraphQuery extends SubgraphQueryBase {
 }
 
 @json
-export class SubgraphQueryResponse {
+export class SubgraphQueryResult {
   constructor(
     public blockNumber: i64,
     public data: string

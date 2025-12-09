@@ -6,17 +6,18 @@ import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
   RelevantTokensQuery,
-  RelevantTokensResponse,
-  RelevantTokenBalance,
+  RelevantTokensQueryResult,
+  TokenBalanceQuery,
   RelevantTokensQueryResponse,
   SerializableGetAccountsInfoResponse,
   SubgraphQuery,
   SvmAccountsInfoQuery,
   SvmAccountsInfoQueryResponse,
-  SubgraphQueryResponse,
+  SubgraphQueryResult,
   TokenPriceQuery,
   TokenPriceQueryResponse,
-  EvmCallQueryResponse, 
+  EvmCallQueryResponse,
+  SubgraphQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
@@ -143,14 +144,14 @@ export namespace environment {
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
    * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
    */
-  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<RelevantTokenBalance[][], string> {
+  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<TokenBalanceQuery[][], string> {
     const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
     const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
     
-    if (parsed.success !== 'true') return Result.err<RelevantTokenBalance[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
+    if (parsed.success !== 'true') return Result.err<TokenBalanceQuery[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
     
     const responses = parsed.data
-    return Result.ok<RelevantTokenBalance[][], string>(responses.map((response: RelevantTokensResponse) => response.balances))
+    return Result.ok<TokenBalanceQuery[][], string>(responses.map((response: RelevantTokensQueryResult) => response.balances))
   }
 
   /**
@@ -221,9 +222,11 @@ export namespace environment {
     subgraphId: string,
     query: string,
     timestamp: Date | null = null,
-  ): SubgraphQueryResponse {
-    const response = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
-    return JSON.parse<SubgraphQueryResponse>(response)
+  ): Result<SubgraphQueryResult, string> {
+    const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
+    const parsed = SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr)
+    if (parsed.success !== 'true') return Result.err<SubgraphQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting subgraph query')
+    return Result.ok<SubgraphQueryResult, string>(parsed.data)
   }
    
   /**

@@ -2,7 +2,8 @@ import { JSON } from 'json-as'
 
 import { replaceJsonBooleans } from '../helpers'
 
-import { RelevantTokensResponse } from './RelevantTokensQuery'
+import { RelevantTokensQueryResult } from './RelevantTokensQuery'
+import { SubgraphQueryResult } from './SubgraphQuery'
 
 @json
 export class QueryResponseBase {
@@ -28,9 +29,9 @@ export class TokenPriceQueryResponse extends QueryResponseBase {
 
 @json
 export class RelevantTokensQueryResponse extends QueryResponseBase {
-  public data: RelevantTokensResponse[]
+  public data: RelevantTokensQueryResult[]
 
-  constructor(success: string, data: RelevantTokensResponse[], error: string) {
+  constructor(success: string, data: RelevantTokensQueryResult[], error: string) {
     super(success, error)
     this.data = data
   }
@@ -41,6 +42,16 @@ export class EvmCallQueryResponse extends QueryResponseBase {
   public data: string
 
   constructor(success: string, data: string, error: string) {
+    super(success, error)
+    this.data = data
+  }
+}
+
+@json
+export class SubgraphQueryResponse extends QueryResponseBase {
+  public data: SubgraphQueryResult
+
+  constructor(success: string, data: SubgraphQueryResult, error: string) {
     super(success, error)
     this.data = data
   }
