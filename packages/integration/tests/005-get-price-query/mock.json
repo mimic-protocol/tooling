@@ -3,10 +3,10 @@
     "_tokenPriceQuery": {
       "log": true,
       "paramResponse": {
-        "{\"address\":\"0x2260fac5e5542a773aa44fbcfedf7c193bc2c599\",\"chainId\":1}": "[\"90000000000000000000000\"]",
-        "{\"address\":\"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\",\"chainId\":1}": "[\"1000000000000000000\"]",
-        "{\"address\":\"0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"chainId\":1}": "[\"2000000000000000000000\"]",
-        "{\"address\":\"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\",\"chainId\":1,\"timestamp\":1744818017000}": "[\"1000000000000000000\"]"
+        "{\"address\":\"0x2260fac5e5542a773aa44fbcfedf7c193bc2c599\",\"chainId\":1}": "{\"success\":\"true\",\"data\":[\"90000000000000000000000\"],\"error\":\"\"}",
+        "{\"address\":\"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\",\"chainId\":1}": "{\"success\":\"true\",\"data\":[\"1000000000000000000000\"],\"error\":\"\"}",
+        "{\"address\":\"0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"chainId\":1}": "{\"success\":\"true\",\"data\":[\"2000000000000000000000\"],\"error\":\"\"}",
+        "{\"address\":\"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\",\"chainId\":1,\"timestamp\":1744818017000}": "{\"success\":\"true\",\"data\":[\"1000000000000000000000\"],\"error\":\"\"}"
       }
     }
   }
