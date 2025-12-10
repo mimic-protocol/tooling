@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "0.0.1-rc.27",
+  "version": "0.0.1-rc.28",
   "license": "GPL-3.0",
   "private": false,
   "type": "commonjs",
@@ -57,5 +57,8 @@
     "plugins": [
       "@oclif/plugin-not-found"
     ]
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

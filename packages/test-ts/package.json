@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/test-ts",
-  "version": "0.0.1-rc.27",
+  "version": "0.0.1-rc.28",
   "license": "GPL-3.0",
   "private": false,
   "main": "dist/index.js",
@@ -27,5 +27,8 @@
     "nodemon": "^2.0.22",
     "ts-mocha": "^10.0.0",
     "typescript": "5.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

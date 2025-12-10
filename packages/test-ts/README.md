@@ -2,7 +2,7 @@
   <a href="https://mimic.fi"><img src="https://www.mimic.fi/logo.png" alt="Mimic Protocol" width="200"></a> 
 </h1>
 
-<h4 align="center">Blockchain automation protocol</h4>
+<h4 align="center">Blockchain development platform</h4>
 
 <p align="center">
   <a href="https://github.com/mimic-protocol/tooling/actions/workflows/ci.yml">
@@ -23,7 +23,7 @@
 
 ---
 
-## Content 
+## Content
 
 This package provides tooling and helpers to write and run tests for Mimic Protocol tasks using TypeScript. It includes:
 
@@ -33,7 +33,7 @@ This package provides tooling and helpers to write and run tests for Mimic Proto
 
 ## Setup
 
-To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed. 
+To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed.
 
 Install the library from the root of the monorepo:
 
@@ -53,24 +53,24 @@ $ yarn
 Here’s an example of how to test a Mimic task:
 
 ```ts
-import { runTask } from '@mimicprotocol/test-ts'
-import { expect } from 'chai'
+import { runTask } from "@mimicprotocol/test-ts";
+import { expect } from "chai";
 
-const taskDir = './my-task'
-const context = { user: '0x...', settler: '0x...', timestamp: Date.now() }
-const inputs = { token: '0x...', amount: '10000000' }
+const taskDir = "./my-task";
+const context = { user: "0x...", settler: "0x...", timestamp: Date.now() };
+const inputs = { token: "0x...", amount: "10000000" };
 
-const intents = await runTask(taskDir, context, { inputs })
+const intents = await runTask(taskDir, context, { inputs });
 
-expect(intents).to.be.an('array').that.is.not.empty
-expect(intents).to.have.lengthOf(1)
+expect(intents).to.be.an("array").that.is.not.empty;
+expect(intents).to.have.lengthOf(1);
 
-expect(intents[0].type).to.be.equal('transfer')
-expect(intents[0].settler).to.be.equal(context.settler)
+expect(intents[0].type).to.be.equal("transfer");
+expect(intents[0].settler).to.be.equal(context.settler);
 
-expect(intents[0].transfers).to.have.lengthOf(1)
-expect(intents[0].transfers[0].token).to.be.equal(inputs.token)
-expect(intents[0].transfers[0].amount).to.be.equal(inputs.amount)
+expect(intents[0].transfers).to.have.lengthOf(1);
+expect(intents[0].transfers[0].token).to.be.equal(inputs.token);
+expect(intents[0].transfers[0].amount).to.be.equal(inputs.amount);
 ```
 
 For full task testing guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
@@ -86,7 +86,6 @@ for the safety of the protocol, please contact us through <a href="mailto:securi
 
 This project is licensed under the GNU General Public License v3.0.  
 See the [LICENSE](../../LICENSE) file for details.
-
 
 ---
 
