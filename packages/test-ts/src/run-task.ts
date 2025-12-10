@@ -2,7 +2,7 @@ import { runExecution } from '@mimicprotocol/runner-node'
 import * as path from 'path'
 
 import {
-  contractCallQueryProcessor,
+  evmCallQueryProcessor,
   priceQueryProcessor,
   relevantTokensQueryProcessor,
   subgraphQueryProcessor,
@@ -66,7 +66,7 @@ function getOracleResponses(optional: RunTaskOptionalParams, contextTimestamp: n
 
   const priceResponses = processQueries(prices, priceQueryProcessor, contextTimestamp)
   const relevantTokensResponses = processQueries(relevantTokens, relevantTokensQueryProcessor, contextTimestamp)
-  const callsResponses = processQueries(calls, contractCallQueryProcessor, contextTimestamp)
+  const callsResponses = processQueries(calls, evmCallQueryProcessor, contextTimestamp)
   const subgraphQueriesResponses = processQueries(subgraphQueries, subgraphQueryProcessor, contextTimestamp)
 
   return {

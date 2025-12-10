@@ -1,12 +1,12 @@
 import { OracleQueryParams, OracleQueryResult } from '@mimicprotocol/sdk'
 import { AbiCoder, concat } from 'ethers'
 
-import { EvmCallRequest, EvmCallResponse, QueryProcessor } from '../types'
+import { EvmCallQueryRequest, EvmCallQueryResponse, QueryProcessor } from '../types'
 import { EvmCallRequestValidator, EvmCallTypedValueValidator } from '../validators'
 
-export const contractCallQueryProcessor: QueryProcessor<
-  EvmCallRequest,
-  EvmCallResponse,
+export const evmCallQueryProcessor: QueryProcessor<
+  EvmCallQueryRequest,
+  EvmCallQueryResponse,
   OracleQueryParams<'EvmCallQuery'>,
   OracleQueryResult<'EvmCallQuery'>
 > = {
