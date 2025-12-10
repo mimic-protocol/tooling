@@ -1,6 +1,7 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
+import * as os from 'os'
 import * as path from 'path'
 import simpleGit from 'simple-git'
 
@@ -21,14 +22,6 @@ export default class Init extends Command {
     const { flags } = await this.parse(Init)
     const { directory, force } = flags
     const fullDirectory = path.resolve(directory)
-    const originalCwd = process.cwd()
-
-    const needsCwdChange = originalCwd === fullDirectory || originalCwd.startsWith(fullDirectory + path.sep)
-
-    if (needsCwdChange) {
-      const parentDir = path.dirname(fullDirectory)
-      process.chdir(parentDir)
-    }
 
     if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
       const shouldDelete =
@@ -44,7 +37,9 @@ export default class Init extends Command {
         this.exit(0)
       }
       log.startAction(`Deleting contents of ${fullDirectory}`)
-      fs.rmSync(fullDirectory, { recursive: true })
+      for (const file of fs.readdirSync(fullDirectory)) {
+        fs.rmSync(path.join(fullDirectory, file), { recursive: true, force: true })
+      }
     }
 
     log.startAction('Creating files')
@@ -59,23 +54,27 @@ export default class Init extends Command {
       })
     }
 
-    if (fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length === 0) {
-      fs.rmSync(fullDirectory, { recursive: true })
-    }
-
     if (!fs.existsSync(fullDirectory)) {
       fs.mkdirSync(fullDirectory, { recursive: true })
     }
 
+    // Clone to a temp directory and copy files to preserve the original directory
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-init-'))
     try {
-      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', fullDirectory)
+      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', tempDir)
+
+      // Remove .git from temp to make it a fresh project
+      const gitDir = path.join(tempDir, '.git')
+      if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
+
+      // Copy all files from temp to destination
+      fs.cpSync(tempDir, fullDirectory, { recursive: true })
     } catch (error) {
       this.error(`Failed to clone template repository. Details: ${error}`)
+    } finally {
+      // Clean up temp directory
+      fs.rmSync(tempDir, { recursive: true, force: true })
     }
-
-    // Remove .git to make it a fresh project repo
-    const gitDir = path.join(fullDirectory, '.git')
-    if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
 
     this.installDependencies(fullDirectory)
     this.runCodegen(fullDirectory)
