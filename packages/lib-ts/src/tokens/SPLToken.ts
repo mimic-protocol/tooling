@@ -72,19 +72,7 @@ export class SPLToken extends BlockchainToken {
    * @returns A `u8` representing the number of decimals of the token.
    */
   get decimals(): u8 {
-    if (this._decimals == SPLToken.EMPTY_DECIMALS) {
-      const result = environment.svmAccountsInfoQuery([this.address])
-      if (result.isError) {
-        log.warning('Failed to get decimals for token {} on chain {}: {}', [
-          this.address.toString(),
-          this.chainId.toString(),
-          result.error,
-        ])
-        return SPLToken.EMPTY_DECIMALS
-      }
-      const decimals = SvmMint.fromHex(result.value.accountsInfo[0].data).decimals
-      this._decimals = decimals
-    }
+    if (this._decimals == SPLToken.EMPTY_DECIMALS) this._getDecimals()
     return this._decimals
   }
 
@@ -96,24 +84,48 @@ export class SPLToken extends BlockchainToken {
    * @returns A string containing the token symbol.
    */
   get symbol(): string {
-    if (this._symbol == SPLToken.EMPTY_SYMBOL) {
-      const result = environment.svmAccountsInfoQuery([this.getMetadataAddress()])
-      if (result.isError) {
-        log.warning('Failed to get symbol for token {} on chain {}: {}', [
-          this.address.toString(),
-          this.chainId.toString(),
-          result.error,
-        ])
-        return SPLToken.EMPTY_SYMBOL
-      }
-      const data = result.value.accountsInfo[0].data
-      // Return placeholder symbol from address if TokenMetadata standard is not used
-      this._symbol =
-        data === '0x'
-          ? `${this.address.toString().slice(0, 5)}...${this.address.toString().slice(-5)}`
-          : SvmTokenMetadataData.fromTokenMetadataHex(result.value.accountsInfo[0].data).symbol
-    }
+    if (this._symbol == SPLToken.EMPTY_SYMBOL) this._getSymbol()
     return this._symbol
+  }
+
+  /**
+   * Internal method to fetch and cache the token decimals.
+   * Performs an SVM accounts info query to get the mint data.
+   * @private
+   */
+  private _getDecimals(): void {
+    const result = environment.svmAccountsInfoQuery([this.address])
+    if (result.isError) {
+      log.warning(
+        `Failed to get decimals for token ${this.address.toString()} on chain ${this.chainId.toString()}: ${result.error}`
+      )
+      this._decimals = SPLToken.EMPTY_DECIMALS
+      return
+    }
+    const decimals = SvmMint.fromHex(result.value.accountsInfo[0].data).decimals
+    this._decimals = decimals
+  }
+
+  /**
+   * Internal method to fetch and cache the token symbol.
+   * Performs an SVM accounts info query to get the token metadata.
+   * @private
+   */
+  private _getSymbol(): void {
+    const result = environment.svmAccountsInfoQuery([this.getMetadataAddress()])
+    if (result.isError) {
+      log.warning(
+        `Failed to get symbol for token ${this.address.toString()} on chain ${this.chainId.toString()}: ${result.error}`
+      )
+      this._symbol = SPLToken.EMPTY_SYMBOL
+      return
+    }
+    const data = result.value.accountsInfo[0].data
+    // Return placeholder symbol from address if TokenMetadata standard is not used
+    this._symbol =
+      data === '0x'
+        ? `${this.address.toString().slice(0, 5)}...${this.address.toString().slice(-5)}`
+        : SvmTokenMetadataData.fromTokenMetadataHex(result.value.accountsInfo[0].data).symbol
   }
 
   /**
