@@ -435,7 +435,8 @@ describe('TokenAmount', () => {
         it('returns 0', () => {
           const tokenAmount = TokenAmount.fromI32(randomERC20Token(), 0)
           const result = tokenAmount.toUsd()
-          expect(result.toString()).toBe('0')
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe('0')
         })
       })
 
@@ -450,7 +451,8 @@ describe('TokenAmount', () => {
 
           const result = tokenAmount.toUsd()
           const expectedAmount = decimalTokenAmount * price
-          expect(result.toString()).toBe(expectedAmount.toString())
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe(expectedAmount.toString())
         })
 
         it('converts correctly for a token with standard decimals', () => {
@@ -463,7 +465,8 @@ describe('TokenAmount', () => {
 
           const result = tokenAmount.toUsd()
           const expectedAmount = decimalTokenAmount * price
-          expect(result.toString()).toBe(expectedAmount.toString())
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe(expectedAmount.toString())
         })
 
         it('converts correctly for a token with more than standard decimals', () => {
@@ -476,7 +479,8 @@ describe('TokenAmount', () => {
 
           const result = tokenAmount.toUsd()
           const expectedAmount = decimalTokenAmount * price
-          expect(result.toString()).toBe(expectedAmount.toString())
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe(expectedAmount.toString())
         })
       })
     })
@@ -486,7 +490,8 @@ describe('TokenAmount', () => {
         it('returns 0', () => {
           const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), 0)
           const result = tokenAmount.toUsd()
-          expect(result.toString()).toBe('0')
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe('0')
         })
       })
 
@@ -496,7 +501,8 @@ describe('TokenAmount', () => {
           const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), decimalTokenAmount)
 
           const result = tokenAmount.toUsd()
-          expect(result.toString()).toBe(decimalTokenAmount.toString())
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe(decimalTokenAmount.toString())
         })
       })
     })
@@ -506,18 +512,19 @@ describe('TokenAmount', () => {
         it('returns 0', () => {
           const tokenAmount = TokenAmount.fromI32(DenominationToken.USD(), 0)
           const result = tokenAmount.toUsd()
-          expect(result.toString()).toBe('0')
+          expect(result.isOk).toBe(true)
+          expect(result.value.toString()).toBe('0')
         })
       })
 
       describe('when not zero', () => {
-        it('throws', () => {
-          expect(() => {
-            const decimalTokenAmount = 100
-            const token = new DenominationToken(randomEvmAddress(), 18, 'EUR')
-            const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
-            tokenAmount.toUsd()
-          }).toThrow('Price query not supported for token')
+        it('returns error', () => {
+          const decimalTokenAmount = 100
+          const token = new DenominationToken(randomEvmAddress(), 18, 'EUR')
+          const tokenAmount = TokenAmount.fromI32(token, decimalTokenAmount)
+          const result = tokenAmount.toUsd()
+          expect(result.isError).toBe(true)
+          expect(result.error).toBe('Price query not supported for token EUR')
         })
       })
     })

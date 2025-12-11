@@ -1,7 +1,7 @@
 import { environment } from '../environment'
 import { STANDARD_DECIMALS } from '../helpers'
 import { Token, TokenAmount } from '../tokens'
-import { BigInt } from '../types'
+import { BigInt, Result } from '../types'
 
 /**
  * Represents a USD amount with fixed decimal precision.
@@ -192,13 +192,13 @@ export class USD {
    * @param token - The target token to convert to
    * @returns A TokenAmount representing the equivalent value in the target token
    */
-  toTokenAmount(token: Token): TokenAmount {
-    if (this.isZero()) return TokenAmount.fromI32(token, 0)
+  toTokenAmount(token: Token): Result<TokenAmount, string> {
+    if (this.isZero()) return Result.ok<TokenAmount, string>(TokenAmount.fromI32(token, 0))
     const tokenPriceResult = environment.tokenPriceQuery(token)
-    if (tokenPriceResult.isError) throw new Error(tokenPriceResult.error)
+    if (tokenPriceResult.isError) return Result.err<TokenAmount, string>(tokenPriceResult.error)
 
     const tokenPrice = tokenPriceResult.value
     const tokenAmount = this.value.upscale(token.decimals).div(tokenPrice.value)
-    return TokenAmount.fromBigInt(token, tokenAmount)
+    return Result.ok<TokenAmount, string>(TokenAmount.fromBigInt(token, tokenAmount))
   }
 }
