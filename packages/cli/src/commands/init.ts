@@ -58,21 +58,17 @@ export default class Init extends Command {
       fs.mkdirSync(fullDirectory, { recursive: true })
     }
 
-    // Clone to a temp directory and copy files to preserve the original directory
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-init-'))
     try {
       await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', tempDir)
 
-      // Remove .git from temp to make it a fresh project
       const gitDir = path.join(tempDir, '.git')
       if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
 
-      // Copy all files from temp to destination
       fs.cpSync(tempDir, fullDirectory, { recursive: true })
     } catch (error) {
       this.error(`Failed to clone template repository. Details: ${error}`)
     } finally {
-      // Clean up temp directory
       fs.rmSync(tempDir, { recursive: true, force: true })
     }
 
