@@ -7,7 +7,7 @@ export default function main(): void {
 
   // Convert X amount of USDC to USD
   const usdcAmount = TokenAmount.fromStringDecimal(Ethereum.USDC, '1000.2')
-  usdcAmount.toUsd().toString()
+  usdcAmount.toUsd()
 
   // Convert USDC to ETH
   usdcAmount.toTokenAmount(Ethereum.ETH)

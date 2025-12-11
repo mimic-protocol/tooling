@@ -2,7 +2,7 @@
   "environment": {
     "_relevantTokensQuery": {
       "log": true,
-      "default": "[]"
+      "default": "{\"success\":\"true\",\"data\":[],\"error\":\"\"}"
     }
   }
 }

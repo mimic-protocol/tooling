@@ -2,7 +2,7 @@
   "environment": {
     "_evmCallQuery": {
       "log": true,
-      "default": "0x047be3bb46f9416732fe39a05134f20235c19334"
+      "default": "{\"success\":\"true\",\"data\":\"0x047be3bb46f9416732fe39a05134f20235c19334\",\"error\":\"\"}"
     }
   },
   "evm": {

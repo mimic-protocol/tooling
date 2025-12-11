@@ -1,5 +1,5 @@
 import { environment } from '../environment'
-import { BigInt, JSON } from '../types'
+import { BigInt, JSON, Result } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
@@ -217,11 +217,14 @@ export class TokenAmount {
    * Converts this TokenAmount to its USD equivalent.
    * @returns A USD instance representing the current USD value
    */
-  toUsd(): USD {
-    if (this.isZero()) return USD.zero()
-    const tokenPrice = environment.tokenPriceQuery(this.token)
+  toUsd(): Result<USD, string> {
+    if (this.isZero()) return Result.ok<USD, string>(USD.zero())
+    const tokenPriceResult = environment.tokenPriceQuery(this.token)
+    if (tokenPriceResult.isError) return Result.err<USD, string>(tokenPriceResult.error)
+
+    const tokenPrice = tokenPriceResult.value
     const amountUsd = this.amount.times(tokenPrice.value).downscale(this.decimals)
-    return USD.fromBigInt(amountUsd)
+    return Result.ok<USD, string>(USD.fromBigInt(amountUsd))
   }
 
   /**
@@ -229,9 +232,12 @@ export class TokenAmount {
    * @param other - The target token to convert to
    * @returns A TokenAmount of the target token with equivalent USD value
    */
-  toTokenAmount(other: Token): TokenAmount {
-    if (this.isZero()) return TokenAmount.fromI32(other, 0)
-    return this.toUsd().toTokenAmount(other)
+  toTokenAmount(other: Token): Result<TokenAmount, string> {
+    if (this.isZero()) return Result.ok<TokenAmount, string>(TokenAmount.fromI32(other, 0))
+    const usdResult = this.toUsd()
+    if (usdResult.isError) return Result.err<TokenAmount, string>(usdResult.error)
+
+    return usdResult.value.toTokenAmount(other)
   }
 
   /**
