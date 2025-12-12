@@ -1,5 +1,12 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.29
+
+### Patch Changes
+
+- 72bb607: Fix relevant tokens query price filter
+- 73a9cde: Fix npx init
+
 ## 0.0.1-rc.28
 
 ### Patch Changes
