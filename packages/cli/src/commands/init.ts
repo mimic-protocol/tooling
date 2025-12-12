@@ -37,6 +37,9 @@ export default class Init extends Command {
         this.exit(0)
       }
       log.startAction(`Deleting contents of ${fullDirectory}`)
+      // Delete files individually instead of removing the entire directory to preserve
+      // the directory reference. This prevents issues when the directory is the current
+      // working directory, as removing it would cause the reference to be lost.
       for (const file of fs.readdirSync(fullDirectory)) {
         fs.rmSync(path.join(fullDirectory, file), { recursive: true, force: true })
       }
