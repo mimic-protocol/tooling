@@ -1,7 +1,6 @@
 import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
-import * as os from 'os'
 import * as path from 'path'
 import simpleGit from 'simple-git'
 
@@ -61,18 +60,13 @@ export default class Init extends Command {
       fs.mkdirSync(fullDirectory, { recursive: true })
     }
 
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-init-'))
     try {
-      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', tempDir)
+      await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', fullDirectory)
 
-      const gitDir = path.join(tempDir, '.git')
+      const gitDir = path.join(fullDirectory, '.git')
       if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
-
-      fs.cpSync(tempDir, fullDirectory, { recursive: true })
     } catch (error) {
       this.error(`Failed to clone template repository. Details: ${error}`)
-    } finally {
-      fs.rmSync(tempDir, { recursive: true, force: true })
     }
 
     this.installDependencies(fullDirectory)
