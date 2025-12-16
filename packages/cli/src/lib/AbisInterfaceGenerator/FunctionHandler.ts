@@ -124,8 +124,10 @@ export default class FunctionHandler {
 
     importManager.addType('environment')
     importManager.addType('Result')
+    if (returnType === 'void') importManager.addType(LibTypes.Void)
 
-    const resultReturnType = returnType === 'void' ? 'Result<void, string>' : `Result<${returnType}, string>`
+    const resultReturnType =
+      returnType === 'void' ? `Result<${LibTypes.Void}, string>` : `Result<${returnType}, string>`
     lines.push(`  ${methodName}(${methodParams}): ${resultReturnType} {`)
 
     lines.push(
@@ -136,8 +138,8 @@ export default class FunctionHandler {
 
     if (returnType === 'void') {
       lines.push(`    const response = ${contractCallLine}`)
-      lines.push(`    if (response.isError) return Result.err<void, string>(response.error)`)
-      lines.push(`    return Result.ok<void, string>(changetype<void>(0))`)
+      lines.push(`    if (response.isError) return Result.err<${LibTypes.Void}, string>(response.error)`)
+      lines.push(`    return Result.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
     } else {
       lines.push(`    const response = ${contractCallLine}`)
       lines.push(`    if (response.isError) return Result.err<${returnType}, string>(response.error)`)

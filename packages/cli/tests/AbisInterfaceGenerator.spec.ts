@@ -313,14 +313,14 @@ describe('AbisInterfaceGenerator', () => {
 
       const selector = getFunctionSelector(abi[0])
 
-      expect(result).to.contain(`${functionName}(): Result<void, string> {`)
+      expect(result).to.contain(`${functionName}(): Result<Void, string> {`)
       expect(result).to.contain(`static encodeNoReturn(): Bytes {`)
       expect(result).to.contain(`return ${LibTypes.Bytes}.fromHexString('${selector}')`)
       expect(result).to.contain(
         `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
-      expect(result).to.contain(`if (response.isError) return Result.err<void, string>(response.error)`)
-      expect(result).to.contain(`return Result.ok<void, string>(changetype<void>(0))`)
+      expect(result).to.contain(`if (response.isError) return Result.err<Void, string>(response.error)`)
+      expect(result).to.contain(`return Result.ok<Void, string>(new Void())`)
       expect(result).not.to.contain(`_decodeNoReturnResponse`)
     })
   })
@@ -892,7 +892,7 @@ describe('AbisInterfaceGenerator', () => {
       const result = AbisInterfaceGenerator.generate(abi, CONTRACT_NAME)
 
       expect(result).to.contain('static encodeValidate(data: Bytes): Bytes {')
-      expect(result).to.contain('validate(data: Bytes): Result<void, string> {')
+      expect(result).to.contain('validate(data: Bytes): Result<Void, string> {')
       expect(result).not.to.contain('_decodeValidateResponse')
     })
 

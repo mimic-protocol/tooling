@@ -49,3 +49,8 @@ export class Wrapped<T> {
     this.inner = inner
   }
 }
+
+// This is used to represent a void return type
+export class Void {
+  constructor() {}
+}
