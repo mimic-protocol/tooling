@@ -89,10 +89,10 @@ export default class FunctionHandler {
       isPayable ? `${methodParams.length > 0 ? ', ' : ''}value: ${LibTypes.BigInt}` : ''
     )
 
-    lines.push(`  ${methodName}(${fullMethodParams}): ${returnType} {`)
+    lines.push(`${methodName}(${fullMethodParams}): ${returnType} {`)
 
     lines.push(
-      `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+      `const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
     importManager.addType(LibTypes.Bytes)
@@ -100,10 +100,10 @@ export default class FunctionHandler {
     if (isPayable) importManager.addType(LibTypes.BigInt)
 
     lines.push(
-      `    return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? ', value' : ''})`
+      `return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? ', value' : ''})`
     )
 
-    lines.push(`  }`)
+    lines.push(`}`)
     lines.push('')
   }
 
@@ -124,30 +124,31 @@ export default class FunctionHandler {
 
     importManager.addType('environment')
     importManager.addType('Result')
-    if (returnType === 'void') importManager.addType(LibTypes.Void)
+    const isVoid = returnType === 'void'
+    if (isVoid) importManager.addType(LibTypes.Void)
 
-    const resultReturnType =
-      returnType === 'void' ? `Result<${LibTypes.Void}, string>` : `Result<${returnType}, string>`
-    lines.push(`  ${methodName}(${methodParams}): ${resultReturnType} {`)
+    const resultReturnType = isVoid ? `Result<${LibTypes.Void}, string>` : `Result<${returnType}, string>`
+    lines.push(`${methodName}(${methodParams}): ${resultReturnType} {`)
 
     lines.push(
-      `    const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
+      `const encodedData = ${contractName}Utils.encode${capitalizedName}(${inputs.map((p) => p.escapedName!).join(', ')})`
     )
 
     const contractCallLine = `environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
 
-    if (returnType === 'void') {
-      lines.push(`    const response = ${contractCallLine}`)
-      lines.push(`    if (response.isError) return Result.err<${LibTypes.Void}, string>(response.error)`)
-      lines.push(`    return Result.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
+    lines.push(`const response = ${contractCallLine}`)
+    lines.push(
+      `if (response.isError) return Result.err<${isVoid ? LibTypes.Void : returnType}, string>(response.error)`
+    )
+
+    if (isVoid) {
+      lines.push(`return Result.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
     } else {
-      lines.push(`    const response = ${contractCallLine}`)
-      lines.push(`    if (response.isError) return Result.err<${returnType}, string>(response.error)`)
-      lines.push(`    const decoded = ${contractName}Utils.decode${capitalizedName}(response.value)`)
-      lines.push(`    return Result.ok<${returnType}, string>(decoded)`)
+      lines.push(`const decoded = ${contractName}Utils.decode${capitalizedName}(response.value)`)
+      lines.push(`return Result.ok<${returnType}, string>(decoded)`)
     }
 
-    lines.push(`  }`)
+    lines.push(`}`)
     lines.push('')
   }
 }
