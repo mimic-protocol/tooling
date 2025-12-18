@@ -90,7 +90,7 @@ export namespace environment {
    */
   export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): USD[] {
     if (token.isUSD()) return [USD.fromI32(1)]
-    else if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
+    if (!(token instanceof BlockchainToken)) throw new Error('Price query not supported for token ' + token.toString())
     const prices = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(token as BlockchainToken, timestamp)))
     return JSON.parse<string[]>(prices).map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
   }
@@ -108,14 +108,12 @@ export namespace environment {
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
 
     const length = sortedPrices.length
-    if (length % 2 === 1) {
-      return sortedPrices[length / 2]
-    } else {
-      const left = sortedPrices[length / 2 - 1]
-      const right = sortedPrices[length / 2]
-      const sum = left.plus(right)
-      return sum.div(BigInt.fromI32(2))
-    }
+    if (length % 2 === 1) return sortedPrices[length / 2]
+
+    const left = sortedPrices[length / 2 - 1]
+    const right = sortedPrices[length / 2]
+    const sum = left.plus(right)
+    return sum.div(BigInt.fromI32(2))
   }
 
   /**
