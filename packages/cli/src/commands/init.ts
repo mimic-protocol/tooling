@@ -21,14 +21,6 @@ export default class Init extends Command {
     const { flags } = await this.parse(Init)
     const { directory, force } = flags
     const fullDirectory = path.resolve(directory)
-    const originalCwd = process.cwd()
-
-    const needsCwdChange = originalCwd === fullDirectory || originalCwd.startsWith(fullDirectory + path.sep)
-
-    if (needsCwdChange) {
-      const parentDir = path.dirname(fullDirectory)
-      process.chdir(parentDir)
-    }
 
     if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
       const shouldDelete =
@@ -44,7 +36,12 @@ export default class Init extends Command {
         this.exit(0)
       }
       log.startAction(`Deleting contents of ${fullDirectory}`)
-      fs.rmSync(fullDirectory, { recursive: true })
+      // Delete files individually instead of removing the entire directory to preserve
+      // the directory reference. This prevents issues when the directory is the current
+      // working directory, as removing it would cause the reference to be lost.
+      for (const file of fs.readdirSync(fullDirectory)) {
+        fs.rmSync(path.join(fullDirectory, file), { recursive: true, force: true })
+      }
     }
 
     log.startAction('Creating files')
@@ -59,23 +56,18 @@ export default class Init extends Command {
       })
     }
 
-    if (fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length === 0) {
-      fs.rmSync(fullDirectory, { recursive: true })
-    }
-
     if (!fs.existsSync(fullDirectory)) {
       fs.mkdirSync(fullDirectory, { recursive: true })
     }
 
     try {
       await simpleGit().clone('https://github.com/mimic-protocol/init-template.git', fullDirectory)
+
+      const gitDir = path.join(fullDirectory, '.git')
+      if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
     } catch (error) {
       this.error(`Failed to clone template repository. Details: ${error}`)
     }
-
-    // Remove .git to make it a fresh project repo
-    const gitDir = path.join(fullDirectory, '.git')
-    if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
 
     this.installDependencies(fullDirectory)
     this.runCodegen(fullDirectory)

@@ -1,7 +1,7 @@
 import { Address, ChainId } from '../types'
 
 @json
-class CallBase {
+class EvmCallQueryBase {
   constructor(
     public readonly to: string,
     public readonly chainId: ChainId,
@@ -10,7 +10,7 @@ class CallBase {
 }
 
 @json
-export class Call extends CallBase {
+export class EvmCallQuery extends EvmCallQueryBase {
   public readonly timestamp: i64
 
   constructor(to: string, chainId: ChainId, timestamp: i64, data: string) {
@@ -18,10 +18,10 @@ export class Call extends CallBase {
     this.timestamp = timestamp
   }
 
-  static from(to: Address, chainId: ChainId, timestamp: Date | null, data: string): CallBase {
+  static from(to: Address, chainId: ChainId, timestamp: Date | null, data: string): EvmCallQueryBase {
     const address = to.toString()
     return timestamp
-      ? new Call(address, chainId, changetype<Date>(timestamp).getTime(), data)
-      : new CallBase(address, chainId, data)
+      ? new EvmCallQuery(address, chainId, changetype<Date>(timestamp).getTime(), data)
+      : new EvmCallQueryBase(address, chainId, data)
   }
 }
