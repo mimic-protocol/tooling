@@ -1,4 +1,6 @@
-import { ChainId, QueryResponseBase } from '../types'
+import { ChainId } from '../types'
+
+import { QueryResponseBase } from './QueryResponse'
 
 @json
 class SubgraphQueryBase {

@@ -1,4 +1,6 @@
-import { Address, ChainId, QueryResponseBase } from '../types'
+import { Address, ChainId } from '../types'
+
+import { QueryResponseBase } from './QueryResponse'
 
 @json
 class EvmCallQueryBase {

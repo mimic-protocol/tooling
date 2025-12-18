@@ -1,5 +1,6 @@
 import { BlockchainToken } from '../tokens'
-import { QueryResponseBase } from '../types'
+
+import { QueryResponseBase } from './QueryResponse'
 
 @json
 class TokenPriceQueryBase {

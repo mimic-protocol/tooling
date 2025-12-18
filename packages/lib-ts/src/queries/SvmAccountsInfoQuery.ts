@@ -1,5 +1,6 @@
 import { Address, SerializableSvmAccountInfo, SvmAccountInfo } from '../types'
-import { QueryResponseBase } from '../types/QueryResponse'
+
+import { QueryResponseBase } from './QueryResponse'
 
 @json
 class SvmAccountsInfoQueryBase {

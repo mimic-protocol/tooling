@@ -1,6 +1,8 @@
 import { ListType } from '../helpers'
 import { BlockchainToken, TokenAmount, USD } from '../tokens'
-import { Address, BigInt, ChainId, QueryResponseBase } from '../types'
+import { Address, BigInt, ChainId } from '../types'
+
+import { QueryResponseBase } from './QueryResponse'
 
 @json
 class TokenQuery {

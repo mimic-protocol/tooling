@@ -5,19 +5,22 @@ import { ListType } from './helpers'
 import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
-  SvmAccountsInfoQuery,
-  SvmAccountsInfoQueryResponse,
-  TokenPriceQuery,
   RelevantTokensQuery,
   RelevantTokensQueryResult,
   TokenBalanceQuery,
+  RelevantTokensQueryResponse,
   SubgraphQuery,
+  SvmAccountsInfoQuery,
+  SvmAccountsInfoQueryResponse,
   SvmAccountsInfoQueryResult,
   SubgraphQueryResult,
+  TokenPriceQuery,
+  EvmCallQueryResponse,
+  SubgraphQueryResponse,
+  TokenPriceQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, ChainId, Result } from './types'
-import { EvmCallQueryResponse, PriceQueryResponse, RelevantTokensQueryResponse, SubgraphQueryResponse } from './types/QueryResponse'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -93,7 +96,7 @@ export namespace environment {
     else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
     const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    const parsed = PriceQueryResponse.fromJson<PriceQueryResponse>(responseStr)
+    const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
     
     if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
     
