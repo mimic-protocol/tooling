@@ -31,8 +31,10 @@ export class SerializableTrigger {
 
 export class EventTriggerData {
   constructor(
+    public chainId: BigInt,
     public blockHash: string,
     public index: BigInt,
+    public contract: Address,
     public topics: string[],
     public eventData: string
   ) {}
@@ -64,8 +66,17 @@ export class Trigger {
   }
 
   static deserializeEventTriggerData(data: string): EventTriggerData {
-    const fields = JSON.parse<string[]>(evm.decode(new EvmDecodeParam('(bytes32,uint256,bytes32[],bytes)', data)))
-    return new EventTriggerData(fields[0], BigInt.fromString(fields[1]), JSON.parse<string[]>(fields[2]), fields[3])
+    const fields = JSON.parse<string[]>(
+      evm.decode(new EvmDecodeParam('(uint256,bytes32,uint256,address,bytes32[],bytes)', data))
+    )
+    return new EventTriggerData(
+      BigInt.fromString(fields[0]),
+      fields[1],
+      BigInt.fromString(fields[2]),
+      Address.fromString(fields[3]),
+      JSON.parse<string[]>(fields[4]),
+      fields[5]
+    )
   }
 }
 

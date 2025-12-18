@@ -32,7 +32,7 @@ export class RelevantTokensQuery {
     tokenFilter: ListType
   ): RelevantTokensQuery {
     const ownerStr = owner.toString()
-    const usdMinAmountStr = usdMinAmount.toString()
+    const usdMinAmountStr = usdMinAmount.value.toString()
     const tokensQueries = tokens.map<TokenQuery>((token) => TokenQuery.fromToken(token))
     return new RelevantTokensQuery(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
   }

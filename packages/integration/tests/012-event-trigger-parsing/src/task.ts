@@ -1,4 +1,4 @@
-import { Address, BigInt, environment, TriggerType } from '@mimicprotocol/lib-ts'
+import { Address, BigInt, environment } from '@mimicprotocol/lib-ts'
 
 import { TransferEvent } from './types/ERC20'
 
@@ -8,9 +8,6 @@ const AMOUNT = '1000000'
 
 export default function main(): void {
   const context = environment.getContext()
-  const type = context.trigger.type
-  if (type !== TriggerType.EVENT) throw new Error('Trigger type is not event!')
-
   const eventTrigger = context.trigger.getEventData()
   const transferEvent = TransferEvent.decode(eventTrigger.topics, eventTrigger.eventData)
 
