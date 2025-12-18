@@ -99,12 +99,11 @@ export default class RunnerMock {
   run(fnName = 'main'): void {
     try {
       const fn = this.instance.exports[fnName]
-      if (typeof fn === 'function') {
-        fn()
-      } else {
+      if (typeof fn !== 'function') {
         const availableExports = Object.keys(this.instance.exports).join(', ')
         throw Error(`No "${fnName}" found in exports. Available exports: ${availableExports}`)
       }
+      fn()
     } catch (error) {
       throw Error(`Task Execution Error - ${error}`)
     }
@@ -199,13 +198,9 @@ export default class RunnerMock {
   }
 
   private createMockFunction(functionName: string, mockValue: MockResponseValue): CallableFunction {
-    if (mockValue === 'log') {
-      return this.createLogFn(functionName)
-    } else if (this.isParameterizedResponse(mockValue)) {
-      return this.createParameterizedFunction(functionName, mockValue)
-    } else {
-      return this.createConstantFunction(String(mockValue))
-    }
+    if (mockValue === 'log') return this.createLogFn(functionName)
+    if (this.isParameterizedResponse(mockValue)) return this.createParameterizedFunction(functionName, mockValue)
+    return this.createConstantFunction(String(mockValue))
   }
 
   private isParameterizedResponse(value: unknown): value is ParameterizedResponse {
@@ -220,21 +215,18 @@ export default class RunnerMock {
   private createParameterizedFunction(functionName: string, config: ParameterizedResponse): CallableFunction {
     return (ptr: number) => {
       const param = this.getStringFromMemory(ptr)
-      let result: number
 
       if (config.paramResponse && param in config.paramResponse) {
-        result = this.writeStringToMemory(config.paramResponse[param])
-      } else if ('default' in config && config.default !== undefined) {
-        result = this.writeStringToMemory(config.default)
-      } else {
-        throw new Error(`No response defined for parameter "${param}" in function "${functionName}".`)
+        if (config.log === true) this.logToFile(functionName, param)
+        return this.writeStringToMemory(config.paramResponse[param])
       }
 
-      if (config.log === true) {
-        this.logToFile(functionName, param)
+      if ('default' in config && config.default !== undefined) {
+        if (config.log === true) this.logToFile(functionName, param)
+        return this.writeStringToMemory(config.default)
       }
 
-      return result
+      throw new Error(`No response defined for parameter "${param}" in function "${functionName}".`)
     }
   }
 
