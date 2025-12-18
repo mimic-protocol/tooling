@@ -142,7 +142,7 @@ describe('SPLToken', () => {
       const result = `{"address":"${metadataAddr.toString()}","bump":255}`
 
       setFindProgramAddress(params.seeds, Address.fromString(params.programId), result)
-      // In reality, the getAccountsInfo returns null and then a default value with data "0x". But this is easier to mock
+      // In reality, the svmAccountsInfoQuery returns null and then a default value with data "0x". But this is easier to mock
       setGetAccountsInfo(
         `${metadataAddr.toString()}`,
         `{

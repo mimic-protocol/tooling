@@ -15,7 +15,7 @@ class TokenQuery {
 }
 
 @json
-export class GetRelevantTokens {
+export class RelevantTokensQuery {
   constructor(
     public readonly owner: string,
     public readonly chainIds: ChainId[],
@@ -30,11 +30,11 @@ export class GetRelevantTokens {
     usdMinAmount: USD,
     tokens: BlockchainToken[],
     tokenFilter: ListType
-  ): GetRelevantTokens {
+  ): RelevantTokensQuery {
     const ownerStr = owner.toString()
     const usdMinAmountStr = usdMinAmount.value.toString()
     const tokensQueries = tokens.map<TokenQuery>((token) => TokenQuery.fromToken(token))
-    return new GetRelevantTokens(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
+    return new RelevantTokensQuery(ownerStr, chainIds, usdMinAmountStr, tokensQueries, tokenFilter)
   }
 }
 
@@ -54,7 +54,7 @@ export class RelevantTokenBalance {
 }
 
 @json
-export class GetRelevantTokensResponse {
+export class RelevantTokensQueryResponse {
   constructor(
     public timestamp: i64,
     public balances: RelevantTokenBalance[]

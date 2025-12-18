@@ -13,5 +13,5 @@ export default function main(): void {
   usdcAmount.toTokenAmount(Ethereum.ETH)
 
   // Ask for a price at a certain time
-  environment.getPrice(Ethereum.USDC, new Date(1744818017000))
+  environment.tokenPriceQuery(Ethereum.USDC, new Date(1744818017000))
 }
