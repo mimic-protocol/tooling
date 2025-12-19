@@ -1,11 +1,11 @@
 import { pascalCase } from '../../helpers'
-import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes } from '../../types'
+import { AbiFunctionItem, AbiParameter, AssemblyPrimitiveTypes } from '../../types'
 
-import type AbiTypeConverter from './AbiTypeConverter'
+import AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
-import type ImportManager from './ImportManager'
+import ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
-import type { TupleDefinition, TupleDefinitionsMap } from './types'
+import { TupleDefinition, TupleDefinitionsMap } from './types'
 import { TUPLE_ABI_TYPE } from './types'
 import UtilsHandler from './UtilsHandler'
 

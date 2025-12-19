@@ -1,6 +1,6 @@
-import { type AbiParameter, LibTypes } from '../../types'
+import { AbiParameter, LibTypes } from '../../types'
 
-import type { AbiItem } from './types'
+import { AbiItem } from './types'
 
 export enum NameContext {
   FUNCTION_PARAMETER = 'function_parameter',
