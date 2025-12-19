@@ -1,4 +1,4 @@
-import type { AbiParameter } from '../../types'
+import { type AbiParameter, LibTypes } from '../../types'
 
 import type { AbiItem } from './types'
 
@@ -7,10 +7,11 @@ export enum NameContext {
   LOCAL_VARIABLE = 'local_variable',
   CLASS_PROPERTY = 'class_property',
   METHOD_NAME = 'method_name',
+  TUPLE_CLASS_NAME = 'tuple_class_name',
 }
 
 export default class NameManager {
-  private static readonly RESERVED_BY_CONTEXT = {
+  private static readonly RESERVED_BY_CONTEXT: Record<NameContext, Set<string>> = {
     [NameContext.FUNCTION_PARAMETER]: new Set([
       'response',
       'decodedResponse',
@@ -32,6 +33,7 @@ export default class NameManager {
       'timestamp',
     ]),
     [NameContext.METHOD_NAME]: new Set(['constructor']),
+    [NameContext.TUPLE_CLASS_NAME]: new Set([...Object.values(LibTypes), 'JSON']),
   }
 
   private static readonly INTERNAL_NAME_PATTERNS = [/^item\d+$/, /^s\d+$/]
@@ -85,7 +87,7 @@ export default class NameManager {
     return this.INTERNAL_NAME_PATTERNS.some((pattern) => pattern.test(name))
   }
 
-  private static escapeName(name: string, context: NameContext): string {
+  public static escapeName(name: string, context: NameContext): string {
     if (!this.hasConflict(name, context)) return name
 
     const suffix = this.getSuffixForContext(context)
@@ -110,6 +112,8 @@ export default class NameManager {
         return '_prop'
       case NameContext.METHOD_NAME:
         return '_'
+      case NameContext.TUPLE_CLASS_NAME:
+        return '_class'
       default:
         return '_safe'
     }
