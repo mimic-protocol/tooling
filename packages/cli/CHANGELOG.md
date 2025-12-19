@@ -1,5 +1,11 @@
 # @mimicprotocol/cli
 
+## 0.0.1-rc.30
+
+### Patch Changes
+
+- 213f37f: Fix class names overlapping
+
 ## 0.0.1-rc.29
 
 ### Patch Changes
