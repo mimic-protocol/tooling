@@ -1,10 +1,10 @@
-import { type AbiFunctionItem, type AbiParameter, LibTypes } from '../../types'
+import { AbiFunctionItem, AbiParameter, LibTypes } from '../../types'
 
-import type AbiTypeConverter from './AbiTypeConverter'
-import type ImportManager from './ImportManager'
+import AbiTypeConverter from './AbiTypeConverter'
+import ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
 import TupleHandler from './TupleHandler'
-import { TUPLE_ABI_TYPE, type TupleDefinitionsMap } from './types'
+import { TUPLE_ABI_TYPE, TupleDefinitionsMap } from './types'
 
 export default class FunctionHandler {
   public static appendMethod(

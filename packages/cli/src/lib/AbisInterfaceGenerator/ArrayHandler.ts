@@ -1,6 +1,6 @@
-import type { AbiParameter } from '../../types'
+import { AbiParameter } from '../../types'
 
-import { type MapBaseTypeCallback, TUPLE_ABI_TYPE } from './types'
+import { MapBaseTypeCallback, TUPLE_ABI_TYPE } from './types'
 
 export default class ArrayHandler {
   static isArrayType(abiOrMappedType: string): boolean {

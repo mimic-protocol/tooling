@@ -1,11 +1,11 @@
 import capitalize from 'lodash/capitalize'
 
-import { type AbiParameter, AssemblyPrimitiveTypes, AssemblyTypes, LibTypes } from '../../types'
+import { AbiParameter, AssemblyPrimitiveTypes, AssemblyTypes, LibTypes } from '../../types'
 
 import ArrayHandler from './ArrayHandler'
-import type ImportManager from './ImportManager'
+import ImportManager from './ImportManager'
 import TupleHandler from './TupleHandler'
-import type { TupleDefinitionsMap } from './types'
+import { TupleDefinitionsMap } from './types'
 
 export default class AbiTypeConverter {
   private importManager: ImportManager
