@@ -1,6 +1,7 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
 import { EVM_NATIVE_ADDRESS } from '../helpers'
+import { log } from '../log'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
@@ -115,10 +116,7 @@ export class ERC20Token extends BlockchainToken {
    * @returns A string containing the token symbol.
    */
   get symbol(): string {
-    if (this._symbol === ERC20Token.EMPTY_SYMBOL) {
-      const response = environment.evmCallQuery(this.address, this.chainId, '0x95d89b41', this._timestamp)
-      this._symbol = evm.decode(new EvmDecodeParam('string', response))
-    }
+    if (this._symbol === ERC20Token.EMPTY_SYMBOL) this._getSymbol()
     return this._symbol
   }
 
@@ -130,10 +128,7 @@ export class ERC20Token extends BlockchainToken {
    * @returns A `u8` representing the number of decimals of the token.
    */
   get decimals(): u8 {
-    if (this._decimals == ERC20Token.EMPTY_DECIMALS) {
-      const result = environment.evmCallQuery(this.address, this.chainId, '0x313ce567', this._timestamp)
-      this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result)))
-    }
+    if (this._decimals == ERC20Token.EMPTY_DECIMALS) this._getDecimals()
     return this._decimals
   }
 
@@ -153,5 +148,39 @@ export class ERC20Token extends BlockchainToken {
    */
   isNative(): boolean {
     return this.equals(ERC20Token.native(this.chainId))
+  }
+
+  /**
+   * Internal method to fetch and cache the token symbol.
+   * Performs an EVM call query to the token's symbol() function.
+   * @private
+   */
+  private _getSymbol(): void {
+    const response = environment.evmCallQuery(this.address, this.chainId, '0x95d89b41', this._timestamp)
+    if (response.isError) {
+      log.warning(
+        `Failed to get symbol for token ${this.address.toString()} on chain ${this.chainId.toString()}: ${response.error}`
+      )
+      this._symbol = ERC20Token.EMPTY_SYMBOL
+      return
+    }
+    this._symbol = evm.decode(new EvmDecodeParam('string', response.value))
+  }
+
+  /**
+   * Internal method to fetch and cache the token decimals.
+   * Performs an EVM call query to the token's decimals() function.
+   * @private
+   */
+  private _getDecimals(): void {
+    const result = environment.evmCallQuery(this.address, this.chainId, '0x313ce567', this._timestamp)
+    if (result.isError) {
+      log.warning(
+        `Failed to get decimals for token ${this.address.toString()} on chain ${this.chainId.toString()}: ${result.error}`
+      )
+      this._decimals = ERC20Token.EMPTY_DECIMALS
+      return
+    }
+    this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result.value)))
   }
 }
