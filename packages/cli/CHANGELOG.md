@@ -1,5 +1,11 @@
 # @mimicprotocol/cli
 
+## 0.0.1-rc.31
+
+### Patch Changes
+
+- 1e48dff: Bump runner-node to version 0.0.1-rc.8
+
 ## 0.0.1-rc.30
 
 ### Patch Changes
