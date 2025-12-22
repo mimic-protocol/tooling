@@ -1,10 +1,10 @@
 import { AssemblyPrimitiveTypes } from '../../types'
 
-import type AbiTypeConverter from './AbiTypeConverter'
-import type ImportManager from './ImportManager'
+import AbiTypeConverter from './AbiTypeConverter'
+import ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
 import TupleHandler from './TupleHandler'
-import type { AbiItem, EventDefinitionsMap } from './types'
+import { AbiItem, EventDefinitionsMap } from './types'
 
 export default class EventHandler {
   public static extractEventDefinitions(abi: AbiItem[]): EventDefinitionsMap {

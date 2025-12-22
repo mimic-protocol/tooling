@@ -1,4 +1,4 @@
-import type { ImportedTypes } from './types'
+import { ImportedTypes } from './types'
 
 export default class ImportManager {
   private types: Set<ImportedTypes>

@@ -1,13 +1,13 @@
 import { getFunctionSelector } from '../../helpers'
-import { type AbiFunctionItem, type AbiParameter, AssemblyPrimitiveTypes, LibTypes } from '../../types'
+import { AbiFunctionItem, AbiParameter, AssemblyPrimitiveTypes, LibTypes } from '../../types'
 
-import type AbiTypeConverter from './AbiTypeConverter'
+import AbiTypeConverter from './AbiTypeConverter'
 import ArrayHandler from './ArrayHandler'
 import FunctionHandler from './FunctionHandler'
-import type ImportManager from './ImportManager'
+import ImportManager from './ImportManager'
 import NameManager, { NameContext } from './NameManager'
 import TupleHandler from './TupleHandler'
-import { TUPLE_ABI_TYPE, type TupleDefinitionsMap } from './types'
+import { TUPLE_ABI_TYPE, TupleDefinitionsMap } from './types'
 
 export default class UtilsHandler {
   public static generate(

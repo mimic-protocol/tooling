@@ -6,7 +6,7 @@ import FunctionHandler from './FunctionHandler'
 import ImportManager from './ImportManager'
 import NameManager from './NameManager'
 import TupleHandler from './TupleHandler'
-import type { AbiItem, EventDefinitionsMap, TupleDefinitionsMap } from './types'
+import { AbiItem, EventDefinitionsMap, TupleDefinitionsMap } from './types'
 import UtilsHandler from './UtilsHandler'
 
 export default class ContractClassGenerator {

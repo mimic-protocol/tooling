@@ -355,9 +355,10 @@ describe('USD', () => {
       it('returns 0', () => {
         const token = randomERC20Token()
         const usdAmount = USD.zero()
-        const tokenAmount = usdAmount.toTokenAmount(token)
+        const result = usdAmount.toTokenAmount(token)
 
-        expect(tokenAmount.amount.toString()).toBe('0')
+        expect(result.isOk).toBe(true)
+        expect(result.value.amount.toString()).toBe('0')
       })
     })
 
@@ -372,7 +373,8 @@ describe('USD', () => {
         const result = usdAmount.toTokenAmount(token)
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
-        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.isOk).toBe(true)
+        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
 
       it('converts correctly for a token with standard decimals', () => {
@@ -385,7 +387,8 @@ describe('USD', () => {
         const result = usdAmount.toTokenAmount(token)
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
-        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.isOk).toBe(true)
+        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
 
       it('converts correctly for a token with more than standard decimals', () => {
@@ -398,7 +401,8 @@ describe('USD', () => {
         const result = usdAmount.toTokenAmount(token)
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
-        expect(result.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.isOk).toBe(true)
+        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
     })
   })

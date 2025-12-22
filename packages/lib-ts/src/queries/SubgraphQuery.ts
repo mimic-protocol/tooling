@@ -1,5 +1,7 @@
 import { ChainId } from '../types'
 
+import { QueryResponseBase } from './QueryResponse'
+
 @json
 class SubgraphQueryBase {
   constructor(
@@ -26,9 +28,19 @@ export class SubgraphQuery extends SubgraphQueryBase {
 }
 
 @json
-export class SubgraphQueryResponse {
+export class SubgraphQueryResult {
   constructor(
     public blockNumber: i64,
     public data: string
   ) {}
+}
+
+@json
+export class SubgraphQueryResponse extends QueryResponseBase {
+  public data: SubgraphQueryResult
+
+  constructor(success: string, data: SubgraphQueryResult, error: string) {
+    super(success, error)
+    this.data = data
+  }
 }
