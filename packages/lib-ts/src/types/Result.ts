@@ -4,20 +4,22 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
+import { Stringable } from '../helpers'
+
 /**
  * The result of an operation, with a corresponding value and error type.
  */
-export class Result<V, E> {
+export class Result<V, E extends Stringable> {
   constructor(
     private _value: Wrapped<V> | null,
     private _error: Wrapped<E> | null
   ) {}
 
-  static ok<V, E>(value: V): Result<V, E> {
+  static ok<V, E extends Stringable>(value: V): Result<V, E> {
     return new Result<V, E>(new Wrapped<V>(value), null)
   }
 
-  static err<V, E>(error: E): Result<V, E> {
+  static err<V, E extends Stringable>(error: E): Result<V, E> {
     return new Result<V, E>(null, new Wrapped<E>(error))
   }
 
@@ -29,14 +31,24 @@ export class Result<V, E> {
     return this._error !== null
   }
 
-  get value(): V {
-    if (this.isError) throw new Error('Trying to get a value from an error result')
-    return changetype<Wrapped<V>>(this._value).inner
-  }
-
   get error(): E {
     if (this.isOk) throw new Error('Trying to get an error from a successful result')
     return changetype<Wrapped<E>>(this._error).inner
+  }
+
+  unwrap(): V {
+    if (this.isError) throw new Error(this.error.toString())
+    return changetype<Wrapped<V>>(this._value).inner
+  }
+
+  unwrapOr(defaultValue: V): V {
+    if (this.isError) return defaultValue
+    return this.unwrap()
+  }
+
+  unwrapOrElse(defaultValue: () => V): V {
+    if (this.isError) return defaultValue()
+    return this.unwrap()
   }
 }
 

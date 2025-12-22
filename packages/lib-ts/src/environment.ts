@@ -115,7 +115,7 @@ export namespace environment {
     
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
-    const prices = pricesResult.value
+    const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
@@ -173,7 +173,7 @@ export namespace environment {
     
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
     
-    const response = responseResult.value
+    const response = responseResult.unwrap()
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {

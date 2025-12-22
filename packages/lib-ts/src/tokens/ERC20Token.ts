@@ -164,7 +164,7 @@ export class ERC20Token extends BlockchainToken {
       this._symbol = ERC20Token.EMPTY_SYMBOL
       return
     }
-    this._symbol = evm.decode(new EvmDecodeParam('string', response.value))
+    this._symbol = evm.decode(new EvmDecodeParam('string', response.unwrap()))
   }
 
   /**
@@ -181,6 +181,6 @@ export class ERC20Token extends BlockchainToken {
       this._decimals = ERC20Token.EMPTY_DECIMALS
       return
     }
-    this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result.value)))
+    this._decimals = u8.parse(evm.decode(new EvmDecodeParam('uint8', result.unwrap())))
   }
 }

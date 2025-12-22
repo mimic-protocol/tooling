@@ -14,16 +14,9 @@ export default function main(): void {
 
   const context = environment.getContext()
 
-  const userTokensResult = environment.relevantTokensQuery(
-    context.user,
-    [chainId],
-    USD.zero(),
-    [aUSDC],
-    ListType.AllowList
-  )
-  if (userTokensResult.isError) throw new Error(userTokensResult.error)
-
-  const userTokens = userTokensResult.value
+  const userTokens = environment
+    .relevantTokensQuery(context.user, [chainId], USD.zero(), [aUSDC], ListType.AllowList)
+    .unwrap()
 
   const feeUsdt = TokenAmount.fromStringDecimal(USDT, inputs.usdFeeAmount)
 
