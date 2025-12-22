@@ -215,18 +215,21 @@ export default class RunnerMock {
   private createParameterizedFunction(functionName: string, config: ParameterizedResponse): CallableFunction {
     return (ptr: number) => {
       const param = this.getStringFromMemory(ptr)
+      let result: number
 
       if (config.paramResponse && param in config.paramResponse) {
-        if (config.log === true) this.logToFile(functionName, param)
-        return this.writeStringToMemory(config.paramResponse[param])
+        result = this.writeStringToMemory(config.paramResponse[param])
+      } else if ('default' in config && config.default !== undefined) {
+        result = this.writeStringToMemory(config.default)
+      } else {
+        throw new Error(`No response defined for parameter "${param}" in function "${functionName}".`)
       }
 
-      if ('default' in config && config.default !== undefined) {
-        if (config.log === true) this.logToFile(functionName, param)
-        return this.writeStringToMemory(config.default)
+      if (config.log === true) {
+        this.logToFile(functionName, param)
       }
 
-      throw new Error(`No response defined for parameter "${param}" in function "${functionName}".`)
+      return result
     }
   }
 
