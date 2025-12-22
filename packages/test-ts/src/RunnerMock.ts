@@ -157,15 +157,16 @@ export default class RunnerMock {
   }
 
   private getDefaultEnvImports(): WebAssembly.ModuleImports {
+    const defaultResult = (data: unknown) => '{"success":"true","data":' + JSON.stringify(data) + ',"error":""}'
     return {
       _evmCall: this.createLogFn('_evmCall'),
       _svmCall: this.createLogFn('_svmCall'),
       _swap: this.createLogFn('_swap'),
       _transfer: this.createLogFn('_transfer'),
-      _tokenPriceQuery: this.createMockFunction('_tokenPriceQuery', { default: '' }),
-      _relevantTokensQuery: this.createMockFunction('_relevantTokensQuery', { default: '' }),
-      _evmCallQuery: this.createMockFunction('_evmCallQuery', { default: '' }),
-      _svmAccountsInfoQuery: this.createMockFunction('_svmAccountsInfoQuery', { default: '' }),
+      _tokenPriceQuery: this.createMockFunction('_tokenPriceQuery', { default: defaultResult([]) }),
+      _relevantTokensQuery: this.createMockFunction('_relevantTokensQuery', { default: defaultResult([]) }),
+      _evmCallQuery: this.createMockFunction('_evmCallQuery', { default: defaultResult('0x') }),
+      _svmAccountsInfoQuery: this.createMockFunction('_svmAccountsInfoQuery', { default: defaultResult([]) }),
       _getContext: this.createMockFunction('_getContext', { default: '' }),
     }
   }

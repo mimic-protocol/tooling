@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/test-ts",
-  "version": "0.0.1-rc.28",
+  "version": "0.0.1-rc.31",
   "license": "GPL-3.0",
   "private": false,
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "dist"
   ],
   "dependencies": {
-    "@mimicprotocol/runner-node": "^0.0.1-rc.7",
+    "@mimicprotocol/runner-node": "^0.0.1-rc.8",
     "@mimicprotocol/sdk": "^0.0.1-rc.16",
     "ethers": "^6.15.0",
     "zod": "^3.24.1"

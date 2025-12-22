@@ -1,5 +1,7 @@
 import { Address, SerializableSvmAccountInfo, SvmAccountInfo } from '../types'
 
+import { QueryResponseBase } from './QueryResponse'
+
 @json
 class SvmAccountsInfoQueryBase {
   constructor(public readonly publicKeys: string[]) {}
@@ -22,15 +24,22 @@ export class SvmAccountsInfoQuery extends SvmAccountsInfoQueryBase {
   }
 }
 
-// There is a bug with json-as, so this can't be parsed directly
-export class SvmAccountsInfoQueryResponse {
+@json
+export class SerializableSvmAccountsInfoQueryResult {
+  constructor(
+    public accountsInfo: SerializableSvmAccountInfo[],
+    public slot: string
+  ) {}
+}
+
+export class SvmAccountsInfoQueryResult {
   constructor(
     public accountsInfo: SvmAccountInfo[],
     public slot: string
   ) {}
 
-  static fromSerializable(serializable: SerializableGetAccountsInfoResponse): SvmAccountsInfoQueryResponse {
-    return new SvmAccountsInfoQueryResponse(
+  static fromSerializable(serializable: SerializableSvmAccountsInfoQueryResult): SvmAccountsInfoQueryResult {
+    return new SvmAccountsInfoQueryResult(
       serializable.accountsInfo.map((acc: SerializableSvmAccountInfo) => SvmAccountInfo.fromSerializable(acc)),
       serializable.slot
     )
@@ -38,9 +47,11 @@ export class SvmAccountsInfoQueryResponse {
 }
 
 @json
-export class SerializableGetAccountsInfoResponse {
-  constructor(
-    public accountsInfo: SerializableSvmAccountInfo[],
-    public slot: string
-  ) {}
+export class SvmAccountsInfoQueryResponse extends QueryResponseBase {
+  public data: SerializableSvmAccountsInfoQueryResult
+
+  constructor(success: string, data: SerializableSvmAccountsInfoQueryResult, error: string) {
+    super(success, error)
+    this.data = data
+  }
 }

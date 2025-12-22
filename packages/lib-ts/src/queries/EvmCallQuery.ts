@@ -1,5 +1,7 @@
 import { Address, ChainId } from '../types'
 
+import { QueryResponseBase } from './QueryResponse'
+
 @json
 class EvmCallQueryBase {
   constructor(
@@ -23,5 +25,15 @@ export class EvmCallQuery extends EvmCallQueryBase {
     return timestamp
       ? new EvmCallQuery(address, chainId, changetype<Date>(timestamp).getTime(), data)
       : new EvmCallQueryBase(address, chainId, data)
+  }
+}
+
+@json
+export class EvmCallQueryResponse extends QueryResponseBase {
+  public data: string
+
+  constructor(success: string, data: string, error: string) {
+    super(success, error)
+    this.data = data
   }
 }

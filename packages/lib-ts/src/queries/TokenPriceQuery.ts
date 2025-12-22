@@ -1,5 +1,7 @@
 import { BlockchainToken } from '../tokens'
 
+import { QueryResponseBase } from './QueryResponse'
+
 @json
 class TokenPriceQueryBase {
   constructor(
@@ -24,5 +26,15 @@ export class TokenPriceQuery extends TokenPriceQueryBase {
     return timestamp
       ? new TokenPriceQuery(address, chainId, changetype<Date>(timestamp).getTime())
       : new TokenPriceQueryBase(address, chainId)
+  }
+}
+
+@json
+export class TokenPriceQueryResponse extends QueryResponseBase {
+  public data: string[]
+
+  constructor(success: string, data: string[], error: string) {
+    super(success, error)
+    this.data = data
   }
 }
