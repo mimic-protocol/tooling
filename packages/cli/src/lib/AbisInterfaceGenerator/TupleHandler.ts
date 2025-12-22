@@ -82,8 +82,6 @@ export default class TupleHandler {
         if (structMatch && structMatch[1]) className = structMatch[1]
       }
 
-      className = NameManager.escapeName(className, NameContext.TUPLE_CLASS_NAME)
-
       const key = baseInternalType || className
       const components = this.resolveComponentNames(tupleToDefine.components, NameContext.CLASS_PROPERTY)
 
