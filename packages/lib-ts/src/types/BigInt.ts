@@ -404,15 +404,15 @@ export class BigInt extends Uint8Array {
       return aIsNeg ? resultAbs.neg() : resultAbs
     }
     const cmp = BigInt.compare(this.abs(), other.abs())
-    if (cmp === 0) {
-      return BigInt.zero()
-    } else if (cmp > 0) {
+    if (cmp === 0) return BigInt.zero()
+
+    if (cmp > 0) {
       const resultAbs = BigInt.subUnsigned(this.abs(), other.abs())
       return this.isNegative() ? resultAbs.neg() : resultAbs
-    } else {
-      const resultAbs = BigInt.subUnsigned(other.abs(), this.abs())
-      return other.isNegative() ? resultAbs.neg() : resultAbs
     }
+
+    const resultAbs = BigInt.subUnsigned(other.abs(), this.abs())
+    return other.isNegative() ? resultAbs.neg() : resultAbs
   }
 
   /**

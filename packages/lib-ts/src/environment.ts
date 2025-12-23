@@ -93,7 +93,7 @@ export namespace environment {
    */
   export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD[], string> {
     if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
-    else if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
+    if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
     const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
     const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
@@ -115,23 +115,18 @@ export namespace environment {
     
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
-    const prices = pricesResult.value
+    const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
     const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
 
     const length = sortedPrices.length
-    let median: USD
-    if (length % 2 === 1) {
-      median = sortedPrices[length / 2]
-    } else {
-      const left = sortedPrices[length / 2 - 1]
-      const right = sortedPrices[length / 2]
-      const sum = left.plus(right)
-      median = sum.div(BigInt.fromI32(2))
-    }
-    
-    return Result.ok<USD, string>(median)
+    if (length % 2 === 1) return Result.ok<USD, string>(sortedPrices[length / 2])
+
+    const left = sortedPrices[length / 2 - 1]
+    const right = sortedPrices[length / 2]
+    const sum = left.plus(right)
+    return Result.ok<USD, string>(sum.div(BigInt.fromI32(2)))
   }
 
   /**
@@ -173,7 +168,7 @@ export namespace environment {
     
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
     
-    const response = responseResult.value
+    const response = responseResult.unwrap()
     const resultMap: Map<string, TokenAmount> = new Map()
     for (let i = 0; i < response.length; i++) {
       for (let j = 0; j < response[i].length; j++) {

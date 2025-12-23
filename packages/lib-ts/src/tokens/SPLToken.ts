@@ -102,7 +102,7 @@ export class SPLToken extends BlockchainToken {
       this._decimals = SPLToken.EMPTY_DECIMALS
       return
     }
-    const decimals = SvmMint.fromHex(result.value.accountsInfo[0].data).decimals
+    const decimals = SvmMint.fromHex(result.unwrap().accountsInfo[0].data).decimals
     this._decimals = decimals
   }
 
@@ -120,12 +120,12 @@ export class SPLToken extends BlockchainToken {
       this._symbol = SPLToken.EMPTY_SYMBOL
       return
     }
-    const data = result.value.accountsInfo[0].data
+    const data = result.unwrap().accountsInfo[0].data
     // Return placeholder symbol from address if TokenMetadata standard is not used
     this._symbol =
       data === '0x'
         ? `${this.address.toString().slice(0, 5)}...${this.address.toString().slice(-5)}`
-        : SvmTokenMetadataData.fromTokenMetadataHex(result.value.accountsInfo[0].data).symbol
+        : SvmTokenMetadataData.fromTokenMetadataHex(result.unwrap().accountsInfo[0].data).symbol
   }
 
   /**

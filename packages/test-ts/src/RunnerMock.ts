@@ -99,12 +99,11 @@ export default class RunnerMock {
   run(fnName = 'main'): void {
     try {
       const fn = this.instance.exports[fnName]
-      if (typeof fn === 'function') {
-        fn()
-      } else {
+      if (typeof fn !== 'function') {
         const availableExports = Object.keys(this.instance.exports).join(', ')
         throw Error(`No "${fnName}" found in exports. Available exports: ${availableExports}`)
       }
+      fn()
     } catch (error) {
       throw Error(`Task Execution Error - ${error}`)
     }
@@ -200,13 +199,9 @@ export default class RunnerMock {
   }
 
   private createMockFunction(functionName: string, mockValue: MockResponseValue): CallableFunction {
-    if (mockValue === 'log') {
-      return this.createLogFn(functionName)
-    } else if (this.isParameterizedResponse(mockValue)) {
-      return this.createParameterizedFunction(functionName, mockValue)
-    } else {
-      return this.createConstantFunction(String(mockValue))
-    }
+    if (mockValue === 'log') return this.createLogFn(functionName)
+    if (this.isParameterizedResponse(mockValue)) return this.createParameterizedFunction(functionName, mockValue)
+    return this.createConstantFunction(String(mockValue))
   }
 
   private isParameterizedResponse(value: unknown): value is ParameterizedResponse {
