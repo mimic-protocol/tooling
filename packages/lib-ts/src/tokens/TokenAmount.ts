@@ -222,7 +222,7 @@ export class TokenAmount {
     const tokenPriceResult = environment.tokenPriceQuery(this.token)
     if (tokenPriceResult.isError) return Result.err<USD, string>(tokenPriceResult.error)
 
-    const tokenPrice = tokenPriceResult.value
+    const tokenPrice = tokenPriceResult.unwrap()
     const amountUsd = this.amount.times(tokenPrice.value).downscale(this.decimals)
     return Result.ok<USD, string>(USD.fromBigInt(amountUsd))
   }
@@ -237,7 +237,7 @@ export class TokenAmount {
     const usdResult = this.toUsd()
     if (usdResult.isError) return Result.err<TokenAmount, string>(usdResult.error)
 
-    return usdResult.value.toTokenAmount(other)
+    return usdResult.unwrap().toTokenAmount(other)
   }
 
   /**
