@@ -122,9 +122,9 @@ function toIntents(intentsJson: string) {
     if (intent.op == OpType.Swap) {
       const { sourceChain, destinationChain } = intent as Swap
       return { ...intent, sourceChain: Number(sourceChain), destinationChain: Number(destinationChain) }
-    } else {
-      const { chainId } = intent as Transfer | Call
-      return { ...intent, chainId: Number(chainId) }
     }
+
+    const { chainId } = intent as Transfer | Call
+    return { ...intent, chainId: Number(chainId) }
   })
 }
