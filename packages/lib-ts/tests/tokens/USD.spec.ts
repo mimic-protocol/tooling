@@ -358,7 +358,7 @@ describe('USD', () => {
         const result = usdAmount.toTokenAmount(token)
 
         expect(result.isOk).toBe(true)
-        expect(result.value.amount.toString()).toBe('0')
+        expect(result.unwrap().amount.toString()).toBe('0')
       })
     })
 
@@ -374,7 +374,7 @@ describe('USD', () => {
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
         expect(result.isOk).toBe(true)
-        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.unwrap().amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
 
       it('converts correctly for a token with standard decimals', () => {
@@ -388,7 +388,7 @@ describe('USD', () => {
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
         expect(result.isOk).toBe(true)
-        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.unwrap().amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
 
       it('converts correctly for a token with more than standard decimals', () => {
@@ -402,7 +402,7 @@ describe('USD', () => {
 
         const expectedAmount = BigInt.fromI32(decimalAmountUsd / price)
         expect(result.isOk).toBe(true)
-        expect(result.value.amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
+        expect(result.unwrap().amount.toString()).toBe(zeroPadded(expectedAmount, tokenDecimals))
       })
     })
   })

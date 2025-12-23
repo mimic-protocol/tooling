@@ -153,7 +153,7 @@ export default class FunctionHandler {
     if (isVoid) {
       lines.push(`return ${resultIdentifier}.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
     } else {
-      lines.push(`const decoded = ${contractName}Utils.decode${capitalizedName}(response.value)`)
+      lines.push(`const decoded = ${contractName}Utils.decode${capitalizedName}(response.unwrap())`)
       lines.push(`return ${resultIdentifier}.ok<${returnType}, string>(decoded)`)
     }
 

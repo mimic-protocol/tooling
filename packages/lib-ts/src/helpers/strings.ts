@@ -133,12 +133,14 @@ export function normalizeScientificNotation(input: string): string {
   if (newDecimalPos <= 0) {
     const zeros = '0'.repeat(-newDecimalPos)
     return sign + '0.' + zeros + fullDigits
-  } else if (newDecimalPos >= fullDigits.length) {
+  }
+
+  if (newDecimalPos >= fullDigits.length) {
     const zeros = '0'.repeat(newDecimalPos - fullDigits.length)
     return sign + fullDigits + zeros
-  } else {
-    return sign + fullDigits.substring(0, newDecimalPos) + '.' + fullDigits.substring(newDecimalPos)
   }
+
+  return sign + fullDigits.substring(0, newDecimalPos) + '.' + fullDigits.substring(newDecimalPos)
 }
 
 export function isHex(str: string, strict: boolean = false): boolean {

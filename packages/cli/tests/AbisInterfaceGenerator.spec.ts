@@ -240,7 +240,7 @@ describe('AbisInterfaceGenerator', () => {
         `const response = environment.evmCallQuery(this._address, this._chainId, encodedData.toHexString(), this._timestamp)`
       )
       expect(result).to.contain(`if (response.isError) return _Result.err<${LibTypes.BigInt}, string>(response.error)`)
-      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetBalance(response.value)`)
+      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetBalance(response.unwrap())`)
       expect(result).to.contain(`return _Result.ok<${LibTypes.BigInt}, string>(decoded)`)
       expect(result).to.contain(`export class ${CONTRACT_NAME}Utils {`)
       expect(result).to.contain(`static encodeGetBalance(owner: Address): Bytes {`)
@@ -913,7 +913,7 @@ describe('AbisInterfaceGenerator', () => {
       // Read function should call both helpers
       expect(result).to.contain(`const encodedData = ${CONTRACT_NAME}Utils.encodeGetValue()`)
       expect(result).to.contain(`if (response.isError) return _Result.err<${LibTypes.BigInt}, string>(response.error)`)
-      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetValue(response.value)`)
+      expect(result).to.contain(`const decoded = ${CONTRACT_NAME}Utils.decodeGetValue(response.unwrap())`)
       expect(result).to.contain(`return _Result.ok<${LibTypes.BigInt}, string>(decoded)`)
 
       // Write function should call encoded data helper

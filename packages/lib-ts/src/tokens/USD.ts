@@ -197,7 +197,7 @@ export class USD {
     const tokenPriceResult = environment.tokenPriceQuery(token)
     if (tokenPriceResult.isError) return Result.err<TokenAmount, string>(tokenPriceResult.error)
 
-    const tokenPrice = tokenPriceResult.value
+    const tokenPrice = tokenPriceResult.unwrap()
     const tokenAmount = this.value.upscale(token.decimals).div(tokenPrice.value)
     return Result.ok<TokenAmount, string>(TokenAmount.fromBigInt(token, tokenAmount))
   }
