@@ -1,4 +1,4 @@
-import { AbiParameter } from '../../types'
+import { AbiParameter, LibTypes } from '../../types'
 
 import { AbiItem } from './types'
 
@@ -10,6 +10,10 @@ export enum NameContext {
 }
 
 export default class NameManager {
+  private static readonly IMPORT_ALIASES: Partial<Record<LibTypes, string>> = {
+    Result: '_Result',
+  }
+
   private static readonly RESERVED_BY_CONTEXT: Record<NameContext, Set<string>> = {
     [NameContext.FUNCTION_PARAMETER]: new Set([
       'response',
@@ -77,6 +81,20 @@ export default class NameManager {
       ...fn,
       escapedName: resolvedNames[index],
     }))
+  }
+
+  public static getImportNameForCode(type: string): string {
+    const alias = this.getImportAlias(type)
+    return alias ?? type
+  }
+
+  public static formatImportStatement(type: string): string {
+    const alias = this.getImportAlias(type)
+    return alias ? `${type} as ${alias}` : type
+  }
+
+  private static getImportAlias(type: string): string | null {
+    return this.IMPORT_ALIASES[type as LibTypes] ?? null
   }
 
   private static hasConflict(name: string, context: NameContext): boolean {

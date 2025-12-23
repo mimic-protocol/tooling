@@ -1,3 +1,4 @@
+import NameManager from './NameManager'
 import { ImportedTypes } from './types'
 
 export default class ImportManager {
@@ -15,6 +16,8 @@ export default class ImportManager {
     if (this.types.size === 0) return ''
 
     const sortedTypes = [...this.types].sort((a, b) => String(a).localeCompare(String(b)))
-    return `import { ${sortedTypes.join(', ')} } from '@mimicprotocol/lib-ts'`
+    const importIdentifiers = sortedTypes.map((type) => NameManager.formatImportStatement(type))
+
+    return `import { ${importIdentifiers.join(', ')} } from '@mimicprotocol/lib-ts'`
   }
 }

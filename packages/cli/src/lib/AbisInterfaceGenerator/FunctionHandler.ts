@@ -85,8 +85,12 @@ export default class FunctionHandler {
     const capitalizedName = this.getCapitalizedName(fn)
 
     const isPayable = fn.stateMutability === 'payable'
+    const hasValueParameter = inputs.some((input) => input.escapedName === 'value')
+    const payableParamName = isPayable && hasValueParameter ? '_payableValue' : 'value'
     const fullMethodParams = methodParams.concat(
-      isPayable ? `${methodParams.length > 0 ? ', ' : ''}value: ${LibTypes.BigInt}` : ''
+      isPayable
+        ? `${methodParams.length > 0 ? ', ' : ''}${payableParamName}: ${LibTypes.BigInt} = ${LibTypes.BigInt}.zero()`
+        : ''
     )
 
     lines.push(`${methodName}(${fullMethodParams}): ${returnType} {`)
@@ -100,7 +104,7 @@ export default class FunctionHandler {
     if (isPayable) importManager.addType(LibTypes.BigInt)
 
     lines.push(
-      `return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? ', value' : ''})`
+      `return EvmCallBuilder.forChain(this._chainId).addCall(this._address, encodedData${isPayable ? `, ${payableParamName}` : ''})`
     )
 
     lines.push(`}`)
@@ -127,7 +131,10 @@ export default class FunctionHandler {
     const isVoid = returnType === 'void'
     if (isVoid) importManager.addType(LibTypes.Void)
 
-    const resultReturnType = isVoid ? `Result<${LibTypes.Void}, string>` : `Result<${returnType}, string>`
+    const resultIdentifier = NameManager.getImportNameForCode('Result')
+    const resultReturnType = isVoid
+      ? `${resultIdentifier}<${LibTypes.Void}, string>`
+      : `${resultIdentifier}<${returnType}, string>`
     lines.push(`${methodName}(${methodParams}): ${resultReturnType} {`)
 
     lines.push(
@@ -138,14 +145,16 @@ export default class FunctionHandler {
 
     lines.push(`const response = ${contractCallLine}`)
     lines.push(
-      `if (response.isError) return Result.err<${isVoid ? LibTypes.Void : returnType}, string>(response.error)`
+      `if (response.isError) return ${resultIdentifier}.err<${
+        isVoid ? LibTypes.Void : returnType
+      }, string>(response.error)`
     )
 
     if (isVoid) {
-      lines.push(`return Result.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
+      lines.push(`return ${resultIdentifier}.ok<${LibTypes.Void}, string>(new ${LibTypes.Void}())`)
     } else {
       lines.push(`const decoded = ${contractName}Utils.decode${capitalizedName}(response.value)`)
-      lines.push(`return Result.ok<${returnType}, string>(decoded)`)
+      lines.push(`return ${resultIdentifier}.ok<${returnType}, string>(decoded)`)
     }
 
     lines.push(`}`)
