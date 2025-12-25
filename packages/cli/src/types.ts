@@ -28,9 +28,9 @@ export enum LibTypes {
   Address = 'Address',
   Bytes = 'Bytes',
   ChainId = 'ChainId',
-  TokenAmount = 'TokenAmount',
   Void = 'Void',
   Result = 'Result',
+  JSON = 'JSON',
 }
 
 export enum AssemblyPrimitiveTypes {
