@@ -1,5 +1,5 @@
 import { confirm } from '@inquirer/prompts'
-import { Command, Flags } from '@oclif/core'
+import { Args, Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 import simpleGit from 'simple-git'
@@ -10,16 +10,20 @@ import log from '../log'
 export default class Init extends Command {
   static override description = 'Initializes a new Mimic-compatible project structure in the specified directory'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --directory ./new-project --force']
+  static override examples = ['<%= config.bin %> <%= command.id %> ./new-project --force']
+
+  static override args = {
+    directory: Args.string({ description: 'Directory to initialize project', required: false, default: './' }),
+  }
 
   static override flags = {
-    directory: Flags.string({ char: 'd', description: 'Directory to initialize project', default: './' }),
     force: Flags.boolean({ char: 'f', description: 'Overwrite existing files if they already exist', default: false }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = await this.parse(Init)
-    const { directory, force } = flags
+    const { args, flags } = await this.parse(Init)
+    const { directory } = args
+    const { force } = flags
     const fullDirectory = path.resolve(directory)
 
     if (force && fs.existsSync(fullDirectory) && fs.readdirSync(fullDirectory).length > 0) {
@@ -50,7 +54,7 @@ export default class Init extends Command {
       this.error(`Directory ${log.highlightText(fullDirectory)} is not empty`, {
         code: 'DirectoryNotEmpty',
         suggestions: [
-          'You can specify the directory with --directory',
+          'You can specify the directory as a positional argument',
           `You can ${log.warnText('overwrite')} an existing directory with --force`,
         ],
       })

@@ -20,7 +20,7 @@ describe('init', () => {
   }
 
   context('when force flag is not passed', () => {
-    const command = ['init', `--directory ${commandPath}`]
+    const command = ['init', commandPath]
 
     context('when the directory exists', () => {
       beforeEach('create directory', () => {
@@ -39,7 +39,7 @@ describe('init', () => {
   })
 
   context('when force flag is passed', () => {
-    const command = ['init', `--directory ${commandPath}`, '--force']
+    const command = ['init', commandPath, '--force']
 
     context('when the directory exists', () => {
       beforeEach('create directory', () => {
