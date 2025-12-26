@@ -19,10 +19,11 @@ export default class Test extends Command {
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Test)
     const { directory } = args
+    const { 'skip-compile': skipCompile } = flags
     const baseDir = path.resolve(directory)
     const testPath = path.join(baseDir, 'tests')
 
-    if (!flags.skipCompile) {
+    if (!skipCompile) {
       const cg = execBinCommand('mimic', ['codegen'], baseDir)
       if (cg.status !== 0) this.exit(cg.status ?? 1)
       const cp = execBinCommand('mimic', ['compile'], baseDir)
