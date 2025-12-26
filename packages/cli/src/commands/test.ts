@@ -1,4 +1,4 @@
-import { Args, Command, Flags } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
@@ -6,20 +6,16 @@ import { execBinCommand } from '../lib/packageManager'
 export default class Test extends Command {
   static override description = 'Runs task tests'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> ./']
-
-  static override args = {
-    directory: Args.string({ description: 'task directory', required: false, default: './' }),
-  }
+  static override examples = ['<%= config.bin %> <%= command.id %> --directory ./']
 
   static override flags = {
+    directory: Flags.string({ char: 'd', description: 'task directory', default: './' }),
     'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
   }
 
   public async run(): Promise<void> {
-    const { args, flags } = await this.parse(Test)
-    const { directory } = args
-    const { 'skip-compile': skipCompile } = flags
+    const { flags } = await this.parse(Test)
+    const { directory, 'skip-compile': skipCompile } = flags
     const baseDir = path.resolve(directory)
     const testPath = path.join(baseDir, 'tests')
 
