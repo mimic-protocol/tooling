@@ -1,9 +1,13 @@
 import { z } from 'zod'
 
-import { ManifestValidator } from './validators'
+import { ManifestValidator, MimicConfigValidator, TaskConfigValidator } from './validators'
 
 export type Manifest = z.infer<typeof ManifestValidator>
 export type ManifestInputs = z.infer<typeof ManifestValidator.shape.inputs>
+
+export type TaskConfig = z.infer<typeof TaskConfigValidator>
+export type MimicConfig = z.infer<typeof MimicConfigValidator>
+export type RequiredTaskConfig = Required<TaskConfig>
 
 export type AbiParameter = {
   name?: string

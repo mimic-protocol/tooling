@@ -25,3 +25,15 @@ export const ManifestValidator = z.object({
     libVersion: String.regex(SEM_VER_REGEX, 'Must be a valid semver'),
   }),
 })
+
+export const TaskConfigValidator = z.object({
+  name: String,
+  manifest: String,
+  entry: String,
+  output: String.optional(),
+  types: String.optional(),
+})
+
+export const MimicConfigValidator = z.object({
+  tasks: z.array(TaskConfigValidator).min(1, 'At least one task must be defined'),
+})

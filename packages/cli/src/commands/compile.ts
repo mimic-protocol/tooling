@@ -3,8 +3,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 import ManifestHandler from '../lib/ManifestHandler'
+import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { RequiredTaskConfig } from '../types'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -21,13 +23,26 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
 
-    const absTaskFile = path.resolve(taskFile)
-    const absOutputDir = path.resolve(outputDir)
+    if (MimicConfigHandler.exists()) {
+      const mimicConfig = MimicConfigHandler.load(this)
+      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      for (const task of tasks) {
+        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+        this.runForTask(task)
+      }
+    } else {
+      this.runForTask({ manifest: manifestDir, entry: taskFile, output: outputDir })
+    }
+  }
+
+  private runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): void {
+    const absTaskFile = path.resolve(task.entry)
+    const absOutputDir = path.resolve(task.output)
 
     if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-    const manifest = ManifestHandler.load(this, manifestDir)
+    const manifest = ManifestHandler.load(this, task.manifest)
     log.startAction('Compiling')
 
     const ascArgs = [
@@ -52,8 +67,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(absOutputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
-    console.log(`Build complete! Artifacts in ${outputDir}/`)
+    console.log(`Build complete! Artifacts in ${task.output}/`)
   }
 }

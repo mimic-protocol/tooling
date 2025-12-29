@@ -1,5 +1,9 @@
 import { Command, Flags } from '@oclif/core'
 
+import MimicConfigHandler from '../lib/MimicConfigHandler'
+import log from '../log'
+import { RequiredTaskConfig } from '../types'
+
 import Codegen from './codegen'
 import Compile from './compile'
 
@@ -26,12 +30,25 @@ export default class Build extends Command {
     const { flags } = await this.parse(Build)
     const { manifest, task, output, types, clean } = flags
 
-    const codegenArgs: string[] = ['--manifest', manifest, '--output', types]
+    if (MimicConfigHandler.exists()) {
+      const mimicConfig = MimicConfigHandler.load(this)
+      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      for (const taskConfig of tasks) {
+        console.log(`\n${log.highlightText(`[${taskConfig.name}]`)}`)
+        await this.runForTask(taskConfig, clean)
+      }
+    } else {
+      await this.runForTask({ manifest, entry: task, output, types }, clean)
+    }
+  }
+
+  private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
+    const codegenArgs: string[] = ['--manifest', task.manifest, '--output', task.types]
     if (clean) codegenArgs.push('--clean')
 
     await Codegen.run(codegenArgs)
 
-    const compileArgs: string[] = ['--task', task, '--manifest', manifest, '--output', output]
+    const compileArgs: string[] = ['--task', task.entry, '--manifest', task.manifest, '--output', task.output]
     await Compile.run(compileArgs)
   }
 }
