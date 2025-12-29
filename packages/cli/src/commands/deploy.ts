@@ -1,22 +1,29 @@
-import { Command, Flags } from '@oclif/core'
+import { Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
 import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
+import { ProfileCredentials } from '../lib/CredentialsManager'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
+import Login from './login'
+
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export default class Deploy extends Command {
+export default class Deploy extends Login {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --input ./dist --key MY_KEY --output ./dist']
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --profile staging',
+    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --input ./dist --output ./dist',
+  ]
 
   static override flags = {
-    key: Flags.string({ char: 'k', description: 'Your account deployment key', required: true }),
+    ...Login.flags,
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
@@ -25,9 +32,11 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
+    const { input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
     const fullInputDir = resolve(inputDir)
     const fullOutputDir = resolve(outputDir)
+
+    let credentials = this.authenticate(flags)
 
     if (!skipCompile) {
       const codegen = execBinCommand('mimic', ['codegen'], process.cwd())
@@ -57,7 +66,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(neededFiles, key, registryUrl)
+    const CID = await this.uploadToRegistry(neededFiles, credentials, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
@@ -67,12 +76,16 @@ export default class Deploy extends Command {
     console.log(`Task deployed!`)
   }
 
-  private async uploadToRegistry(files: string[], key: string, registryUrl: string): Promise<string> {
+  private async uploadToRegistry(
+    files: string[],
+    credentials: ProfileCredentials,
+    registryUrl: string
+  ): Promise<string> {
     try {
       const form = filesToForm(files)
       const { data } = await axios.post(`${registryUrl}/tasks`, form, {
         headers: {
-          'x-api-key': key,
+          'x-api-key': credentials.apiKey,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })

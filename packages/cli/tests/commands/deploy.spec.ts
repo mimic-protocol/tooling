@@ -3,17 +3,52 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { expect } from 'chai'
 import * as fs from 'fs'
-import { join } from 'path'
+import * as os from 'os'
+import path, { join } from 'path'
 
+import { CredentialsManager } from '../../src/lib/CredentialsManager'
 import { itThrowsACliError } from '../helpers'
 
 describe('deploy', () => {
   const inputDir = join(__dirname, 'deploy-directory')
   let outputDir = inputDir
+  context('when the default profile exists', () => {
+    let credentialsManager: CredentialsManager
+    let backupDir: string | null = null
 
-  context('when passing a deployment key', () => {
-    const key = '123'
-    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, `--key ${key}`, '--skip-compile']
+    beforeEach('backup existing credentials', () => {
+      credentialsManager = CredentialsManager.getDefault()
+      const credDir = credentialsManager.getBaseDir()
+
+      // Backup existing credentials if they exist
+      // We can stub CredentialsManager because runCommands runs in a separate context
+      // and will not use the stubbed version
+      if (fs.existsSync(credDir)) {
+        backupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-backup-'))
+        fs.cpSync(credDir, backupDir, { recursive: true })
+        fs.rmSync(credDir, { recursive: true, force: true })
+      }
+    })
+
+    afterEach('restore credentials and stubs', () => {
+      const credDir = credentialsManager.getBaseDir()
+      if (fs.existsSync(credDir)) {
+        fs.rmSync(credDir, { recursive: true, force: true })
+      }
+
+      if (backupDir && fs.existsSync(backupDir)) {
+        fs.cpSync(backupDir, credDir, { recursive: true })
+        fs.rmSync(backupDir, { recursive: true, force: true })
+        backupDir = null
+      }
+    })
+
+    const defaultKey = '123'
+    beforeEach('create default profile', () => {
+      credentialsManager.saveProfile('default', defaultKey)
+    })
+
+    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, '--skip-compile']
 
     context('when input directory exists', () => {
       beforeEach('create input directory', () => {
@@ -51,6 +86,37 @@ describe('deploy', () => {
           })
 
           context('when output directory exists', () => {
+            context('when the api key is provided', () => {
+              const apiKey = '456'
+              const apiKeyCommand = [...command, '--api-key', apiKey]
+
+              it('deploys successfully with the api key', async () => {
+                await runCommand(apiKeyCommand)
+
+                const requests = axiosMock.history.post
+                expect(requests).to.have.lengthOf(1)
+                expect(requests[0].headers?.['x-api-key']).to.equal(apiKey)
+              })
+            })
+
+            context('when a profile is provided', () => {
+              const apiKey = '789'
+              const profile = 'custom-profile'
+              const profileCommand = [...command, '--profile', profile]
+
+              beforeEach('create profile', () => {
+                credentialsManager.saveProfile(profile, apiKey)
+              })
+
+              it('deploys successfully with the custom profile', async () => {
+                await runCommand(profileCommand)
+
+                const requests = axiosMock.history.post
+                expect(requests).to.have.lengthOf(1)
+                expect(requests[0].headers?.['x-api-key']).to.equal(apiKey)
+              })
+            })
+
             it('saves the CID on a file', async () => {
               await runCommand(command)
               const json = JSON.parse(fs.readFileSync(`${outputDir}/CID.json`, 'utf-8'))
@@ -60,7 +126,7 @@ describe('deploy', () => {
 
           context('when output directory does not exist', () => {
             const noOutDir = `${outputDir}/does-not-exist`
-            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, `--key ${key}`, '--skip-compile']
+            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, '--skip-compile']
 
             it('saves the CID on a file', async () => {
               await runCommand(noOutDirCommand)
@@ -142,9 +208,9 @@ describe('deploy', () => {
     })
   })
 
-  context('when not passing a deployment key', () => {
+  context("when the default profile doesn't exist", () => {
     const command = ['deploy']
 
-    itThrowsACliError(command, 'Missing required flag key')
+    itThrowsACliError(command, 'Authentication required', 'AuthenticationRequired', 3)
   })
 })
