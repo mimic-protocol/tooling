@@ -45,30 +45,28 @@ export default class Deploy extends Command {
       const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, key, registryUrl, skipCompile, task.output, task.output)
+        await this.runForTask(task, key, registryUrl, skipCompile, task.output)
       }
     } else {
       await this.runForTask(
-        { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types' },
+        { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types', output: outputDir },
         key,
         registryUrl,
         skipCompile,
-        inputDir,
-        outputDir
+        inputDir
       )
     }
   }
 
   private async runForTask(
-    task: Omit<RequiredTaskConfig, 'name' | 'output'>,
+    task: Omit<RequiredTaskConfig, 'name'>,
     key: string,
     registryUrl: string,
     skipCompile: boolean,
-    inputDir: string,
-    outputDir: string
+    inputDir: string
   ): Promise<void> {
     const fullInputDir = resolve(inputDir)
-    const fullOutputDir = resolve(outputDir)
+    const fullOutputDir = resolve(task.output)
 
     if (!skipCompile) {
       const codegen = execBinCommand(

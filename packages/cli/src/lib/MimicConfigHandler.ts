@@ -16,13 +16,22 @@ export default {
 
   load(command: Command, baseDir: string = process.cwd()): MimicConfig {
     const mimicConfigPath = path.join(baseDir, MIMIC_CONFIG_FILE)
-    let loadedMimicConfig
-    try {
-      loadedMimicConfig = load(fs.readFileSync(mimicConfigPath, 'utf-8'))
-    } catch {
+
+    if (!fs.existsSync(mimicConfigPath)) {
       command.error(`Could not find ${mimicConfigPath}`, {
         code: 'FileNotFound',
         suggestions: ['Ensure mimic.yaml exists in the project root'],
+      })
+    }
+
+    let loadedMimicConfig
+    try {
+      loadedMimicConfig = load(fs.readFileSync(mimicConfigPath, 'utf-8'))
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      command.error(`Failed to parse ${mimicConfigPath} as YAML`, {
+        code: 'ParseError',
+        suggestions: ['Ensure mimic.yaml is valid YAML syntax'],
       })
     }
 

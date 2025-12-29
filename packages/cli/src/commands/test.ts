@@ -33,10 +33,10 @@ export default class Test extends Command {
       const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        this.runForTask(task, baseDir, skipCompile)
+        await this.runForTask(task, baseDir, skipCompile)
       }
     } else {
-      this.runForTask(
+      await this.runForTask(
         { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types', output: './build' },
         baseDir,
         skipCompile
@@ -44,7 +44,11 @@ export default class Test extends Command {
     }
   }
 
-  private runForTask(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string, skipCompile: boolean): void {
+  private async runForTask(
+    task: Omit<RequiredTaskConfig, 'name'>,
+    baseDir: string,
+    skipCompile: boolean
+  ): Promise<void> {
     const taskDir = path.dirname(task.entry)
     const testPath = path.join(baseDir, taskDir, '..', 'tests')
 

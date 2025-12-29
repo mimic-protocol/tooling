@@ -31,14 +31,14 @@ export default class Compile extends Command {
       const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        this.runForTask(task)
+        await this.runForTask(task)
       }
     } else {
-      this.runForTask({ manifest: manifestDir, entry: taskFile, output: outputDir })
+      await this.runForTask({ manifest: manifestDir, entry: taskFile, output: outputDir })
     }
   }
 
-  private runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): void {
+  private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): Promise<void> {
     const absTaskFile = path.resolve(task.entry)
     const absOutputDir = path.resolve(task.output)
 
