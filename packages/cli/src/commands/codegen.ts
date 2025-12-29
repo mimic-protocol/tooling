@@ -3,6 +3,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
+import { filterTasks, taskFilterFlags } from '../helpers'
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
 import log from '../log'
 import { Manifest, RequiredTaskConfig } from '../types'
@@ -20,15 +21,17 @@ export default class Codegen extends Command {
       description: 'Remove existing generated types before generating new files',
       default: false,
     }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean } = flags
+    const { manifest: manifestDir, output: outputDir, clean, include, exclude } = flags
 
     if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
-      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
         await this.runForTask(task, clean)

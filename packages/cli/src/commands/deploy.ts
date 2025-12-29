@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
+import { filterTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
@@ -23,15 +24,25 @@ export default class Deploy extends Command {
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
+    const {
+      key,
+      input: inputDir,
+      output: outputDir,
+      'skip-compile': skipCompile,
+      url: registryUrl,
+      include,
+      exclude,
+    } = flags
 
     if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
-      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
         await this.runForTask(task, key, registryUrl, skipCompile, task.output, task.output)

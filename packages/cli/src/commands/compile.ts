@@ -2,6 +2,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { filterTasks, taskFilterFlags } from '../helpers'
 import ManifestHandler from '../lib/ManifestHandler'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
@@ -17,15 +18,17 @@ export default class Compile extends Command {
     task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
     manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
+    const { task: taskFile, output: outputDir, manifest: manifestDir, include, exclude } = flags
 
     if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
-      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
         this.runForTask(task)

@@ -1,5 +1,6 @@
 import { Command, Flags } from '@oclif/core'
 
+import { filterTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import log from '../log'
 import { RequiredTaskConfig } from '../types'
@@ -24,15 +25,17 @@ export default class Build extends Command {
       description: 'remove existing generated types before generating new files',
       default: false,
     }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    const { manifest, task, output, types, clean } = flags
+    const { manifest, task, output, types, clean, include, exclude } = flags
 
     if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
-      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
       for (const taskConfig of tasks) {
         console.log(`\n${log.highlightText(`[${taskConfig.name}]`)}`)
         await this.runForTask(taskConfig, clean)

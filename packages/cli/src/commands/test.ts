@@ -1,6 +1,7 @@
 import { Args, Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
+import { filterTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
@@ -17,17 +18,19 @@ export default class Test extends Command {
 
   static override flags = {
     'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Test)
     const { directory } = args
-    const { 'skip-compile': skipCompile } = flags
+    const { 'skip-compile': skipCompile, include, exclude } = flags
     const baseDir = path.resolve(directory)
 
     if (MimicConfigHandler.exists(baseDir)) {
       const mimicConfig = MimicConfigHandler.load(this, baseDir)
-      const tasks = MimicConfigHandler.getTasks(mimicConfig)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
         this.runForTask(task, baseDir, skipCompile)
