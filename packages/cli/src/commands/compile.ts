@@ -18,14 +18,26 @@ export default class Compile extends Command {
     task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
     manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
+    ['skip-config']: Flags.boolean({
+      hidden: true,
+      description: 'Skip mimic.yaml config (used internally by build command)',
+      default: false,
+    }),
     ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { task: taskFile, output: outputDir, manifest: manifestDir, include, exclude } = flags
+    const {
+      task: taskFile,
+      output: outputDir,
+      manifest: manifestDir,
+      include,
+      exclude,
+      ['skip-config']: skipConfig,
+    } = flags
 
-    if (MimicConfigHandler.exists()) {
+    if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)

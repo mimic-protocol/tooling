@@ -46,12 +46,20 @@ export default class Build extends Command {
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
-    const codegenArgs: string[] = ['--manifest', task.manifest, '--output', task.types]
+    const codegenArgs: string[] = ['--manifest', task.manifest, '--output', task.types, '--skip-config']
     if (clean) codegenArgs.push('--clean')
 
     await Codegen.run(codegenArgs)
 
-    const compileArgs: string[] = ['--task', task.entry, '--manifest', task.manifest, '--output', task.output]
+    const compileArgs: string[] = [
+      '--task',
+      task.entry,
+      '--manifest',
+      task.manifest,
+      '--output',
+      task.output,
+      '--skip-config',
+    ]
     await Compile.run(compileArgs)
   }
 }

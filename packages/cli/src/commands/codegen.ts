@@ -21,14 +21,19 @@ export default class Codegen extends Command {
       description: 'Remove existing generated types before generating new files',
       default: false,
     }),
+    ['skip-config']: Flags.boolean({
+      hidden: true,
+      description: 'Skip mimic.yaml config (used internally by build command)',
+      default: false,
+    }),
     ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean, include, exclude } = flags
+    const { manifest: manifestDir, output: outputDir, clean, include, exclude, ['skip-config']: skipConfig } = flags
 
-    if (MimicConfigHandler.exists()) {
+    if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
