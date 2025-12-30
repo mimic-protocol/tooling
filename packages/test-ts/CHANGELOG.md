@@ -1,5 +1,14 @@
 # @mimicprotocol/test-ts
 
+## 0.0.1-rc.32
+
+### Patch Changes
+
+- 8853afe: Fix clashing Result import
+- e1277c7: Refactor Result to use unwrap instead of value
+- 323663a: Change directory to positional argument in init and test command
+- faac37c: Ensure early returns in favor of else blocks
+
 ## 0.0.1-rc.31
 
 ### Patch Changes

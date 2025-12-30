@@ -7,10 +7,13 @@ export enum NameContext {
   LOCAL_VARIABLE = 'local_variable',
   CLASS_PROPERTY = 'class_property',
   METHOD_NAME = 'method_name',
-  TUPLE_CLASS_NAME = 'tuple_class_name',
 }
 
 export default class NameManager {
+  private static readonly IMPORT_ALIASES: Partial<Record<LibTypes, string>> = {
+    Result: '_Result',
+  }
+
   private static readonly RESERVED_BY_CONTEXT: Record<NameContext, Set<string>> = {
     [NameContext.FUNCTION_PARAMETER]: new Set([
       'response',
@@ -33,7 +36,6 @@ export default class NameManager {
       'timestamp',
     ]),
     [NameContext.METHOD_NAME]: new Set(['constructor']),
-    [NameContext.TUPLE_CLASS_NAME]: new Set([...Object.values(LibTypes), 'JSON']),
   }
 
   private static readonly INTERNAL_NAME_PATTERNS = [/^item\d+$/, /^s\d+$/]
@@ -81,6 +83,20 @@ export default class NameManager {
     }))
   }
 
+  public static getImportNameForCode(type: string): string {
+    const alias = this.getImportAlias(type)
+    return alias ?? type
+  }
+
+  public static formatImportStatement(type: string): string {
+    const alias = this.getImportAlias(type)
+    return alias ? `${type} as ${alias}` : type
+  }
+
+  private static getImportAlias(type: string): string | null {
+    return this.IMPORT_ALIASES[type as LibTypes] ?? null
+  }
+
   private static hasConflict(name: string, context: NameContext): boolean {
     if (this.RESERVED_BY_CONTEXT[context]?.has(name)) return true
 
@@ -112,8 +128,6 @@ export default class NameManager {
         return '_prop'
       case NameContext.METHOD_NAME:
         return '_'
-      case NameContext.TUPLE_CLASS_NAME:
-        return '_class'
       default:
         return '_safe'
     }

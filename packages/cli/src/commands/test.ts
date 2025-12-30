@@ -1,5 +1,4 @@
 import { Command, Flags } from '@oclif/core'
-import { spawnSync } from 'child_process'
 import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
@@ -11,20 +10,16 @@ export default class Test extends Command {
 
   static override flags = {
     directory: Flags.string({ char: 'd', description: 'task directory', default: './' }),
-    skipCompile: Flags.boolean({ description: 'skip codegen and compile steps' }),
-  }
-
-  private runOrExit(cmd: string, args: string[], cwd: string) {
-    const result = spawnSync(cmd, args, { cwd, stdio: 'inherit' })
-    if (result.status !== 0) this.exit(result.status ?? 1)
+    'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Test)
-    const baseDir = path.resolve(flags.directory)
+    const { directory, 'skip-compile': skipCompile } = flags
+    const baseDir = path.resolve(directory)
     const testPath = path.join(baseDir, 'tests')
 
-    if (!flags.skipCompile) {
+    if (!skipCompile) {
       const cg = execBinCommand('mimic', ['codegen'], baseDir)
       if (cg.status !== 0) this.exit(cg.status ?? 1)
       const cp = execBinCommand('mimic', ['compile'], baseDir)
