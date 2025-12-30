@@ -39,7 +39,7 @@ export default class Test extends Command {
           console.log(`\n${log.highlightText(`[${task.name}]`)}`)
           await this.compileTask(task, baseDir)
         }
-        testPaths.add(this.getTestPath(task, baseDir))
+        testPaths.add(this.getTestPath(baseDir))
       }
     } else {
       const defaultTask = {
@@ -49,7 +49,7 @@ export default class Test extends Command {
         output: './build',
       }
       if (!skipCompile) await this.compileTask(defaultTask, baseDir)
-      testPaths.add(this.getTestPath(defaultTask, baseDir))
+      testPaths.add(this.getTestPath(baseDir))
     }
 
     if (testPaths.size > 0) this.runTests(Array.from(testPaths), baseDir)
@@ -70,9 +70,8 @@ export default class Test extends Command {
     if (cp.status !== 0) this.exit(cp.status ?? 1)
   }
 
-  private getTestPath(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): string {
-    const taskDir = path.dirname(task.entry)
-    return path.join(baseDir, taskDir, '..', 'tests', '**', '*.spec.ts')
+  private getTestPath(baseDir: string): string {
+    return path.join(baseDir, 'tests', '**', '*.spec.ts')
   }
 
   private runTests(testPaths: string[], baseDir: string): void {
