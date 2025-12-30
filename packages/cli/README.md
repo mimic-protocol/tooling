@@ -130,7 +130,7 @@ $ mimic deploy
 $ mimic deploy --profile staging
 
 # Deploy with explicit API key (overrides profile)
-$ mimic deploy --key YOUR_API_KEY
+$ mimic deploy --api-key YOUR_API_KEY
 ```
 
 For full CLI documentation and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
