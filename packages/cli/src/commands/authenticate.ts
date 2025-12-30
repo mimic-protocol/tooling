@@ -21,6 +21,7 @@ export default class Authenticate extends Command {
     profile: Flags.string({
       char: 'p',
       description: 'Profile name to use for this credential',
+      default: CredentialsManager.getDefaultProfileName(),
     }),
     'api-key': Flags.string({
       char: 'k',

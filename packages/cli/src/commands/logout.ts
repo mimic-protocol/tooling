@@ -16,7 +16,7 @@ export default class Logout extends Command {
     profile: Flags.string({
       char: 'p',
       description: 'Profile name to remove',
-      default: 'default',
+      default: CredentialsManager.getDefaultProfileName(),
     }),
     force: Flags.boolean({
       char: 'f',
