@@ -193,6 +193,6 @@ describe('deploy', () => {
   context("when the default profile doesn't exist", () => {
     const command = ['deploy']
 
-    itThrowsACliError(command, 'Authentication required', 'AuthenticationRequired', 3)
+    itThrowsACliError(command, 'Authentication required', 'AuthenticationRequired', 2)
   })
 })
