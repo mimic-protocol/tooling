@@ -21,7 +21,6 @@ export default class Authenticate extends Command {
     profile: Flags.string({
       char: 'p',
       description: 'Profile name to use for this credential',
-      default: CredentialsManager.getDefaultProfileName(),
     }),
     'api-key': Flags.string({
       char: 'k',
@@ -41,9 +40,7 @@ export default class Authenticate extends Command {
             code: 'AuthenticationRequired',
             suggestions: [
               `Run ${log.highlightText('mimic login')} to authenticate`,
-              flags.profile !== CredentialsManager.getDefaultProfileName()
-                ? `Run ${log.highlightText(`mimic login --profile ${flags.profile}`)} to create this profile`
-                : undefined,
+              `Run ${log.highlightText(`mimic login --profile ${flags.profile ?? '<profile>'}`)} to create this profile`,
               `Or use ${log.highlightText('--api-key')} flag to provide API key directly`,
             ].filter(Boolean) as string[],
           })
