@@ -65,14 +65,14 @@ describe('login', () => {
       credentialsManager.saveProfile('staging', 'old-key')
     })
 
-    it('should update default profile', async () => {
-      await runCommand(['login', '--api-key', 'new-key'])
+    it('should update default profile when force-login is used', async () => {
+      await runCommand(['login', '--api-key', 'new-key', '--force-login'])
       const newCredentials = credentialsManager.readCredentials()
       expect(newCredentials.default.apiKey).to.equal('new-key')
     })
 
-    it('should update the specified profile', async () => {
-      await runCommand(['login', '--profile', 'staging', '--api-key', 'new-key'])
+    it('should update the specified profile when force-login is used', async () => {
+      await runCommand(['login', '--profile', 'staging', '--api-key', 'new-key', '--force-login'])
       const newCredentials = credentialsManager.readCredentials()
       expect(newCredentials.staging.apiKey).to.equal('new-key')
     })

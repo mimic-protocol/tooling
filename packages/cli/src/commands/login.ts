@@ -1,10 +1,12 @@
-import { input, password } from '@inquirer/prompts'
-import { Command, Flags } from '@oclif/core'
+import { confirm, input, password } from '@inquirer/prompts'
+import { Flags } from '@oclif/core'
 
-import { CredentialsManager, ProfileCredentials } from '../lib/CredentialsManager'
+import { CredentialsManager } from '../lib/CredentialsManager'
 import log from '../log'
 
-export default class Login extends Command {
+import Authenticate from './authenticate'
+
+export default class Login extends Authenticate {
   static override description = 'Authenticate with Mimic by storing your API key locally'
 
   static override examples = [
@@ -14,13 +16,11 @@ export default class Login extends Command {
   ]
 
   static override flags = {
-    profile: Flags.string({
-      char: 'p',
-      description: 'Profile name to use for this credential',
-    }),
-    'api-key': Flags.string({
-      char: 'k',
-      description: 'API key (non-interactive mode)',
+    ...Authenticate.flags,
+    'force-login': Flags.boolean({
+      char: 'f',
+      description: 'Force login even if profile exists',
+      default: false,
     }),
   }
 
@@ -69,13 +69,27 @@ export default class Login extends Command {
       }
     }
 
-    this.saveAndConfirm(profileName || CredentialsManager.getDefaultProfileName(), apiKey)
+    this.saveAndConfirm(profileName || CredentialsManager.getDefaultProfileName(), apiKey, flags['force-login'])
   }
 
-  private saveAndConfirm(profileName: string, apiKey: string): void {
+  private async saveAndConfirm(profileName: string, apiKey: string, forceLogin: boolean): Promise<void> {
     try {
+      const credentialsManager = CredentialsManager.getDefault()
+
+      if (credentialsManager.profileExists(profileName) && !forceLogin) {
+        const shouldOverwrite = await confirm({
+          message: `Profile ${log.highlightText(profileName)} already exists. Overwrite?`,
+          default: false,
+        })
+
+        if (!shouldOverwrite) {
+          console.log('Login cancelled')
+          return
+        }
+      }
+
       log.startAction('Saving credentials')
-      CredentialsManager.getDefault().saveProfile(profileName, apiKey)
+      credentialsManager.saveProfile(profileName, apiKey)
       log.stopAction()
 
       console.log(`✓ Credentials saved for profile ${log.highlightText(profileName)}`)
@@ -89,29 +103,5 @@ export default class Login extends Command {
       if (error instanceof Error) this.error(`Failed to save credentials: ${error.message}`)
       throw error
     }
-  }
-
-  protected authenticate(flags: { profile?: string; 'api-key'?: string }): ProfileCredentials {
-    let apiKey = flags['api-key']
-    if (!apiKey) {
-      try {
-        const credentials = CredentialsManager.getDefault().getCredentials(flags.profile)
-        apiKey = credentials.apiKey
-      } catch (error) {
-        if (error instanceof Error)
-          this.error(error.message, {
-            code: 'AuthenticationRequired',
-            suggestions: [
-              `Run ${log.highlightText('mimic login')} to authenticate`,
-              flags.profile !== 'default'
-                ? `Run ${log.highlightText(`mimic login --profile ${flags.profile}`)} to create this profile`
-                : undefined,
-              `Or use ${log.highlightText('--api-key')} flag to provide API key directly`,
-            ].filter(Boolean) as string[],
-          })
-        throw error
-      }
-    }
-    return { apiKey }
   }
 }

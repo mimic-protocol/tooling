@@ -9,11 +9,11 @@ import { ProfileCredentials } from '../lib/CredentialsManager'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
-import Login from './login'
+import Authenticate from './authenticate'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export default class Deploy extends Login {
+export default class Deploy extends Authenticate {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
 
   static override examples = [
@@ -23,7 +23,7 @@ export default class Deploy extends Login {
   ]
 
   static override flags = {
-    ...Login.flags,
+    ...Authenticate.flags,
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
