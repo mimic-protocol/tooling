@@ -15,7 +15,7 @@ import {
   SolidityTypeValidator,
   StringValidator,
   TimestampValidator,
-  TokenAmountValidator,
+  TokenAmountValidator as SDKTokenAmountValidator,
   TokenValidator,
   TriggerType,
   z,
@@ -50,6 +50,13 @@ export const ParameterizedResponseValidator = z
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
 
+export const TokenAmountValidator = SDKTokenAmountValidator.extend({
+  amount: StringValidator.refine(
+    (value) => PositiveNumberValidator.safeParse(value).success,
+    'Must be a positive number as a string'
+  ),
+})
+
 export const InputsValidator = z.record(
   z.string(),
   z.union([z.number(), z.string(), TokenValidator, TokenAmountValidator])
@@ -61,7 +68,12 @@ export const MockFunctionResponseValidator = z.union([z.string(), ParameterizedR
 
 export const MockSectionValidator = z.record(MockFunctionResponseValidator)
 
-export const MockConfigValidator = z.record(z.union([MockSectionValidator, InputsValidator]))
+export const MockConfigValidator = z.object({
+  environment: MockSectionValidator.optional(),
+  evm: MockSectionValidator.optional(),
+  svm: MockSectionValidator.optional(),
+  inputs: InputsValidator.optional(),
+})
 
 // ========= Token Price =========
 
