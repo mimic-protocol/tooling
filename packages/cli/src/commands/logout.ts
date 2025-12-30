@@ -30,7 +30,7 @@ export default class Logout extends Command {
     const { profile: profileName, force } = flags
 
     const profiles = CredentialsManager.getDefault().getProfiles()
-    if (!profiles.includes(profileName)) {
+    if (!profiles.includes(profileName))
       this.error(`Profile '${profileName}' does not exist`, {
         code: 'ProfileNotFound',
         suggestions:
@@ -38,7 +38,6 @@ export default class Logout extends Command {
             ? [`Available profiles: ${profiles.join(', ')}`]
             : ['No profiles found. Use `mimic login` to create one.'],
       })
-    }
 
     if (!force) {
       const shouldRemove = await confirm({

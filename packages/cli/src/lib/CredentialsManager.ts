@@ -35,16 +35,10 @@ export class CredentialsManager {
     return path.join(this.getBaseDir(), CREDENTIALS_FILE)
   }
 
-  /**
-   * Creates the credentials directory with proper permissions if it does not exist
-   */
   createCredentialsDirIfNotExists(): void {
-    if (fs.existsSync(this.getBaseDir())) {
-      return
-    }
+    if (fs.existsSync(this.getBaseDir())) return
     fs.mkdirSync(this.getBaseDir(), { recursive: true })
 
-    // Set directory permissions to 700 on Unix-like systems
     if (process.platform !== 'win32') {
       try {
         fs.chmodSync(this.getBaseDir(), 0o700)
@@ -52,9 +46,6 @@ export class CredentialsManager {
     }
   }
 
-  /**
-   * Parse credentials file content into a profiles object
-   */
   parseCredentials(content: string): Record<string, ProfileCredentials> {
     const profiles: Record<string, ProfileCredentials> = {}
     const lines = content.split('\n')
@@ -63,12 +54,8 @@ export class CredentialsManager {
     for (const line of lines) {
       const trimmed = line.trim()
 
-      // Skip empty lines and comments
-      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) {
-        continue
-      }
+      if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith(';')) continue
 
-      // Check for profile header [profile-name]
       const profileMatch = trimmed.match(/^\[([^\]]+)\]$/)
       if (profileMatch) {
         currentProfile = profileMatch[1]
@@ -76,16 +63,13 @@ export class CredentialsManager {
         continue
       }
 
-      // Parse key-value pairs
       if (currentProfile) {
         const kvMatch = trimmed.match(/^([^=]+)=(.*)$/)
         if (kvMatch) {
           const key = kvMatch[1].trim()
           const value = kvMatch[2].trim()
 
-          if (key === 'api_key') {
-            profiles[currentProfile].apiKey = value
-          }
+          if (key === 'api_key') profiles[currentProfile].apiKey = value
         }
       }
     }
@@ -93,42 +77,28 @@ export class CredentialsManager {
     return profiles
   }
 
-  /**
-   * Serialize profiles object into credentials file format
-   */
   serializeCredentials(profiles: Record<string, ProfileCredentials>): string {
     const lines: string[] = []
 
     const profileEntries = Object.entries(profiles)
-    profileEntries.forEach(([profileName, credentials], index) => {
+    profileEntries.forEach(([profileName, credentials]) => {
       lines.push(`[${profileName}]`)
       lines.push(`api_key=${credentials.apiKey}`)
-      // Add empty line between profiles, but not after the last one
-      if (index < profileEntries.length - 1) {
-        lines.push('')
-      }
+      lines.push('')
     })
 
-    return lines.join('\n') + '\n'
+    return lines.join('\n')
   }
 
-  /**
-   * Read all profiles from the credentials file
-   */
   readCredentials(): Record<string, ProfileCredentials> {
     const credentialsPath = this.getCredentialsPath()
 
-    if (!fs.existsSync(credentialsPath)) {
-      return {}
-    }
+    if (!fs.existsSync(credentialsPath)) return {}
 
     const content = fs.readFileSync(credentialsPath, 'utf-8')
     return this.parseCredentials(content)
   }
 
-  /**
-   * Write profiles to the credentials file
-   */
   writeCredentials(profiles: Record<string, ProfileCredentials>): void {
     this.createCredentialsDirIfNotExists()
 
@@ -144,19 +114,12 @@ export class CredentialsManager {
     }
   }
 
-  /**
-   * Save credentials for a specific profile
-   */
   saveProfile(profileName: string, apiKey: string): void {
     const profiles = this.readCredentials()
     profiles[profileName] = { apiKey }
     this.writeCredentials(profiles)
   }
 
-  /**
-   * Get credentials for a specific profile
-   * @throws Error if profile doesn't exist or is invalid
-   */
   getProfile(profileName: string = 'default'): ProfileCredentials {
     const credentialsDir = this.getBaseDir()
     const credentialsPath = this.getCredentialsPath()
@@ -165,14 +128,12 @@ export class CredentialsManager {
       throw new Error(`No credentials directory found at ${credentialsDir}. Run 'mimic login' to authenticate.`)
     }
 
-    // Check if credentials file exists
     if (!fs.existsSync(credentialsPath)) {
       throw new Error(`No credentials file found. Run 'mimic login' to authenticate.`)
     }
 
     const profiles = this.readCredentials()
 
-    // Check if profile exists
     if (!profiles[profileName]) {
       const availableProfiles = Object.keys(profiles)
       const suggestion =
@@ -185,7 +146,6 @@ export class CredentialsManager {
 
     const credentials = profiles[profileName]
 
-    // Check if api_key exists and is not empty
     if (!credentials.apiKey || credentials.apiKey.trim() === '') {
       throw new Error(
         `Profile '${profileName}' has no API key. Run 'mimic login --profile ${profileName}' to update credentials.`
@@ -199,9 +159,7 @@ export class CredentialsManager {
     try {
       return this.getProfile(profileName)
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Authentication required: ${error.message}`)
-      }
+      if (error instanceof Error) throw new Error(`Authentication required: ${error.message}`)
       throw error
     }
   }
@@ -214,9 +172,7 @@ export class CredentialsManager {
   removeProfile(profileName: string): void {
     const profiles = this.readCredentials()
 
-    if (!profiles[profileName]) {
-      throw new Error(`Profile '${profileName}' does not exist`)
-    }
+    if (!profiles[profileName]) throw new Error(`Profile '${profileName}' does not exist`)
 
     delete profiles[profileName]
     this.writeCredentials(profiles)

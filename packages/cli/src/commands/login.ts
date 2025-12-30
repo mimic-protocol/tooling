@@ -53,12 +53,9 @@ export default class Login extends Command {
             message: `Enter a profile name (press Enter for "${CredentialsManager.getDefaultProfileName()}"):`,
             default: CredentialsManager.getDefaultProfileName(),
             validate: (value) => {
-              if (!value || value.trim() === '') {
-                return 'Profile name cannot be empty'
-              }
-              if (value.includes('[') || value.includes(']') || value.includes('=')) {
+              if (!value || value.trim() === '') return 'Profile name cannot be empty'
+              if (value.includes('[') || value.includes(']') || value.includes('='))
                 return 'Profile name cannot contain [, ], or = characters'
-              }
               return true
             },
           })
@@ -89,9 +86,7 @@ export default class Login extends Command {
         console.log(`Or with your profile: ${log.highlightText(`mimic deploy --profile ${profileName}`)}`)
       }
     } catch (error) {
-      if (error instanceof Error) {
-        this.error(`Failed to save credentials: ${error.message}`)
-      }
+      if (error instanceof Error) this.error(`Failed to save credentials: ${error.message}`)
       throw error
     }
   }
@@ -103,7 +98,7 @@ export default class Login extends Command {
         const credentials = CredentialsManager.getDefault().getCredentials(flags.profile)
         apiKey = credentials.apiKey
       } catch (error) {
-        if (error instanceof Error) {
+        if (error instanceof Error)
           this.error(error.message, {
             code: 'AuthenticationRequired',
             suggestions: [
@@ -114,7 +109,6 @@ export default class Login extends Command {
               `Or use ${log.highlightText('--key')} flag to provide API key directly`,
             ].filter(Boolean) as string[],
           })
-        }
         throw error
       }
     }
