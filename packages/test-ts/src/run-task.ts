@@ -1,17 +1,15 @@
 import { runExecution } from '@mimicprotocol/runner-node'
-import {
-  EthersSigner,
-  OpType,
-  OracleQueryName,
-  OracleQueryParams,
-  OracleQueryResult,
-  OracleRelevantTokenFilter,
-  OracleSigner,
-} from '@mimicprotocol/sdk'
-import { AbiCoder, concat, Wallet } from 'ethers'
 import * as path from 'path'
 
-import { Call, Context, Intent, OracleResponse, RunTaskOptionalParams, RunTaskResult, Swap, Transfer } from './types'
+import {
+  evmCallQueryProcessor,
+  priceQueryProcessor,
+  relevantTokensQueryProcessor,
+  subgraphQueryProcessor,
+} from './processors'
+import { Context, RunTaskOptionalParams, RunTaskResult } from './types'
+import { formatValidationError, processQueries, toIntents } from './utils'
+import { ContextValidator } from './validators'
 
 const DEFAULT_CONTEXT = {
   timestamp: Date.now(),
@@ -19,8 +17,6 @@ const DEFAULT_CONTEXT = {
   configSig: '0x',
   trigger: { type: 0, data: '0x' },
 }
-
-const signer = new OracleSigner(EthersSigner.fromPrivateKey(Wallet.createRandom().privateKey))
 
 export async function runTask(
   taskDir: string,
@@ -30,101 +26,53 @@ export async function runTask(
 ): Promise<RunTaskResult> {
   const taskPath = path.join(taskDir, 'task.wasm')
   const inputs = optional.inputs || {}
+  const showLogs = optional.showLogs ?? true
 
-  const oracleResponses = getOracleResponses(optional, context.timestamp || DEFAULT_CONTEXT.timestamp)
-  const fullContext = { ...DEFAULT_CONTEXT, ...context, oracleResponses }
+  const contextResult = ContextValidator.safeParse(context)
+  if (!contextResult.success) {
+    throw formatValidationError(contextResult.error, {
+      queryType: 'context',
+      request: context,
+    })
+  }
+
+  const validatedContext = contextResult.data
+  const oracleResponses = getOracleResponses(optional, validatedContext.timestamp || DEFAULT_CONTEXT.timestamp)
+  const fullContext = { ...DEFAULT_CONTEXT, ...validatedContext, oracleResponses }
 
   const result = await runExecution(taskPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
+  const logs: string[] = JSON.parse(result.logsJson)
+
+  if (showLogs && !result.success && logs.length > 0) {
+    console.log('The execution produced the following logs, which may indicate a problem:\n')
+    for (const log of logs) {
+      console.log(`- ${log}`)
+    }
+    console.log('\n')
+  }
+
   return {
     success: result.success,
     timestamp: Number(result.timestamp),
     fuelUsed: Number(result.fuelUsed),
     oracleResponses: JSON.parse(result.responsesJson),
     intents: toIntents(result.intentsJson),
-    logs: JSON.parse(result.logsJson),
+    logs,
   }
 }
 
 function getOracleResponses(optional: RunTaskOptionalParams, contextTimestamp: number) {
-  const oracleResponses: Record<string, OracleResponse[]> = {}
   const { prices = [], relevantTokens = [], calls = [], subgraphQueries = [] } = optional
 
-  for (const price of prices) {
-    const { token, chainId, timestamp } = price.request
-    const params = {
-      token: {
-        address: token.toLowerCase(),
-        chainId,
-      },
-      timestamp: timestamp || contextTimestamp,
-    }
-    addOracleResponse(oracleResponses, 'TokenPriceQuery', params, price.response[0] || '')
+  const priceResponses = processQueries(prices, priceQueryProcessor, contextTimestamp)
+  const relevantTokensResponses = processQueries(relevantTokens, relevantTokensQueryProcessor, contextTimestamp)
+  const callsResponses = processQueries(calls, evmCallQueryProcessor, contextTimestamp)
+  const subgraphQueriesResponses = processQueries(subgraphQueries, subgraphQueryProcessor, contextTimestamp)
+
+  return {
+    ...priceResponses,
+    ...relevantTokensResponses,
+    ...callsResponses,
+    ...subgraphQueriesResponses,
   }
-
-  for (const token of relevantTokens) {
-    const { owner, chainIds, usdMinAmount, tokens, tokenFilter } = token.request
-    const params = {
-      owner: owner.toLowerCase(),
-      chainIds,
-      usdMinAmount,
-      tokens: tokens.map((t) => ({
-        address: t.address.toLowerCase(),
-        chainId: t.chainId,
-      })),
-      tokenFilter: tokenFilter as OracleRelevantTokenFilter,
-    }
-    addOracleResponse(oracleResponses, 'RelevantTokensQuery', params, token.response[0] || '')
-  }
-
-  for (const call of calls) {
-    const { to, chainId, timestamp, fnSelector, params: fnParams } = call.request
-    const data = fnParams
-      ? concat([fnSelector, ...fnParams.map((p) => AbiCoder.defaultAbiCoder().encode([p.abiType], [p.value]))])
-      : fnSelector
-
-    const params = {
-      to: to.toLowerCase(),
-      chainId,
-      timestamp: timestamp || contextTimestamp,
-      data,
-    }
-    const value = AbiCoder.defaultAbiCoder().encode([call.response.abiType], [call.response.value])
-    addOracleResponse(oracleResponses, 'EvmCallQuery', params, value)
-  }
-
-  for (const subgraphQuery of subgraphQueries) {
-    const { chainId, subgraphId, query, timestamp } = subgraphQuery.request
-    const params = { chainId, subgraphId, query, timestamp }
-    addOracleResponse(oracleResponses, 'SubgraphQuery', params, subgraphQuery.response)
-  }
-
-  return oracleResponses
-}
-
-function addOracleResponse<T extends OracleQueryName>(
-  oracleResponses: Record<string, OracleResponse[]>,
-  queryName: T,
-  params: OracleQueryParams<T>,
-  value: OracleQueryResult<T>
-) {
-  const hash = signer.getQueryHash(params, queryName)
-  const response = {
-    result: { value },
-    query: { params, name: queryName, hash },
-    signature: '',
-  }
-  oracleResponses[hash] = [response as OracleResponse]
-}
-
-function toIntents(intentsJson: string) {
-  const raw = JSON.parse(intentsJson)
-  return raw.map((intent: Partial<Intent>) => {
-    if (intent.op == OpType.Swap) {
-      const { sourceChain, destinationChain } = intent as Swap
-      return { ...intent, sourceChain: Number(sourceChain), destinationChain: Number(destinationChain) }
-    }
-
-    const { chainId } = intent as Transfer | Call
-    return { ...intent, chainId: Number(chainId) }
-  })
 }

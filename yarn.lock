@@ -693,10 +693,10 @@
     "@mimicprotocol/runner-node-win32-arm64-msvc" "0.0.1-rc.8"
     "@mimicprotocol/runner-node-win32-x64-msvc" "0.0.1-rc.8"
 
-"@mimicprotocol/sdk@^0.0.1-rc.16":
-  version "0.0.1-rc.20"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.20.tgz#a2a29c53b17901c38c25e39304ddcf46a72058f2"
-  integrity sha512-Hdw9jvyVI3ox6SbY/AI22yi55gDlf1Qx33UHdN1jCR+IL350rHBKO2b+L2zvSYIH4mcJWhXAofREM4zwKuqVBw==
+"@mimicprotocol/sdk@^0.0.1-rc.26":
+  version "0.0.1-rc.26"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.26.tgz#71e2d0478fac6b45a4f5a5e9ba72322d08f5290f"
+  integrity sha512-/4FCZ12InZbQ3esAs6lwwTN+oxSgfBoEAYbp4xfamQdZAJDRpDsbxcTXsnRdoFmhs5khK99s8RdfSaKBK3IsOg==
   dependencies:
     "@solana/web3.js" "^1.98.4"
     borsh "^2.0.0"
@@ -7382,11 +7382,11 @@ yoctocolors-cjs@^2.1.2:
   integrity sha512-cYVsTjKl8b+FrnidjibDWskAv7UKOfcwaVZdp/it9n1s9fU3IkgDbhdIRKCW4JDsAlECJY0ytoVPT3sK6kideA==
 
 zod@^3.23.8:
+  version "3.23.8"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
+
+zod@^3.24.1:
   version "3.25.76"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
   integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
-
-zod@^3.24.1:
-  version "3.25.67"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.67.tgz#62987e4078e2ab0f63b491ef0c4f33df24236da8"
-  integrity sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==
