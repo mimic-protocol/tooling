@@ -61,7 +61,12 @@ export const MockFunctionResponseValidator = z.union([z.string(), ParameterizedR
 
 export const MockSectionValidator = z.record(MockFunctionResponseValidator)
 
-export const MockConfigValidator = z.record(z.union([MockSectionValidator, InputsValidator]))
+export const MockConfigValidator = z.object({
+  environment: MockSectionValidator.optional(),
+  evm: MockSectionValidator.optional(),
+  svm: MockSectionValidator.optional(),
+  inputs: InputsValidator.optional(),
+})
 
 // ========= Token Price =========
 
