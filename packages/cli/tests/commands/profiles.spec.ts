@@ -1,10 +1,8 @@
 import { runCommand } from '@oclif/test'
 import { expect } from 'chai'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
 
 import { CredentialsManager } from '../../src/lib/CredentialsManager'
+import { backupCredentials, restoreCredentials } from '../helpers'
 
 describe('profiles', () => {
   let credentialsManager: CredentialsManager
@@ -12,29 +10,12 @@ describe('profiles', () => {
 
   beforeEach('Backup existing credentials', () => {
     credentialsManager = CredentialsManager.getDefault()
-    const credDir = credentialsManager.getBaseDir()
-
-    // Backup existing credentials if they exist
-    // We can stub CredentialsManager because runCommands runs in a separate context
-    // and will not use the stubbed version
-    if (fs.existsSync(credDir)) {
-      backupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-backup-'))
-      fs.cpSync(credDir, backupDir, { recursive: true })
-      fs.rmSync(credDir, { recursive: true, force: true })
-    }
+    backupDir = backupCredentials(credentialsManager)
   })
 
   afterEach('Restore credentials and stubs', () => {
-    const credDir = credentialsManager.getBaseDir()
-    if (fs.existsSync(credDir)) {
-      fs.rmSync(credDir, { recursive: true, force: true })
-    }
-
-    if (backupDir && fs.existsSync(backupDir)) {
-      fs.cpSync(backupDir, credDir, { recursive: true })
-      fs.rmSync(backupDir, { recursive: true, force: true })
-      backupDir = null
-    }
+    restoreCredentials(credentialsManager, backupDir)
+    backupDir = null
   })
 
   it('should show message when no profiles exist', async () => {

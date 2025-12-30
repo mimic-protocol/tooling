@@ -3,11 +3,10 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { expect } from 'chai'
 import * as fs from 'fs'
-import * as os from 'os'
-import path, { join } from 'path'
+import { join } from 'path'
 
 import { CredentialsManager } from '../../src/lib/CredentialsManager'
-import { itThrowsACliError } from '../helpers'
+import { backupCredentials, itThrowsACliError, restoreCredentials } from '../helpers'
 
 describe('deploy', () => {
   const inputDir = join(__dirname, 'deploy-directory')
@@ -18,29 +17,12 @@ describe('deploy', () => {
 
     beforeEach('backup existing credentials', () => {
       credentialsManager = CredentialsManager.getDefault()
-      const credDir = credentialsManager.getBaseDir()
-
-      // Backup existing credentials if they exist
-      // We can stub CredentialsManager because runCommands runs in a separate context
-      // and will not use the stubbed version
-      if (fs.existsSync(credDir)) {
-        backupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-backup-'))
-        fs.cpSync(credDir, backupDir, { recursive: true })
-        fs.rmSync(credDir, { recursive: true, force: true })
-      }
+      backupDir = backupCredentials(credentialsManager)
     })
 
     afterEach('restore credentials and stubs', () => {
-      const credDir = credentialsManager.getBaseDir()
-      if (fs.existsSync(credDir)) {
-        fs.rmSync(credDir, { recursive: true, force: true })
-      }
-
-      if (backupDir && fs.existsSync(backupDir)) {
-        fs.cpSync(backupDir, credDir, { recursive: true })
-        fs.rmSync(backupDir, { recursive: true, force: true })
-        backupDir = null
-      }
+      restoreCredentials(credentialsManager, backupDir)
+      backupDir = null
     })
 
     const defaultKey = '123'

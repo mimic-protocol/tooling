@@ -1,11 +1,9 @@
 import { runCommand } from '@oclif/test'
 import { expect } from 'chai'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
 import * as sinon from 'sinon'
 
 import { CredentialsManager } from '../../src/lib/CredentialsManager'
+import { backupCredentials, restoreCredentials } from '../helpers'
 
 describe('logout', () => {
   let credentialsManager: CredentialsManager
@@ -13,29 +11,14 @@ describe('logout', () => {
 
   beforeEach('Backup existing credentials', () => {
     credentialsManager = CredentialsManager.getDefault()
-    const credDir = credentialsManager.getBaseDir()
-
-    // Backup existing credentials if they exist
-    if (fs.existsSync(credDir)) {
-      backupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-backup-'))
-      fs.cpSync(credDir, backupDir, { recursive: true })
-      fs.rmSync(credDir, { recursive: true, force: true })
-    }
+    backupDir = backupCredentials(credentialsManager)
   })
 
   afterEach('Restore credentials and stubs', () => {
     sinon.restore()
 
-    const credDir = credentialsManager.getBaseDir()
-    if (fs.existsSync(credDir)) {
-      fs.rmSync(credDir, { recursive: true, force: true })
-    }
-
-    if (backupDir && fs.existsSync(backupDir)) {
-      fs.cpSync(backupDir, credDir, { recursive: true })
-      fs.rmSync(backupDir, { recursive: true, force: true })
-      backupDir = null
-    }
+    restoreCredentials(credentialsManager, backupDir)
+    backupDir = null
   })
 
   describe('when credentials exist', () => {
