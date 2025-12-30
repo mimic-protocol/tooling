@@ -693,10 +693,10 @@
     "@mimicprotocol/runner-node-win32-arm64-msvc" "0.0.1-rc.8"
     "@mimicprotocol/runner-node-win32-x64-msvc" "0.0.1-rc.8"
 
-"@mimicprotocol/sdk@^0.0.1-rc.26":
-  version "0.0.1-rc.26"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.26.tgz#71e2d0478fac6b45a4f5a5e9ba72322d08f5290f"
-  integrity sha512-/4FCZ12InZbQ3esAs6lwwTN+oxSgfBoEAYbp4xfamQdZAJDRpDsbxcTXsnRdoFmhs5khK99s8RdfSaKBK3IsOg==
+"@mimicprotocol/sdk@^0.0.1-rc.27":
+  version "0.0.1-rc.27"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.1-rc.27.tgz#33147b0bd11b4f37b75c0d9b5c80dd67d18191db"
+  integrity sha512-2VFSU8rG5m4ailfsoy2gqYxcfrWFzxNDwnSqLQ2NEX0jvZSirFDZMzdCLPo+l9CRknGwohhcA5w0DgpebqULTw==
   dependencies:
     "@solana/web3.js" "^1.98.4"
     borsh "^2.0.0"
