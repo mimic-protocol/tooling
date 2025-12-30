@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 0.0.1-rc.33
+
+### Patch Changes
+
+- 9530e1c: Revert test command directory change
+- 21aba8d: Improve mocks error messages
+- 5c8c562: Fix MockConfig validator
+
 ## 0.0.1-rc.32
 
 ### Patch Changes
