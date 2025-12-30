@@ -11,6 +11,7 @@ import { backupCredentials, itThrowsACliError, restoreCredentials } from '../hel
 describe('deploy', () => {
   const inputDir = join(__dirname, 'deploy-directory')
   let outputDir = inputDir
+
   context('when the default profile exists', () => {
     let credentialsManager: CredentialsManager
     let backupDir: string | null = null
