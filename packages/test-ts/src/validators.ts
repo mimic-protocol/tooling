@@ -15,7 +15,7 @@ import {
   SolidityTypeValidator,
   StringValidator,
   TimestampValidator,
-  TokenAmountValidator as SDKTokenAmountValidator,
+  TokenAmountValidator,
   TokenValidator,
   TriggerType,
   z,
@@ -49,13 +49,6 @@ export const ParameterizedResponseValidator = z
   .refine((data) => !!data.paramResponse || data.default !== undefined, {
     message: "At least one of 'paramResponse' or 'default' must be defined",
   })
-
-export const TokenAmountValidator = SDKTokenAmountValidator.extend({
-  amount: StringValidator.refine(
-    (value) => PositiveNumberValidator.safeParse(value).success,
-    'Must be a positive number as a string'
-  ),
-})
 
 export const InputsValidator = z.record(
   z.string(),
