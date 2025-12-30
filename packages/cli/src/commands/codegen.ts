@@ -3,9 +3,10 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
-import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } from '../lib'
+import { filterTasks, taskFilterFlags } from '../helpers'
+import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
 import log from '../log'
-import { Manifest } from '../types'
+import { Manifest, RequiredTaskConfig } from '../types'
 
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'
@@ -20,11 +21,34 @@ export default class Codegen extends Command {
       description: 'Remove existing generated types before generating new files',
       default: false,
     }),
+    ['skip-config']: Flags.boolean({
+      hidden: true,
+      description: 'Skip mimic.yaml config (used internally by build command)',
+      default: false,
+    }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean } = flags
+    const { manifest: manifestDir, output: outputDir, clean, include, exclude, ['skip-config']: skipConfig } = flags
+
+    if (!skipConfig && MimicConfigHandler.exists()) {
+      const mimicConfig = MimicConfigHandler.load(this)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
+      for (const task of tasks) {
+        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+        await this.runForTask(task, clean)
+      }
+    } else {
+      await this.runForTask({ manifest: manifestDir, types: outputDir }, clean)
+    }
+  }
+
+  private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'entry' | 'output'>, clean: boolean): Promise<void> {
+    const manifestDir = task.manifest
+    const outputDir = task.types
     const manifest = ManifestHandler.load(this, manifestDir)
 
     if (clean) {

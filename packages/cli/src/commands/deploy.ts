@@ -5,8 +5,11 @@ import * as fs from 'fs'
 import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
+import { filterTasks, taskFilterFlags } from '../helpers'
+import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { RequiredTaskConfig } from '../types'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
@@ -21,20 +24,64 @@ export default class Deploy extends Command {
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { key, input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
+    const {
+      key,
+      input: inputDir,
+      output: outputDir,
+      'skip-compile': skipCompile,
+      url: registryUrl,
+      include,
+      exclude,
+    } = flags
+
+    if (MimicConfigHandler.exists()) {
+      const mimicConfig = MimicConfigHandler.load(this)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
+      for (const task of tasks) {
+        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+        await this.runForTask(task, key, registryUrl, skipCompile, task.output)
+      }
+    } else {
+      await this.runForTask(
+        { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types', output: outputDir },
+        key,
+        registryUrl,
+        skipCompile,
+        inputDir
+      )
+    }
+  }
+
+  private async runForTask(
+    task: Omit<RequiredTaskConfig, 'name'>,
+    key: string,
+    registryUrl: string,
+    skipCompile: boolean,
+    inputDir: string
+  ): Promise<void> {
     const fullInputDir = resolve(inputDir)
-    const fullOutputDir = resolve(outputDir)
+    const fullOutputDir = resolve(task.output)
 
     if (!skipCompile) {
-      const codegen = execBinCommand('mimic', ['codegen'], process.cwd())
+      const codegen = execBinCommand(
+        'mimic',
+        ['codegen', '--manifest', task.manifest, '--output', task.types],
+        process.cwd()
+      )
       if (codegen.status !== 0)
         this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
 
-      const compile = execBinCommand('mimic', ['compile', '--output', fullInputDir], process.cwd())
+      const compile = execBinCommand(
+        'mimic',
+        ['compile', '--task', task.entry, '--manifest', task.manifest, '--output', fullInputDir],
+        process.cwd()
+      )
       if (compile.status !== 0)
         this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the task source code'] })
     }

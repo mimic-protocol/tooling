@@ -2,9 +2,12 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { filterTasks, taskFilterFlags } from '../helpers'
 import ManifestHandler from '../lib/ManifestHandler'
+import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { RequiredTaskConfig } from '../types'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -15,19 +18,46 @@ export default class Compile extends Command {
     task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
     manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
+    ['skip-config']: Flags.boolean({
+      hidden: true,
+      description: 'Skip mimic.yaml config (used internally by build command)',
+      default: false,
+    }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
+    const {
+      task: taskFile,
+      output: outputDir,
+      manifest: manifestDir,
+      include,
+      exclude,
+      ['skip-config']: skipConfig,
+    } = flags
 
-    const absTaskFile = path.resolve(taskFile)
-    const absOutputDir = path.resolve(outputDir)
+    if (!skipConfig && MimicConfigHandler.exists()) {
+      const mimicConfig = MimicConfigHandler.load(this)
+      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+      const tasks = filterTasks(this, allTasks, include, exclude)
+      for (const task of tasks) {
+        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+        await this.runForTask(task)
+      }
+    } else {
+      await this.runForTask({ manifest: manifestDir, entry: taskFile, output: outputDir })
+    }
+  }
+
+  private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): Promise<void> {
+    const absTaskFile = path.resolve(task.entry)
+    const absOutputDir = path.resolve(task.output)
 
     if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-    const manifest = ManifestHandler.load(this, manifestDir)
+    const manifest = ManifestHandler.load(this, task.manifest)
     log.startAction('Compiling')
 
     const ascArgs = [
@@ -52,8 +82,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(absOutputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
-    console.log(`Build complete! Artifacts in ${outputDir}/`)
+    console.log(`Build complete! Artifacts in ${task.output}/`)
   }
 }
