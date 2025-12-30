@@ -27,43 +27,56 @@ export default class Test extends Command {
     const { 'skip-compile': skipCompile, include, exclude } = flags
     const baseDir = path.resolve(directory)
 
+    const testPaths = new Set<string>()
+
     if (MimicConfigHandler.exists(baseDir)) {
       const mimicConfig = MimicConfigHandler.load(this, baseDir)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
+
       for (const task of tasks) {
-        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, baseDir, skipCompile)
+        if (!skipCompile) {
+          console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+          await this.compileTask(task, baseDir)
+        }
+        testPaths.add(this.getTestPath(task, baseDir))
       }
     } else {
-      await this.runForTask(
-        { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types', output: './build' },
-        baseDir,
-        skipCompile
-      )
+      const defaultTask = {
+        manifest: 'manifest.yaml',
+        entry: 'src/task.ts',
+        types: './src/types',
+        output: './build',
+      }
+      if (!skipCompile) await this.compileTask(defaultTask, baseDir)
+      testPaths.add(this.getTestPath(defaultTask, baseDir))
     }
+
+    if (testPaths.size > 0) this.runTests(Array.from(testPaths), baseDir)
   }
 
-  private async runForTask(
-    task: Omit<RequiredTaskConfig, 'name'>,
-    baseDir: string,
-    skipCompile: boolean
-  ): Promise<void> {
+  private async compileTask(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): Promise<void> {
+    const cg = execBinCommand(
+      'mimic',
+      ['codegen', '--manifest', task.manifest, '--output', task.types, '--skip-config'],
+      baseDir
+    )
+    if (cg.status !== 0) this.exit(cg.status ?? 1)
+    const cp = execBinCommand(
+      'mimic',
+      ['compile', '--task', task.entry, '--manifest', task.manifest, '--output', task.output, '--skip-config'],
+      baseDir
+    )
+    if (cp.status !== 0) this.exit(cp.status ?? 1)
+  }
+
+  private getTestPath(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): string {
     const taskDir = path.dirname(task.entry)
-    const testPath = path.join(baseDir, taskDir, '..', 'tests')
+    return path.join(baseDir, taskDir, '..', 'tests', '**', '*.spec.ts')
+  }
 
-    if (!skipCompile) {
-      const cg = execBinCommand('mimic', ['codegen', '--manifest', task.manifest, '--output', task.types], baseDir)
-      if (cg.status !== 0) this.exit(cg.status ?? 1)
-      const cp = execBinCommand(
-        'mimic',
-        ['compile', '--task', task.entry, '--manifest', task.manifest, '--output', task.output],
-        baseDir
-      )
-      if (cp.status !== 0) this.exit(cp.status ?? 1)
-    }
-
-    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
+  private runTests(testPaths: string[], baseDir: string): void {
+    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', ...testPaths], baseDir)
     if (result.status !== 0) this.exit(result.status ?? 1)
   }
 }
