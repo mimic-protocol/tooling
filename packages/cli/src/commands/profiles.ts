@@ -22,8 +22,9 @@ export default class Profiles extends Command {
     console.log()
 
     for (const profile of profiles) {
-      const isDefault = profile === 'default'
-      console.log(`* ${log.highlightText(profile)}${isDefault ? ' (default)' : ''}`)
+      console.log(
+        `* ${log.highlightText(profile)}${profile === CredentialsManager.getDefaultProfileName() ? ' (default)' : ''}`
+      )
     }
 
     console.log()

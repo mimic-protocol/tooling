@@ -40,7 +40,7 @@ export default class Authenticate extends Command {
             code: 'AuthenticationRequired',
             suggestions: [
               `Run ${log.highlightText('mimic login')} to authenticate`,
-              flags.profile !== 'default'
+              flags.profile
                 ? `Run ${log.highlightText(`mimic login --profile ${flags.profile}`)} to create this profile`
                 : undefined,
               `Or use ${log.highlightText('--api-key')} flag to provide API key directly`,

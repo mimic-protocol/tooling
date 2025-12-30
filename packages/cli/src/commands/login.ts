@@ -96,7 +96,7 @@ export default class Login extends Authenticate {
       console.log(`  Location: ${log.highlightText('~/.mimic/credentials')}`)
       console.log()
       console.log(`You can now deploy tasks using: ${log.highlightText('mimic deploy')}`)
-      if (profileName !== 'default') {
+      if (profileName !== CredentialsManager.getDefaultProfileName()) {
         console.log(`Or with your profile: ${log.highlightText(`mimic deploy --profile ${profileName}`)}`)
       }
     } catch (error) {

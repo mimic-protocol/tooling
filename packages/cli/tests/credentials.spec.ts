@@ -5,6 +5,8 @@ import * as path from 'path'
 
 import { CredentialsManager } from '../src/lib/CredentialsManager'
 
+const DEFAULT_PROFILE = 'default'
+
 describe('credentials', () => {
   let tempDir: string
   let credentialsManager: CredentialsManager
@@ -61,17 +63,17 @@ describe('credentials', () => {
 
   describe('parseCredentials', () => {
     it('should parse single profile correctly', () => {
-      const content = '[default]\napi_key=test-key-123\n'
+      const content = `[${DEFAULT_PROFILE}]\napi_key=test-key-123\n`
       const profiles = credentialsManager.parseCredentials(content)
 
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'test-key-123' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key-123' },
       })
     })
 
     it('should parse multiple profiles correctly', () => {
       const content = `
-[default]
+[${DEFAULT_PROFILE}]
 api_key=default-key
 
 [staging]
@@ -83,7 +85,7 @@ api_key=prod-key
       const profiles = credentialsManager.parseCredentials(content)
 
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'default-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'default-key' },
         staging: { apiKey: 'staging-key' },
         production: { apiKey: 'prod-key' },
       })
@@ -92,7 +94,7 @@ api_key=prod-key
     it('should ignore comments and empty lines', () => {
       const content = `
 # This is a comment
-[default]
+[${DEFAULT_PROFILE}]
 ; This is also a comment
 api_key=test-key
 
@@ -103,17 +105,17 @@ api_key=staging-key
       const profiles = credentialsManager.parseCredentials(content)
 
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'test-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key' },
         staging: { apiKey: 'staging-key' },
       })
     })
 
     it('should handle keys with spaces around equals sign', () => {
-      const content = '[default]\napi_key = test-key-123 \n'
+      const content = `[${DEFAULT_PROFILE}]\napi_key = test-key-123 \n`
       const profiles = credentialsManager.parseCredentials(content)
 
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'test-key-123' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key-123' },
       })
     })
 
@@ -126,21 +128,21 @@ api_key=staging-key
   describe('serializeCredentials', () => {
     it('should serialize single profile correctly', () => {
       const profiles = {
-        default: { apiKey: 'test-key-123' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key-123' },
       }
       const content = credentialsManager.serializeCredentials(profiles)
 
-      expect(content).to.equal('[default]\napi_key=test-key-123\n')
+      expect(content).to.equal(`[${DEFAULT_PROFILE}]\napi_key=test-key-123\n`)
     })
 
     it('should serialize multiple profiles correctly', () => {
       const profiles = {
-        default: { apiKey: 'default-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'default-key' },
         staging: { apiKey: 'staging-key' },
       }
       const content = credentialsManager.serializeCredentials(profiles)
 
-      expect(content).to.include('[default]\napi_key=default-key\n')
+      expect(content).to.include(`[${DEFAULT_PROFILE}]\napi_key=default-key\n`)
       expect(content).to.include('[staging]\napi_key=staging-key\n')
     })
   })
@@ -154,12 +156,12 @@ api_key=staging-key
     it('should read and parse credentials file', () => {
       credentialsManager.createCredentialsDirIfNotExists()
       const credentialsPath = credentialsManager.getCredentialsPath()
-      fs.writeFileSync(credentialsPath, '[default]\napi_key=test-key\n')
+      fs.writeFileSync(credentialsPath, `[${DEFAULT_PROFILE}]\napi_key=test-key\n`)
 
       const profiles = credentialsManager.readCredentials()
 
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'test-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key' },
       })
     })
   })
@@ -172,14 +174,14 @@ api_key=staging-key
       }
       expect(fs.existsSync(credDir)).to.be.false
 
-      credentialsManager.writeCredentials({ default: { apiKey: 'test-key' } })
+      credentialsManager.writeCredentials({ [DEFAULT_PROFILE]: { apiKey: 'test-key' } })
 
       expect(fs.existsSync(credDir)).to.be.true
     })
 
     it('should write credentials to file', () => {
       const profiles = {
-        default: { apiKey: 'test-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key' },
         staging: { apiKey: 'staging-key' },
       }
 
@@ -189,7 +191,7 @@ api_key=staging-key
       expect(fs.existsSync(credentialsPath)).to.be.true
 
       const content = fs.readFileSync(credentialsPath, 'utf-8')
-      expect(content).to.include('[default]')
+      expect(content).to.include(`[${DEFAULT_PROFILE}]`)
       expect(content).to.include('api_key=test-key')
       expect(content).to.include('[staging]')
       expect(content).to.include('api_key=staging-key')
@@ -201,7 +203,7 @@ api_key=staging-key
         return
       }
 
-      credentialsManager.writeCredentials({ default: { apiKey: 'test-key' } })
+      credentialsManager.writeCredentials({ [DEFAULT_PROFILE]: { apiKey: 'test-key' } })
 
       const credentialsPath = credentialsManager.getCredentialsPath()
       const stats = fs.statSync(credentialsPath)
@@ -213,30 +215,30 @@ api_key=staging-key
 
   describe('saveProfile', () => {
     it('should save a new profile', () => {
-      credentialsManager.saveProfile('default', 'test-key-123')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key-123')
 
       const profiles = credentialsManager.readCredentials()
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'test-key-123' },
+        [DEFAULT_PROFILE]: { apiKey: 'test-key-123' },
       })
     })
 
     it('should update an existing profile', () => {
-      credentialsManager.saveProfile('default', 'old-key')
-      credentialsManager.saveProfile('default', 'new-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'old-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'new-key')
 
       const profiles = credentialsManager.readCredentials()
-      expect(profiles.default.apiKey).to.equal('new-key')
+      expect(profiles[DEFAULT_PROFILE].apiKey).to.equal('new-key')
     })
 
     it('should not affect other profiles when updating', () => {
-      credentialsManager.saveProfile('default', 'default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
       credentialsManager.saveProfile('staging', 'staging-key')
-      credentialsManager.saveProfile('default', 'updated-default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'updated-default-key')
 
       const profiles = credentialsManager.readCredentials()
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'updated-default-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'updated-default-key' },
         staging: { apiKey: 'staging-key' },
       })
     })
@@ -248,21 +250,21 @@ api_key=staging-key
       if (fs.existsSync(credDir)) {
         fs.rmSync(credDir, { recursive: true, force: true })
       }
-      expect(() => credentialsManager.getProfile('default')).to.throw(/No credentials directory found/)
+      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/No credentials directory found/)
     })
 
     it('should throw error if credentials file does not exist', () => {
       credentialsManager.createCredentialsDirIfNotExists()
-      expect(() => credentialsManager.getProfile('default')).to.throw(/No credentials file found/)
+      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/No credentials file found/)
     })
 
     it('should throw error if profile does not exist', () => {
-      credentialsManager.saveProfile('default', 'test-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
       expect(() => credentialsManager.getProfile('nonexistent')).to.throw(/Profile 'nonexistent' not found/)
     })
 
     it('should include available profiles in error message', () => {
-      credentialsManager.saveProfile('default', 'test-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
       credentialsManager.saveProfile('staging', 'staging-key')
 
       try {
@@ -270,7 +272,7 @@ api_key=staging-key
         expect.fail('Should have thrown an error')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        expect(error.message).to.include('default')
+        expect(error.message).to.include(DEFAULT_PROFILE)
         expect(error.message).to.include('staging')
       }
     })
@@ -278,21 +280,21 @@ api_key=staging-key
     it('should throw error if api_key is empty', () => {
       credentialsManager.createCredentialsDirIfNotExists()
       const credentialsPath = credentialsManager.getCredentialsPath()
-      fs.writeFileSync(credentialsPath, '[default]\napi_key=\n')
+      fs.writeFileSync(credentialsPath, `[${DEFAULT_PROFILE}]\napi_key=\n`)
 
-      expect(() => credentialsManager.getProfile('default')).to.throw(/has no API key/)
+      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/has no API key/)
     })
 
     it('should return profile credentials if valid', () => {
-      credentialsManager.saveProfile('default', 'test-key-123')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key-123')
 
-      const credentials = credentialsManager.getProfile('default')
+      const credentials = credentialsManager.getProfile(DEFAULT_PROFILE)
 
       expect(credentials).to.deep.equal({ apiKey: 'test-key-123' })
     })
 
     it('should default to "default" profile if no name provided', () => {
-      credentialsManager.saveProfile('default', 'default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
 
       const credentials = credentialsManager.getProfile()
 
@@ -302,19 +304,19 @@ api_key=staging-key
 
   describe('ensureLoggedIn', () => {
     it('should return credentials if profile exists', () => {
-      credentialsManager.saveProfile('default', 'test-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
 
-      const credentials = credentialsManager.getCredentials('default')
+      const credentials = credentialsManager.getCredentials(DEFAULT_PROFILE)
 
       expect(credentials).to.deep.equal({ apiKey: 'test-key' })
     })
 
     it('should throw error with user-friendly message if not logged in', () => {
-      expect(() => credentialsManager.getCredentials('default')).to.throw(/Authentication required/)
+      expect(() => credentialsManager.getCredentials(DEFAULT_PROFILE)).to.throw(/Authentication required/)
     })
 
     it('should default to "default" profile', () => {
-      credentialsManager.saveProfile('default', 'test-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
 
       const credentials = credentialsManager.getCredentials()
 
@@ -329,13 +331,13 @@ api_key=staging-key
     })
 
     it('should return list of profile names', () => {
-      credentialsManager.saveProfile('default', 'default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
       credentialsManager.saveProfile('staging', 'staging-key')
       credentialsManager.saveProfile('production', 'prod-key')
 
       const profiles = credentialsManager.getProfiles()
 
-      expect(profiles).to.have.members(['default', 'staging', 'production'])
+      expect(profiles).to.have.members([DEFAULT_PROFILE, 'staging', 'production'])
     })
   })
 
@@ -345,42 +347,42 @@ api_key=staging-key
     })
 
     it('should remove a profile', () => {
-      credentialsManager.saveProfile('default', 'default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
       credentialsManager.saveProfile('staging', 'staging-key')
 
       credentialsManager.removeProfile('staging')
 
       const profiles = credentialsManager.readCredentials()
       expect(profiles).to.deep.equal({
-        default: { apiKey: 'default-key' },
+        [DEFAULT_PROFILE]: { apiKey: 'default-key' },
       })
     })
 
     it('should not affect other profiles', () => {
-      credentialsManager.saveProfile('default', 'default-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
       credentialsManager.saveProfile('staging', 'staging-key')
       credentialsManager.saveProfile('production', 'prod-key')
 
       credentialsManager.removeProfile('staging')
 
       const profiles = credentialsManager.readCredentials()
-      expect(profiles).to.have.all.keys('default', 'production')
+      expect(profiles).to.have.all.keys(DEFAULT_PROFILE, 'production')
     })
   })
 
   describe('profileExists', () => {
     it('should return false if profile does not exist', () => {
-      expect(credentialsManager.profileExists('default')).to.be.false
+      expect(credentialsManager.profileExists(DEFAULT_PROFILE)).to.be.false
     })
 
     it('should return true if profile exists', () => {
-      credentialsManager.saveProfile('default', 'test-key')
+      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
 
-      expect(credentialsManager.profileExists('default')).to.be.true
+      expect(credentialsManager.profileExists(DEFAULT_PROFILE)).to.be.true
     })
 
     it('should return false if credentials file does not exist', () => {
-      expect(credentialsManager.profileExists('default')).to.be.false
+      expect(credentialsManager.profileExists(DEFAULT_PROFILE)).to.be.false
     })
   })
 })
