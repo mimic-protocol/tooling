@@ -9,7 +9,7 @@ describe('login', () => {
   let credentialsManager: CredentialsManager
   let backupDir: string | null = null
 
-  beforeEach('Backup existing credentials', () => {
+  beforeEach('backup existing credentials', () => {
     credentialsManager = CredentialsManager.getDefault()
     backupDir = backupCredentials(credentialsManager)
   })
