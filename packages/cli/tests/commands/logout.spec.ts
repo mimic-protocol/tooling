@@ -14,7 +14,7 @@ describe('logout', () => {
     backupDir = backupCredentials(credentialsManager)
   })
 
-  afterEach('Restore credentials and stubs', () => {
+  afterEach('restore credentials and stubs', () => {
     sinon.restore()
 
     restoreCredentials(credentialsManager, backupDir)
