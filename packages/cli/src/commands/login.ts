@@ -51,8 +51,9 @@ export default class Login extends Authenticate {
             default: CredentialsManager.getDefaultProfileName(),
             validate: (value) => {
               if (!value || value.trim() === '') return 'Profile name cannot be empty'
-              if (value.includes('[') || value.includes(']') || value.includes('='))
+              if (value.includes('[') || value.includes(']') || value.includes('=')) {
                 return 'Profile name cannot contain [, ], or = characters'
+              }
               return true
             },
           })

@@ -35,7 +35,7 @@ export default class Authenticate extends Command {
         const credentials = CredentialsManager.getDefault().getCredentials(flags.profile)
         apiKey = credentials.apiKey
       } catch (error) {
-        if (error instanceof Error)
+        if (error instanceof Error) {
           this.error(error.message, {
             code: 'AuthenticationRequired',
             suggestions: [
@@ -44,6 +44,7 @@ export default class Authenticate extends Command {
               `Or use ${log.highlightText('--api-key')} flag to provide API key directly`,
             ].filter(Boolean) as string[],
           })
+        }
         throw error
       }
     }
