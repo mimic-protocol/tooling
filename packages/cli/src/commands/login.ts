@@ -32,9 +32,8 @@ export default class Login extends Authenticate {
     let profileName = profileInput
 
     // Non-interactive mode
-    if (apiKeyFlag) {
-      apiKey = apiKeyFlag
-    } else {
+    if (apiKeyFlag) apiKey = apiKeyFlag
+    else {
       // Interactive mode
       try {
         apiKey = await password({
