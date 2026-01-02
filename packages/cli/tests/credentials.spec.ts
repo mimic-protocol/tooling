@@ -17,8 +17,7 @@ describe('credentials', () => {
     credentialsManager = new CredentialsManager(tempDir)
   })
 
-  afterEach(() => {
-    // Clean up temp directory
+  afterEach('clean up temp directory', () => {
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true })
     }
