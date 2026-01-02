@@ -3,6 +3,7 @@ import * as os from 'os'
 import * as path from 'path'
 
 const CREDENTIALS_FILE = 'credentials'
+const DEFAULT_PROFILE = 'default'
 
 export interface ProfileCredentials {
   apiKey: string
@@ -20,7 +21,7 @@ export class CredentialsManager {
   }
 
   static getDefaultProfileName(): string {
-    return 'default'
+    return DEFAULT_PROFILE
   }
 
   constructor(baseDir?: string) {
