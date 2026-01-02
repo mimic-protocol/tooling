@@ -156,7 +156,7 @@ export class CredentialsManager {
     return credentials
   }
 
-  getCredentials(profileName: string = 'default'): ProfileCredentials {
+  getCredentials(profileName: string = DEFAULT_PROFILE): ProfileCredentials {
     try {
       return this.getProfile(profileName)
     } catch (error) {
