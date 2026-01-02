@@ -41,9 +41,7 @@ export default class Login extends Authenticate {
           message: 'Enter your API key:',
           mask: '*',
           validate: (value) => {
-            if (!value || value.trim() === '') {
-              return 'API key cannot be empty'
-            }
+            if (!value || value.trim() === '') return 'API key cannot be empty'
             return true
           },
         })
