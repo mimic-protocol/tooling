@@ -11,8 +11,7 @@ describe('credentials', () => {
   let tempDir: string
   let credentialsManager: CredentialsManager
 
-  beforeEach(() => {
-    // Create a temporary directory for testing
+  beforeEach('create a temporary directory for testing', () => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mimic-test-'))
     credentialsManager = new CredentialsManager(tempDir)
   })
