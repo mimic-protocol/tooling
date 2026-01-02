@@ -121,7 +121,7 @@ export class CredentialsManager {
     this.writeCredentials(profiles)
   }
 
-  getProfile(profileName: string = 'default'): ProfileCredentials {
+  getProfile(profileName: string = DEFAULT_PROFILE): ProfileCredentials {
     const credentialsDir = this.getBaseDir()
     const credentialsPath = this.getCredentialsPath()
 
