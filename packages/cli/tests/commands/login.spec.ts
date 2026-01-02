@@ -14,7 +14,7 @@ describe('login', () => {
     backupDir = backupCredentials(credentialsManager)
   })
 
-  afterEach('Restore credentials and stubs', () => {
+  afterEach('restore credentials and stubs', () => {
     restoreCredentials(credentialsManager, backupDir)
     backupDir = null
   })
