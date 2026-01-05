@@ -168,9 +168,7 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<string, string> {
     const responseStr = _evmCallQuery(JSON.stringify(EvmCallQuery.from(to, chainId, timestamp, data)))
-    const parsed = EvmCallQueryResponse.fromJson<EvmCallQueryResponse>(responseStr)
-    if (parsed.success !== 'true') return Result.err<string, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting evm call')
-    return Result.ok<string, string>(parsed.data)
+    return EvmCallQueryResponse.fromJson<EvmCallQueryResponse>(responseStr).toResult()
   }
 
   /**

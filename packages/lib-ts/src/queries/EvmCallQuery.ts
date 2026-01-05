@@ -1,4 +1,4 @@
-import { Address, ChainId } from '../types'
+import { Address, ChainId, Result } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
@@ -35,5 +35,12 @@ export class EvmCallQueryResponse extends QueryResponseBase {
   constructor(success: string, data: string, error: string) {
     super(success, error)
     this.data = data
+  }
+
+  toResult(): Result<string, string> {
+    if (this.success !== 'true') {
+      return Result.err<string, string>(this.error.length > 0 ? this.error : 'Unknown error getting evm call')
+    }
+    return Result.ok<string, string>(this.data)
   }
 }
