@@ -6,7 +6,6 @@ import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
   RelevantTokensQuery,
-  RelevantTokensQueryResult,
   TokenBalanceQuery,
   RelevantTokensQueryResponse,
   SubgraphQuery,
@@ -128,12 +127,7 @@ export namespace environment {
    */
   export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<TokenBalanceQuery[][], string> {
     const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<TokenBalanceQuery[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
-    
-    const responses = parsed.data
-    return Result.ok<TokenBalanceQuery[][], string>(responses.map((response: RelevantTokensQueryResult) => response.balances))
+    return RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr).toBalances()
   }
 
   /**
@@ -153,22 +147,10 @@ export namespace environment {
     listType: ListType = ListType.DenyList
   ): Result<TokenAmount[], string> {
     const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
-    
-    if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
-    
-    const response = responseResult.unwrap()
-    const resultMap: Map<string, TokenAmount> = new Map()
-    for (let i = 0; i < response.length; i++) {
-      for (let j = 0; j < response[i].length; j++) {
-        const tokenAmount = response[i][j].toTokenAmount()
-        const mapKey = tokenAmount.token.address.toString()
-        
-        if (resultMap.has(mapKey)) continue
-        resultMap.set(mapKey, tokenAmount)
-      }
-    }
-    
-    return Result.ok<TokenAmount[], string>(resultMap.values())
+    if (responseResult.isError) return changetype<Result<TokenAmount[], string>>(responseResult)
+
+    const balances = TokenBalanceQuery.toUniqueTokenAmounts(responseResult.unwrap())
+    return Result.ok<TokenAmount[], string>(balances)
   }
 
   /**
