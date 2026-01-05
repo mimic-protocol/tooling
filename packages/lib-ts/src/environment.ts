@@ -1,7 +1,7 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { ListType } from './helpers'
+import { ListType, Math } from './helpers'
 import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
@@ -96,12 +96,7 @@ export namespace environment {
     if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
     
     const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
-    
-    const prices = parsed.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
-    return Result.ok<USD[], string>(prices)
+    return TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr).toPrices()
   }
 
   /**
@@ -113,20 +108,13 @@ export namespace environment {
   export function tokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD, string> {
     const pricesResult = rawTokenPriceQuery(token, timestamp)
     
-    if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
+    if (pricesResult.isError) return changetype<Result<USD, string>>(pricesResult)
     
     const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
-    const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
-
-    const length = sortedPrices.length
-    if (length % 2 === 1) return Result.ok<USD, string>(sortedPrices[length / 2])
-
-    const left = sortedPrices[length / 2 - 1]
-    const right = sortedPrices[length / 2]
-    const sum = left.plus(right)
-    return Result.ok<USD, string>(sum.div(BigInt.fromI32(2)))
+    const consensusValue = Math.median(prices.map<BigInt>((price: USD) => price.value))
+    return Result.ok<USD, string>(USD.fromBigInt(consensusValue))
   }
 
   /**
