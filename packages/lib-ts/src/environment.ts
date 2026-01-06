@@ -19,7 +19,7 @@ import {
   TokenPriceQueryResponse, 
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId, Result } from './types'
+import { Address, ChainId, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -110,7 +110,7 @@ export namespace environment {
   export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Math.medianUSD): Result<USD, string> {
     const pricesResult = rawTokenPriceQuery(token, timestamp)
     
-    if (pricesResult.isError) return changetype<Result<USD, string>>(pricesResult)
+    if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
     const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
@@ -149,7 +149,7 @@ export namespace environment {
     listType: ListType = ListType.DenyList
   ): Result<TokenAmount[], string> {
     const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
-    if (responseResult.isError) return changetype<Result<TokenAmount[], string>>(responseResult)
+    if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
 
     const balances = TokenBalanceQuery.toUniqueTokenAmounts(responseResult.unwrap())
     return Result.ok<TokenAmount[], string>(balances)
