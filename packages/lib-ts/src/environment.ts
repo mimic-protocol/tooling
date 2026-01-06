@@ -99,12 +99,15 @@ export namespace environment {
   }
 
   /**
-   * Tells the median price from different sources for a token in USD at a specific timestamp.
-   * @param token - The token to get the price of
-   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns Result containing either the median USD price or an error string
+   * Returns an aggregated price (by consensus function) for a token in USD at a specific timestamp.
+   * By default, returns the median USD price across multiple sources.
+   *
+   * @param token - The token to get the USD price for.
+   * @param timestamp - Optional. The timestamp for price lookup (defaults to current time if not provided).
+   * @param consensusFn - Optional. A function for aggregating the price values (default is median).
+   * @returns A `Result` containing either the consensus USD price or an error string.
    */
-  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD, string> {
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Math.medianUSD): Result<USD, string> {
     const pricesResult = rawTokenPriceQuery(token, timestamp)
     
     if (pricesResult.isError) return changetype<Result<USD, string>>(pricesResult)
@@ -112,8 +115,7 @@ export namespace environment {
     const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
-    const consensusValue = Math.median(prices.map<BigInt>((price: USD) => price.value))
-    return Result.ok<USD, string>(USD.fromBigInt(consensusValue))
+    return Result.ok<USD, string>(consensusFn(prices))
   }
 
   /**
