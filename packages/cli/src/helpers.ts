@@ -47,8 +47,9 @@ export function filterTasks(
 
   if (include) {
     const invalidNames = include.filter((name) => !taskNames.has(name))
-    if (invalidNames.length > 0)
+    if (invalidNames.length > 0) {
       console.warn(`${log.warnText('Warning:')} The following task names were not found: ${invalidNames.join(', ')}`)
+    }
 
     const validNames = new Set(include.filter((name) => taskNames.has(name)))
     if (validNames.size === 0) {
@@ -61,11 +62,16 @@ export function filterTasks(
 
   if (exclude) {
     const invalidNames = exclude.filter((name) => !taskNames.has(name))
-    if (invalidNames.length > 0)
+    if (invalidNames.length > 0) {
       console.warn(`${log.warnText('Warning:')} The following task names were not found: ${invalidNames.join(', ')}`)
+    }
 
     const excludeSet = new Set(exclude)
-    return tasks.filter((task) => !excludeSet.has(task.name))
+    const filteredTasks = tasks.filter((task) => !excludeSet.has(task.name))
+    if (filteredTasks.length === 0) {
+      console.warn(`${log.warnText('Warning:')} All tasks are excluded.`)
+    }
+    return filteredTasks
   }
 
   return tasks

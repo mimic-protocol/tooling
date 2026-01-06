@@ -25,14 +25,19 @@ export default class Build extends Command {
       description: 'remove existing generated types before generating new files',
       default: false,
     }),
+    ['skip-config']: Flags.boolean({
+      hidden: true,
+      description: 'Skip mimic.yaml config (used internally)',
+      default: false,
+    }),
     ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    const { manifest, task, output, types, clean, include, exclude } = flags
+    const { manifest, task, output, types, clean, include, exclude, ['skip-config']: skipConfig } = flags
 
-    if (MimicConfigHandler.exists()) {
+    if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)

@@ -81,38 +81,44 @@ export default class Deploy extends Authenticate {
     const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
     if (!skipCompile) {
-      const codegen = execBinCommand(
+      const build = execBinCommand(
         'mimic',
-        ['codegen', '--manifest', task.manifest, '--output', task.types],
+        [
+          'build',
+          '--manifest',
+          task.manifest,
+          '--task',
+          task.entry,
+          '--output',
+          fullInputDir,
+          '--types',
+          task.types,
+          '--skip-config',
+        ],
         process.cwd()
       )
-      if (codegen.status !== 0)
-        this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
-
-      const compile = execBinCommand(
-        'mimic',
-        ['compile', '--task', task.entry, '--manifest', task.manifest, '--output', fullInputDir],
-        process.cwd()
-      )
-      if (compile.status !== 0)
-        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the task source code'] })
+      if (build.status !== 0) {
+        this.error('Build failed', { code: 'BuildError', suggestions: ['Check the task source code and manifest'] })
+      }
     }
 
     log.startAction('Validating')
 
-    if (!fs.existsSync(fullInputDir))
+    if (!fs.existsSync(fullInputDir)) {
       this.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
         code: 'Directory Not Found',
         suggestions: ['Use the --input flag to specify the correct path'],
       })
+    }
 
     const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(fullInputDir, file))
     for (const file of neededFiles) {
-      if (!fs.existsSync(file))
+      if (!fs.existsSync(file)) {
         this.error(`Could not find ${file}`, {
           code: 'File Not Found',
           suggestions: [`Use ${log.highlightText('mimic compile')} to generate the needed files`],
         })
+      }
     }
 
     log.startAction('Uploading to Mimic Registry')
