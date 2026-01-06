@@ -45,11 +45,8 @@ export class SubgraphQueryResponse extends QueryResponseBase {
   }
 
   toResult(): Result<SubgraphQueryResult, string> {
-    if (this.success !== 'true') {
-      return Result.err<SubgraphQueryResult, string>(
-        this.error.length > 0 ? this.error : 'Unknown error getting subgraph query'
-      )
-    }
+    const errorResult = this.checkSuccess<SubgraphQueryResult>('Unknown error getting subgraph query')
+    if (errorResult !== null) return errorResult
     return Result.ok<SubgraphQueryResult, string>(this.data)
   }
 }

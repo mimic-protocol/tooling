@@ -1,6 +1,7 @@
 import { JSON } from 'json-as'
 
 import { replaceJsonBooleans } from '../helpers'
+import { Result } from '../types'
 
 @json
 export class QueryResponseBase {
@@ -11,5 +12,15 @@ export class QueryResponseBase {
 
   static fromJson<T extends QueryResponseBase>(json: string): T {
     return JSON.parse<T>(replaceJsonBooleans(json))
+  }
+
+  protected getErrorMessage(defaultError: string): string {
+    return this.error.length > 0 ? this.error : defaultError
+  }
+
+  protected checkSuccess<T>(defaultError: string): Result<T, string> | null {
+    if (this.success !== 'true') return Result.err<T, string>(this.getErrorMessage(defaultError))
+
+    return null
   }
 }

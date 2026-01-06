@@ -38,9 +38,8 @@ export class EvmCallQueryResponse extends QueryResponseBase {
   }
 
   toResult(): Result<string, string> {
-    if (this.success !== 'true') {
-      return Result.err<string, string>(this.error.length > 0 ? this.error : 'Unknown error getting evm call')
-    }
+    const errorResult = this.checkSuccess<string>('Unknown error getting evm call')
+    if (errorResult !== null) return errorResult
     return Result.ok<string, string>(this.data)
   }
 }
