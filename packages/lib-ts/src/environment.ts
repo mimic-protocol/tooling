@@ -200,12 +200,7 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<SvmAccountsInfoQueryResult, string> {
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
-    const parsed = SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<SvmAccountsInfoQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting SVM accounts info')
-    
-    const result = SvmAccountsInfoQueryResult.fromSerializable(parsed.data)
-    return Result.ok<SvmAccountsInfoQueryResult, string>(result)
+    return SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr).toResult()
   }
 
   /**
