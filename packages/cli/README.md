@@ -23,9 +23,10 @@
 
 ---
 
-## Content 
+## Content
 
 The `mimic` CLI is a command-line interface to:
+
 - Initialize a Mimic-compatible task project
 - Generate types from your task manifest and ABIs
 - Compile your AssemblyScript tasks to WebAssembly
@@ -35,7 +36,7 @@ The `mimic` CLI is a command-line interface to:
 
 ## Setup
 
-To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed. 
+To set up this project you'll need [git](https://git-scm.com) and [yarn](https://classic.yarnpkg.com) installed.
 
 Install the CLI from the root of the monorepo:
 
@@ -59,11 +60,77 @@ USAGE
   $ mimic [COMMAND]
 
 COMMANDS
+  login    Authenticate with Mimic by storing your API key locally
+  logout   Remove stored credentials for a profile
+  profiles List all configured authentication profiles
   codegen  Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file
   compile  Compiles task
   test     Tests your tasks
   deploy   Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry
   init     Initializes a new Mimic-compatible project structure in the specified directory
+```
+
+### Authentication
+
+Before deploying tasks, you need to authenticate with your Mimic API key:
+
+```bash
+# Interactive login (recommended)
+$ mimic login
+
+# Non-interactive login (for CI/CD)
+$ mimic login --api-key YOUR_API_KEY
+
+# Login with a specific profile
+$ mimic login --profile staging -api-key YOUR_API_KEY
+```
+
+#### Managing Profiles
+
+The CLI supports multiple authentication profiles. Credentials are stored in `~/.mimic/credentials`.
+
+```bash
+# List all configured profiles
+$ mimic profiles
+
+# Login with a specific profile
+$ mimic login --profile production
+
+# Deploy using a specific profile
+$ mimic deploy --profile production
+
+# Remove credentials for a profile
+$ mimic logout --profile staging
+```
+
+#### Credential Storage
+
+Credentials are stored in an INI-style format at `~/.mimic/credentials`:
+
+```ini
+[default]
+api_key=YOUR_DEFAULT_KEY
+
+[staging]
+api_key=YOUR_STAGING_KEY
+
+[production]
+api_key=YOUR_PRODUCTION_KEY
+```
+
+#### Deploy with Authentication
+
+The `deploy` command now supports profile-based authentication:
+
+```bash
+# Deploy using default profile
+$ mimic deploy
+
+# Deploy using a specific profile
+$ mimic deploy --profile staging
+
+# Deploy with explicit API key (overrides profile)
+$ mimic deploy --api-key YOUR_API_KEY
 ```
 
 For full CLI documentation and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
@@ -85,7 +152,6 @@ See the [LICENSE](../../LICENSE) file for details.
 This project includes code from [The Graph Tooling](https://github.com/graphprotocol/graph-tooling), licensed under the MIT License.  
 See the [LICENSE-MIT](https://github.com/graphprotocol/graph-tooling/blob/27659e56adfa3ef395ceaf39053dc4a31e6d86b7/LICENSE-MIT) file for details.
 Their original license and attribution are preserved.
-
 
 ---
 

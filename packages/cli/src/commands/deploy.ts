@@ -1,4 +1,4 @@
-import { Command, Flags } from '@oclif/core'
+import { Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
 import FormData from 'form-data'
 import * as fs from 'fs'
@@ -6,20 +6,27 @@ import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
 import { filterTasks, taskFilterFlags } from '../helpers'
+import { ProfileCredentials } from '../lib/CredentialsManager'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 import { RequiredTaskConfig } from '../types'
 
+import Authenticate from './authenticate'
+
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export default class Deploy extends Command {
+export default class Deploy extends Authenticate {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --input ./dist --key MY_KEY --output ./dist']
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --profile staging',
+    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --input ./dist --output ./dist',
+  ]
 
   static override flags = {
-    key: Flags.string({ char: 'k', description: 'Your account deployment key', required: true }),
+    ...Authenticate.flags,
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
@@ -30,7 +37,8 @@ export default class Deploy extends Command {
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
     const {
-      key,
+      profile,
+      'api-key': apiKey,
       input: inputDir,
       output: outputDir,
       'skip-compile': skipCompile,
@@ -45,28 +53,32 @@ export default class Deploy extends Command {
       const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, key, registryUrl, skipCompile, task.output)
+        await this.runForTask(task, registryUrl, skipCompile, task.output, profile, apiKey)
       }
     } else {
       await this.runForTask(
         { manifest: 'manifest.yaml', entry: 'src/task.ts', types: './src/types', output: outputDir },
-        key,
         registryUrl,
         skipCompile,
-        inputDir
+        inputDir,
+        profile,
+        apiKey
       )
     }
   }
 
   private async runForTask(
     task: Omit<RequiredTaskConfig, 'name'>,
-    key: string,
     registryUrl: string,
     skipCompile: boolean,
-    inputDir: string
+    inputDir: string,
+    profile?: string,
+    apiKey?: string
   ): Promise<void> {
     const fullInputDir = resolve(inputDir)
     const fullOutputDir = resolve(task.output)
+
+    const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
     if (!skipCompile) {
       const codegen = execBinCommand(
@@ -104,7 +116,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(neededFiles, key, registryUrl)
+    const CID = await this.uploadToRegistry(neededFiles, credentials, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
@@ -114,12 +126,16 @@ export default class Deploy extends Command {
     console.log(`Task deployed!`)
   }
 
-  private async uploadToRegistry(files: string[], key: string, registryUrl: string): Promise<string> {
+  private async uploadToRegistry(
+    files: string[],
+    credentials: ProfileCredentials,
+    registryUrl: string
+  ): Promise<string> {
     try {
       const form = filesToForm(files)
       const { data } = await axios.post(`${registryUrl}/tasks`, form, {
         headers: {
-          'x-api-key': key,
+          'x-api-key': credentials.apiKey,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
         },
       })

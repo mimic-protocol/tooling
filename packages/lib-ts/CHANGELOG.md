@@ -1,5 +1,12 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.34
+
+### Patch Changes
+
+- 73a7900: Add login, logout and profiles commands
+- d455822: Bump SDK version
+
 ## 0.0.1-rc.33
 
 ### Patch Changes
