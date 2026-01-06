@@ -186,9 +186,7 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<SubgraphQueryResult, string> {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
-    const parsed = SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr)
-    if (parsed.success !== 'true') return Result.err<SubgraphQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting subgraph query')
-    return Result.ok<SubgraphQueryResult, string>(parsed.data)
+    return SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr).toResult()
   }
    
   /**

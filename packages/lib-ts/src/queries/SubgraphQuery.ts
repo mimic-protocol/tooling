@@ -1,4 +1,4 @@
-import { ChainId } from '../types'
+import { ChainId, Result } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
@@ -42,5 +42,14 @@ export class SubgraphQueryResponse extends QueryResponseBase {
   constructor(success: string, data: SubgraphQueryResult, error: string) {
     super(success, error)
     this.data = data
+  }
+
+  toResult(): Result<SubgraphQueryResult, string> {
+    if (this.success !== 'true') {
+      return Result.err<SubgraphQueryResult, string>(
+        this.error.length > 0 ? this.error : 'Unknown error getting subgraph query'
+      )
+    }
+    return Result.ok<SubgraphQueryResult, string>(this.data)
   }
 }
