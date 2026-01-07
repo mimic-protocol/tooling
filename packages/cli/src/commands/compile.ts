@@ -2,6 +2,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { DEFAULT_BUILD_OUTPUT, DEFAULT_MANIFEST_FILE, DEFAULT_TASK_ENTRY } from '../constants'
 import { filterTasks, taskFilterFlags } from '../helpers'
 import ManifestHandler from '../lib/ManifestHandler'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
@@ -15,10 +16,10 @@ export default class Compile extends Command {
   static override examples = ['<%= config.bin %> <%= command.id %> --task src/task.ts --output ./output']
 
   static override flags = {
-    task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
-    manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
-    ['skip-config']: Flags.boolean({
+    task: Flags.string({ char: 't', description: 'task to compile', default: DEFAULT_TASK_ENTRY }),
+    manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: DEFAULT_MANIFEST_FILE }),
+    output: Flags.string({ char: 'o', description: 'output directory', default: DEFAULT_BUILD_OUTPUT }),
+    'skip-config': Flags.boolean({
       hidden: true,
       description: 'Skip mimic.yaml config (used internally by build command)',
       default: false,
@@ -34,7 +35,7 @@ export default class Compile extends Command {
       manifest: manifestDir,
       include,
       exclude,
-      ['skip-config']: skipConfig,
+      'skip-config': skipConfig,
     } = flags
 
     if (!skipConfig && MimicConfigHandler.exists()) {

@@ -4,7 +4,7 @@ import { load } from 'js-yaml'
 import * as path from 'path'
 import { ZodError } from 'zod'
 
-import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
+import { DuplicateEntryError, EmptyManifestError, GENERIC_SUGGESTION, MoreThanOneEntryError } from '../errors'
 import { Manifest } from '../types'
 import { ManifestValidator } from '../validators'
 
@@ -72,9 +72,7 @@ function handleValidationError(command: Command, err: unknown): never {
     suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
   } else {
     ;[message, code] = [`Unkown Error: ${err}`, 'UnknownError']
-    suggestions = [
-      'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
-    ]
+    suggestions = GENERIC_SUGGESTION
   }
 
   command.error(message, { code, suggestions })

@@ -1,6 +1,7 @@
 import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
+import { DEFAULT_TASK_CONFIG } from '../constants'
 import { filterTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
@@ -38,13 +39,7 @@ export default class Test extends Command {
         testPaths.add(this.getTestPath(baseDir))
       }
     } else {
-      const defaultTask = {
-        manifest: 'manifest.yaml',
-        entry: 'src/task.ts',
-        types: './src/types',
-        output: './build',
-      }
-      if (!skipCompile) await this.compileTask(defaultTask, baseDir)
+      if (!skipCompile) await this.compileTask(DEFAULT_TASK_CONFIG, baseDir)
       testPaths.add(this.getTestPath(baseDir))
     }
 

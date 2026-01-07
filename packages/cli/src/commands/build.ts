@@ -1,5 +1,6 @@
 import { Command, Flags } from '@oclif/core'
 
+import { DEFAULT_BUILD_OUTPUT, DEFAULT_MANIFEST_FILE, DEFAULT_TASK_ENTRY, DEFAULT_TYPES_OUTPUT } from '../constants'
 import { filterTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import log from '../log'
@@ -16,16 +17,24 @@ export default class Build extends Command {
   ]
 
   static override flags = {
-    manifest: Flags.string({ char: 'm', description: 'manifest to use', default: 'manifest.yaml' }),
-    task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
-    output: Flags.string({ char: 'o', description: 'output directory for build artifacts', default: './build' }),
-    types: Flags.string({ char: 'y', description: 'output directory for generated types', default: './src/types' }),
+    manifest: Flags.string({ char: 'm', description: 'manifest to use', default: DEFAULT_MANIFEST_FILE }),
+    task: Flags.string({ char: 't', description: 'task to compile', default: DEFAULT_TASK_ENTRY }),
+    output: Flags.string({
+      char: 'o',
+      description: 'output directory for build artifacts',
+      default: DEFAULT_BUILD_OUTPUT,
+    }),
+    types: Flags.string({
+      char: 'y',
+      description: 'output directory for generated types',
+      default: DEFAULT_TYPES_OUTPUT,
+    }),
     clean: Flags.boolean({
       char: 'c',
       description: 'remove existing generated types before generating new files',
       default: false,
     }),
-    ['skip-config']: Flags.boolean({
+    'skip-config': Flags.boolean({
       hidden: true,
       description: 'Skip mimic.yaml config (used internally)',
       default: false,
@@ -35,7 +44,7 @@ export default class Build extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    const { manifest, task, output, types, clean, include, exclude, ['skip-config']: skipConfig } = flags
+    const { manifest, task, output, types, clean, include, exclude, 'skip-config': skipConfig } = flags
 
     if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)

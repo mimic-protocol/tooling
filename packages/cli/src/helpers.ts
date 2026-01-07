@@ -3,6 +3,7 @@ import { Interface } from 'ethers'
 import camelCase from 'lodash/camelCase'
 import startCase from 'lodash/startCase'
 
+import { MIMIC_CONFIG_FILE } from './lib/MimicConfigHandler'
 import log from './log'
 import { AbiFunctionItem, RequiredTaskConfig } from './types'
 
@@ -17,12 +18,12 @@ export function pascalCase(str: string): string {
 
 export const taskFilterFlags = {
   include: Flags.string({
-    description: 'When mimic.yaml exists, only run tasks with these names (space-separated)',
+    description: `When ${MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
     multiple: true,
     exclusive: ['exclude'],
   }),
   exclude: Flags.string({
-    description: 'When mimic.yaml exists, exclude tasks with these names (space-separated)',
+    description: `When ${MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
     multiple: true,
     exclusive: ['include'],
   }),

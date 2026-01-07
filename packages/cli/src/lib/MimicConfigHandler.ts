@@ -4,10 +4,11 @@ import { load } from 'js-yaml'
 import * as path from 'path'
 import { ZodError } from 'zod'
 
+import { GENERIC_SUGGESTION } from '../errors'
 import { MimicConfig, RequiredTaskConfig } from '../types'
 import { MimicConfigValidator } from '../validators'
 
-const MIMIC_CONFIG_FILE = 'mimic.yaml'
+export const MIMIC_CONFIG_FILE = 'mimic.yaml'
 
 export default {
   exists(baseDir: string = process.cwd()): boolean {
@@ -20,7 +21,7 @@ export default {
     if (!fs.existsSync(mimicConfigPath)) {
       command.error(`Could not find ${mimicConfigPath}`, {
         code: 'FileNotFound',
-        suggestions: ['Ensure mimic.yaml exists in the project root'],
+        suggestions: [`Ensure ${MIMIC_CONFIG_FILE} exists in the project root`],
       })
     }
 
@@ -31,7 +32,7 @@ export default {
     } catch (err) {
       command.error(`Failed to parse ${mimicConfigPath} as YAML`, {
         code: 'ParseError',
-        suggestions: ['Ensure mimic.yaml is valid YAML syntax'],
+        suggestions: [`Ensure ${MIMIC_CONFIG_FILE} is valid YAML syntax`],
       })
     }
 
@@ -61,9 +62,7 @@ function handleValidationError(command: Command, err: unknown): never {
     suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
   } else {
     ;[message, code] = [`Unknown Error: ${err}`, 'UnknownError']
-    suggestions = [
-      'Contact the Mimic team for further assistance at our website https://www.mimic.fi/ or discord https://discord.com/invite/cpcyV9EsEg',
-    ]
+    suggestions = GENERIC_SUGGESTION
   }
 
   command.error(message, { code, suggestions })

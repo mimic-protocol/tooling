@@ -3,6 +3,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
+import { DEFAULT_MANIFEST_FILE, DEFAULT_TYPES_OUTPUT } from '../constants'
 import { filterTasks, taskFilterFlags } from '../helpers'
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
 import log from '../log'
@@ -14,14 +15,22 @@ export default class Codegen extends Command {
   static override examples = ['<%= config.bin %> <%= command.id %> --manifest ./manifest.yaml --output ./types']
 
   static override flags = {
-    manifest: Flags.string({ char: 'm', description: 'Specify a custom manifest file path', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'Ouput directory for generated types', default: './src/types' }),
+    manifest: Flags.string({
+      char: 'm',
+      description: 'Specify a custom manifest file path',
+      default: DEFAULT_MANIFEST_FILE,
+    }),
+    output: Flags.string({
+      char: 'o',
+      description: 'Ouput directory for generated types',
+      default: DEFAULT_TYPES_OUTPUT,
+    }),
     clean: Flags.boolean({
       char: 'c',
       description: 'Remove existing generated types before generating new files',
       default: false,
     }),
-    ['skip-config']: Flags.boolean({
+    'skip-config': Flags.boolean({
       hidden: true,
       description: 'Skip mimic.yaml config (used internally by build command)',
       default: false,
@@ -31,7 +40,7 @@ export default class Codegen extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean, include, exclude, ['skip-config']: skipConfig } = flags
+    const { manifest: manifestDir, output: outputDir, clean, include, exclude, 'skip-config': skipConfig } = flags
 
     if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
