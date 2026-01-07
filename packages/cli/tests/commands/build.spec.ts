@@ -11,10 +11,12 @@ describe('build', () => {
   const manifestPath = `${basePath}/manifests/manifest.yaml`
   const outputDir = `${basePath}/output`
   const typesDir = `${basePath}/src/types`
+  const mimicConfigPath = path.join(process.cwd(), 'mimic.yaml')
 
   afterEach('cleanup generated files', () => {
     if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true })
     if (fs.existsSync(typesDir)) fs.rmSync(typesDir, { recursive: true })
+    if (fs.existsSync(mimicConfigPath)) fs.unlinkSync(mimicConfigPath)
   })
 
   const buildCommand = (args: string[] = []) => {
@@ -46,95 +48,136 @@ describe('build', () => {
     })
   }
 
-  context('when the manifest exists', () => {
-    context('when the manifest is valid', () => {
-      context('when the task compiles successfully', () => {
-        context('when the manifest has simple inputs', () => {
-          const expectedInputs = {
-            firstStaticNumber: 'uint32',
-            secondStaticNumber: 'uint32',
-            isTrue: 'bool',
-          }
-          itBuildsAndGeneratesTypes(manifestPath, expectedInputs)
-        })
-
-        context('when the manifest has inputs with descriptions', () => {
-          const manifestWithDescriptions = `${basePath}/manifests/manifest-with-descriptions.yaml`
-          const expectedInputs = {
-            firstStaticNumber: 'uint32',
-            describedNumber: {
-              type: 'uint32',
-              description: 'A number parameter with detailed description',
-            },
-            tokenAddress: {
-              type: 'address',
-              description: 'The address of the ERC20 token contract',
-            },
-            simpleFlag: 'bool',
-          }
-          itBuildsAndGeneratesTypes(manifestWithDescriptions, expectedInputs)
-        })
-      })
-
-      context('when the task fails to compile', () => {
-        const invalidTaskPath = `${basePath}/tasks/invalid-task.ts`
-        const command = buildCommand(withCommonFlags(manifestPath, invalidTaskPath, outputDir, typesDir))
-
-        itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
-      })
-
-      context('when the types output directory already exists', () => {
-        beforeEach('pre-create types directory with a file', () => {
-          if (!fs.existsSync(typesDir)) fs.mkdirSync(typesDir, { recursive: true })
-          fs.writeFileSync(path.join(typesDir, 'randomFile.txt'), 'a')
-        })
-
-        it('generates types without requiring clean', async () => {
-          const command = buildCommand(withCommonFlags(manifestPath, taskPath, outputDir, typesDir))
-          const { error } = await runCommand(command)
-
-          expect(error).to.be.undefined
-          expect(fs.existsSync(path.join(typesDir, 'index.ts'))).to.be.true
-          expect(fs.existsSync(path.join(typesDir, 'ERC20.ts'))).to.be.true
-        })
-      })
+  context('when the mimic config exists', () => {
+    beforeEach('create mimic.yaml', () => {
+      fs.writeFileSync(
+        mimicConfigPath,
+        `tasks:\n  - name: test-task\n    manifest: ${manifestPath}\n    entry: ${taskPath}\n    output: ${outputDir}\n    types: ${typesDir}\n`
+      )
     })
 
-    context('when the manifest is not valid', () => {
-      context('when the manifest has invalid fields', () => {
-        const invalidManifest = `${basePath}/manifests/invalid-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+    it('generates types and build artifacts for task from config', async () => {
+      const expectedInputs = {
+        firstStaticNumber: 'uint32',
+        secondStaticNumber: 'uint32',
+        isTrue: 'bool',
+      }
 
-        itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
-      })
+      const command = buildCommand()
+      const { stdout, error } = await runCommand(command)
 
-      context('when the manifest has repeated fields', () => {
-        const invalidManifest = `${basePath}/manifests/invalid-manifest-repeated.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+      expect(error).to.be.undefined
+      expect(stdout).to.include('[test-task]')
+      expect(stdout).to.include('Build complete!')
 
-        itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
-      })
+      // build artifacts
+      expect(fs.existsSync(path.join(outputDir, 'task.wasm'))).to.be.true
+      expect(fs.existsSync(path.join(outputDir, 'manifest.json'))).to.be.true
 
-      context('when the manifest is incomplete', () => {
-        const invalidManifest = `${basePath}/manifests/incomplete-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+      // generated types
+      expect(fs.existsSync(path.join(typesDir, 'index.ts'))).to.be.true
+      expect(fs.existsSync(path.join(typesDir, 'ERC20.ts'))).to.be.true
 
-        itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
-      })
-
-      context('when the manifest is empty', () => {
-        const invalidManifest = `${basePath}/manifests/empty-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
-
-        itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
-      })
+      const manifestJson = JSON.parse(fs.readFileSync(path.join(outputDir, 'manifest.json'), 'utf-8'))
+      expect(manifestJson.inputs).to.be.deep.equal(expectedInputs)
     })
   })
 
-  context('when the manifest does not exist', () => {
-    const inexistentManifest = `${manifestPath}-none`
-    const command = buildCommand(withCommonFlags(inexistentManifest, taskPath, outputDir, typesDir))
+  context('when the mimic config does not exist', () => {
+    beforeEach('ensure mimic.yaml does not exist', () => {
+      if (fs.existsSync(mimicConfigPath)) fs.unlinkSync(mimicConfigPath)
+    })
 
-    itThrowsACliError(command, `Could not find ${inexistentManifest}`, 'FileNotFound', 1)
+    context('when the manifest exists', () => {
+      context('when the manifest is valid', () => {
+        context('when the task compiles successfully', () => {
+          context('when the manifest has simple inputs', () => {
+            const expectedInputs = {
+              firstStaticNumber: 'uint32',
+              secondStaticNumber: 'uint32',
+              isTrue: 'bool',
+            }
+            itBuildsAndGeneratesTypes(manifestPath, expectedInputs)
+          })
+
+          context('when the manifest has inputs with descriptions', () => {
+            const manifestWithDescriptions = `${basePath}/manifests/manifest-with-descriptions.yaml`
+            const expectedInputs = {
+              firstStaticNumber: 'uint32',
+              describedNumber: {
+                type: 'uint32',
+                description: 'A number parameter with detailed description',
+              },
+              tokenAddress: {
+                type: 'address',
+                description: 'The address of the ERC20 token contract',
+              },
+              simpleFlag: 'bool',
+            }
+            itBuildsAndGeneratesTypes(manifestWithDescriptions, expectedInputs)
+          })
+        })
+
+        context('when the task fails to compile', () => {
+          const invalidTaskPath = `${basePath}/tasks/invalid-task.ts`
+          const command = buildCommand(withCommonFlags(manifestPath, invalidTaskPath, outputDir, typesDir))
+
+          itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
+        })
+
+        context('when the types output directory already exists', () => {
+          beforeEach('pre-create types directory with a file', () => {
+            if (!fs.existsSync(typesDir)) fs.mkdirSync(typesDir, { recursive: true })
+            fs.writeFileSync(path.join(typesDir, 'randomFile.txt'), 'a')
+          })
+
+          it('generates types without requiring clean', async () => {
+            const command = buildCommand(withCommonFlags(manifestPath, taskPath, outputDir, typesDir))
+            const { error } = await runCommand(command)
+
+            expect(error).to.be.undefined
+            expect(fs.existsSync(path.join(typesDir, 'index.ts'))).to.be.true
+            expect(fs.existsSync(path.join(typesDir, 'ERC20.ts'))).to.be.true
+          })
+        })
+      })
+
+      context('when the manifest is not valid', () => {
+        context('when the manifest has invalid fields', () => {
+          const invalidManifest = `${basePath}/manifests/invalid-manifest.yaml`
+          const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+
+          itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
+        })
+
+        context('when the manifest has repeated fields', () => {
+          const invalidManifest = `${basePath}/manifests/invalid-manifest-repeated.yaml`
+          const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+
+          itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
+        })
+
+        context('when the manifest is incomplete', () => {
+          const invalidManifest = `${basePath}/manifests/incomplete-manifest.yaml`
+          const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+
+          itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
+        })
+
+        context('when the manifest is empty', () => {
+          const invalidManifest = `${basePath}/manifests/empty-manifest.yaml`
+          const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+
+          itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
+        })
+      })
+    })
+
+    context('when the manifest does not exist', () => {
+      const inexistentManifest = `${manifestPath}-none`
+      const command = buildCommand(withCommonFlags(inexistentManifest, taskPath, outputDir, typesDir))
+
+      itThrowsACliError(command, `Could not find ${inexistentManifest}`, 'FileNotFound', 1)
+    })
   })
 })
