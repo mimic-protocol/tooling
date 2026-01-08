@@ -4,7 +4,7 @@ import FormData from 'form-data'
 import * as fs from 'fs'
 import { join, resolve } from 'path'
 
-import { DEFAULT_BUILD_OUTPUT, DEFAULT_MANIFEST_FILE, DEFAULT_TASK_ENTRY, DEFAULT_TYPES_OUTPUT } from '../constants'
+import { DEFAULT_TASK } from '../constants'
 import { GENERIC_SUGGESTION } from '../errors'
 import { filterTasks, taskFilterFlags } from '../helpers'
 import { ProfileCredentials } from '../lib/CredentialsManager'
@@ -28,16 +28,8 @@ export default class Deploy extends Authenticate {
 
   static override flags = {
     ...Authenticate.flags,
-    input: Flags.string({
-      char: 'i',
-      description: 'Directory containing the compiled artifacts',
-      default: DEFAULT_BUILD_OUTPUT,
-    }),
-    output: Flags.string({
-      char: 'o',
-      description: 'Output directory for deployment CID',
-      default: DEFAULT_BUILD_OUTPUT,
-    }),
+    input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
+    output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
     ...taskFilterFlags,
@@ -65,14 +57,7 @@ export default class Deploy extends Authenticate {
         await this.runForTask(task, registryUrl, skipCompile, task.output, profile, apiKey)
       }
     } else {
-      await this.runForTask(
-        { manifest: DEFAULT_MANIFEST_FILE, entry: DEFAULT_TASK_ENTRY, types: DEFAULT_TYPES_OUTPUT, output: outputDir },
-        registryUrl,
-        skipCompile,
-        inputDir,
-        profile,
-        apiKey
-      )
+      await this.runForTask({ ...DEFAULT_TASK, output: outputDir }, registryUrl, skipCompile, inputDir, profile, apiKey)
     }
   }
 
