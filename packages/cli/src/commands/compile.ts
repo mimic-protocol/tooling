@@ -4,7 +4,7 @@ import * as path from 'path'
 
 import { filterTasks, taskFilterFlags } from '../helpers'
 import ManifestHandler from '../lib/ManifestHandler'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 import { RequiredTaskConfig } from '../types'
@@ -20,7 +20,7 @@ export default class Compile extends Command {
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
     'skip-config': Flags.boolean({
       hidden: true,
-      description: 'Skip mimic.yaml config (used internally by build command)',
+      description: `Skip ${MIMIC_CONFIG_FILE} config (used internally by build command)`,
       default: false,
     }),
     ...taskFilterFlags,
@@ -28,14 +28,7 @@ export default class Compile extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const {
-      task: taskFile,
-      output: outputDir,
-      manifest: manifestDir,
-      include,
-      exclude,
-      'skip-config': skipConfig,
-    } = flags
+    const { task: taskPath, output, manifest, include, exclude, 'skip-config': skipConfig } = flags
 
     if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
@@ -46,26 +39,26 @@ export default class Compile extends Command {
         await this.runForTask(task)
       }
     } else {
-      await this.runForTask({ manifest: manifestDir, entry: taskFile, output: outputDir })
+      await this.runForTask({ manifest, entry: taskPath, output })
     }
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): Promise<void> {
-    const absTaskFile = path.resolve(task.entry)
-    const absOutputDir = path.resolve(task.output)
+    const taskPath = path.resolve(task.entry)
+    const outputDir = path.resolve(task.output)
 
-    if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
     const manifest = ManifestHandler.load(this, task.manifest)
     log.startAction('Compiling')
 
     const ascArgs = [
-      absTaskFile,
+      taskPath,
       '--target',
       'release',
       '--outFile',
-      path.join(absOutputDir, 'task.wasm'),
+      path.join(outputDir, 'task.wasm'),
       '--optimize',
       '--exportRuntime',
       '--transform',
@@ -82,7 +75,7 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(absOutputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
     console.log(`Build complete! Artifacts in ${task.output}/`)
   }

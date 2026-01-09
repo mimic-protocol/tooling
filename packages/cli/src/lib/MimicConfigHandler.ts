@@ -58,7 +58,7 @@ function handleValidationError(command: Command, err: unknown): never {
   let suggestions: string[]
 
   if (err instanceof ZodError) {
-    ;[message, code] = ['Invalid mimic.yaml configuration', 'ValidationError']
+    ;[message, code] = [`Invalid ${MIMIC_CONFIG_FILE} configuration`, 'ValidationError']
     suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
   } else {
     ;[message, code] = [`Unknown Error: ${err}`, 'UnknownError']

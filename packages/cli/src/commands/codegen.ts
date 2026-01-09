@@ -5,6 +5,7 @@ import { join } from 'path'
 
 import { filterTasks, taskFilterFlags } from '../helpers'
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
+import { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import log from '../log'
 import { Manifest, RequiredTaskConfig } from '../types'
 
@@ -15,7 +16,7 @@ export default class Codegen extends Command {
 
   static override flags = {
     manifest: Flags.string({ char: 'm', description: 'Specify a custom manifest file path', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'Ouput directory for generated types', default: './src/types' }),
+    output: Flags.string({ char: 'o', description: 'Output directory for generated types', default: './src/types' }),
     clean: Flags.boolean({
       char: 'c',
       description: 'Remove existing generated types before generating new files',
@@ -23,7 +24,7 @@ export default class Codegen extends Command {
     }),
     'skip-config': Flags.boolean({
       hidden: true,
-      description: 'Skip mimic.yaml config (used internally by build command)',
+      description: `Skip ${MIMIC_CONFIG_FILE} config (used internally by build command)`,
       default: false,
     }),
     ...taskFilterFlags,
@@ -31,7 +32,7 @@ export default class Codegen extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean, include, exclude, 'skip-config': skipConfig } = flags
+    const { manifest, output, clean, include, exclude, 'skip-config': skipConfig } = flags
 
     if (!skipConfig && MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
@@ -42,14 +43,14 @@ export default class Codegen extends Command {
         await this.runForTask(task, clean)
       }
     } else {
-      await this.runForTask({ manifest: manifestDir, types: outputDir }, clean)
+      await this.runForTask({ manifest, types: output }, clean)
     }
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'entry' | 'output'>, clean: boolean): Promise<void> {
-    const manifestDir = task.manifest
+    const manifestPath = task.manifest
     const outputDir = task.types
-    const manifest = ManifestHandler.load(this, manifestDir)
+    const manifest = ManifestHandler.load(this, manifestPath)
 
     if (clean) {
       const shouldDelete = await confirm({
@@ -73,7 +74,7 @@ export default class Codegen extends Command {
 
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-    generateAbisCode(manifest, outputDir, manifestDir)
+    generateAbisCode(manifest, outputDir, manifestPath)
     generateInputsCode(manifest, outputDir)
     log.stopAction()
   }

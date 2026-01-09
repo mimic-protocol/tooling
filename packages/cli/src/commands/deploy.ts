@@ -37,16 +37,7 @@ export default class Deploy extends Authenticate {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const {
-      profile,
-      'api-key': apiKey,
-      input: inputDir,
-      output: outputDir,
-      'skip-compile': skipCompile,
-      url: registryUrl,
-      include,
-      exclude,
-    } = flags
+    const { profile, 'api-key': apiKey, input, output, 'skip-compile': skipCompile, url, include, exclude } = flags
 
     if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
@@ -54,10 +45,10 @@ export default class Deploy extends Authenticate {
       const tasks = filterTasks(this, allTasks, include, exclude)
       for (const task of tasks) {
         console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, registryUrl, skipCompile, task.output, profile, apiKey)
+        await this.runForTask(task, url, skipCompile, task.output, profile, apiKey)
       }
     } else {
-      await this.runForTask({ ...DEFAULT_TASK, output: outputDir }, registryUrl, skipCompile, inputDir, profile, apiKey)
+      await this.runForTask({ ...DEFAULT_TASK, output }, url, skipCompile, input, profile, apiKey)
     }
   }
 
@@ -69,8 +60,8 @@ export default class Deploy extends Authenticate {
     profile?: string,
     apiKey?: string
   ): Promise<void> {
-    const fullInputDir = resolve(inputDir)
-    const fullOutputDir = resolve(task.output)
+    const inputPath = resolve(inputDir)
+    const outputPath = resolve(task.output)
 
     const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
@@ -84,7 +75,7 @@ export default class Deploy extends Authenticate {
           '--task',
           task.entry,
           '--output',
-          fullInputDir,
+          inputPath,
           '--types',
           task.types,
           '--skip-config',
@@ -98,14 +89,14 @@ export default class Deploy extends Authenticate {
 
     log.startAction('Validating')
 
-    if (!fs.existsSync(fullInputDir)) {
-      this.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
+    if (!fs.existsSync(inputPath)) {
+      this.error(`Directory ${log.highlightText(inputPath)} does not exist`, {
         code: 'Directory Not Found',
         suggestions: ['Use the --input flag to specify the correct path'],
       })
     }
 
-    const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(fullInputDir, file))
+    const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(inputPath, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file)) {
         this.error(`Could not find ${file}`, {
@@ -120,9 +111,9 @@ export default class Deploy extends Authenticate {
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
-    if (!fs.existsSync(fullOutputDir)) fs.mkdirSync(fullOutputDir, { recursive: true })
-    fs.writeFileSync(join(fullOutputDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(fullOutputDir)}`)
+    if (!fs.existsSync(outputPath)) fs.mkdirSync(outputPath, { recursive: true })
+    fs.writeFileSync(join(outputPath, 'CID.json'), JSON.stringify({ CID }, null, 2))
+    console.log(`CID saved at ${log.highlightText(outputPath)}`)
     console.log(`Task deployed!`)
   }
 

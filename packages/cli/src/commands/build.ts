@@ -1,7 +1,7 @@
 import { Command, Flags } from '@oclif/core'
 
 import { filterTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import log from '../log'
 import { RequiredTaskConfig } from '../types'
 
@@ -27,7 +27,7 @@ export default class Build extends Command {
     }),
     'skip-config': Flags.boolean({
       hidden: true,
-      description: 'Skip mimic.yaml config (used internally)',
+      description: `Skip ${MIMIC_CONFIG_FILE} config (used internally)`,
       default: false,
     }),
     ...taskFilterFlags,
