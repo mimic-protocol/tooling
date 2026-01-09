@@ -98,7 +98,28 @@ function getLibVersion(): string {
 
 export function getRunnerVersion(libVersion: string, mappingPath?: string): string {
   try {
-    const finalMappingPath = mappingPath || path.join(__dirname, '..', 'lib-runner-mapping.yaml')
+    let finalMappingPath = mappingPath
+
+    if (!finalMappingPath) {
+      let currentDir = process.cwd()
+      while (currentDir !== path.dirname(currentDir)) {
+        const distMappingPath = path.join(
+          currentDir,
+          'node_modules',
+          '@mimicprotocol',
+          'cli',
+          'dist',
+          'lib-runner-mapping.yaml'
+        )
+        if (fs.existsSync(distMappingPath)) {
+          finalMappingPath = distMappingPath
+          break
+        }
+        currentDir = path.dirname(currentDir)
+      }
+
+      if (!finalMappingPath) throw new Error('Could not find @mimicprotocol/cli package with lib-runner-mapping.yaml')
+    }
 
     const mappingContent = fs.readFileSync(finalMappingPath, 'utf-8')
     const mapping = LibRunnerMappingValidator.parse(load(mappingContent))
@@ -114,6 +135,9 @@ export function getRunnerVersion(libVersion: string, mappingPath?: string): stri
     if (error instanceof Error && error.message.includes('No runner version mapping found')) {
       throw error
     }
-    throw new Error(`Failed to read lib-runner-mapping.yaml: ${error}`)
+    if (error instanceof Error && error.message.includes('Could not find @mimicprotocol/cli package')) {
+      throw error
+    }
+    throw new Error(`Failed to read lib-runner-mapping.yaml from @mimicprotocol/cli: ${error}`)
   }
 }
