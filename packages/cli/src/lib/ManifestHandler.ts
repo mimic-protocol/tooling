@@ -132,12 +132,6 @@ export function getRunnerVersion(libVersion: string, mappingPath?: string): stri
 
     throw new Error(`No runner version mapping found for lib-ts version ${libVersion}`)
   } catch (error) {
-    if (error instanceof Error && error.message.includes('No runner version mapping found')) {
-      throw error
-    }
-    if (error instanceof Error && error.message.includes('Could not find @mimicprotocol/cli package')) {
-      throw error
-    }
     throw new Error(`Failed to read lib-runner-mapping.yaml from @mimicprotocol/cli: ${error}`)
   }
 }
