@@ -1,0 +1,3 @@
+# Single range mapping fixture (simulates current state)
+- libVersionRange: ">=0.0.1-rc.1"
+  runnerVersion: "1.0.0"

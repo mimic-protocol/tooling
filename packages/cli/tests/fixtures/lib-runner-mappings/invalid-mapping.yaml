@@ -1,0 +1,3 @@
+# Invalid mapping fixture - missing required fields
+- libVersionRange: ">=0.0.1-rc.1"
+  # runnerVersion is missing

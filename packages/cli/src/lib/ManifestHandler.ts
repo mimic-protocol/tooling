@@ -96,11 +96,11 @@ function getLibVersion(): string {
   }
 }
 
-function getRunnerVersion(libVersion: string): string {
+export function getRunnerVersion(libVersion: string, mappingPath?: string): string {
   try {
-    let mappingPath = path.join(__dirname, '..', 'lib-runner-mapping.yaml')
+    const finalMappingPath = mappingPath || path.join(__dirname, '..', 'lib-runner-mapping.yaml')
 
-    const mappingContent = fs.readFileSync(mappingPath, 'utf-8')
+    const mappingContent = fs.readFileSync(finalMappingPath, 'utf-8')
     const mapping = LibRunnerMappingValidator.parse(load(mappingContent))
 
     for (const entry of mapping) {
@@ -111,6 +111,9 @@ function getRunnerVersion(libVersion: string): string {
 
     throw new Error(`No runner version mapping found for lib-ts version ${libVersion}`)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('No runner version mapping found')) {
+      throw error
+    }
     throw new Error(`Failed to read lib-runner-mapping.yaml: ${error}`)
   }
 }

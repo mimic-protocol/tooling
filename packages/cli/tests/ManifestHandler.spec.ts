@@ -1,6 +1,7 @@
 import { expect } from 'chai'
+import * as path from 'path'
 
-import ManifestHandler from '../src/lib/ManifestHandler'
+import ManifestHandler, { getRunnerVersion } from '../src/lib/ManifestHandler'
 import { SEM_VER_REGEX } from '../src/validators'
 
 import invalidSemVers from './fixtures/sem-vers/invalid-sem-vers.json'
@@ -148,6 +149,97 @@ describe('ManifestHandler', () => {
 
       context('when the name is missing', () => {
         itReturnsAnError({ ...manifest, name: undefined }, 'Required', 'name')
+      })
+    })
+  })
+
+  describe('getRunnerVersion', () => {
+    const singleRangePath = path.join(__dirname, 'fixtures', 'lib-runner-mappings', 'single-range.yaml')
+    const multipleRangesPath = path.join(__dirname, 'fixtures', 'lib-runner-mappings', 'multiple-ranges.yaml')
+    const invalidMappingPath = path.join(__dirname, 'fixtures', 'lib-runner-mappings', 'invalid-mapping.yaml')
+
+    context('when using a single range mapping', () => {
+      context('when version satisfies the range', () => {
+        context('when version is at exact boundary', () => {
+          it('returns the corresponding runner version', () => {
+            const result = getRunnerVersion('0.0.1-rc.1', singleRangePath)
+
+            expect(result).to.equal('1.0.0')
+          })
+        })
+
+        context('when version is above the boundary', () => {
+          it('returns the corresponding runner version', () => {
+            const versions = ['0.0.1-rc.5', '0.1.0', '1.0.0', '2.0.0']
+
+            for (const version of versions) {
+              const result = getRunnerVersion(version, singleRangePath)
+              expect(result).to.equal('1.0.0')
+            }
+          })
+        })
+      })
+
+      context('when version does not satisfy the range', () => {
+        context('when version is below the boundary', () => {
+          it('throws an error', () => {
+            const versions = ['0.0.0', '0.0.1-alpha.1', '0.0.1-beta.1', '0.0.1-rc.0']
+
+            for (const version of versions) {
+              expect(() => getRunnerVersion(version, singleRangePath)).to.throw(
+                `No runner version mapping found for lib-ts version ${version}`
+              )
+            }
+          })
+        })
+      })
+    })
+
+    context('when using multiple range mappings', () => {
+      context('when version satisfies multiple ranges', () => {
+        it('returns the runner version from the first matching range', () => {
+          const result = getRunnerVersion('0.0.5', multipleRangesPath)
+
+          expect(result).to.equal('1.0.0')
+        })
+      })
+
+      context('when version satisfies only one range', () => {
+        it('returns the corresponding runner version', () => {
+          const testCases = [
+            { version: '0.0.1-rc.1', expected: '1.0.0' },
+            { version: '0.0.9', expected: '1.0.0' },
+            { version: '0.1.0', expected: '2.0.0' },
+            { version: '0.5.0', expected: '2.0.0' },
+            { version: '1.0.0', expected: '3.0.0' },
+            { version: '2.0.0', expected: '3.0.0' },
+          ]
+
+          for (const { version, expected } of testCases) {
+            const result = getRunnerVersion(version, multipleRangesPath)
+            expect(result).to.equal(expected)
+          }
+        })
+      })
+
+      context('when version does not satisfy any range', () => {
+        it('throws an error', () => {
+          const versions = ['0.0.0', '0.0.1-alpha.1', '0.0.1-beta.1']
+
+          for (const version of versions) {
+            expect(() => getRunnerVersion(version, multipleRangesPath)).to.throw(
+              `No runner version mapping found for lib-ts version ${version}`
+            )
+          }
+        })
+      })
+    })
+
+    context('when mapping file is invalid', () => {
+      it('throws an error', () => {
+        expect(() => getRunnerVersion('0.0.1-rc.1', invalidMappingPath)).to.throw(
+          'Failed to read lib-runner-mapping.yaml'
+        )
       })
     })
   })
