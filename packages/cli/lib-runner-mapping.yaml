@@ -1,0 +1,15 @@
+# Mapping between @mimicprotocol/lib-ts versions and runner versions
+# Only add new entries when there are breaking changes between lib-ts and runner
+#
+# Format:
+#   - libVersionRange: semver range (e.g., ">=0.0.1-rc.1 <0.1.0")
+#     runnerVersion: semver version (e.g., "1.0.0")
+#
+# Example with multiple entries:
+#   - libVersionRange: ">=0.0.1-rc.1 <0.1.0"
+#     runnerVersion: "1.0.0"
+#   - libVersionRange: ">=0.1.0"
+#     runnerVersion: "2.0.0"
+
+- libVersionRange: ">=0.0.1-rc.1"
+  runnerVersion: "1.0.0"

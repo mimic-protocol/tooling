@@ -71,22 +71,22 @@ describe('ManifestHandler', () => {
         })
       })
 
-      context('when dealing with lib version', () => {
-        context('when the lib version is not present', () => {
-          it('adds the lib version to the manifest', () => {
+      context('when dealing with runner version', () => {
+        context('when the runner version is not present', () => {
+          it('adds the runner version to the manifest', () => {
             const parsedManifest = ManifestHandler.validate(manifest)
 
-            expect(parsedManifest.metadata.libVersion).to.match(SEM_VER_REGEX)
+            expect(parsedManifest.metadata.runnerVersion).to.match(SEM_VER_REGEX)
           })
         })
 
-        context('when the lib version is present', () => {
-          it('overrides the lib version', () => {
-            const libVersion = '999.9.9'
-            const manifestWithLibVersion = { ...manifest, metadata: { libVersion } }
-            const parsedManifest = ManifestHandler.validate(manifestWithLibVersion)
+        context('when the runner version is present', () => {
+          it('overrides the runner version', () => {
+            const runnerVersion = '999.9.9'
+            const manifestWithRunnerVersion = { ...manifest, metadata: { runnerVersion } }
+            const parsedManifest = ManifestHandler.validate(manifestWithRunnerVersion)
 
-            expect(parsedManifest.metadata.libVersion).to.not.equal(libVersion)
+            expect(parsedManifest.metadata.runnerVersion).to.not.equal(runnerVersion)
           })
         })
       })

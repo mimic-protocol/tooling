@@ -2,11 +2,12 @@ import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
 import * as path from 'path'
+import * as semver from 'semver'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
 import { Manifest } from '../types'
-import { ManifestValidator } from '../validators'
+import { LibRunnerMappingValidator, ManifestValidator } from '../validators'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +18,7 @@ export default {
       ...manifest,
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
-      metadata: { libVersion: getLibVersion() },
+      metadata: { runnerVersion: getRunnerVersion(getLibVersion()) },
     }
     return ManifestValidator.parse(mergedManifest)
   },
@@ -92,5 +93,31 @@ function getLibVersion(): string {
     throw new Error('Could not find @mimicprotocol/lib-ts package')
   } catch (error) {
     throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+  }
+}
+
+function getRunnerVersion(libVersion: string): string {
+  try {
+    let currentDir = process.cwd()
+    while (currentDir !== path.dirname(currentDir)) {
+      const mappingPath = path.join(currentDir, 'lib-runner-mapping.yaml')
+      if (fs.existsSync(mappingPath)) {
+        const mappingContent = fs.readFileSync(mappingPath, 'utf-8')
+        const mapping = LibRunnerMappingValidator.parse(load(mappingContent))
+
+        for (const entry of mapping) {
+          if (semver.satisfies(libVersion, entry.libVersionRange)) {
+            return entry.runnerVersion
+          }
+        }
+
+        throw new Error(`No runner version mapping found for lib-ts version ${libVersion}`)
+      }
+      currentDir = path.dirname(currentDir)
+    }
+
+    throw new Error('Could not find lib-runner-mapping.yaml')
+  } catch (error) {
+    throw new Error(`Failed to read lib-runner-mapping.yaml: ${error}`)
   }
 }
