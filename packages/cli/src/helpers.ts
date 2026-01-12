@@ -112,11 +112,7 @@ export async function runTasks<T>(
   if (errors.length > 0) {
     console.log(`\n${log.warnText('Summary:')} ${errors.length}/${tasks.length} task(s) failed`)
     errors.forEach(({ task, code }) => {
-      if (code) {
-        console.log(`  - ${task} (${code})`)
-      } else {
-        console.log(`  - ${task}`)
-      }
+      console.log(code ? `  - ${task} (${code})` : `  - ${task}`)
     })
     command.exit(1)
   }

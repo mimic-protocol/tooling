@@ -1,4 +1,6 @@
-export const DEFAULT_TASK = {
+import { RequiredTaskConfig } from './types'
+
+export const DEFAULT_TASK: Omit<RequiredTaskConfig, 'name'> = {
   manifest: 'manifest.yaml',
   path: 'src/task.ts',
   types: './src/types',

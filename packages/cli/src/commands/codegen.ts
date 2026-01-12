@@ -4,8 +4,8 @@ import * as fs from 'fs'
 import { join } from 'path'
 
 import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
-import { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
+import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } from '../lib'
+import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import log from '../log'
 import { Manifest, RequiredTaskConfig } from '../types'
 

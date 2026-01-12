@@ -36,9 +36,7 @@ export default class Test extends Command {
           testPaths.add(this.getTestPath(baseDir))
         })
       } else {
-        tasks.forEach(() => {
-          testPaths.add(this.getTestPath(baseDir))
-        })
+        testPaths.add(this.getTestPath(baseDir))
       }
     } else {
       if (!skipCompile) await this.compileTask(DEFAULT_TASK, baseDir)
