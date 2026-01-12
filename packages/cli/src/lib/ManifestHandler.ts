@@ -81,57 +81,49 @@ function handleValidationError(command: Command, err: unknown): never {
   command.error(message, { code, suggestions })
 }
 
+function findFileInNodeModules(relativePath: string): string {
+  let currentDir = process.cwd()
+
+  while (currentDir !== path.dirname(currentDir)) {
+    const filePath = path.join(currentDir, 'node_modules', ...relativePath.split('/'))
+    if (fs.existsSync(filePath)) return filePath
+    currentDir = path.dirname(currentDir)
+  }
+
+  throw new Error(`Could not find ${relativePath} in node_modules`)
+}
+
 function getLibVersion(): string {
   try {
-    let currentDir = process.cwd()
-    while (currentDir !== path.dirname(currentDir)) {
-      const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-      if (fs.existsSync(libPackagePath)) return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
-      currentDir = path.dirname(currentDir)
-    }
-
-    throw new Error('Could not find @mimicprotocol/lib-ts package')
+    const libPackagePath = findFileInNodeModules('@mimicprotocol/lib-ts/package.json')
+    const packageContent = fs.readFileSync(libPackagePath, 'utf-8')
+    return JSON.parse(packageContent).version
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Could not find')) {
+      throw new Error('Could not find @mimicprotocol/lib-ts package')
+    }
     throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
   }
 }
 
 export function getRunnerVersion(libVersion: string, mappingPath?: string): string {
   try {
-    let finalMappingPath = mappingPath
+    const resolvedMappingPath = mappingPath || findFileInNodeModules('@mimicprotocol/cli/dist/lib-runner-mapping.yaml')
 
-    if (!finalMappingPath) {
-      let currentDir = process.cwd()
-      while (currentDir !== path.dirname(currentDir)) {
-        const distMappingPath = path.join(
-          currentDir,
-          'node_modules',
-          '@mimicprotocol',
-          'cli',
-          'dist',
-          'lib-runner-mapping.yaml'
-        )
-        if (fs.existsSync(distMappingPath)) {
-          finalMappingPath = distMappingPath
-          break
-        }
-        currentDir = path.dirname(currentDir)
-      }
-
-      if (!finalMappingPath) throw new Error('Could not find @mimicprotocol/cli package with lib-runner-mapping.yaml')
-    }
-
-    const mappingContent = fs.readFileSync(finalMappingPath, 'utf-8')
+    const mappingContent = fs.readFileSync(resolvedMappingPath, 'utf-8')
     const mapping = LibRunnerMappingValidator.parse(load(mappingContent))
 
     for (const entry of mapping) {
-      if (semver.satisfies(libVersion, entry.libVersionRange)) {
-        return entry.runnerVersion
-      }
+      if (semver.satisfies(libVersion, entry.libVersionRange)) return entry.runnerVersion
     }
 
     throw new Error(`No runner version mapping found for lib-ts version ${libVersion}`)
   } catch (error) {
-    throw new Error(`Failed to read lib-runner-mapping.yaml from @mimicprotocol/cli: ${error}`)
+    if (error instanceof ZodError) {
+      throw new Error(
+        `Failed to read lib-runner-mapping.yaml from @mimicprotocol/cli: Invalid format - ${error.message}`
+      )
+    }
+    throw error
   }
 }
