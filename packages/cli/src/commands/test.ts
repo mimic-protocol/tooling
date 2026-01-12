@@ -55,7 +55,7 @@ export default class Test extends Command {
     if (cg.status !== 0) this.exit(cg.status ?? 1)
     const cp = execBinCommand(
       'mimic',
-      ['compile', '--task', task.entry, '--manifest', task.manifest, '--output', task.output, '--skip-config'],
+      ['compile', '--task', task.path, '--manifest', task.manifest, '--output', task.output, '--skip-config'],
       baseDir
     )
     if (cp.status !== 0) this.exit(cp.status ?? 1)

@@ -47,7 +47,7 @@ export default class Codegen extends Command {
     }
   }
 
-  private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'entry' | 'output'>, clean: boolean): Promise<void> {
+  private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'path' | 'output'>, clean: boolean): Promise<void> {
     const manifestPath = task.manifest
     const outputDir = task.types
     const manifest = ManifestHandler.load(this, manifestPath)

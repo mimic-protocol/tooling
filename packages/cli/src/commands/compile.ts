@@ -39,12 +39,12 @@ export default class Compile extends Command {
         await this.runForTask(task)
       }
     } else {
-      await this.runForTask({ manifest, entry: taskPath, output })
+      await this.runForTask({ manifest, path: taskPath, output })
     }
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name' | 'types'>): Promise<void> {
-    const taskPath = path.resolve(task.entry)
+    const taskPath = path.resolve(task.path)
     const outputDir = path.resolve(task.output)
 
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })

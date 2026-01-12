@@ -13,7 +13,7 @@ describe('filterTasks', () => {
   const createTask = (name: string): RequiredTaskConfig => ({
     name,
     manifest: `./tasks/${name}/manifest.yaml`,
-    entry: `./tasks/${name}/src/task.ts`,
+    path: `./tasks/${name}/src/task.ts`,
     output: `build/${name}`,
     types: `./tasks/${name}/src/types`,
   })

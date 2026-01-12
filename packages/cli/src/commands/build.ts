@@ -46,7 +46,7 @@ export default class Build extends Command {
         await this.runForTask(taskConfig, clean)
       }
     } else {
-      await this.runForTask({ manifest, entry: task, output, types }, clean)
+      await this.runForTask({ manifest, path: task, output, types }, clean)
     }
   }
 
@@ -58,7 +58,7 @@ export default class Build extends Command {
 
     const compileArgs: string[] = [
       '--task',
-      task.entry,
+      task.path,
       '--manifest',
       task.manifest,
       '--output',

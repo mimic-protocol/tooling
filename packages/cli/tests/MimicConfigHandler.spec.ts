@@ -8,8 +8,8 @@ import { MimicConfigValidator } from '../src/validators'
 describe('MimicConfigHandler', () => {
   const mimicConfig = {
     tasks: [
-      { name: 'swap-task', manifest: './tasks/swap/manifest.yaml', entry: './tasks/swap/src/task.ts' },
-      { name: 'transfer-task', manifest: './tasks/transfer/manifest.yaml', entry: './tasks/transfer/src/task.ts' },
+      { name: 'swap-task', manifest: './tasks/swap/manifest.yaml', path: './tasks/swap/src/task.ts' },
+      { name: 'transfer-task', manifest: './tasks/transfer/manifest.yaml', path: './tasks/transfer/src/task.ts' },
     ],
   }
 
@@ -93,16 +93,16 @@ describe('MimicConfigHandler', () => {
 
       context('when task name is missing', () => {
         itReturnsAnError(
-          { ...mimicConfig, tasks: [{ manifest: './manifest.yaml', entry: './src/task.ts' }] },
+          { ...mimicConfig, tasks: [{ manifest: './manifest.yaml', path: './src/task.ts' }] },
           'Required'
         )
       })
 
       context('when task manifest is missing', () => {
-        itReturnsAnError({ ...mimicConfig, tasks: [{ name: 'task', entry: './src/task.ts' }] }, 'Required')
+        itReturnsAnError({ ...mimicConfig, tasks: [{ name: 'task', path: './src/task.ts' }] }, 'Required')
       })
 
-      context('when task entry is missing', () => {
+      context('when task path is missing', () => {
         itReturnsAnError({ ...mimicConfig, tasks: [{ name: 'task', manifest: './manifest.yaml' }] }, 'Required')
       })
     })

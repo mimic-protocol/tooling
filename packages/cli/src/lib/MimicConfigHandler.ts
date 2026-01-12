@@ -47,7 +47,7 @@ export default {
     return mimicConfig.tasks.map((task) => ({
       ...task,
       output: task.output ?? `build/${task.name}`,
-      types: task.types ?? path.join(path.dirname(task.entry), 'types'),
+      types: task.types ?? path.join(path.dirname(task.path), 'types'),
     }))
   },
 }

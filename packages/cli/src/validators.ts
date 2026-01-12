@@ -29,7 +29,7 @@ export const ManifestValidator = z.object({
 export const TaskConfigValidator = z.object({
   name: String,
   manifest: String,
-  entry: String,
+  path: String,
   output: String.optional(),
   types: String.optional(),
 })

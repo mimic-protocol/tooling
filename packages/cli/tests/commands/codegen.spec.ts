@@ -21,7 +21,7 @@ describe('codegen', () => {
     beforeEach('create mimic.yaml', () => {
       fs.writeFileSync(
         mimicConfigPath,
-        `tasks:\n  - name: test-task\n    manifest: ${manifestPath}\n    entry: ${basePath}/tasks/task.ts\n    types: ${outputDir}\n`
+        `tasks:\n  - name: test-task\n    manifest: ${manifestPath}\n    path: ${basePath}/tasks/task.ts\n    types: ${outputDir}\n`
       )
     })
 

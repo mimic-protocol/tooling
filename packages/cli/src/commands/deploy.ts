@@ -73,7 +73,7 @@ export default class Deploy extends Authenticate {
           '--manifest',
           task.manifest,
           '--task',
-          task.entry,
+          task.path,
           '--output',
           inputPath,
           '--types',
