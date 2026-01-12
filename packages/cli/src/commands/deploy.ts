@@ -5,8 +5,8 @@ import * as fs from 'fs'
 import { join, resolve } from 'path'
 
 import { DEFAULT_TASK } from '../constants'
-import { GENERIC_SUGGESTION } from '../errors'
-import { filterTasks, taskFilterFlags } from '../helpers'
+import { CommandError, GENERIC_SUGGESTION } from '../errors'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import { ProfileCredentials } from '../lib/CredentialsManager'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
@@ -43,10 +43,7 @@ export default class Deploy extends Authenticate {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
-      for (const task of tasks) {
-        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, url, skipCompile, task.output, profile, apiKey)
-      }
+      await runTasks(this, tasks, (task) => this.runForTask(task, url, skipCompile, task.output, profile, apiKey))
     } else {
       await this.runForTask({ ...DEFAULT_TASK, output }, url, skipCompile, input, profile, apiKey)
     }
@@ -83,14 +80,17 @@ export default class Deploy extends Authenticate {
         process.cwd()
       )
       if (build.status !== 0) {
-        this.error('Build failed', { code: 'BuildError', suggestions: ['Check the task source code and manifest'] })
+        throw new CommandError('Build failed', {
+          code: 'BuildError',
+          suggestions: ['Check the task source code and manifest'],
+        })
       }
     }
 
     log.startAction('Validating')
 
     if (!fs.existsSync(inputPath)) {
-      this.error(`Directory ${log.highlightText(inputPath)} does not exist`, {
+      throw new CommandError(`Directory ${log.highlightText(inputPath)} does not exist`, {
         code: 'Directory Not Found',
         suggestions: ['Use the --input flag to specify the correct path'],
       })
@@ -99,7 +99,7 @@ export default class Deploy extends Authenticate {
     const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(inputPath, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file)) {
-        this.error(`Could not find ${file}`, {
+        throw new CommandError(`Could not find ${file}`, {
           code: 'File Not Found',
           suggestions: [`Use ${log.highlightText('mimic compile')} to generate the needed files`],
         })
@@ -137,15 +137,33 @@ export default class Deploy extends Authenticate {
   }
 
   private handleError(err: unknown, message: string): never {
-    if (!(err instanceof AxiosError)) this.error(err as Error)
+    if (!(err instanceof AxiosError)) throw err as Error
     const statusCode = err.response?.status
-    if (statusCode === 400) {
-      const errMessage = err.response?.data?.content?.message || message
-      this.error(errMessage, { code: 'Bad Request', suggestions: ['Review the uploaded files'] })
+
+    switch (statusCode) {
+      case 400: {
+        const errMessage = err.response?.data?.content?.message || message
+        throw new CommandError(errMessage, {
+          code: 'Bad Request',
+          suggestions: ['Review the uploaded files'],
+        })
+      }
+      case 401:
+        throw new CommandError(message, {
+          code: 'Unauthorized',
+          suggestions: ['Review your key'],
+        })
+      case 403:
+        throw new CommandError(message, {
+          code: 'Invalid api key',
+          suggestions: ['Review your key'],
+        })
+      default:
+        throw new CommandError(`${message} - ${err.message}`, {
+          code: `${statusCode} Error`,
+          suggestions: GENERIC_SUGGESTION,
+        })
     }
-    if (statusCode === 401) this.error(message, { code: 'Unauthorized', suggestions: ['Review your key'] })
-    if (statusCode === 403) this.error(message, { code: 'Invalid api key', suggestions: ['Review your key'] })
-    this.error(`${message} - ${err.message}`, { code: `${statusCode} Error`, suggestions: GENERIC_SUGGESTION })
   }
 }
 

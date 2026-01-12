@@ -3,7 +3,7 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
-import { filterTasks, taskFilterFlags } from '../helpers'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler, MimicConfigHandler } from '../lib'
 import { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import log from '../log'
@@ -38,10 +38,7 @@ export default class Codegen extends Command {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
-      for (const task of tasks) {
-        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task, clean)
-      }
+      await runTasks(this, tasks, (task) => this.runForTask(task, clean))
     } else {
       await this.runForTask({ manifest, types: output }, clean)
     }
@@ -67,7 +64,7 @@ export default class Codegen extends Command {
     }
 
     log.startAction('Generating code')
-    if (Object.keys(manifest.inputs).length == 0 && Object.keys(manifest.abis).length == 0) {
+    if (Object.keys(manifest.inputs).length === 0 && Object.keys(manifest.abis).length === 0) {
       log.stopAction()
       return
     }

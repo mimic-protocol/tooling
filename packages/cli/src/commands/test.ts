@@ -2,10 +2,9 @@ import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
 import { DEFAULT_TASK } from '../constants'
-import { filterTasks, taskFilterFlags } from '../helpers'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
-import log from '../log'
 import { RequiredTaskConfig } from '../types'
 
 export default class Test extends Command {
@@ -31,12 +30,15 @@ export default class Test extends Command {
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
 
-      for (const task of tasks) {
-        if (!skipCompile) {
-          console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+      if (!skipCompile) {
+        await runTasks(this, tasks, async (task) => {
           await this.compileTask(task, baseDir)
-        }
-        testPaths.add(this.getTestPath(baseDir))
+          testPaths.add(this.getTestPath(baseDir))
+        })
+      } else {
+        tasks.forEach(() => {
+          testPaths.add(this.getTestPath(baseDir))
+        })
       }
     } else {
       if (!skipCompile) await this.compileTask(DEFAULT_TASK, baseDir)
@@ -52,13 +54,17 @@ export default class Test extends Command {
       ['codegen', '--manifest', task.manifest, '--output', task.types, '--skip-config'],
       baseDir
     )
-    if (cg.status !== 0) this.exit(cg.status ?? 1)
+    if (cg.status !== 0) {
+      throw new Error(`Codegen failed for task with status ${cg.status}`)
+    }
     const cp = execBinCommand(
       'mimic',
       ['compile', '--task', task.path, '--manifest', task.manifest, '--output', task.output, '--skip-config'],
       baseDir
     )
-    if (cp.status !== 0) this.exit(cp.status ?? 1)
+    if (cp.status !== 0) {
+      throw new Error(`Compile failed for task with status ${cp.status}`)
+    }
   }
 
   private getTestPath(baseDir: string): string {

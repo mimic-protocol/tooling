@@ -1,8 +1,7 @@
 import { Command, Flags } from '@oclif/core'
 
-import { filterTasks, taskFilterFlags } from '../helpers'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
-import log from '../log'
 import { RequiredTaskConfig } from '../types'
 
 import Codegen from './codegen'
@@ -41,10 +40,7 @@ export default class Build extends Command {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
-      for (const taskConfig of tasks) {
-        console.log(`\n${log.highlightText(`[${taskConfig.name}]`)}`)
-        await this.runForTask(taskConfig, clean)
-      }
+      await runTasks(this, tasks, (taskConfig) => this.runForTask(taskConfig, clean))
     } else {
       await this.runForTask({ manifest, path: task, output, types }, clean)
     }

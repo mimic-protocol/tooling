@@ -4,6 +4,7 @@ import camelCase from 'lodash/camelCase'
 import startCase from 'lodash/startCase'
 
 import { MIMIC_CONFIG_FILE } from './lib/MimicConfigHandler'
+import { CommandError } from './errors'
 import log from './log'
 import { AbiFunctionItem, RequiredTaskConfig } from './types'
 
@@ -46,11 +47,15 @@ export function filterTasks(
 
   const taskNames = new Set(tasks.map((task) => task.name))
 
+  const warnInvalidTaskNames = (names: string[]): void => {
+    if (names.length > 0) {
+      console.warn(`${log.warnText('Warning:')} The following task names were not found: ${names.join(', ')}`)
+    }
+  }
+
   if (include) {
     const invalidNames = include.filter((name) => !taskNames.has(name))
-    if (invalidNames.length > 0) {
-      console.warn(`${log.warnText('Warning:')} The following task names were not found: ${invalidNames.join(', ')}`)
-    }
+    warnInvalidTaskNames(invalidNames)
 
     const validNames = new Set(include.filter((name) => taskNames.has(name)))
     if (validNames.size === 0) {
@@ -63,9 +68,7 @@ export function filterTasks(
 
   if (exclude) {
     const invalidNames = exclude.filter((name) => !taskNames.has(name))
-    if (invalidNames.length > 0) {
-      console.warn(`${log.warnText('Warning:')} The following task names were not found: ${invalidNames.join(', ')}`)
-    }
+    warnInvalidTaskNames(invalidNames)
 
     const excludeSet = new Set(exclude)
     const filteredTasks = tasks.filter((task) => !excludeSet.has(task.name))
@@ -76,4 +79,45 @@ export function filterTasks(
   }
 
   return tasks
+}
+
+export async function runTasks<T>(
+  command: Command,
+  tasks: RequiredTaskConfig[],
+  runTask: (task: RequiredTaskConfig) => Promise<T>
+): Promise<void> {
+  const errors: Array<{ task: string; error: Error; code?: string; suggestions?: string[] }> = []
+
+  for (const task of tasks) {
+    console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+    try {
+      await runTask(task)
+    } catch (error) {
+      const err = error as Error
+      console.error(log.warnText(`Task "${task.name}" failed: ${err.message}`))
+
+      if (err instanceof CommandError) {
+        if (err.code) console.error(`  Code: ${err.code}`)
+        if (err.suggestions?.length) {
+          console.error(`  Suggestions:`)
+          err.suggestions.forEach((s) => console.error(`    - ${s}`))
+        }
+        errors.push({ task: task.name, error: err, code: err.code, suggestions: err.suggestions })
+      } else {
+        errors.push({ task: task.name, error: err })
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    console.log(`\n${log.warnText('Summary:')} ${errors.length}/${tasks.length} task(s) failed`)
+    errors.forEach(({ task, code }) => {
+      if (code) {
+        console.log(`  - ${task} (${code})`)
+      } else {
+        console.log(`  - ${task}`)
+      }
+    })
+    command.exit(1)
+  }
 }

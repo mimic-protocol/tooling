@@ -2,7 +2,8 @@ import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { filterTasks, taskFilterFlags } from '../helpers'
+import { CommandError } from '../errors'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import ManifestHandler from '../lib/ManifestHandler'
 import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
 import { execBinCommand } from '../lib/packageManager'
@@ -34,10 +35,7 @@ export default class Compile extends Command {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
-      for (const task of tasks) {
-        console.log(`\n${log.highlightText(`[${task.name}]`)}`)
-        await this.runForTask(task)
-      }
+      await runTasks(this, tasks, (task) => this.runForTask(task))
     } else {
       await this.runForTask({ manifest, path: taskPath, output })
     }
@@ -67,7 +65,7 @@ export default class Compile extends Command {
 
     const result = execBinCommand('asc', ascArgs, process.cwd())
     if (result.status !== 0) {
-      this.error('AssemblyScript compilation failed', {
+      throw new CommandError('AssemblyScript compilation failed', {
         code: 'BuildError',
         suggestions: ['Check the AssemblyScript file'],
       })
