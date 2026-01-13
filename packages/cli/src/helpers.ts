@@ -3,7 +3,9 @@ import { Interface } from 'ethers'
 import camelCase from 'lodash/camelCase'
 import startCase from 'lodash/startCase'
 
+import { TaskConfig } from './core/types'
 import { MIMIC_CONFIG_FILE } from './lib/MimicConfigHandler'
+import { CoreError } from './core'
 import { CommandError } from './errors'
 import log from './log'
 import { AbiFunctionItem, RequiredTaskConfig } from './types'
@@ -115,5 +117,25 @@ export async function runTasks<T>(
       console.log(code ? `  - ${task} (${code})` : `  - ${task}`)
     })
     command.exit(1)
+  }
+}
+
+export function handleCoreError(command: Command, error: unknown): void {
+  if (error instanceof CoreError) {
+    command.error(error.message, {
+      code: error.code,
+      suggestions: error.suggestions,
+    })
+  }
+  throw error
+}
+
+export function toTaskConfig(task: RequiredTaskConfig | Omit<RequiredTaskConfig, 'name'>): TaskConfig {
+  return {
+    name: 'name' in task ? task.name : 'default',
+    manifestPath: task.manifest,
+    taskPath: task.path,
+    outputDir: task.output,
+    typesDir: task.types,
   }
 }

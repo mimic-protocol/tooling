@@ -2,9 +2,10 @@ import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
 import { DEFAULT_TASK } from '../constants'
-import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
+import { buildForTest, getTestPath, runTests, TestError } from '../core'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
-import { execBinCommand } from '../lib/packageManager'
+import { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
 
 export default class Test extends Command {
@@ -25,52 +26,57 @@ export default class Test extends Command {
 
     const testPaths = new Set<string>()
 
-    if (MimicConfigHandler.exists(baseDir)) {
-      const mimicConfig = MimicConfigHandler.load(this, baseDir)
-      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
-      const tasks = filterTasks(this, allTasks, include, exclude)
+    try {
+      if (MimicConfigHandler.exists(baseDir)) {
+        const mimicConfig = MimicConfigHandler.load(this, baseDir)
+        const allTasks = MimicConfigHandler.getTasks(mimicConfig)
+        const tasks = filterTasks(this, allTasks, include, exclude)
 
-      if (!skipCompile) {
-        await runTasks(this, tasks, async (task) => {
-          await this.compileTask(task, baseDir)
-          testPaths.add(this.getTestPath(baseDir))
-        })
+        if (!skipCompile) {
+          await runTasks(this, tasks, async (task) => {
+            await this.compileTask(task, baseDir)
+            testPaths.add(getTestPath(baseDir))
+          })
+        } else {
+          testPaths.add(getTestPath(baseDir))
+        }
       } else {
-        testPaths.add(this.getTestPath(baseDir))
+        if (!skipCompile) await this.compileTask(DEFAULT_TASK, baseDir)
+        testPaths.add(getTestPath(baseDir))
       }
-    } else {
-      if (!skipCompile) await this.compileTask(DEFAULT_TASK, baseDir)
-      testPaths.add(this.getTestPath(baseDir))
-    }
 
-    if (testPaths.size > 0) this.runTests(Array.from(testPaths), baseDir)
+      if (testPaths.size > 0) {
+        runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
+      }
+    } catch (error) {
+      if (error instanceof TestError) {
+        this.exit(error.exitCode)
+      }
+      handleCoreError(this, error)
+    }
   }
 
   private async compileTask(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): Promise<void> {
-    const cg = execBinCommand(
-      'mimic',
-      ['codegen', '--manifest', task.manifest, '--output', task.types, '--skip-config'],
-      baseDir
-    )
-    if (cg.status !== 0) {
-      throw new Error(`Codegen failed for task with status ${cg.status}`)
-    }
-    const cp = execBinCommand(
-      'mimic',
-      ['compile', '--task', task.path, '--manifest', task.manifest, '--output', task.output, '--skip-config'],
-      baseDir
-    )
-    if (cp.status !== 0) {
-      throw new Error(`Compile failed for task with status ${cp.status}`)
-    }
-  }
+    const taskConfig = toTaskConfig(task)
 
-  private getTestPath(baseDir: string): string {
-    return path.join(baseDir, 'tests', '**', '*.spec.ts')
-  }
+    // Change to baseDir for compilation
+    const originalCwd = process.cwd()
+    try {
+      process.chdir(baseDir)
 
-  private runTests(testPaths: string[], baseDir: string): void {
-    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', ...testPaths], baseDir)
-    if (result.status !== 0) this.exit(result.status ?? 1)
+      await buildForTest(
+        {
+          manifestPath: taskConfig.manifestPath,
+          taskPath: taskConfig.taskPath,
+          outputDir: taskConfig.outputDir,
+          typesDir: taskConfig.typesDir,
+          clean: false,
+          cwd: baseDir,
+        },
+        coreLogger
+      )
+    } finally {
+      process.chdir(originalCwd)
+    }
   }
 }

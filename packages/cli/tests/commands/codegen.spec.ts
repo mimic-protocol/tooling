@@ -71,7 +71,7 @@ describe('codegen', () => {
     context('when the manifest does not exist', () => {
       const command = ['codegen', `--manifest ${manifestPath}fake`, `--output ${outputDir}`]
 
-      itThrowsACliError(command, `Could not find ${manifestPath}fake`, 'FileNotFound', 1)
+      itThrowsACliError(command, `File not found: ${manifestPath}fake`, 'FileNotFound', 1)
     })
 
     context('when clean flag is passed', () => {

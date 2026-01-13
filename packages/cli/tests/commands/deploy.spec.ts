@@ -199,7 +199,7 @@ describe('deploy', () => {
                   axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { message } })
                 })
 
-                itThrowsACliError(command, message, 'Bad Request', 1)
+                itThrowsACliError(command, message, 'Deploy400Error', 1)
               })
 
               context('when the error message is not present', () => {
@@ -207,7 +207,7 @@ describe('deploy', () => {
                   axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { errors: ['some error'] } })
                 })
 
-                itThrowsACliError(command, 'Failed to upload to registry', 'Bad Request', 1)
+                itThrowsACliError(command, 'Bad request', 'Deploy400Error', 1)
               })
             })
 
@@ -216,7 +216,7 @@ describe('deploy', () => {
                 axiosMock.onPost(/.*/).reply(401)
               })
 
-              itThrowsACliError(command, 'Failed to upload to registry', 'Unauthorized', 1)
+              itThrowsACliError(command, 'Unauthorized', 'Deploy401Error', 1)
             })
 
             context('when there is an authentication failure', () => {
@@ -224,7 +224,7 @@ describe('deploy', () => {
                 axiosMock.onPost(/.*/).reply(403)
               })
 
-              itThrowsACliError(command, 'Failed to upload to registry', 'Invalid api key', 1)
+              itThrowsACliError(command, 'Invalid API key', 'Deploy403Error', 1)
             })
 
             context('when there is a generic error', () => {
@@ -232,19 +232,14 @@ describe('deploy', () => {
                 axiosMock.onPost(/.*/).reply(501)
               })
 
-              itThrowsACliError(
-                command,
-                'Failed to upload to registry - Request failed with status code 501',
-                '501 Error',
-                1
-              )
+              itThrowsACliError(command, 'Upload failed: Request failed with status code 501', 'Deploy501Error', 1)
             })
           })
         })
 
         context('when the directory does not contain the necessary files', () => {
           context('when the directory contains no files', () => {
-            itThrowsACliError(command, `Could not find ${inputDir}/manifest.json`, 'File Not Found', 1)
+            itThrowsACliError(command, `File not found: ${inputDir}/manifest.json`, 'FileNotFound', 1)
           })
 
           context('when the directory contains only one file', () => {
@@ -252,13 +247,13 @@ describe('deploy', () => {
               createFile('manifest.json')
             })
 
-            itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'File Not Found', 1)
+            itThrowsACliError(command, `File not found: ${inputDir}/task.wasm`, 'FileNotFound', 1)
           })
         })
       })
 
       context('when input directory does not exist', () => {
-        itThrowsACliError(command, `Directory ${inputDir} does not exist`, 'Directory Not Found', 1)
+        itThrowsACliError(command, `Directory not found: ${inputDir}`, 'DirectoryNotFound', 1)
       })
     })
 

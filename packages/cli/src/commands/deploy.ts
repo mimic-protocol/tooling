@@ -1,21 +1,14 @@
 import { Flags } from '@oclif/core'
-import axios, { AxiosError } from 'axios'
-import FormData from 'form-data'
-import * as fs from 'fs'
-import { join, resolve } from 'path'
+import { resolve } from 'path'
 
 import { DEFAULT_TASK } from '../constants'
-import { CommandError, GENERIC_SUGGESTION } from '../errors'
-import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import { ProfileCredentials } from '../lib/CredentialsManager'
+import { build, deploy, MIMIC_REGISTRY_DEFAULT } from '../core'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
-import { execBinCommand } from '../lib/packageManager'
-import log from '../log'
+import log, { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
 
 import Authenticate from './authenticate'
-
-const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
 export default class Deploy extends Authenticate {
   static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
@@ -59,119 +52,39 @@ export default class Deploy extends Authenticate {
   ): Promise<void> {
     const inputPath = resolve(inputDir)
     const outputPath = resolve(task.output)
+    const taskConfig = toTaskConfig(task)
 
     const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
-    if (!skipCompile) {
-      const build = execBinCommand(
-        'mimic',
-        [
-          'build',
-          '--manifest',
-          task.manifest,
-          '--task',
-          task.path,
-          '--output',
-          inputPath,
-          '--types',
-          task.types,
-          '--skip-config',
-        ],
-        process.cwd()
-      )
-      if (build.status !== 0) {
-        throw new CommandError('Build failed', {
-          code: 'BuildError',
-          suggestions: ['Check the task source code and manifest'],
-        })
-      }
-    }
-
-    log.startAction('Validating')
-
-    if (!fs.existsSync(inputPath)) {
-      throw new CommandError(`Directory ${log.highlightText(inputPath)} does not exist`, {
-        code: 'Directory Not Found',
-        suggestions: ['Use the --input flag to specify the correct path'],
-      })
-    }
-
-    const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(inputPath, file))
-    for (const file of neededFiles) {
-      if (!fs.existsSync(file)) {
-        throw new CommandError(`Could not find ${file}`, {
-          code: 'File Not Found',
-          suggestions: [`Use ${log.highlightText('mimic compile')} to generate the needed files`],
-        })
-      }
-    }
-
-    log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(neededFiles, credentials, registryUrl)
-    console.log(`IPFS CID: ${log.highlightText(CID)}`)
-    log.stopAction()
-
-    if (!fs.existsSync(outputPath)) fs.mkdirSync(outputPath, { recursive: true })
-    fs.writeFileSync(join(outputPath, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(outputPath)}`)
-    console.log(`Task deployed!`)
-  }
-
-  private async uploadToRegistry(
-    files: string[],
-    credentials: ProfileCredentials,
-    registryUrl: string
-  ): Promise<string> {
     try {
-      const form = filesToForm(files)
-      const { data } = await axios.post(`${registryUrl}/tasks`, form, {
-        headers: {
-          'x-api-key': credentials.apiKey,
-          'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
-        },
-      })
-      return data.CID
-    } catch (err) {
-      this.handleError(err, 'Failed to upload to registry')
-    }
-  }
-
-  private handleError(err: unknown, message: string): never {
-    if (!(err instanceof AxiosError)) throw err as Error
-    const statusCode = err.response?.status
-
-    switch (statusCode) {
-      case 400: {
-        const errMessage = err.response?.data?.content?.message || message
-        throw new CommandError(errMessage, {
-          code: 'Bad Request',
-          suggestions: ['Review the uploaded files'],
-        })
+      if (!skipCompile) {
+        await build(
+          {
+            manifestPath: taskConfig.manifestPath,
+            taskPath: taskConfig.taskPath,
+            outputDir: inputPath,
+            typesDir: taskConfig.typesDir,
+            clean: false,
+          },
+          coreLogger
+        )
       }
-      case 401:
-        throw new CommandError(message, {
-          code: 'Unauthorized',
-          suggestions: ['Review your key'],
-        })
-      case 403:
-        throw new CommandError(message, {
-          code: 'Invalid api key',
-          suggestions: ['Review your key'],
-        })
-      default:
-        throw new CommandError(`${message} - ${err.message}`, {
-          code: `${statusCode} Error`,
-          suggestions: GENERIC_SUGGESTION,
-        })
+
+      const result = await deploy(
+        {
+          inputDir: inputPath,
+          outputDir: outputPath,
+          apiKey: credentials.apiKey,
+          registryUrl,
+        },
+        coreLogger
+      )
+
+      coreLogger.info(`IPFS CID: ${log.highlightText(result.cid)}`)
+      coreLogger.info(`CID saved at ${log.highlightText(outputPath)}`)
+      coreLogger.info(`Task deployed!`)
+    } catch (error) {
+      handleCoreError(this, error)
     }
   }
-}
-
-const filesToForm = (files: string[]): FormData => {
-  return files.reduce((form, file) => {
-    const fileStream = fs.createReadStream(file)
-    const filename = file.split('/').pop()
-    form.append('file', fileStream, { filename })
-    return form
-  }, new FormData())
 }

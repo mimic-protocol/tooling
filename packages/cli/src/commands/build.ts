@@ -1,11 +1,11 @@
+import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 
-import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler, { MIMIC_CONFIG_FILE } from '../lib/MimicConfigHandler'
+import { build } from '../core'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
+import MimicConfigHandler from '../lib/MimicConfigHandler'
+import log, { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
-
-import Codegen from './codegen'
-import Compile from './compile'
 
 export default class Build extends Command {
   static override description = 'Runs code generation and then compiles the task'
@@ -24,19 +24,14 @@ export default class Build extends Command {
       description: 'remove existing generated types before generating new files',
       default: false,
     }),
-    'skip-config': Flags.boolean({
-      hidden: true,
-      description: `Skip ${MIMIC_CONFIG_FILE} config (used internally)`,
-      default: false,
-    }),
     ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    const { manifest, task, output, types, clean, include, exclude, 'skip-config': skipConfig } = flags
+    const { manifest, task, output, types, clean, include, exclude } = flags
 
-    if (!skipConfig && MimicConfigHandler.exists()) {
+    if (MimicConfigHandler.exists()) {
       const mimicConfig = MimicConfigHandler.load(this)
       const allTasks = MimicConfigHandler.getTasks(mimicConfig)
       const tasks = filterTasks(this, allTasks, include, exclude)
@@ -47,20 +42,36 @@ export default class Build extends Command {
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
-    const codegenArgs: string[] = ['--manifest', task.manifest, '--output', task.types, '--skip-config']
-    if (clean) codegenArgs.push('--clean')
+    const taskConfig = toTaskConfig(task)
 
-    await Codegen.run(codegenArgs)
+    try {
+      const result = await build(
+        {
+          manifestPath: taskConfig.manifestPath,
+          taskPath: taskConfig.taskPath,
+          outputDir: taskConfig.outputDir,
+          typesDir: taskConfig.typesDir,
+          clean,
+          confirmClean: async () => {
+            const shouldDelete = await confirm({
+              message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(taskConfig.typesDir)}. This action is ${log.warnText('irreversible')}`,
+              default: false,
+            })
+            if (!shouldDelete) {
+              coreLogger.info('You can remove the --clean flag from your command')
+              coreLogger.info('Stopping initialization...')
+            }
+            return shouldDelete
+          },
+        },
+        coreLogger
+      )
 
-    const compileArgs: string[] = [
-      '--task',
-      task.path,
-      '--manifest',
-      task.manifest,
-      '--output',
-      task.output,
-      '--skip-config',
-    ]
-    await Compile.run(compileArgs)
+      if (clean && !result.success) this.exit(0)
+
+      coreLogger.info(`Build complete! Artifacts in ${task.output}/`)
+    } catch (error) {
+      handleCoreError(this, error)
+    }
   }
 }

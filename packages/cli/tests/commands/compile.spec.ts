@@ -107,7 +107,7 @@ describe('compile', () => {
           const taskPath = `${basePath}/tasks/invalid-task.ts`
           const command = buildCommand(manifestPath, taskPath, outputDir)
 
-          itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
+          itThrowsACliError(command, 'AssemblyScript compilation failed', 'CompilationError', 2)
         })
       })
 
@@ -116,28 +116,28 @@ describe('compile', () => {
           const manifestPath = `${basePath}/manifests/invalid-manifest.yaml`
           const command = buildCommand(manifestPath, taskPath, outputDir)
 
-          itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
+          itThrowsACliError(command, 'More than one entry', 'ManifestValidationError', 1)
         })
 
         context('when the manfiest has repeated fields', () => {
           const manifestPath = `${basePath}/manifests/invalid-manifest-repeated.yaml`
           const command = buildCommand(manifestPath, taskPath, outputDir)
 
-          itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
+          itThrowsACliError(command, 'Duplicate Entry', 'ManifestValidationError', 1)
         })
 
         context('when the manifest is incomplete', () => {
           const manifestPath = `${basePath}/manifests/incomplete-manifest.yaml`
           const command = buildCommand(manifestPath, taskPath, outputDir)
 
-          itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
+          itThrowsACliError(command, 'Missing/Incorrect Fields', 'ManifestValidationError', 3)
         })
 
         context('when the manifest is empty', () => {
           const manifestPath = `${basePath}/manifests/empty-manifest.yaml`
           const command = buildCommand(manifestPath, taskPath, outputDir)
 
-          itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
+          itThrowsACliError(command, 'Empty Manifest', 'ManifestValidationError', 1)
         })
       })
     })
@@ -146,7 +146,7 @@ describe('compile', () => {
       const inexistentManifestPath = `${manifestPath}-none`
       const command = buildCommand(inexistentManifestPath, taskPath, outputDir)
 
-      itThrowsACliError(command, `Could not find ${inexistentManifestPath}`, 'FileNotFound', 1)
+      itThrowsACliError(command, `File not found: ${inexistentManifestPath}`, 'FileNotFound', 1)
     })
 
     context('when the output directory already exists', () => {

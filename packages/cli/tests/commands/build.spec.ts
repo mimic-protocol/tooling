@@ -122,7 +122,7 @@ describe('build', () => {
           const invalidTaskPath = `${basePath}/tasks/invalid-task.ts`
           const command = buildCommand(withCommonFlags(manifestPath, invalidTaskPath, outputDir, typesDir))
 
-          itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
+          itThrowsACliError(command, 'AssemblyScript compilation failed', 'CompilationError', 2)
         })
 
         context('when the types output directory already exists', () => {
@@ -147,28 +147,28 @@ describe('build', () => {
           const invalidManifest = `${basePath}/manifests/invalid-manifest.yaml`
           const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
 
-          itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
+          itThrowsACliError(command, 'More than one entry', 'ManifestValidationError', 1)
         })
 
         context('when the manifest has repeated fields', () => {
           const invalidManifest = `${basePath}/manifests/invalid-manifest-repeated.yaml`
           const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
 
-          itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
+          itThrowsACliError(command, 'Duplicate Entry', 'ManifestValidationError', 1)
         })
 
         context('when the manifest is incomplete', () => {
           const invalidManifest = `${basePath}/manifests/incomplete-manifest.yaml`
           const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
 
-          itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
+          itThrowsACliError(command, 'Missing/Incorrect Fields', 'ManifestValidationError', 3)
         })
 
         context('when the manifest is empty', () => {
           const invalidManifest = `${basePath}/manifests/empty-manifest.yaml`
           const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
 
-          itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
+          itThrowsACliError(command, 'Empty Manifest', 'ManifestValidationError', 1)
         })
       })
     })
@@ -177,7 +177,7 @@ describe('build', () => {
       const inexistentManifest = `${manifestPath}-none`
       const command = buildCommand(withCommonFlags(inexistentManifest, taskPath, outputDir, typesDir))
 
-      itThrowsACliError(command, `Could not find ${inexistentManifest}`, 'FileNotFound', 1)
+      itThrowsACliError(command, `File not found: ${inexistentManifest}`, 'FileNotFound', 1)
     })
   })
 })
