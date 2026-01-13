@@ -53,26 +53,6 @@ export class TokenBalanceQuery {
       BigInt.fromString(this.balance)
     )
   }
-
-  /**
-   * Deduplicates token balances by token address.
-   * Converts TokenBalanceQuery[][] to TokenAmount[] keeping only the first occurrence of each token address.
-   * @param balances - Array of arrays of TokenBalanceQuery to deduplicate
-   * @returns Array of unique TokenAmount objects
-   */
-  static toUniqueTokenAmounts(balances: TokenBalanceQuery[][]): TokenAmount[] {
-    const resultMap: Map<string, TokenAmount> = new Map()
-    for (let i = 0; i < balances.length; i++) {
-      for (let j = 0; j < balances[i].length; j++) {
-        const tokenAmount = balances[i][j].toTokenAmount()
-        const mapKey = tokenAmount.token.address.toString()
-
-        if (resultMap.has(mapKey)) continue
-        resultMap.set(mapKey, tokenAmount)
-      }
-    }
-    return resultMap.values()
-  }
 }
 
 @json
@@ -92,11 +72,8 @@ export class RelevantTokensQueryResponse extends QueryResponseBase {
     this.data = data
   }
 
-  toBalances(): Result<TokenBalanceQuery[][], string> {
-    const errorResult = this.checkSuccess<TokenBalanceQuery[][]>('Unknown error getting relevant tokens')
-    if (errorResult !== null) return errorResult
-    return Result.ok<TokenBalanceQuery[][], string>(
-      this.data.map((response: RelevantTokensQueryResult) => response.balances)
-    )
+  toResult(): Result<TokenBalanceQuery[][], string> {
+    const balances = this.data.map<TokenBalanceQuery[]>((response: RelevantTokensQueryResult) => response.balances)
+    return this.buildResult<TokenBalanceQuery[][]>(balances, 'Unknown error getting relevant tokens')
   }
 }

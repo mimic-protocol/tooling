@@ -2,6 +2,7 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../src/context'
 import { STANDARD_DECIMALS } from '../src/helpers'
+import { TokenBalanceQuery, TokenQuery } from '../src/queries'
 import { BlockchainToken, ERC20Token, SPLToken, Token } from '../src/tokens'
 import { Address, BigInt, Bytes, ChainId, SvmFindProgramAddressParams, SvmPdaSeed } from '../src/types'
 
@@ -98,6 +99,20 @@ export function setTokenPrice(token: Token, priceUsd: i32): void {
   const priceInt = BigInt.fromI32(priceUsd)
   const priceStr = priceInt.upscale(STANDARD_DECIMALS).toString()
   _setTokenPrice(token.address.toHexString(), (token as BlockchainToken).chainId, priceStr)
+}
+
+export class TestBalance {
+  constructor(
+    public token: ERC20Token,
+    public balance: TokenBalanceQuery
+  ) {}
+}
+
+export function createTestBalance(amount: i32, chainId: ChainId = randomChainId()): TestBalance {
+  const token = randomERC20Token(chainId, STANDARD_DECIMALS)
+  const tokenQuery = TokenQuery.fromToken(token)
+  const balance = new TokenBalanceQuery(tokenQuery, zeroPadded(BigInt.fromI32(amount), STANDARD_DECIMALS))
+  return new TestBalance(token, balance)
 }
 
 export declare function setContractCall(to: string, chainId: ChainId, data: string, result: string): void

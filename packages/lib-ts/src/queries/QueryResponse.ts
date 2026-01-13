@@ -18,9 +18,15 @@ export class QueryResponseBase {
     return this.error.length > 0 ? this.error : defaultError
   }
 
-  protected checkSuccess<T>(defaultError: string): Result<T, string> | null {
+  protected getError<T>(defaultError: string): Result<T, string> | null {
     if (this.success !== 'true') return Result.err<T, string>(this.getErrorMessage(defaultError))
 
     return null
+  }
+
+  protected buildResult<T>(data: T, defaultError: string): Result<T, string> {
+    const errorResult = this.getError<T>(defaultError)
+    if (errorResult) return errorResult
+    return Result.ok<T, string>(data)
   }
 }

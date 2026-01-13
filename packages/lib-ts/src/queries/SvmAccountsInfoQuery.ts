@@ -56,9 +56,7 @@ export class SvmAccountsInfoQueryResponse extends QueryResponseBase {
   }
 
   toResult(): Result<SvmAccountsInfoQueryResult, string> {
-    const errorResult = this.checkSuccess<SvmAccountsInfoQueryResult>('Unknown error getting SVM accounts info')
-    if (errorResult !== null) return errorResult
     const result = SvmAccountsInfoQueryResult.fromSerializable(this.data)
-    return Result.ok<SvmAccountsInfoQueryResult, string>(result)
+    return this.buildResult<SvmAccountsInfoQueryResult>(result, 'Unknown error getting SVM accounts info')
   }
 }

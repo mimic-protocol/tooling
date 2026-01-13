@@ -1,6 +1,6 @@
 import { environment } from '../environment'
 import { evm } from '../evm'
-import { EVM_NATIVE_ADDRESS } from '../helpers'
+import { EVM_NATIVE_ADDRESS } from '../helpers/constants'
 import { log } from '../log'
 import { Address, ChainId, EvmDecodeParam } from '../types'
 

@@ -1,7 +1,7 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { ListType, Math } from './helpers'
+import { ListType, Consensus } from './helpers'
 import { Swap, Transfer, EvmCall, SvmCall } from './intents'
 import {
   EvmCallQuery,
@@ -85,20 +85,6 @@ export namespace environment {
   }
 
   /**
-   * Tells the prices from different sources for a token in USD at a specific timestamp.
-   * @param token - The token to get the price of
-   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns Result containing either an array of USD prices or an error string
-   */
-  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD[], string> {
-    if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
-    if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
-    
-    const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    return TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr).toPrices()
-  }
-
-  /**
    * Returns an aggregated price (by consensus function) for a token in USD at a specific timestamp.
    * By default, returns the median USD price across multiple sources.
    *
@@ -107,8 +93,12 @@ export namespace environment {
    * @param consensusFn - Optional. A function for aggregating the price values (default is median).
    * @returns A `Result` containing either the consensus USD price or an error string.
    */
-  export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Math.medianUSD): Result<USD, string> {
-    const pricesResult = rawTokenPriceQuery(token, timestamp)
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Consensus.medianUSD): Result<USD, string> {
+    if (token.isUSD()) return Result.ok<USD, string>(USD.fromI32(1))
+    if (!(token instanceof BlockchainToken)) return Result.err<USD, string>('Price query not supported for token ' + token.toString())
+    
+    const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
+    const pricesResult = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr).toResult()
     
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
@@ -119,40 +109,29 @@ export namespace environment {
   }
 
   /**
-   * Tells the relevant tokens from different sources for an address at a specific timestamp.
-   * @param address - The address to query relevant tokens for
-   * @param chainIds - Array of chain ids to search
-   * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
-   * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
-   * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
-   */
-  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<TokenBalanceQuery[][], string> {
-    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    return RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr).toBalances()
-  }
-
-  /**
    * Tells the balances of an address for the specified tokens and chains.
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Array of TokenAmount objects representing the relevant tokens
+   * @param consensusFn - Optional. A function for aggregating the token amounts
+   * @returns Result containing either an array of TokenAmount objects representing the relevant tokens or an error string
    */
   export function relevantTokensQuery(
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
-    listType: ListType = ListType.DenyList
+    listType: ListType = ListType.DenyList,
+    consensusFn: (amounts: TokenBalanceQuery[][]) => TokenAmount[] = Consensus.uniqueTokenAmounts
   ): Result<TokenAmount[], string> {
-    const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responseResult = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr).toResult()
+    
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
 
-    const balances = TokenBalanceQuery.toUniqueTokenAmounts(responseResult.unwrap())
-    return Result.ok<TokenAmount[], string>(balances)
+    return Result.ok<TokenAmount[], string>(consensusFn(responseResult.unwrap()))
   }
 
   /**

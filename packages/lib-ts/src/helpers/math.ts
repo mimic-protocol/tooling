@@ -1,4 +1,3 @@
-import { USD } from '../tokens'
 import { BigInt } from '../types'
 
 /**
@@ -18,14 +17,4 @@ export function median(values: BigInt[]): BigInt {
   const left = sorted[len / 2 - 1]
   const right = sorted[len / 2]
   return left.plus(right).div(BigInt.fromI32(2))
-}
-
-/**
- * Computes the median value from an array of USD values.
- * @param values - Array of USD values to compute the median from
- * @returns The median USD value
- * @throws Error if the array is empty
- */
-export function medianUSD(values: USD[]): USD {
-  return USD.fromBigInt(median(values.map<BigInt>((value: USD) => value.value)))
 }

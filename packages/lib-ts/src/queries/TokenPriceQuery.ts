@@ -39,10 +39,8 @@ export class TokenPriceQueryResponse extends QueryResponseBase {
     this.data = data
   }
 
-  toPrices(): Result<USD[], string> {
-    const errorResult = this.checkSuccess<USD[]>('Unknown error getting price')
-    if (errorResult !== null) return errorResult
+  toResult(): Result<USD[], string> {
     const prices = this.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
-    return Result.ok<USD[], string>(prices)
+    return this.buildResult<USD[]>(prices, 'Unknown error getting price')
   }
 }
