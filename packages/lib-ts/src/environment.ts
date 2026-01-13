@@ -1,22 +1,22 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { ListType, Consensus } from './helpers'
-import { Swap, Transfer, EvmCall, SvmCall } from './intents'
+import { Consensus, ListType } from './helpers'
+import { EvmCall, SvmCall, Swap, Transfer } from './intents'
 import {
   EvmCallQuery,
+  EvmCallQueryResponse,
   RelevantTokensQuery,
-  TokenBalanceQuery,
   RelevantTokensQueryResponse,
   SubgraphQuery,
+  SubgraphQueryResponse,
+  SubgraphQueryResult,
   SvmAccountsInfoQuery,
   SvmAccountsInfoQueryResponse,
   SvmAccountsInfoQueryResult,
-  SubgraphQueryResult,
+  TokenBalanceQuery,
   TokenPriceQuery,
-  EvmCallQueryResponse,
-  SubgraphQueryResponse,
-  TokenPriceQueryResponse, 
+  TokenPriceQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, ChainId, Result } from './types'
@@ -109,7 +109,7 @@ export namespace environment {
   }
 
   /**
-   * Tells the balances of an address for the specified tokens and chains.
+   * Returns the balances of an address for the specified tokens and chains.
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
@@ -135,7 +135,7 @@ export namespace environment {
   }
 
   /**
-   * Generates a contract call of a read function on the blockchain and returns the result.
+   * Executes a read-only contract call on the blockchain and returns the result.
    * @param to - The contract address to call
    * @param chainId - The blockchain network identifier
    * @param timestamp - The timestamp for the call context (optional)
@@ -153,7 +153,7 @@ export namespace environment {
   }
 
   /**
-   * Generates a subgraph query and returns the result.
+   * Executes a subgraph query and returns the result.
    * @param chainId - The blockchain network identifier
    * @param subgraphId - The ID of the subgraph to be called
    * @param query - The string representing the subgraph query to be executed
@@ -171,7 +171,7 @@ export namespace environment {
   }
    
   /**
-   * SVM - Gets on-chain account info
+   * Returns on-chain account info for Solana accounts.
    * @param publicKeys - Accounts to read from chain
    * @param timestamp - The timestamp for the call context (optional)
    * @returns Result containing either the account info result or an error string
@@ -185,7 +185,7 @@ export namespace environment {
   }
 
   /**
-   * Tells the current execution context containing environment information.
+   * Returns the current execution context containing environment information.
    * @returns The Context object containing: user, settler, timestamp, and config ID
    */
   export function getContext(): Context {
