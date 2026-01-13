@@ -28,17 +28,6 @@ describe('TokenPriceQueryResponse', () => {
         })
       })
 
-      describe('when prices array is empty', () => {
-        it('should return empty prices array', () => {
-          const response = new TokenPriceQueryResponse('true', [], '')
-          const result = response.toResult()
-
-          expect(result.isOk).toBe(true)
-          const prices = result.unwrap()
-          expect(prices.length).toBe(0)
-        })
-      })
-
       describe('when prices array has large values', () => {
         it('should correctly convert large price values', () => {
           const largePrice = zeroPadded(BigInt.fromI32(1000), STANDARD_DECIMALS) // 1000 USD

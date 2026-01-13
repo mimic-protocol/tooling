@@ -5,14 +5,30 @@ describe('SubgraphQueryResponse', () => {
     describe('when response is successful', () => {
       describe('when data is provided', () => {
         it('should return result with data', () => {
-          const resultData = new SubgraphQueryResult(1234567890, '{"key": "value"}')
+          const blockNumber = 1234567890
+          const queryResult = '{"key": "value"}'
+          const resultData = new SubgraphQueryResult(blockNumber, queryResult)
           const response = new SubgraphQueryResponse('true', resultData, '')
           const result = response.toResult()
 
           expect(result.isOk).toBe(true)
           const data = result.unwrap()
-          expect(data.blockNumber).toBe(1234567890)
-          expect(data.data).toBe('{"key": "value"}')
+          expect(data.blockNumber).toBe(blockNumber)
+          expect(data.data).toBe(queryResult)
+        })
+      })
+
+      describe('when data is empty', () => {
+        it('should return result with empty data', () => {
+          const blockNumber = 1234567890
+          const resultData = new SubgraphQueryResult(blockNumber, '')
+          const response = new SubgraphQueryResponse('true', resultData, '')
+          const result = response.toResult()
+
+          expect(result.isOk).toBe(true)
+          const data = result.unwrap()
+          expect(data.blockNumber).toBe(blockNumber)
+          expect(data.data).toBe('')
         })
       })
     })

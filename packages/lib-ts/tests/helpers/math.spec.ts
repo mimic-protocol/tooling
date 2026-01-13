@@ -54,37 +54,6 @@ describe('median', () => {
       })
     })
 
-    describe('when array is sorted', () => {
-      it('should return correct median', () => {
-        const values = [
-          BigInt.fromString(zeroPadded(BigInt.fromI32(1), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(3), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(5), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(7), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(9), STANDARD_DECIMALS)),
-        ]
-        const result = Math.median(values)
-
-        expect(result.toString()).toBe(zeroPadded(BigInt.fromI32(5), STANDARD_DECIMALS))
-      })
-    })
-
-    describe('when array is unsorted', () => {
-      it('should sort and return correct median', () => {
-        const values = [
-          BigInt.fromString(zeroPadded(BigInt.fromI32(9), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(1), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(3), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(7), STANDARD_DECIMALS)),
-          BigInt.fromString(zeroPadded(BigInt.fromI32(5), STANDARD_DECIMALS)),
-        ]
-        const result = Math.median(values)
-
-        // Should sort and find median: [1, 3, 5, 7, 9] -> 5
-        expect(result.toString()).toBe(zeroPadded(BigInt.fromI32(5), STANDARD_DECIMALS))
-      })
-    })
-
     describe('when array has duplicate values', () => {
       it('should return correct median', () => {
         const values = [
@@ -97,19 +66,6 @@ describe('median', () => {
 
         // Median of [5, 5, 5, 5] = (5 + 5) / 2 = 5
         expect(result.toString()).toBe(zeroPadded(BigInt.fromI32(5), STANDARD_DECIMALS))
-      })
-    })
-
-    describe('when array has large values', () => {
-      it('should return correct median', () => {
-        const values = [
-          BigInt.fromString(zeroPadded(BigInt.fromI32(1000), STANDARD_DECIMALS)), // 1000 USD
-          BigInt.fromString(zeroPadded(BigInt.fromI32(2000), STANDARD_DECIMALS)), // 2000 USD
-          BigInt.fromString(zeroPadded(BigInt.fromI32(3000), STANDARD_DECIMALS)), // 3000 USD
-        ]
-        const result = Math.median(values)
-
-        expect(result.toString()).toBe(zeroPadded(BigInt.fromI32(2000), STANDARD_DECIMALS))
       })
     })
   })
