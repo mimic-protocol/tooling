@@ -14,12 +14,8 @@ export class QueryResponseBase {
     return JSON.parse<T>(replaceJsonBooleans(json))
   }
 
-  protected getErrorMessage(defaultError: string): string {
-    return this.error.length > 0 ? this.error : defaultError
-  }
-
   protected getError<T>(defaultError: string): Result<T, string> | null {
-    if (this.success !== 'true') return Result.err<T, string>(this.getErrorMessage(defaultError))
+    if (this.success !== 'true') return Result.err<T, string>(this.error.length > 0 ? this.error : defaultError)
 
     return null
   }
