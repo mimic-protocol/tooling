@@ -1,4 +1,4 @@
-import { Address, SerializableSvmAccountInfo, SvmAccountInfo } from '../types'
+import { Address, Result, SerializableSvmAccountInfo, SvmAccountInfo } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
@@ -53,5 +53,13 @@ export class SvmAccountsInfoQueryResponse extends QueryResponseBase {
   constructor(success: string, data: SerializableSvmAccountsInfoQueryResult, error: string) {
     super(success, error)
     this.data = data
+  }
+
+  toResult(): Result<SvmAccountsInfoQueryResult, string> {
+    return this.buildResult<SerializableSvmAccountsInfoQueryResult, SvmAccountsInfoQueryResult>(
+      this.data,
+      'Unknown error getting SVM accounts info',
+      (data) => SvmAccountsInfoQueryResult.fromSerializable(data)
+    )
   }
 }

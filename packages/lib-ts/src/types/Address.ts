@@ -4,7 +4,8 @@
 // Copyright (c) 2018 Graph Protocol, Inc. and contributors.
 // Modified by Mimic Protocol, 2025.
 
-import { EVM_NATIVE_ADDRESS, isHex, USD_ADDRESS } from '../helpers'
+import { EVM_NATIVE_ADDRESS, USD_ADDRESS } from '../helpers/constants'
+import { isHex } from '../helpers/strings'
 
 import { ByteArray } from './ByteArray'
 import { Bytes } from './Bytes'

@@ -1,11 +1,11 @@
 import { ListType } from '../helpers'
 import { BlockchainToken, TokenAmount, USD } from '../tokens'
-import { Address, BigInt, ChainId } from '../types'
+import { Address, BigInt, ChainId, Result } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
 @json
-class TokenQuery {
+export class TokenQuery {
   constructor(
     public address: string,
     public chainId: i32
@@ -70,5 +70,13 @@ export class RelevantTokensQueryResponse extends QueryResponseBase {
   constructor(success: string, data: RelevantTokensQueryResult[], error: string) {
     super(success, error)
     this.data = data
+  }
+
+  toResult(): Result<TokenBalanceQuery[][], string> {
+    return this.buildResult<RelevantTokensQueryResult[], TokenBalanceQuery[][]>(
+      this.data,
+      'Unknown error getting relevant tokens',
+      (data) => data.map<TokenBalanceQuery[]>((response: RelevantTokensQueryResult) => response.balances)
+    )
   }
 }

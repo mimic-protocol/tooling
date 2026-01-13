@@ -1,4 +1,5 @@
-import { BlockchainToken } from '../tokens'
+import { BlockchainToken, USD } from '../tokens'
+import { BigInt, Result } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
@@ -36,5 +37,11 @@ export class TokenPriceQueryResponse extends QueryResponseBase {
   constructor(success: string, data: string[], error: string) {
     super(success, error)
     this.data = data
+  }
+
+  toResult(): Result<USD[], string> {
+    return this.buildResult<string[], USD[]>(this.data, 'Unknown error getting price', (data) =>
+      data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
+    )
   }
 }

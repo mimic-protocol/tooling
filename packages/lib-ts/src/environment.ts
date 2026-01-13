@@ -1,26 +1,25 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { ListType } from './helpers'
-import { Swap, Transfer, EvmCall, SvmCall } from './intents'
+import { Consensus, ListType } from './helpers'
+import { EvmCall, SvmCall, Swap, Transfer } from './intents'
 import {
   EvmCallQuery,
+  EvmCallQueryResponse,
   RelevantTokensQuery,
-  RelevantTokensQueryResult,
-  TokenBalanceQuery,
   RelevantTokensQueryResponse,
   SubgraphQuery,
+  SubgraphQueryResponse,
+  SubgraphQueryResult,
   SvmAccountsInfoQuery,
   SvmAccountsInfoQueryResponse,
   SvmAccountsInfoQueryResult,
-  SubgraphQueryResult,
+  TokenBalanceQuery,
   TokenPriceQuery,
-  EvmCallQueryResponse,
-  SubgraphQueryResponse,
-  TokenPriceQueryResponse, 
+  TokenPriceQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId, Result } from './types'
+import { Address, ChainId, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -86,105 +85,57 @@ export namespace environment {
   }
 
   /**
-   * Tells the prices from different sources for a token in USD at a specific timestamp.
-   * @param token - The token to get the price of
-   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns Result containing either an array of USD prices or an error string
+   * Returns an aggregated price (by consensus function) for a token in USD at a specific timestamp.
+   * By default, returns the median USD price across multiple sources.
+   *
+   * @param token - The token to get the USD price for.
+   * @param timestamp - Optional. The timestamp for price lookup (defaults to current time if not provided).
+   * @param consensusFn - Optional. A function for aggregating the price values (default is median).
+   * @returns A `Result` containing either the consensus USD price or an error string.
    */
-  export function rawTokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD[], string> {
-    if (token.isUSD()) return Result.ok<USD[], string>([USD.fromI32(1)])
-    if (!(token instanceof BlockchainToken)) return Result.err<USD[], string>('Price query not supported for token ' + token.toString())
+  export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Consensus.medianUSD): Result<USD, string> {
+    if (token.isUSD()) return Result.ok<USD, string>(USD.fromI32(1))
+    if (!(token instanceof BlockchainToken)) return Result.err<USD, string>('Price query not supported for token ' + token.toString())
     
     const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
-    const parsed = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<USD[], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting price')
-    
-    const prices = parsed.data.map<USD>((price) => USD.fromBigInt(BigInt.fromString(price)))
-    return Result.ok<USD[], string>(prices)
-  }
-
-  /**
-   * Tells the median price from different sources for a token in USD at a specific timestamp.
-   * @param token - The token to get the price of
-   * @param timestamp - The timestamp for price lookup (optional, defaults to current time)
-   * @returns Result containing either the median USD price or an error string
-   */
-  export function tokenPriceQuery(token: Token, timestamp: Date | null = null): Result<USD, string> {
-    const pricesResult = rawTokenPriceQuery(token, timestamp)
+    const pricesResult = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr).toResult()
     
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
     
     const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
-    const sortedPrices = prices.sort((a: USD, b: USD) => a.compare(b))
-
-    const length = sortedPrices.length
-    if (length % 2 === 1) return Result.ok<USD, string>(sortedPrices[length / 2])
-
-    const left = sortedPrices[length / 2 - 1]
-    const right = sortedPrices[length / 2]
-    const sum = left.plus(right)
-    return Result.ok<USD, string>(sum.div(BigInt.fromI32(2)))
+    return Result.ok<USD, string>(consensusFn(prices))
   }
 
   /**
-   * Tells the relevant tokens from different sources for an address at a specific timestamp.
-   * @param address - The address to query relevant tokens for
-   * @param chainIds - Array of chain ids to search
-   * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
-   * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
-   * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Result containing either an array of RelevantTokenBalance arrays or an error string
-   */
-  export function rawRelevantTokensQuery(address: Address, chainIds: ChainId[], usdMinAmount: USD, tokensList: BlockchainToken[], listType: ListType): Result<TokenBalanceQuery[][], string> {
-    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
-    const parsed = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<TokenBalanceQuery[][], string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting relevant tokens')
-    
-    const responses = parsed.data
-    return Result.ok<TokenBalanceQuery[][], string>(responses.map((response: RelevantTokensQueryResult) => response.balances))
-  }
-
-  /**
-   * Tells the balances of an address for the specified tokens and chains.
+   * Returns the balances of an address for the specified tokens and chains.
    * @param address - The address to query balances for
    * @param chainIds - Array of chain ids to search
    * @param usdMinAmount - Minimum USD value threshold for tokens (optional, defaults to zero)
    * @param tokensList - List of blockchain tokens to include/exclude (optional, defaults to empty array)
    * @param listType - Whether to include (AllowList) or exclude (DenyList) the tokens in `tokensList` (optional, defaults to DenyList)
-   * @returns Array of TokenAmount objects representing the relevant tokens
+   * @param consensusFn - Optional. A function for aggregating the token amounts
+   * @returns Result containing either an array of TokenAmount objects representing the relevant tokens or an error string
    */
   export function relevantTokensQuery(
     address: Address,
     chainIds: ChainId[],
     usdMinAmount: USD = USD.zero(),
     tokensList: BlockchainToken[] = [],
-    listType: ListType = ListType.DenyList
+    listType: ListType = ListType.DenyList,
+    consensusFn: (amounts: TokenBalanceQuery[][]) => TokenAmount[] = Consensus.uniqueTokenAmounts
   ): Result<TokenAmount[], string> {
-    const responseResult = rawRelevantTokensQuery(address, chainIds, usdMinAmount, tokensList, listType)
+    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responseResult = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr).toResult()
     
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
-    
-    const response = responseResult.unwrap()
-    const resultMap: Map<string, TokenAmount> = new Map()
-    for (let i = 0; i < response.length; i++) {
-      for (let j = 0; j < response[i].length; j++) {
-        const tokenAmount = response[i][j].toTokenAmount()
-        const mapKey = tokenAmount.token.address.toString()
-        
-        if (resultMap.has(mapKey)) continue
-        resultMap.set(mapKey, tokenAmount)
-      }
-    }
-    
-    return Result.ok<TokenAmount[], string>(resultMap.values())
+
+    return Result.ok<TokenAmount[], string>(consensusFn(responseResult.unwrap()))
   }
 
   /**
-   * Generates a contract call of a read function on the blockchain and returns the result.
+   * Executes a read-only contract call on the blockchain and returns the result.
    * @param to - The contract address to call
    * @param chainId - The blockchain network identifier
    * @param timestamp - The timestamp for the call context (optional)
@@ -198,13 +149,11 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<string, string> {
     const responseStr = _evmCallQuery(JSON.stringify(EvmCallQuery.from(to, chainId, timestamp, data)))
-    const parsed = EvmCallQueryResponse.fromJson<EvmCallQueryResponse>(responseStr)
-    if (parsed.success !== 'true') return Result.err<string, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting evm call')
-    return Result.ok<string, string>(parsed.data)
+    return EvmCallQueryResponse.fromJson<EvmCallQueryResponse>(responseStr).toResult()
   }
 
   /**
-   * Generates a subgraph query and returns the result.
+   * Executes a subgraph query and returns the result.
    * @param chainId - The blockchain network identifier
    * @param subgraphId - The ID of the subgraph to be called
    * @param query - The string representing the subgraph query to be executed
@@ -218,13 +167,11 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<SubgraphQueryResult, string> {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
-    const parsed = SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr)
-    if (parsed.success !== 'true') return Result.err<SubgraphQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting subgraph query')
-    return Result.ok<SubgraphQueryResult, string>(parsed.data)
+    return SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr).toResult()
   }
    
   /**
-   * SVM - Gets on-chain account info
+   * Returns on-chain account info for Solana accounts.
    * @param publicKeys - Accounts to read from chain
    * @param timestamp - The timestamp for the call context (optional)
    * @returns Result containing either the account info result or an error string
@@ -234,16 +181,11 @@ export namespace environment {
     timestamp: Date | null = null,
   ): Result<SvmAccountsInfoQueryResult, string> {
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
-    const parsed = SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr)
-    
-    if (parsed.success !== 'true') return Result.err<SvmAccountsInfoQueryResult, string>(parsed.error.length > 0 ? parsed.error : 'Unknown error getting SVM accounts info')
-    
-    const result = SvmAccountsInfoQueryResult.fromSerializable(parsed.data)
-    return Result.ok<SvmAccountsInfoQueryResult, string>(result)
+    return SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr).toResult()
   }
 
   /**
-   * Tells the current execution context containing environment information.
+   * Returns the current execution context containing environment information.
    * @returns The Context object containing: user, settler, timestamp, and config ID
    */
   export function getContext(): Context {
