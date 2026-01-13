@@ -73,7 +73,10 @@ export class RelevantTokensQueryResponse extends QueryResponseBase {
   }
 
   toResult(): Result<TokenBalanceQuery[][], string> {
-    const balances = this.data.map<TokenBalanceQuery[]>((response: RelevantTokensQueryResult) => response.balances)
-    return this.buildResult<TokenBalanceQuery[][]>(balances, 'Unknown error getting relevant tokens')
+    return this.buildResult<RelevantTokensQueryResult[], TokenBalanceQuery[][]>(
+      this.data,
+      'Unknown error getting relevant tokens',
+      (data) => data.map<TokenBalanceQuery[]>((response: RelevantTokensQueryResult) => response.balances)
+    )
   }
 }
