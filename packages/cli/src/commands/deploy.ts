@@ -21,7 +21,7 @@ export default class Deploy extends Authenticate {
 
   static override flags = {
     ...Authenticate.flags,
-    input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
+    input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts' }),
     output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
     'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
@@ -41,11 +41,11 @@ export default class Deploy extends Authenticate {
     task: Omit<RequiredTaskConfig, 'name'>,
     registryUrl: string,
     skipCompile: boolean,
-    inputDir: string,
+    inputDir?: string,
     profile?: string,
     apiKey?: string
   ): Promise<void> {
-    const inputPath = resolve(inputDir)
+    const inputPath = resolve(inputDir ?? task.output)
     const outputPath = resolve(task.output)
 
     const credentials = this.authenticate({ profile, 'api-key': apiKey })

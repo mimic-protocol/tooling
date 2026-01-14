@@ -93,6 +93,7 @@ export async function runTasks<T>(
   const errors: Array<{ task: string; error: Error; code?: string; suggestions?: string[] }> = []
 
   const shouldLogHeader = tasks.length > 1 || tasks[0].name !== DEFAULT_TASK_NAME
+  const isSingleTask = tasks.length === 1
 
   for (const task of tasks) {
     if (shouldLogHeader) {
@@ -101,6 +102,8 @@ export async function runTasks<T>(
     try {
       await runTask(task)
     } catch (error) {
+      if (isSingleTask) throw error
+
       const err = error as Error
       console.error(log.warnText(`Task "${task.name}" failed: ${err.message}`))
 
@@ -128,7 +131,7 @@ export async function runTasks<T>(
 
 export function handleCoreError(command: Command, error: unknown): void {
   if (error instanceof CoreError) {
-    command.error(error.message, {
+    throw new CommandError(error.message, {
       code: error.code,
       suggestions: error.suggestions,
     })
