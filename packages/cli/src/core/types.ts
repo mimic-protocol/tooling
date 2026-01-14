@@ -1,4 +1,4 @@
-export interface CommandResult {
+export type CommandResult = {
   /** Whether the operation succeeded */
   success: boolean
 }
@@ -7,7 +7,7 @@ export interface CommandResult {
 // Codegen Types
 // ============================================================================
 
-export interface CodegenOptions {
+export type CodegenOptions = {
   /** Path to the manifest.yaml file */
   manifestPath: string
   /** Output directory for generated types */
@@ -22,7 +22,7 @@ export interface CodegenOptions {
 // Compile Types
 // ============================================================================
 
-export interface CompileOptions {
+export type CompileOptions = {
   /** Path to the manifest.yaml file */
   manifestPath: string
   /** Path to the task TypeScript file */
@@ -37,28 +37,17 @@ export interface CompileOptions {
 // Build Types
 // ============================================================================
 
-export interface BuildOptions {
-  /** Path to the manifest.yaml file */
-  manifestPath: string
-  /** Path to the task TypeScript file */
-  taskPath: string
-  /** Output directory for build artifacts */
-  outputDir: string
-  /** Output directory for generated types */
-  typesDir: string
-  /** Whether to delete existing types before generating */
-  clean: boolean
-  /** Callback for confirming clean operation */
-  confirmClean?: () => Promise<boolean>
-  /** Working directory for build */
-  cwd?: string
-}
+export type BuildOptions = Omit<CodegenOptions, 'outputDir'> &
+  CompileOptions & {
+    /** Output directory for generated types (from codegen) */
+    typesDir: string
+  }
 
 // ============================================================================
 // Deploy Types
 // ============================================================================
 
-export interface DeployOptions {
+export type DeployOptions = {
   /** Directory containing compiled artifacts (task.wasm, manifest.json) */
   inputDir: string
   /** Output directory for CID.json */
@@ -69,7 +58,7 @@ export interface DeployOptions {
   registryUrl: string
 }
 
-export interface DeployResult {
+export type DeployResult = {
   /** IPFS CID of the deployed task */
   cid: string
 }
@@ -78,7 +67,7 @@ export interface DeployResult {
 // Test Types
 // ============================================================================
 
-export interface RunTestsOptions {
+export type RunTestsOptions = {
   /** Glob patterns for test files */
   testPaths: string[]
   /** Base directory for running tests */
@@ -89,7 +78,7 @@ export interface RunTestsOptions {
 // Logging Interface
 // ============================================================================
 
-export interface Logger {
+export type Logger = {
   startAction(message: string): void
   stopAction(): void
   info(message: string): void
