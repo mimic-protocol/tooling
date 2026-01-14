@@ -56,7 +56,7 @@ export default class Test extends Command {
       await buildForTest(
         {
           manifestPath: task.manifest,
-          taskPath: task.path,
+          taskPath: task.task,
           outputDir: task.output,
           typesDir: task.types,
           cwd: baseDir,

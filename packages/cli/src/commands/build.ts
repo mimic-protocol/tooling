@@ -32,7 +32,7 @@ export default class Build extends Command {
 
     const allTasks = MimicConfigHandler.loadOrDefault(this, {
       manifest,
-      path: task,
+      task: task,
       output,
       types,
     })
@@ -45,7 +45,7 @@ export default class Build extends Command {
       const result = await build(
         {
           manifestPath: task.manifest,
-          taskPath: task.path,
+          taskPath: task.task,
           outputDir: task.output,
           typesDir: task.types,
           clean,

@@ -55,7 +55,7 @@ export default class Deploy extends Authenticate {
         await build(
           {
             manifestPath: task.manifest,
-            taskPath: task.path,
+            taskPath: task.task,
             outputDir: inputPath,
             typesDir: task.types,
             clean: false,

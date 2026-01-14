@@ -4,7 +4,7 @@ export const DEFAULT_TASK_NAME = 'default'
 
 export const DEFAULT_TASK: Omit<RequiredTaskConfig, 'name'> = {
   manifest: 'manifest.yaml',
-  path: 'src/task.ts',
+  task: 'src/task.ts',
   types: './src/types',
   output: './build',
 }

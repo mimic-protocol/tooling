@@ -24,7 +24,7 @@ export default class Compile extends Command {
 
     const allTasks = MimicConfigHandler.loadOrDefault(this, {
       manifest,
-      path: taskPath,
+      task: taskPath,
       output,
       types: '',
     })
@@ -37,7 +37,7 @@ export default class Compile extends Command {
       await compile(
         {
           manifestPath: task.manifest,
-          taskPath: task.path,
+          taskPath: task.task,
           outputDir: task.output,
         },
         coreLogger

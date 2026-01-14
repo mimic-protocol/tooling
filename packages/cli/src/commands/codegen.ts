@@ -29,7 +29,7 @@ export default class Codegen extends Command {
     const allTasks = MimicConfigHandler.loadOrDefault(this, {
       manifest,
       types: output,
-      path: '',
+      task: '',
       output: '',
     })
     const tasks = filterTasks(this, allTasks, include, exclude)
