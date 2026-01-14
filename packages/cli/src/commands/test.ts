@@ -27,21 +27,15 @@ export default class Test extends Command {
     const testPaths = new Set<string>()
 
     try {
-      if (MimicConfigHandler.exists(baseDir)) {
-        const mimicConfig = MimicConfigHandler.load(this, baseDir)
-        const allTasks = MimicConfigHandler.getTasks(mimicConfig)
-        const tasks = filterTasks(this, allTasks, include, exclude)
+      const allTasks = MimicConfigHandler.loadOrDefault(this, DEFAULT_TASK, baseDir)
+      const tasks = filterTasks(this, allTasks, include, exclude)
 
-        if (!skipCompile) {
-          await runTasks(this, tasks, async (task) => {
-            await this.compileTask(task, baseDir)
-            testPaths.add(getTestPath(baseDir))
-          })
-        } else {
+      if (!skipCompile) {
+        await runTasks(this, tasks, async (task) => {
+          await this.compileTask(task, baseDir)
           testPaths.add(getTestPath(baseDir))
-        }
+        })
       } else {
-        if (!skipCompile) await this.compileTask(DEFAULT_TASK, baseDir)
         testPaths.add(getTestPath(baseDir))
       }
 
