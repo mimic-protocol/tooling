@@ -10,7 +10,7 @@ import log from '../log'
 import { MimicConfig, RequiredTaskConfig } from '../types'
 import { MimicConfigValidator } from '../validators'
 
-export const MIMIC_CONFIG_FILE = 'mimic.yaml'
+const MIMIC_CONFIG_FILE = 'mimic.yaml'
 
 export const taskFilterFlags = {
   include: Flags.string({
@@ -98,6 +98,12 @@ export default {
   },
 }
 
+function warnInvalidTaskNames(names: string[]): void {
+  if (names.length > 0) {
+    console.warn(`${log.warnText('Warning:')} The following task names were not found: ${names.join(', ')}`)
+  }
+}
+
 function filterTasks(
   command: Command,
   tasks: RequiredTaskConfig[],
@@ -111,15 +117,11 @@ function filterTasks(
     })
   }
 
-  if (!include && !exclude) return tasks
+  if (!include && !exclude) {
+    return tasks
+  }
 
   const taskNames = new Set(tasks.map((task) => task.name))
-
-  const warnInvalidTaskNames = (names: string[]): void => {
-    if (names.length > 0) {
-      console.warn(`${log.warnText('Warning:')} The following task names were not found: ${names.join(', ')}`)
-    }
-  }
 
   if (include) {
     const invalidNames = include.filter((name) => !taskNames.has(name))
@@ -150,17 +152,15 @@ function filterTasks(
 }
 
 function handleValidationError(command: Command, err: unknown): never {
-  let message: string
-  let code: string
-  let suggestions: string[]
-
   if (err instanceof ZodError) {
-    ;[message, code] = [`Invalid ${MIMIC_CONFIG_FILE} configuration`, 'ValidationError']
-    suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
-  } else {
-    ;[message, code] = [`Unknown Error: ${err}`, 'UnknownError']
-    suggestions = GENERIC_SUGGESTION
+    const message = `Invalid ${MIMIC_CONFIG_FILE} configuration`
+    const code = 'ValidationError'
+    const suggestions = err.errors.map((e) => `Fix Field "${e.path.join('.')}" -- ${e.message}`)
+    command.error(message, { code, suggestions })
   }
 
+  const message = `Unknown Error: ${err}`
+  const code = 'UnknownError'
+  const suggestions = GENERIC_SUGGESTION
   command.error(message, { code, suggestions })
 }

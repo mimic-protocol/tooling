@@ -1,4 +1,4 @@
-export const GENERIC_SUGGESTION = [
+const GENERIC_SUGGESTION = [
   'Contact the Mimic team for further assistance at our website https://www.mimic.fi or discord https://discord.mimic.fi',
 ]
 

@@ -20,6 +20,30 @@ export function pascalCase(str: string): string {
   return startCase(camelCase(str)).replace(/\s/g, '')
 }
 
+function convertToCommandError(error: unknown): Error {
+  if (error instanceof CoreError) {
+    return new CommandError(error.message, {
+      code: error.code,
+      suggestions: error.suggestions,
+    })
+  }
+  return error as Error
+}
+
+function logTaskError(taskName: string, err: Error): void {
+  console.error(log.warnText(`Task "${taskName}" failed: ${err.message}`))
+
+  if (err instanceof CommandError) {
+    if (err.code) {
+      console.error(`  Code: ${err.code}`)
+    }
+    if (err.suggestions?.length) {
+      console.error(`  Suggestions:`)
+      err.suggestions.forEach((suggestion) => console.error(`    - ${suggestion}`))
+    }
+  }
+}
+
 export async function runTasks<T>(
   command: Command,
   configs: RequiredTaskConfig[],
@@ -37,24 +61,13 @@ export async function runTasks<T>(
     try {
       await runTask(config)
     } catch (error) {
-      const err =
-        error instanceof CoreError
-          ? new CommandError(error.message, {
-              code: error.code,
-              suggestions: error.suggestions,
-            })
-          : (error as Error)
+      const err = convertToCommandError(error)
 
       if (isSingleTask) throw err
 
-      console.error(log.warnText(`Task "${config.name}" failed: ${err.message}`))
+      logTaskError(config.name, err)
 
       if (err instanceof CommandError) {
-        if (err.code) console.error(`  Code: ${err.code}`)
-        if (err.suggestions?.length) {
-          console.error(`  Suggestions:`)
-          err.suggestions.forEach((s) => console.error(`    - ${s}`))
-        }
         errors.push({ task: config.name, error: err, code: err.code, suggestions: err.suggestions })
       } else {
         errors.push({ task: config.name, error: err })
@@ -72,7 +85,7 @@ export async function runTasks<T>(
 }
 
 export function createConfirmClean(directory: string, logger: Logger): () => Promise<boolean> {
-  return async () => {
+  return async function confirmClean(): Promise<boolean> {
     const shouldDelete = await confirm({
       message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(
         directory

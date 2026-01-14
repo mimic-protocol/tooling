@@ -47,7 +47,7 @@ function validateManifest(manifest: any): Manifest {
   return ManifestValidator.parse(mergedManifest)
 }
 
-function mergeIfUnique(list: Record<string, unknown>[]) {
+function mergeIfUnique(list: Record<string, unknown>[]): Record<string, unknown> {
   const merged: Record<string, unknown> = {}
   for (const obj of list || []) {
     const entries = Object.entries(obj)
@@ -60,17 +60,19 @@ function mergeIfUnique(list: Record<string, unknown>[]) {
 }
 
 function getLibVersion(): string {
-  try {
-    let currentDir = process.cwd()
-    while (currentDir !== path.dirname(currentDir)) {
-      const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-      if (fs.existsSync(libPackagePath)) return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
-      currentDir = path.dirname(currentDir)
+  let currentDir = process.cwd()
+  while (currentDir !== path.dirname(currentDir)) {
+    const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
+    if (fs.existsSync(libPackagePath)) {
+      try {
+        return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
+      } catch (error) {
+        throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+      }
     }
-    throw new Error('Could not find @mimicprotocol/lib-ts package')
-  } catch (error) {
-    throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+    currentDir = path.dirname(currentDir)
   }
+  throw new Error('Could not find @mimicprotocol/lib-ts package')
 }
 
 function convertManifestError(err: unknown): ManifestValidationError {
@@ -94,9 +96,7 @@ function convertManifestError(err: unknown): ManifestValidationError {
   return new ManifestValidationError(`Unknown Error: ${err}`)
 }
 
-function generateAbisCode(manifest: Manifest, outputDir: string, manifestDir: string): string[] {
-  const generatedFiles: string[] = []
-
+function generateAbisCode(manifest: Manifest, outputDir: string, manifestDir: string): void {
   for (const [contractName, abiRelativePath] of Object.entries(manifest.abis)) {
     const abiPath = path.join(manifestDir, '../', abiRelativePath)
     if (!fs.existsSync(abiPath)) {
@@ -111,24 +111,17 @@ function generateAbisCode(manifest: Manifest, outputDir: string, manifestDir: st
     if (abiInterface.length > 0) {
       const outputPath = `${outputDir}/${contractName}.ts`
       fs.writeFileSync(outputPath, abiInterface)
-      generatedFiles.push(outputPath)
     }
   }
-
-  return generatedFiles
 }
 
-function generateInputsCode(manifest: Manifest, outputDir: string): string[] {
-  const generatedFiles: string[] = []
+function generateInputsCode(manifest: Manifest, outputDir: string): void {
   const inputsInterface = InputsInterfaceGenerator.generate(manifest.inputs)
 
   if (inputsInterface.length > 0) {
     const outputPath = `${outputDir}/index.ts`
     fs.writeFileSync(outputPath, inputsInterface)
-    generatedFiles.push(outputPath)
   }
-
-  return generatedFiles
 }
 
 export async function codegen(options: CodegenOptions, logger: Logger = defaultLogger): Promise<CommandResult> {

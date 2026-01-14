@@ -50,7 +50,10 @@ async function uploadToRegistry(files: string[], apiKey: string, registryUrl: st
 }
 
 function handleUploadError(err: unknown): never {
-  if (!(err instanceof AxiosError)) throw new DeployError(err instanceof Error ? err.message : String(err))
+  if (!(err instanceof AxiosError)) {
+    const message = err instanceof Error ? err.message : String(err)
+    throw new DeployError(message)
+  }
 
   const statusCode = err.response?.status
 
@@ -72,10 +75,12 @@ function handleUploadError(err: unknown): never {
         statusCode,
         suggestions: ['Review your API key'],
       })
-    default:
-      throw new DeployError(`Upload failed: ${err.message}`, {
+    default: {
+      const message = err.message ? `Upload failed: ${err.message}` : 'Upload failed'
+      throw new DeployError(message, {
         statusCode,
       })
+    }
   }
 }
 
