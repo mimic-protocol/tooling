@@ -1,10 +1,12 @@
+import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 import { Interface } from 'ethers'
 import camelCase from 'lodash/camelCase'
 import startCase from 'lodash/startCase'
 
-import { TaskConfig } from './core/types'
+import { Logger } from './core/types'
 import { MIMIC_CONFIG_FILE } from './lib/MimicConfigHandler'
+import { DEFAULT_TASK_NAME } from './constants'
 import { CoreError } from './core'
 import { CommandError } from './errors'
 import log from './log'
@@ -90,8 +92,12 @@ export async function runTasks<T>(
 ): Promise<void> {
   const errors: Array<{ task: string; error: Error; code?: string; suggestions?: string[] }> = []
 
+  const shouldLogHeader = tasks.length > 1 || tasks[0].name !== DEFAULT_TASK_NAME
+
   for (const task of tasks) {
-    console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+    if (shouldLogHeader) {
+      console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+    }
     try {
       await runTask(task)
     } catch (error) {
@@ -130,12 +136,18 @@ export function handleCoreError(command: Command, error: unknown): void {
   throw error
 }
 
-export function toTaskConfig(task: RequiredTaskConfig | Omit<RequiredTaskConfig, 'name'>): TaskConfig {
-  return {
-    name: 'name' in task ? task.name : 'default',
-    manifestPath: task.manifest,
-    taskPath: task.path,
-    outputDir: task.output,
-    typesDir: task.types,
+export function createConfirmClean(directory: string, logger: Logger): () => Promise<boolean> {
+  return async () => {
+    const shouldDelete = await confirm({
+      message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(
+        directory
+      )}. This action is ${log.warnText('irreversible')}`,
+      default: false,
+    })
+    if (!shouldDelete) {
+      logger.info('You can remove the --clean flag from your command')
+      logger.info('Stopping initialization...')
+    }
+    return shouldDelete
   }
 }

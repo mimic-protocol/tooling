@@ -3,7 +3,7 @@ import * as path from 'path'
 
 import { DEFAULT_TASK } from '../constants'
 import { buildForTest, getTestPath, runTests, TestError } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
@@ -45,20 +45,15 @@ export default class Test extends Command {
         testPaths.add(getTestPath(baseDir))
       }
 
-      if (testPaths.size > 0) {
-        runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
-      }
+      if (testPaths.size > 0) runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
     } catch (error) {
-      if (error instanceof TestError) {
-        this.exit(error.exitCode)
-      }
+      if (error instanceof TestError) this.exit(error.exitCode)
+
       handleCoreError(this, error)
     }
   }
 
   private async compileTask(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): Promise<void> {
-    const taskConfig = toTaskConfig(task)
-
     // Change to baseDir for compilation
     const originalCwd = process.cwd()
     try {
@@ -66,11 +61,10 @@ export default class Test extends Command {
 
       await buildForTest(
         {
-          manifestPath: taskConfig.manifestPath,
-          taskPath: taskConfig.taskPath,
-          outputDir: taskConfig.outputDir,
-          typesDir: taskConfig.typesDir,
-          clean: false,
+          manifestPath: task.manifest,
+          taskPath: task.path,
+          outputDir: task.output,
+          typesDir: task.types,
           cwd: baseDir,
         },
         coreLogger

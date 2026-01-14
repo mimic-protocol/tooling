@@ -1,7 +1,7 @@
 import { Command, Flags } from '@oclif/core'
 
 import { compile } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
@@ -22,25 +22,23 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskPath, output, manifest, include, exclude } = flags
 
-    if (MimicConfigHandler.exists()) {
-      const mimicConfig = MimicConfigHandler.load(this)
-      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
-      const tasks = filterTasks(this, allTasks, include, exclude)
-      await runTasks(this, tasks, (task) => this.runForTask(task))
-    } else {
-      await this.runForTask({ manifest, path: taskPath, output, types: '' })
-    }
+    const allTasks = MimicConfigHandler.loadOrDefault(this, {
+      manifest,
+      path: taskPath,
+      output,
+      types: '',
+    })
+    const tasks = filterTasks(this, allTasks, include, exclude)
+    await runTasks(this, tasks, (task) => this.runForTask(task))
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name'>): Promise<void> {
-    const taskConfig = toTaskConfig(task)
-
     try {
       await compile(
         {
-          manifestPath: taskConfig.manifestPath,
-          taskPath: taskConfig.taskPath,
-          outputDir: taskConfig.outputDir,
+          manifestPath: task.manifest,
+          taskPath: task.path,
+          outputDir: task.output,
         },
         coreLogger
       )

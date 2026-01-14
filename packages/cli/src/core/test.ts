@@ -12,7 +12,7 @@ export function getTestPath(baseDir: string): string {
 }
 
 export async function buildForTest(
-  options: Omit<BuildOptions, 'confirmClean'>,
+  options: Omit<BuildOptions, 'confirmClean' | 'clean'>,
   logger: Logger = defaultLogger
 ): Promise<void> {
   await build(

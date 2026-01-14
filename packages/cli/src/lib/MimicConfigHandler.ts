@@ -4,6 +4,7 @@ import { load } from 'js-yaml'
 import * as path from 'path'
 import { ZodError } from 'zod'
 
+import { DEFAULT_TASK_NAME } from '../constants'
 import { GENERIC_SUGGESTION } from '../errors'
 import { MimicConfig, RequiredTaskConfig } from '../types'
 import { MimicConfigValidator } from '../validators'
@@ -49,6 +50,24 @@ export default {
       output: task.output ?? `build/${task.name}`,
       types: task.types ?? path.join(path.dirname(task.path), 'types'),
     }))
+  },
+
+  loadOrDefault(
+    command: Command,
+    defaultTask: Omit<RequiredTaskConfig, 'name'>,
+    baseDir: string = process.cwd()
+  ): RequiredTaskConfig[] {
+    if (this.exists(baseDir)) {
+      const mimicConfig = this.load(command, baseDir)
+      return this.getTasks(mimicConfig)
+    }
+
+    return [
+      {
+        ...defaultTask,
+        name: DEFAULT_TASK_NAME,
+      },
+    ]
   },
 }
 

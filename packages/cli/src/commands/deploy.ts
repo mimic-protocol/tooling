@@ -3,7 +3,7 @@ import { resolve } from 'path'
 
 import { DEFAULT_TASK } from '../constants'
 import { build, deploy, MIMIC_REGISTRY_DEFAULT } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
+import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import log, { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
@@ -32,14 +32,9 @@ export default class Deploy extends Authenticate {
     const { flags } = await this.parse(Deploy)
     const { profile, 'api-key': apiKey, input, output, 'skip-compile': skipCompile, url, include, exclude } = flags
 
-    if (MimicConfigHandler.exists()) {
-      const mimicConfig = MimicConfigHandler.load(this)
-      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
-      const tasks = filterTasks(this, allTasks, include, exclude)
-      await runTasks(this, tasks, (task) => this.runForTask(task, url, skipCompile, task.output, profile, apiKey))
-    } else {
-      await this.runForTask({ ...DEFAULT_TASK, output }, url, skipCompile, input, profile, apiKey)
-    }
+    const allTasks = MimicConfigHandler.loadOrDefault(this, { ...DEFAULT_TASK, output })
+    const tasks = filterTasks(this, allTasks, include, exclude)
+    await runTasks(this, tasks, (task) => this.runForTask(task, url, skipCompile, input, profile, apiKey))
   }
 
   private async runForTask(
@@ -52,7 +47,6 @@ export default class Deploy extends Authenticate {
   ): Promise<void> {
     const inputPath = resolve(inputDir)
     const outputPath = resolve(task.output)
-    const taskConfig = toTaskConfig(task)
 
     const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
@@ -60,10 +54,10 @@ export default class Deploy extends Authenticate {
       if (!skipCompile) {
         await build(
           {
-            manifestPath: taskConfig.manifestPath,
-            taskPath: taskConfig.taskPath,
+            manifestPath: task.manifest,
+            taskPath: task.path,
             outputDir: inputPath,
-            typesDir: taskConfig.typesDir,
+            typesDir: task.types,
             clean: false,
           },
           coreLogger

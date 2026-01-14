@@ -1,10 +1,9 @@
-import { confirm } from '@inquirer/prompts'
 import { Command, Flags } from '@oclif/core'
 
 import { build } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags, toTaskConfig } from '../helpers'
+import { createConfirmClean, filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
-import log, { coreLogger } from '../log'
+import { coreLogger } from '../log'
 import { RequiredTaskConfig } from '../types'
 
 export default class Build extends Command {
@@ -31,38 +30,26 @@ export default class Build extends Command {
     const { flags } = await this.parse(Build)
     const { manifest, task, output, types, clean, include, exclude } = flags
 
-    if (MimicConfigHandler.exists()) {
-      const mimicConfig = MimicConfigHandler.load(this)
-      const allTasks = MimicConfigHandler.getTasks(mimicConfig)
-      const tasks = filterTasks(this, allTasks, include, exclude)
-      await runTasks(this, tasks, (taskConfig) => this.runForTask(taskConfig, clean))
-    } else {
-      await this.runForTask({ manifest, path: task, output, types }, clean)
-    }
+    const allTasks = MimicConfigHandler.loadOrDefault(this, {
+      manifest,
+      path: task,
+      output,
+      types,
+    })
+    const tasks = filterTasks(this, allTasks, include, exclude)
+    await runTasks(this, tasks, (taskConfig) => this.runForTask(taskConfig, clean))
   }
 
   private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
-    const taskConfig = toTaskConfig(task)
-
     try {
       const result = await build(
         {
-          manifestPath: taskConfig.manifestPath,
-          taskPath: taskConfig.taskPath,
-          outputDir: taskConfig.outputDir,
-          typesDir: taskConfig.typesDir,
+          manifestPath: task.manifest,
+          taskPath: task.path,
+          outputDir: task.output,
+          typesDir: task.types,
           clean,
-          confirmClean: async () => {
-            const shouldDelete = await confirm({
-              message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(taskConfig.typesDir)}. This action is ${log.warnText('irreversible')}`,
-              default: false,
-            })
-            if (!shouldDelete) {
-              coreLogger.info('You can remove the --clean flag from your command')
-              coreLogger.info('Stopping initialization...')
-            }
-            return shouldDelete
-          },
+          confirmClean: createConfirmClean(task.types, coreLogger),
         },
         coreLogger
       )
