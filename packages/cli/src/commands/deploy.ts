@@ -3,10 +3,9 @@ import { resolve } from 'path'
 
 import { DEFAULT_TASK } from '../constants'
 import { build, deploy, MIMIC_REGISTRY_DEFAULT } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import log, { coreLogger } from '../log'
-import { RequiredTaskConfig } from '../types'
 
 import Authenticate from './authenticate'
 
@@ -34,23 +33,12 @@ export default class Deploy extends Authenticate {
 
     const allTasks = MimicConfigHandler.loadOrDefault(this, { ...DEFAULT_TASK, output })
     const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, (task) => this.runForTask(task, url, skipCompile, input, profile, apiKey))
-  }
+    await runTasks(this, tasks, async (task) => {
+      const inputPath = resolve(input ?? task.output)
+      const outputPath = resolve(task.output)
 
-  private async runForTask(
-    task: Omit<RequiredTaskConfig, 'name'>,
-    registryUrl: string,
-    skipCompile: boolean,
-    inputDir?: string,
-    profile?: string,
-    apiKey?: string
-  ): Promise<void> {
-    const inputPath = resolve(inputDir ?? task.output)
-    const outputPath = resolve(task.output)
+      const credentials = this.authenticate({ profile, 'api-key': apiKey })
 
-    const credentials = this.authenticate({ profile, 'api-key': apiKey })
-
-    try {
       if (!skipCompile) {
         await build(
           {
@@ -69,7 +57,7 @@ export default class Deploy extends Authenticate {
           inputDir: inputPath,
           outputDir: outputPath,
           apiKey: credentials.apiKey,
-          registryUrl,
+          registryUrl: url,
         },
         coreLogger
       )
@@ -77,8 +65,6 @@ export default class Deploy extends Authenticate {
       coreLogger.info(`IPFS CID: ${log.highlightText(result.cid)}`)
       coreLogger.info(`CID saved at ${log.highlightText(outputPath)}`)
       coreLogger.info(`Task deployed!`)
-    } catch (error) {
-      handleCoreError(error)
-    }
+    })
   }
 }

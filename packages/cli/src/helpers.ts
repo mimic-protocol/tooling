@@ -102,9 +102,16 @@ export async function runTasks<T>(
     try {
       await runTask(task)
     } catch (error) {
-      if (isSingleTask) throw error
+      const err =
+        error instanceof CoreError
+          ? new CommandError(error.message, {
+              code: error.code,
+              suggestions: error.suggestions,
+            })
+          : (error as Error)
 
-      const err = error as Error
+      if (isSingleTask) throw err
+
       console.error(log.warnText(`Task "${task.name}" failed: ${err.message}`))
 
       if (err instanceof CommandError) {

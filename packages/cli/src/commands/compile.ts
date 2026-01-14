@@ -1,10 +1,9 @@
 import { Command, Flags } from '@oclif/core'
 
 import { compile } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
-import { RequiredTaskConfig } from '../types'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -29,11 +28,7 @@ export default class Compile extends Command {
       types: '',
     })
     const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, (task) => this.runForTask(task))
-  }
-
-  private async runForTask(task: Omit<RequiredTaskConfig, 'name'>): Promise<void> {
-    try {
+    await runTasks(this, tasks, async (task) => {
       await compile(
         {
           manifestPath: task.manifest,
@@ -44,8 +39,6 @@ export default class Compile extends Command {
       )
 
       coreLogger.info(`Build complete! Artifacts in ${task.output}/`)
-    } catch (error) {
-      handleCoreError(error)
-    }
+    })
   }
 }

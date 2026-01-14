@@ -66,15 +66,6 @@ export class CompilationError extends CoreError {
   }
 }
 
-export class BuildError extends CoreError {
-  constructor(message: string, suggestions?: string[]) {
-    super(message, {
-      code: 'BuildError',
-      suggestions: suggestions ?? ['Check the task source code and manifest'],
-    })
-  }
-}
-
 export class DeployError extends CoreError {
   public statusCode?: number
 
@@ -84,26 +75,5 @@ export class DeployError extends CoreError {
       suggestions: options?.suggestions ?? ['Check your API key and network connection'],
     })
     this.statusCode = options?.statusCode
-  }
-}
-
-export class AuthenticationError extends CoreError {
-  constructor(message: string, suggestions?: string[]) {
-    super(message, {
-      code: 'AuthenticationError',
-      suggestions: suggestions ?? ['Check your API key or login credentials'],
-    })
-  }
-}
-
-export class TestError extends CoreError {
-  public exitCode: number
-
-  constructor(message: string, exitCode: number, suggestions?: string[]) {
-    super(message, {
-      code: 'TestError',
-      suggestions: suggestions ?? ['Check the test output for details'],
-    })
-    this.exitCode = exitCode
   }
 }

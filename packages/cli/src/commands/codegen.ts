@@ -1,10 +1,9 @@
 import { Command, Flags } from '@oclif/core'
 
 import { codegen } from '../core'
-import { createConfirmClean, filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
+import { createConfirmClean, filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
-import { RequiredTaskConfig } from '../types'
 
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'
@@ -33,11 +32,7 @@ export default class Codegen extends Command {
       output: '',
     })
     const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, (task) => this.runForTask(task, clean))
-  }
-
-  private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
-    try {
+    await runTasks(this, tasks, async (task) => {
       const result = await codegen(
         {
           manifestPath: task.manifest,
@@ -49,8 +44,6 @@ export default class Codegen extends Command {
       )
 
       if (clean && !result.success) this.exit(0)
-    } catch (error) {
-      handleCoreError(error)
-    }
+    })
   }
 }

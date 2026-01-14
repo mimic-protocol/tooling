@@ -1,10 +1,9 @@
 import { Command, Flags } from '@oclif/core'
 
 import { build } from '../core'
-import { createConfirmClean, filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
+import { createConfirmClean, filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
-import { RequiredTaskConfig } from '../types'
 
 export default class Build extends Command {
   static override description = 'Runs code generation and then compiles the task'
@@ -37,28 +36,22 @@ export default class Build extends Command {
       types,
     })
     const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, (taskConfig) => this.runForTask(taskConfig, clean))
-  }
-
-  private async runForTask(task: Omit<RequiredTaskConfig, 'name'>, clean: boolean): Promise<void> {
-    try {
+    await runTasks(this, tasks, async (taskConfig) => {
       const result = await build(
         {
-          manifestPath: task.manifest,
-          taskPath: task.task,
-          outputDir: task.output,
-          typesDir: task.types,
+          manifestPath: taskConfig.manifest,
+          taskPath: taskConfig.task,
+          outputDir: taskConfig.output,
+          typesDir: taskConfig.types,
           clean,
-          confirmClean: createConfirmClean(task.types, coreLogger),
+          confirmClean: createConfirmClean(taskConfig.types, coreLogger),
         },
         coreLogger
       )
 
       if (clean && !result.success) this.exit(0)
 
-      coreLogger.info(`Build complete! Artifacts in ${task.output}/`)
-    } catch (error) {
-      handleCoreError(error)
-    }
+      coreLogger.info(`Build complete! Artifacts in ${taskConfig.output}/`)
+    })
   }
 }

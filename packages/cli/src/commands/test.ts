@@ -2,11 +2,10 @@ import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
 import { DEFAULT_TASK } from '../constants'
-import { buildForTest, getTestPath, runTests, TestError } from '../core'
-import { filterTasks, handleCoreError, runTasks, taskFilterFlags } from '../helpers'
+import { buildForTest, getTestPath, runTests } from '../core'
+import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
 import MimicConfigHandler from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
-import { RequiredTaskConfig } from '../types'
 
 export default class Test extends Command {
   static override description = 'Runs task tests'
@@ -26,45 +25,33 @@ export default class Test extends Command {
 
     const testPaths = new Set<string>()
 
-    try {
-      const allTasks = MimicConfigHandler.loadOrDefault(this, DEFAULT_TASK, baseDir)
-      const tasks = filterTasks(this, allTasks, include, exclude)
+    const allTasks = MimicConfigHandler.loadOrDefault(this, DEFAULT_TASK, baseDir)
+    const tasks = filterTasks(this, allTasks, include, exclude)
 
-      if (!skipCompile) {
-        await runTasks(this, tasks, async (task) => {
-          await this.compileTask(task, baseDir)
-          testPaths.add(getTestPath(baseDir))
-        })
-      } else {
+    if (!skipCompile) {
+      await runTasks(this, tasks, async (task) => {
+        const originalCwd = process.cwd()
+        try {
+          process.chdir(baseDir)
+          await buildForTest(
+            {
+              manifestPath: task.manifest,
+              taskPath: task.task,
+              outputDir: task.output,
+              typesDir: task.types,
+              cwd: baseDir,
+            },
+            coreLogger
+          )
+        } finally {
+          process.chdir(originalCwd)
+        }
         testPaths.add(getTestPath(baseDir))
-      }
-
-      if (testPaths.size > 0) runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
-    } catch (error) {
-      if (error instanceof TestError) this.exit(error.exitCode)
-
-      handleCoreError(error)
+      })
+    } else {
+      testPaths.add(getTestPath(baseDir))
     }
-  }
 
-  private async compileTask(task: Omit<RequiredTaskConfig, 'name'>, baseDir: string): Promise<void> {
-    // Change to baseDir for compilation
-    const originalCwd = process.cwd()
-    try {
-      process.chdir(baseDir)
-
-      await buildForTest(
-        {
-          manifestPath: task.manifest,
-          taskPath: task.task,
-          outputDir: task.output,
-          typesDir: task.types,
-          cwd: baseDir,
-        },
-        coreLogger
-      )
-    } finally {
-      process.chdir(originalCwd)
-    }
+    if (testPaths.size > 0) runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
   }
 }

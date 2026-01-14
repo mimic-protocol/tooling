@@ -4,7 +4,6 @@ import { execBinCommand } from '../lib/packageManager'
 import { defaultLogger } from '../log'
 
 import { build } from './build'
-import { TestError } from './errors'
 import { BuildOptions, Logger, RunTestsOptions } from './types'
 
 export function getTestPath(baseDir: string): string {
@@ -36,5 +35,5 @@ export function runTests(options: RunTestsOptions, logger: Logger = defaultLogge
 
   logger.stopAction()
 
-  if (!success) throw new TestError('Tests failed', exitCode, ['Check the test output for details'])
+  if (!success) process.exit(exitCode)
 }
