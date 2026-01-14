@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core'
 
 import { compile } from '../core'
-import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import { runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 
 export default class Compile extends Command {
@@ -21,24 +21,27 @@ export default class Compile extends Command {
     const { flags } = await this.parse(Compile)
     const { task: taskPath, output, manifest, include, exclude } = flags
 
-    const allTasks = MimicConfigHandler.loadOrDefault(this, {
-      manifest,
-      task: taskPath,
-      output,
-      types: '',
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: {
+        manifest,
+        task: taskPath,
+        output,
+        types: '',
+      },
+      include,
+      exclude,
     })
-    const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, async (task) => {
+    await runTasks(this, tasks, async (config) => {
       await compile(
         {
-          manifestPath: task.manifest,
-          taskPath: task.task,
-          outputDir: task.output,
+          manifestPath: config.manifest,
+          taskPath: config.task,
+          outputDir: config.output,
         },
         coreLogger
       )
 
-      coreLogger.info(`Build complete! Artifacts in ${task.output}/`)
+      coreLogger.info(`Build complete! Artifacts in ${config.output}/`)
     })
   }
 }

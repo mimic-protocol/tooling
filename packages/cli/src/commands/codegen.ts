@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core'
 
 import { codegen } from '../core'
-import { createConfirmClean, filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import { createConfirmClean, runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 
 export default class Codegen extends Command {
@@ -25,20 +25,23 @@ export default class Codegen extends Command {
     const { flags } = await this.parse(Codegen)
     const { manifest, output, clean, include, exclude } = flags
 
-    const allTasks = MimicConfigHandler.loadOrDefault(this, {
-      manifest,
-      types: output,
-      task: '',
-      output: '',
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: {
+        manifest,
+        types: output,
+        task: '',
+        output: '',
+      },
+      include,
+      exclude,
     })
-    const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, async (task) => {
+    await runTasks(this, tasks, async (config) => {
       const result = await codegen(
         {
-          manifestPath: task.manifest,
-          outputDir: task.types,
+          manifestPath: config.manifest,
+          outputDir: config.types,
           clean,
-          confirmClean: createConfirmClean(task.types, coreLogger),
+          confirmClean: createConfirmClean(config.types, coreLogger),
         },
         coreLogger
       )

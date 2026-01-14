@@ -1,11 +1,10 @@
 import { confirm } from '@inquirer/prompts'
-import { Command, Flags } from '@oclif/core'
+import { Command } from '@oclif/core'
 import { Interface } from 'ethers'
 import camelCase from 'lodash/camelCase'
 import startCase from 'lodash/startCase'
 
 import { Logger } from './core/types'
-import { MIMIC_CONFIG_FILE } from './lib/MimicConfigHandler'
 import { DEFAULT_TASK_NAME } from './constants'
 import { CoreError } from './core'
 import { CommandError } from './errors'
@@ -21,86 +20,22 @@ export function pascalCase(str: string): string {
   return startCase(camelCase(str)).replace(/\s/g, '')
 }
 
-export const taskFilterFlags = {
-  include: Flags.string({
-    description: `When ${MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
-    multiple: true,
-    exclusive: ['exclude'],
-  }),
-  exclude: Flags.string({
-    description: `When ${MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
-    multiple: true,
-    exclusive: ['include'],
-  }),
-}
-
-export function filterTasks(
-  command: Command,
-  tasks: RequiredTaskConfig[],
-  include?: string[],
-  exclude?: string[]
-): RequiredTaskConfig[] {
-  if (include && exclude) {
-    command.error('Cannot use both --include and --exclude flags simultaneously', {
-      code: 'ConflictingFlags',
-      suggestions: ['Use either --include or --exclude, but not both'],
-    })
-  }
-
-  if (!include && !exclude) return tasks
-
-  const taskNames = new Set(tasks.map((task) => task.name))
-
-  const warnInvalidTaskNames = (names: string[]): void => {
-    if (names.length > 0) {
-      console.warn(`${log.warnText('Warning:')} The following task names were not found: ${names.join(', ')}`)
-    }
-  }
-
-  if (include) {
-    const invalidNames = include.filter((name) => !taskNames.has(name))
-    warnInvalidTaskNames(invalidNames)
-
-    const validNames = new Set(include.filter((name) => taskNames.has(name)))
-    if (validNames.size === 0) {
-      console.warn(`${log.warnText('Warning:')} No valid tasks to include. All tasks will be skipped.`)
-      return []
-    }
-
-    return tasks.filter((task) => validNames.has(task.name))
-  }
-
-  if (exclude) {
-    const invalidNames = exclude.filter((name) => !taskNames.has(name))
-    warnInvalidTaskNames(invalidNames)
-
-    const excludeSet = new Set(exclude)
-    const filteredTasks = tasks.filter((task) => !excludeSet.has(task.name))
-    if (filteredTasks.length === 0) {
-      console.warn(`${log.warnText('Warning:')} All tasks are excluded.`)
-    }
-    return filteredTasks
-  }
-
-  return tasks
-}
-
 export async function runTasks<T>(
   command: Command,
-  tasks: RequiredTaskConfig[],
-  runTask: (task: RequiredTaskConfig) => Promise<T>
+  configs: RequiredTaskConfig[],
+  runTask: (config: RequiredTaskConfig) => Promise<T>
 ): Promise<void> {
   const errors: Array<{ task: string; error: Error; code?: string; suggestions?: string[] }> = []
 
-  const shouldLogHeader = tasks.length > 1 || tasks[0].name !== DEFAULT_TASK_NAME
-  const isSingleTask = tasks.length === 1
+  const shouldLogHeader = configs.length > 1 || configs[0].name !== DEFAULT_TASK_NAME
+  const isSingleTask = configs.length === 1
 
-  for (const task of tasks) {
+  for (const config of configs) {
     if (shouldLogHeader) {
-      console.log(`\n${log.highlightText(`[${task.name}]`)}`)
+      console.log(`\n${log.highlightText(`[${config.name}]`)}`)
     }
     try {
-      await runTask(task)
+      await runTask(config)
     } catch (error) {
       const err =
         error instanceof CoreError
@@ -112,7 +47,7 @@ export async function runTasks<T>(
 
       if (isSingleTask) throw err
 
-      console.error(log.warnText(`Task "${task.name}" failed: ${err.message}`))
+      console.error(log.warnText(`Task "${config.name}" failed: ${err.message}`))
 
       if (err instanceof CommandError) {
         if (err.code) console.error(`  Code: ${err.code}`)
@@ -120,30 +55,20 @@ export async function runTasks<T>(
           console.error(`  Suggestions:`)
           err.suggestions.forEach((s) => console.error(`    - ${s}`))
         }
-        errors.push({ task: task.name, error: err, code: err.code, suggestions: err.suggestions })
+        errors.push({ task: config.name, error: err, code: err.code, suggestions: err.suggestions })
       } else {
-        errors.push({ task: task.name, error: err })
+        errors.push({ task: config.name, error: err })
       }
     }
   }
 
   if (errors.length > 0) {
-    console.log(`\n${log.warnText('Summary:')} ${errors.length}/${tasks.length} task(s) failed`)
+    console.log(`\n${log.warnText('Summary:')} ${errors.length}/${configs.length} task(s) failed`)
     errors.forEach(({ task, code }) => {
       console.log(code ? `  - ${task} (${code})` : `  - ${task}`)
     })
     command.exit(1)
   }
-}
-
-export function handleCoreError(error: unknown): void {
-  if (error instanceof CoreError) {
-    throw new CommandError(error.message, {
-      code: error.code,
-      suggestions: error.suggestions,
-    })
-  }
-  throw error
 }
 
 export function createConfirmClean(directory: string, logger: Logger): () => Promise<boolean> {

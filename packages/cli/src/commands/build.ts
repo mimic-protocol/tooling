@@ -1,8 +1,8 @@
 import { Command, Flags } from '@oclif/core'
 
 import { build } from '../core'
-import { createConfirmClean, filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import { createConfirmClean, runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 
 export default class Build extends Command {
@@ -29,29 +29,32 @@ export default class Build extends Command {
     const { flags } = await this.parse(Build)
     const { manifest, task, output, types, clean, include, exclude } = flags
 
-    const allTasks = MimicConfigHandler.loadOrDefault(this, {
-      manifest,
-      task: task,
-      output,
-      types,
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: {
+        manifest,
+        task: task,
+        output,
+        types,
+      },
+      include,
+      exclude,
     })
-    const tasks = filterTasks(this, allTasks, include, exclude)
-    await runTasks(this, tasks, async (taskConfig) => {
+    await runTasks(this, tasks, async (config) => {
       const result = await build(
         {
-          manifestPath: taskConfig.manifest,
-          taskPath: taskConfig.task,
-          outputDir: taskConfig.output,
-          typesDir: taskConfig.types,
+          manifestPath: config.manifest,
+          taskPath: config.task,
+          outputDir: config.output,
+          typesDir: config.types,
           clean,
-          confirmClean: createConfirmClean(taskConfig.types, coreLogger),
+          confirmClean: createConfirmClean(config.types, coreLogger),
         },
         coreLogger
       )
 
       if (clean && !result.success) this.exit(0)
 
-      coreLogger.info(`Build complete! Artifacts in ${taskConfig.output}/`)
+      coreLogger.info(`Build complete! Artifacts in ${config.output}/`)
     })
   }
 }

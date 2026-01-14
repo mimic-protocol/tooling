@@ -3,8 +3,8 @@ import * as path from 'path'
 
 import { DEFAULT_TASK } from '../constants'
 import { buildForTest, getTestPath, runTests } from '../core'
-import { filterTasks, runTasks, taskFilterFlags } from '../helpers'
-import MimicConfigHandler from '../lib/MimicConfigHandler'
+import { runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
 import { coreLogger } from '../log'
 
 export default class Test extends Command {
@@ -25,20 +25,24 @@ export default class Test extends Command {
 
     const testPaths = new Set<string>()
 
-    const allTasks = MimicConfigHandler.loadOrDefault(this, DEFAULT_TASK, baseDir)
-    const tasks = filterTasks(this, allTasks, include, exclude)
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: DEFAULT_TASK,
+      include,
+      exclude,
+      baseDir,
+    })
 
     if (!skipCompile) {
-      await runTasks(this, tasks, async (task) => {
+      await runTasks(this, tasks, async (config) => {
         const originalCwd = process.cwd()
         try {
           process.chdir(baseDir)
           await buildForTest(
             {
-              manifestPath: task.manifest,
-              taskPath: task.task,
-              outputDir: task.output,
-              typesDir: task.types,
+              manifestPath: config.manifest,
+              taskPath: config.task,
+              outputDir: config.output,
+              typesDir: config.types,
               cwd: baseDir,
             },
             coreLogger
