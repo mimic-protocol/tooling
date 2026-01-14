@@ -78,7 +78,7 @@ export default class Deploy extends Authenticate {
       coreLogger.info(`CID saved at ${log.highlightText(outputPath)}`)
       coreLogger.info(`Task deployed!`)
     } catch (error) {
-      handleCoreError(this, error)
+      handleCoreError(error)
     }
   }
 }

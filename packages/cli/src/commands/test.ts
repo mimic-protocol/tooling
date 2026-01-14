@@ -49,7 +49,7 @@ export default class Test extends Command {
     } catch (error) {
       if (error instanceof TestError) this.exit(error.exitCode)
 
-      handleCoreError(this, error)
+      handleCoreError(error)
     }
   }
 

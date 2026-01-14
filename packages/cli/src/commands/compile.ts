@@ -45,7 +45,7 @@ export default class Compile extends Command {
 
       coreLogger.info(`Build complete! Artifacts in ${task.output}/`)
     } catch (error) {
-      handleCoreError(this, error)
+      handleCoreError(error)
     }
   }
 }

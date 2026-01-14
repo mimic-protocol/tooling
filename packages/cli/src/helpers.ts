@@ -129,7 +129,7 @@ export async function runTasks<T>(
   }
 }
 
-export function handleCoreError(command: Command, error: unknown): void {
+export function handleCoreError(error: unknown): void {
   if (error instanceof CoreError) {
     throw new CommandError(error.message, {
       code: error.code,

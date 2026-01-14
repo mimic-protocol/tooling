@@ -50,7 +50,7 @@ export default class Codegen extends Command {
 
       if (clean && !result.success) this.exit(0)
     } catch (error) {
-      handleCoreError(this, error)
+      handleCoreError(error)
     }
   }
 }
