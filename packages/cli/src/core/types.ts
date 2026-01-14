@@ -1,3 +1,8 @@
+export interface CommandResult {
+  /** Whether the operation succeeded */
+  success: boolean
+}
+
 // ============================================================================
 // Codegen Types
 // ============================================================================
@@ -13,13 +18,6 @@ export interface CodegenOptions {
   confirmClean?: () => Promise<boolean>
 }
 
-export interface CodegenResult {
-  /** List of generated files */
-  generatedFiles: string[]
-  /** Whether any files were generated */
-  success: boolean
-}
-
 // ============================================================================
 // Compile Types
 // ============================================================================
@@ -33,15 +31,6 @@ export interface CompileOptions {
   outputDir: string
   /** Working directory for compilation */
   cwd?: string
-}
-
-export interface CompileResult {
-  /** Path to the generated WASM file */
-  wasmPath: string
-  /** Path to the generated manifest.json */
-  manifestJsonPath: string
-  /** Whether compilation succeeded */
-  success: boolean
 }
 
 // ============================================================================
@@ -65,15 +54,6 @@ export interface BuildOptions {
   cwd?: string
 }
 
-export interface BuildResult {
-  /** Result from codegen step */
-  codegen: CodegenResult
-  /** Result from compile step */
-  compile: CompileResult
-  /** Whether the entire build succeeded */
-  success: boolean
-}
-
 // ============================================================================
 // Deploy Types
 // ============================================================================
@@ -92,10 +72,6 @@ export interface DeployOptions {
 export interface DeployResult {
   /** IPFS CID of the deployed task */
   cid: string
-  /** Path to the generated CID.json file */
-  cidJsonPath: string
-  /** Whether deployment succeeded */
-  success: boolean
 }
 
 // ============================================================================
@@ -109,25 +85,6 @@ export interface RunTestsOptions {
   baseDir: string
 }
 
-export interface RunTestsResult {
-  /** Exit code from test runner */
-  exitCode: number
-  /** Whether tests passed */
-  success: boolean
-}
-
-// ============================================================================
-// Task Configuration
-// ============================================================================
-
-export interface TaskConfig {
-  name: string
-  manifestPath: string
-  taskPath: string
-  outputDir: string
-  typesDir: string
-}
-
 // ============================================================================
 // Logging Interface
 // ============================================================================
@@ -136,7 +93,4 @@ export interface Logger {
   startAction(message: string): void
   stopAction(): void
   info(message: string): void
-  warn(message: string): void
-  error(message: string): void
-  success(message: string): void
 }

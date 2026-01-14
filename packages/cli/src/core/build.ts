@@ -2,9 +2,9 @@ import { defaultLogger } from '../log'
 
 import { codegen } from './codegen'
 import { compile } from './compile'
-import { BuildOptions, BuildResult, Logger } from './types'
+import { BuildOptions, CommandResult, Logger } from './types'
 
-export async function build(options: BuildOptions, logger: Logger = defaultLogger): Promise<BuildResult> {
+export async function build(options: BuildOptions, logger: Logger = defaultLogger): Promise<CommandResult> {
   const { manifestPath, taskPath, outputDir, typesDir, clean, confirmClean, cwd } = options
 
   const codegenResult = await codegen(
@@ -17,13 +17,7 @@ export async function build(options: BuildOptions, logger: Logger = defaultLogge
     logger
   )
 
-  if (clean && !codegenResult.success) {
-    return {
-      codegen: codegenResult,
-      compile: { wasmPath: '', manifestJsonPath: '', success: false },
-      success: false,
-    }
-  }
+  if (clean && !codegenResult.success) return { success: false }
 
   const compileResult = await compile(
     {
@@ -35,9 +29,5 @@ export async function build(options: BuildOptions, logger: Logger = defaultLogge
     logger
   )
 
-  return {
-    codegen: codegenResult,
-    compile: compileResult,
-    success: codegenResult.success && compileResult.success,
-  }
+  return { success: codegenResult.success && compileResult.success }
 }

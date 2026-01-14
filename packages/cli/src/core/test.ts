@@ -5,7 +5,7 @@ import { defaultLogger } from '../log'
 
 import { build } from './build'
 import { TestError } from './errors'
-import { BuildOptions, Logger, RunTestsOptions, RunTestsResult } from './types'
+import { BuildOptions, Logger, RunTestsOptions } from './types'
 
 export function getTestPath(baseDir: string): string {
   return path.join(baseDir, 'tests', '**', '*.spec.ts')
@@ -24,7 +24,7 @@ export async function buildForTest(
   )
 }
 
-export function runTests(options: RunTestsOptions, logger: Logger = defaultLogger): RunTestsResult {
+export function runTests(options: RunTestsOptions, logger: Logger = defaultLogger): void {
   const { testPaths, baseDir } = options
 
   logger.startAction('Running tests')
@@ -37,9 +37,4 @@ export function runTests(options: RunTestsOptions, logger: Logger = defaultLogge
   logger.stopAction()
 
   if (!success) throw new TestError('Tests failed', exitCode, ['Check the test output for details'])
-
-  return {
-    exitCode,
-    success,
-  }
 }

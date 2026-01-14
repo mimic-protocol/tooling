@@ -95,9 +95,5 @@ export async function deploy(options: DeployOptions, logger: Logger = defaultLog
   const cidJsonPath = join(outputDir, 'CID.json')
   fs.writeFileSync(cidJsonPath, JSON.stringify({ CID: cid }, null, 2))
 
-  return {
-    cid,
-    cidJsonPath,
-    success: true,
-  }
+  return { cid }
 }

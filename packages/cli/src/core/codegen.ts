@@ -10,7 +10,7 @@ import { Manifest } from '../types'
 import { ManifestValidator } from '../validators'
 
 import { CodegenError, FileNotFoundError, ManifestValidationError } from './errors'
-import { CodegenOptions, CodegenResult, Logger } from './types'
+import { CodegenOptions, CommandResult, Logger } from './types'
 
 export function loadManifest(manifestPath: string): Manifest {
   if (!fs.existsSync(manifestPath)) {
@@ -131,7 +131,7 @@ function generateInputsCode(manifest: Manifest, outputDir: string): string[] {
   return generatedFiles
 }
 
-export async function codegen(options: CodegenOptions, logger: Logger = defaultLogger): Promise<CodegenResult> {
+export async function codegen(options: CodegenOptions, logger: Logger = defaultLogger): Promise<CommandResult> {
   const { manifestPath, outputDir, clean, confirmClean } = options
 
   const manifest = loadManifest(manifestPath)
@@ -139,7 +139,7 @@ export async function codegen(options: CodegenOptions, logger: Logger = defaultL
   if (clean) {
     if (confirmClean) {
       const shouldDelete = await confirmClean()
-      if (!shouldDelete) return { generatedFiles: [], success: false }
+      if (!shouldDelete) return { success: false }
     }
 
     logger.startAction(`Deleting contents of ${outputDir}`)
@@ -150,19 +150,15 @@ export async function codegen(options: CodegenOptions, logger: Logger = defaultL
 
   if (Object.keys(manifest.inputs).length === 0 && Object.keys(manifest.abis).length === 0) {
     logger.stopAction()
-    return { generatedFiles: [], success: true }
+    return { success: true }
   }
 
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true })
 
-  const generatedFiles: string[] = []
-  generatedFiles.push(...generateAbisCode(manifest, outputDir, manifestPath))
-  generatedFiles.push(...generateInputsCode(manifest, outputDir))
+  generateAbisCode(manifest, outputDir, manifestPath)
+  generateInputsCode(manifest, outputDir)
 
   logger.stopAction()
 
-  return {
-    generatedFiles,
-    success: true,
-  }
+  return { success: true }
 }

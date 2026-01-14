@@ -6,9 +6,9 @@ import { defaultLogger } from '../log'
 
 import { loadManifest } from './codegen'
 import { CompilationError, FileNotFoundError } from './errors'
-import { CompileOptions, CompileResult, Logger } from './types'
+import { CommandResult, CompileOptions, Logger } from './types'
 
-export async function compile(options: CompileOptions, logger: Logger = defaultLogger): Promise<CompileResult> {
+export async function compile(options: CompileOptions, logger: Logger = defaultLogger): Promise<CommandResult> {
   const { manifestPath, taskPath, outputDir, cwd = process.cwd() } = options
 
   const resolvedTaskPath = path.resolve(taskPath)
@@ -55,9 +55,5 @@ export async function compile(options: CompileOptions, logger: Logger = defaultL
 
   logger.stopAction()
 
-  return {
-    wasmPath,
-    manifestJsonPath,
-    success: true,
-  }
+  return { success: true }
 }

@@ -20,18 +20,12 @@ export const coreLogger: Logger = {
   startAction: log.startAction,
   stopAction: log.stopAction,
   info: console.log,
-  warn: console.warn,
-  error: console.error,
-  success: console.log,
 }
 
 export const defaultLogger: Logger = {
   startAction: () => {},
   stopAction: () => {},
   info: () => {},
-  warn: () => {},
-  error: () => {},
-  success: () => {},
 }
 
 export default log
