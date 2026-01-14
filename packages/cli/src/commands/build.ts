@@ -40,19 +40,17 @@ export default class Build extends Command {
       exclude,
     })
     await runTasks(this, tasks, async (config) => {
-      const result = await build(
+      await build(
         {
           manifestPath: config.manifest,
           taskPath: config.task,
           outputDir: config.output,
           typesDir: config.types,
           clean,
-          confirmClean: createConfirmClean(config.types, coreLogger),
+          confirmClean: createConfirmClean(this, config.types, coreLogger),
         },
         coreLogger
       )
-
-      if (clean && !result.success) this.exit(0)
 
       coreLogger.info(`Build complete! Artifacts in ${config.output}/`)
     })

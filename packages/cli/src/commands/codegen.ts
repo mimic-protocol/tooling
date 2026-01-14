@@ -36,17 +36,15 @@ export default class Codegen extends Command {
       exclude,
     })
     await runTasks(this, tasks, async (config) => {
-      const result = await codegen(
+      await codegen(
         {
           manifestPath: config.manifest,
           outputDir: config.types,
           clean,
-          confirmClean: createConfirmClean(config.types, coreLogger),
+          confirmClean: createConfirmClean(this, config.types, coreLogger),
         },
         coreLogger
       )
-
-      if (clean && !result.success) this.exit(0)
     })
   }
 }

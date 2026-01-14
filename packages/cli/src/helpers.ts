@@ -84,7 +84,7 @@ export async function runTasks<T>(
   }
 }
 
-export function createConfirmClean(directory: string, logger: Logger): () => Promise<boolean> {
+export function createConfirmClean(command: Command, directory: string, logger: Logger): () => Promise<boolean> {
   return async function confirmClean(): Promise<boolean> {
     const shouldDelete = await confirm({
       message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(
@@ -95,6 +95,7 @@ export function createConfirmClean(directory: string, logger: Logger): () => Pro
     if (!shouldDelete) {
       logger.info('You can remove the --clean flag from your command')
       logger.info('Stopping initialization...')
+      command.exit(0)
     }
     return shouldDelete
   }
