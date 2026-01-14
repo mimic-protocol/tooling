@@ -52,7 +52,7 @@ describe('build', () => {
     beforeEach('create mimic.yaml', () => {
       fs.writeFileSync(
         mimicConfigPath,
-        `tasks:\n  - name: test-task\n    manifest: ${manifestPath}\n    path: ${taskPath}\n    output: ${outputDir}\n    types: ${typesDir}\n`
+        `tasks:\n  - name: test-task\n    manifest: ${manifestPath}\n    task: ${taskPath}\n    output: ${outputDir}\n    types: ${typesDir}\n`
       )
     })
 
