@@ -4,7 +4,7 @@
       "log": true,
       "default": "{\"success\":\"true\",\"data\":\"0x047be3bb46f9416732fe39a05134f20235c19334\",\"error\":\"\"}"
     },
-    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0\", \"settlers\": [{\"address\": \"0xdcf1d9d12a0488dfb70a8696f44d6d3bc303963d\", \"chainId\": 10}], \"configSig\": \"682ec8210b1ce912da4d2952\"}",
+    "_getContext": "{ \"timestamp\": 1438223173000, \"consensusThreshold\": 1, \"user\": \"0x756f45e3fa69347a9a973a725e3c98bc4db0b5a0\", \"settlers\": [{\"address\": \"0xdcf1d9d12a0488dfb70a8696f44d6d3bc303963d\", \"chainId\": 10}], \"triggerSig\": \"682ec8210b1ce912da4d2952\"}",
     "_relevantTokensQuery": "{\"success\":\"true\",\"data\":[{\"timestamp\":1438223173000,\"balances\":[{\"token\":{\"address\":\"0x625e7708f30ca75bfd92586e17077590c60eb4cd\",\"chainId\":10},\"balance\":\"100000000\"}]}],\"error\":\"\"}",
     "_call": {
       "log": true,

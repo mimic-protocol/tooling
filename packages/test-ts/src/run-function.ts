@@ -14,7 +14,7 @@ import { ContextValidator } from './validators'
 const DEFAULT_CONTEXT = {
   timestamp: Date.now(),
   consensusThreshold: 1,
-  configSig: '0x',
+  triggerSig: '0x',
   trigger: { type: 0, data: '0x' },
 }
 

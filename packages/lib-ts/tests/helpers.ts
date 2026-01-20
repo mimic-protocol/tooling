@@ -133,7 +133,7 @@ export declare function _setContext(
   consensusThreshold: u8,
   user: string,
   settlers: string,
-  configSig: string
+  triggerSig: string
 ): void
 
 export function setContext(
@@ -141,9 +141,9 @@ export function setContext(
   consensusThreshold: u8,
   user: string,
   settlers: SerializableSettler[],
-  configSig: string
+  triggerSig: string
 ): void {
-  _setContext(timestamp, consensusThreshold, user, JSON.stringify(settlers), configSig)
+  _setContext(timestamp, consensusThreshold, user, JSON.stringify(settlers), triggerSig)
 }
 
 export declare function clearLogs(): void

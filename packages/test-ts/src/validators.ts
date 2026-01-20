@@ -32,7 +32,7 @@ export const ContextValidator = z
         chainId: ChainIdValidator,
       })
     ),
-    configSig: HexValidator,
+    triggerSig: HexValidator,
     trigger: z.object({
       type: z.nativeEnum(TriggerType),
       data: HexValidator,

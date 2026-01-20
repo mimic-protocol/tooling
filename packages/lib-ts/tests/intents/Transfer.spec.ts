@@ -24,7 +24,7 @@ describe('Transfer', () => {
       const recipient = randomEvmAddress()
       const settler = randomSettler(chainId)
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = Transfer.create(token, amount, recipient, fee)
       expect(transfer.op).toBe(OperationType.Transfer)
@@ -61,7 +61,7 @@ describe('Transfer', () => {
       const settler = randomSettler(chainId)
       const deadline = BigInt.fromI32(9999999)
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = Transfer.create(
         token,
@@ -110,7 +110,7 @@ describe('Transfer', () => {
       const settler = randomSettler(chainId)
       const deadline = BigInt.fromI32(9999999)
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = new Transfer(
         chainId,
@@ -284,7 +284,7 @@ describe('Transfer - SVM support', () => {
       const recipient = randomSvmAddress()
       const settler = randomSvmSettler()
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = Transfer.create(token, amount, recipient, fee)
       expect(transfer.op).toBe(OperationType.Transfer)
@@ -319,7 +319,7 @@ describe('Transfer - SVM support', () => {
       const recipient = randomSvmAddress()
       const settler = randomSvmSettler()
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = Transfer.create(token, amount, recipient, fee)
       expect(transfer.chainId).toBe(ChainId.SOLANA_MAINNET)
@@ -339,7 +339,7 @@ describe('Transfer - SVM support', () => {
       const settler = randomSvmSettler()
       const deadline = BigInt.fromI32(9999999)
 
-      setContext(1, 1, user.toString(), [settler], 'config-transfer')
+      setContext(1, 1, user.toString(), [settler], 'trigger-transfer')
 
       const transfer = new Transfer(
         chainId,

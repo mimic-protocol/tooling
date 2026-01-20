@@ -186,7 +186,7 @@ export namespace environment {
 
   /**
    * Returns the current execution context containing environment information.
-   * @returns The Context object containing: user, settler, timestamp, and config ID
+   * @returns The Context object containing: user, settler, timestamp, consensusThreshold and trigger
    */
   export function getContext(): Context {
     const context = JSON.parse<SerializableContext>(_getContext())

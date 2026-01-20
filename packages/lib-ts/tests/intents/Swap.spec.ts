@@ -22,7 +22,7 @@ describe('Swap', () => {
     const minAmountOut = BigInt.fromI32(100)
     const settler = randomSettler(chainId)
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
     expect(swap.op).toBe(OperationType.Swap)
@@ -60,7 +60,7 @@ describe('Swap', () => {
     const tokenOut = ERC20Token.fromAddress(randomEvmAddress(), chainId)
     const minAmountOut = BigInt.fromI32(100)
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = Swap.create(
       chainId,
@@ -108,7 +108,7 @@ describe('Swap', () => {
     const tokenIn = SwapTokenIn.fromI32(randomERC20Token(sourceChain), 10)
     const tokenOut = SwapTokenOut.fromI32(randomERC20Token(destinationChain), 100, randomEvmAddress())
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = new Swap(
       sourceChain,
@@ -281,7 +281,7 @@ describe('Swap - SVM', () => {
     const minAmountOut = BigInt.fromI32(100)
     const settler = randomSettler(chainId)
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
     expect(swap.op).toBe(OperationType.Swap)
@@ -319,7 +319,7 @@ describe('Swap - SVM', () => {
     const tokenOut = SPLToken.fromAddress(randomSvmAddress(), chainId, 6, 'USDT')
     const minAmountOut = BigInt.fromI32(100)
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = Swap.create(
       chainId,
@@ -365,7 +365,7 @@ describe('Swap - SVM', () => {
     const tokenIn = SwapTokenIn.fromI32(randomSPLToken(sourceChain), 10)
     const tokenOut = SwapTokenOut.fromI32(randomSPLToken(destinationChain), 100, randomSvmAddress())
 
-    setContext(1, 1, user.toString(), [settler], 'config-456')
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = new Swap(
       sourceChain,

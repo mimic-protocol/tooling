@@ -23,7 +23,7 @@ describe('SvmCall', () => {
       const fee = TokenAmount.fromI32(randomSPLToken(ChainId.SOLANA_MAINNET), 100)
       const settler = randomSvmSettler()
 
-      setContext(1, 1, user.toString(), [settler], 'config-123')
+      setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
       const svmCall = SvmCall.create(programId, accountsMeta, data, fee)
       expect(svmCall.op).toBe(OperationType.SvmCall)
@@ -58,7 +58,7 @@ describe('SvmCall', () => {
       const settler = randomSvmSettler()
       const deadline = BigInt.fromI32(9999999)
 
-      setContext(1, 1, user.toString(), [settler], 'config-123')
+      setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
       const svmCall = SvmCall.create(
         programId,
@@ -113,7 +113,7 @@ describe('SvmCall', () => {
       const settler = randomSvmSettler()
       const deadline = BigInt.fromI32(9999999)
 
-      setContext(1, 1, user.toString(), [settler], 'config-123')
+      setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
       const svmCall = new SvmCall(
         [instruction1, instruction2],

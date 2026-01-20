@@ -87,7 +87,7 @@ export class SerializableContext {
     public readonly consensusThreshold: u8,
     public user: string,
     public settlers: SerializableSettler[],
-    public configSig: string,
+    public triggerSig: string,
     public trigger: SerializableTrigger
   ) {}
 }
@@ -98,7 +98,7 @@ export class Context {
     public readonly consensusThreshold: u8,
     public user: Address,
     public settlers: Settler[],
-    public configSig: string,
+    public triggerSig: string,
     public trigger: Trigger
   ) {}
 
@@ -108,7 +108,7 @@ export class Context {
       serializable.consensusThreshold,
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
-      serializable.configSig,
+      serializable.triggerSig,
       Trigger.fromSerializable(serializable.trigger)
     )
   }
