@@ -50,7 +50,7 @@ describe('deploy', () => {
         let axiosMock: MockAdapter
 
         beforeEach('create files', () => {
-          ;['manifest.json', 'task.wasm'].map(createFile)
+          ;['manifest.json', 'function.wasm'].map(createFile)
         })
 
         beforeEach('create axios mock', () => {
@@ -65,7 +65,7 @@ describe('deploy', () => {
           const CID = '123'
 
           beforeEach('mock registry response', () => {
-            axiosMock.onPost(/.*\/tasks/gm).reply(200, { CID })
+            axiosMock.onPost(/.*\/functions/gm).reply(200, { CID })
           })
 
           context('when output directory exists', () => {
@@ -122,10 +122,10 @@ describe('deploy', () => {
         context('when uploading to registry is not successful', () => {
           context('when there is a bad request failure', () => {
             context('when the error message is present', () => {
-              const message = 'Task with same name and version already exists'
+              const message = 'Function with same name and version already exists'
 
               beforeEach('mock response', () => {
-                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { message } })
+                axiosMock.onPost(/.*\/functions/gm).reply(400, { content: { message } })
               })
 
               itThrowsACliError(command, message, 'Bad Request', 1)
@@ -133,7 +133,7 @@ describe('deploy', () => {
 
             context('when the error message is not present', () => {
               beforeEach('mock response', () => {
-                axiosMock.onPost(/.*\/tasks/gm).reply(400, { content: { errors: ['some error'] } })
+                axiosMock.onPost(/.*\/functions/gm).reply(400, { content: { errors: ['some error'] } })
               })
 
               itThrowsACliError(command, 'Failed to upload to registry', 'Bad Request', 1)
@@ -181,7 +181,7 @@ describe('deploy', () => {
             createFile('manifest.json')
           })
 
-          itThrowsACliError(command, `Could not find ${inputDir}/task.wasm`, 'File Not Found', 1)
+          itThrowsACliError(command, `Could not find ${inputDir}/function.wasm`, 'File Not Found', 1)
         })
       })
     })

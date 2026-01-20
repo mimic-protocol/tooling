@@ -14,7 +14,8 @@ import Authenticate from './authenticate'
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
 export default class Deploy extends Authenticate {
-  static override description = 'Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry'
+  static override description =
+    'Uploads your compiled function artifacts to IPFS and registers it into the Mimic Registry'
 
   static override examples = [
     '<%= config.bin %> <%= command.id %> --input ./dist --output ./dist',
@@ -45,7 +46,7 @@ export default class Deploy extends Authenticate {
 
       const compile = execBinCommand('mimic', ['compile', '--output', fullInputDir], process.cwd())
       if (compile.status !== 0)
-        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the task source code'] })
+        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the function source code'] })
     }
 
     log.startAction('Validating')
@@ -56,7 +57,7 @@ export default class Deploy extends Authenticate {
         suggestions: ['Use the --input flag to specify the correct path'],
       })
 
-    const neededFiles = ['manifest.json', 'task.wasm'].map((file) => join(fullInputDir, file))
+    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullInputDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
         this.error(`Could not find ${file}`, {
@@ -73,7 +74,7 @@ export default class Deploy extends Authenticate {
     if (!fs.existsSync(fullOutputDir)) fs.mkdirSync(fullOutputDir, { recursive: true })
     fs.writeFileSync(join(fullOutputDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
     console.log(`CID saved at ${log.highlightText(fullOutputDir)}`)
-    console.log(`Task deployed!`)
+    console.log(`Function deployed!`)
   }
 
   private async uploadToRegistry(
@@ -83,7 +84,7 @@ export default class Deploy extends Authenticate {
   ): Promise<string> {
     try {
       const form = filesToForm(files)
-      const { data } = await axios.post(`${registryUrl}/tasks`, form, {
+      const { data } = await axios.post(`${registryUrl}/functions`, form, {
         headers: {
           'x-api-key': credentials.apiKey,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,

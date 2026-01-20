@@ -12,6 +12,7 @@ describe('init', () => {
 
   const assertStdoutAndInitializedFiles = (stdout: string) => {
     expect(stdout).to.include('New project initialized!')
+    // TODO UPDATE WHEN INIT REPO IS UPDATED
     expect(fs.existsSync(`${commandPath}/src/task.ts`)).to.be.true
     expect(fs.existsSync(`${commandPath}/package.json`)).to.be.true
     expect(fs.existsSync(`${commandPath}/manifest.yaml`)).to.be.true

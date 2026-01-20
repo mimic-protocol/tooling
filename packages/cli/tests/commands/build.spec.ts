@@ -7,7 +7,7 @@ import { itThrowsACliError } from '../helpers'
 
 describe('build', () => {
   const basePath = `${__dirname}/../fixtures`
-  const taskPath = `${basePath}/tasks/task.ts`
+  const functionPath = `${basePath}/functions/function.ts`
   const manifestPath = `${basePath}/manifests/manifest.yaml`
   const outputDir = `${basePath}/output`
   const typesDir = `${basePath}/src/types`
@@ -21,20 +21,26 @@ describe('build', () => {
     return ['build', ...args]
   }
 
-  const withCommonFlags = (manifest: string, task: string, output: string, types: string, extra: string[] = []) => {
-    return [`--manifest ${manifest}`, `--task ${task}`, `--output ${output}`, `--types ${types}`, ...extra]
+  const withCommonFlags = (
+    manifest: string,
+    functionPath: string,
+    output: string,
+    types: string,
+    extra: string[] = []
+  ) => {
+    return [`--manifest ${manifest}`, `--function ${functionPath}`, `--output ${output}`, `--types ${types}`, ...extra]
   }
 
   const itBuildsAndGeneratesTypes = (manifest: string, expectedInputs: object) => {
     it('generates types and build artifacts', async () => {
-      const command = buildCommand(withCommonFlags(manifest, taskPath, outputDir, typesDir))
+      const command = buildCommand(withCommonFlags(manifest, functionPath, outputDir, typesDir))
       const { stdout, error } = await runCommand(command)
 
       expect(error).to.be.undefined
       expect(stdout).to.include('Build complete!')
 
       // build artifacts
-      expect(fs.existsSync(path.join(outputDir, 'task.wasm'))).to.be.true
+      expect(fs.existsSync(path.join(outputDir, 'function.wasm'))).to.be.true
       expect(fs.existsSync(path.join(outputDir, 'manifest.json'))).to.be.true
 
       // generated types
@@ -48,7 +54,7 @@ describe('build', () => {
 
   context('when the manifest exists', () => {
     context('when the manifest is valid', () => {
-      context('when the task compiles successfully', () => {
+      context('when the function compiles successfully', () => {
         context('when the manifest has simple inputs', () => {
           const expectedInputs = {
             firstStaticNumber: 'uint32',
@@ -76,9 +82,9 @@ describe('build', () => {
         })
       })
 
-      context('when the task fails to compile', () => {
-        const invalidTaskPath = `${basePath}/tasks/invalid-task.ts`
-        const command = buildCommand(withCommonFlags(manifestPath, invalidTaskPath, outputDir, typesDir))
+      context('when the function fails to compile', () => {
+        const invalidFunctionPath = `${basePath}/functions/invalid-function.ts`
+        const command = buildCommand(withCommonFlags(manifestPath, invalidFunctionPath, outputDir, typesDir))
 
         itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
       })
@@ -90,7 +96,7 @@ describe('build', () => {
         })
 
         it('generates types without requiring clean', async () => {
-          const command = buildCommand(withCommonFlags(manifestPath, taskPath, outputDir, typesDir))
+          const command = buildCommand(withCommonFlags(manifestPath, functionPath, outputDir, typesDir))
           const { error } = await runCommand(command)
 
           expect(error).to.be.undefined
@@ -103,28 +109,28 @@ describe('build', () => {
     context('when the manifest is not valid', () => {
       context('when the manifest has invalid fields', () => {
         const invalidManifest = `${basePath}/manifests/invalid-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+        const command = buildCommand(withCommonFlags(invalidManifest, functionPath, outputDir, typesDir))
 
         itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
       })
 
       context('when the manifest has repeated fields', () => {
         const invalidManifest = `${basePath}/manifests/invalid-manifest-repeated.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+        const command = buildCommand(withCommonFlags(invalidManifest, functionPath, outputDir, typesDir))
 
         itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
       })
 
       context('when the manifest is incomplete', () => {
         const invalidManifest = `${basePath}/manifests/incomplete-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+        const command = buildCommand(withCommonFlags(invalidManifest, functionPath, outputDir, typesDir))
 
         itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
       })
 
       context('when the manifest is empty', () => {
         const invalidManifest = `${basePath}/manifests/empty-manifest.yaml`
-        const command = buildCommand(withCommonFlags(invalidManifest, taskPath, outputDir, typesDir))
+        const command = buildCommand(withCommonFlags(invalidManifest, functionPath, outputDir, typesDir))
 
         itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
       })
@@ -133,7 +139,7 @@ describe('build', () => {
 
   context('when the manifest does not exist', () => {
     const inexistentManifest = `${manifestPath}-none`
-    const command = buildCommand(withCommonFlags(inexistentManifest, taskPath, outputDir, typesDir))
+    const command = buildCommand(withCommonFlags(inexistentManifest, functionPath, outputDir, typesDir))
 
     itThrowsACliError(command, `Could not find ${inexistentManifest}`, 'FileNotFound', 1)
   })

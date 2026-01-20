@@ -7,7 +7,7 @@ import { itThrowsACliError } from '../helpers'
 
 describe('compile', () => {
   const basePath = `${__dirname}/../fixtures`
-  const taskPath = `${basePath}/tasks/task.ts`
+  const functionPath = `${basePath}/functions/function.ts`
   const manifestPath = `${basePath}/manifests/manifest.yaml`
   const outputDir = `${basePath}/output`
 
@@ -15,19 +15,19 @@ describe('compile', () => {
     if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true })
   })
 
-  const buildCommand = (manifestPath: string, taskPath: string, outputDir: string) => {
-    return ['compile', `--task ${taskPath}`, `--manifest ${manifestPath}`, `--output ${outputDir}`]
+  const buildCommand = (manifestPath: string, functionPath: string, outputDir: string) => {
+    return ['compile', `--function ${functionPath}`, `--manifest ${manifestPath}`, `--output ${outputDir}`]
   }
 
   const itCreatesFilesCorrectly = (manifestPath: string, expectedInputs: object) => {
     it('creates the files correctly', async () => {
-      const command = buildCommand(manifestPath, taskPath, outputDir)
+      const command = buildCommand(manifestPath, functionPath, outputDir)
       const { stdout, error } = await runCommand(command)
 
       expect(error).to.be.undefined
       expect(stdout).to.include('Build complete!')
 
-      expect(fs.existsSync(`${outputDir}/task.wasm`)).to.be.true
+      expect(fs.existsSync(`${outputDir}/function.wasm`)).to.be.true
       expect(fs.existsSync(`${outputDir}/manifest.json`)).to.be.true
 
       const manifest = JSON.parse(fs.readFileSync(`${outputDir}/manifest.json`, 'utf-8'))
@@ -38,7 +38,7 @@ describe('compile', () => {
 
   context('when the manifest exists', () => {
     context('when the manifest is valid', () => {
-      context('when the task compiles successfully', () => {
+      context('when the function compiles successfully', () => {
         context('when the manifest has simple inputs', () => {
           const expectedInputs = {
             firstStaticNumber: 'uint32',
@@ -66,9 +66,9 @@ describe('compile', () => {
         })
       })
 
-      context('when the task fails to compile', () => {
-        const taskPath = `${basePath}/tasks/invalid-task.ts`
-        const command = buildCommand(manifestPath, taskPath, outputDir)
+      context('when the function fails to compile', () => {
+        const functionPath = `${basePath}/functions/invalid-function.ts`
+        const command = buildCommand(manifestPath, functionPath, outputDir)
 
         itThrowsACliError(command, 'AssemblyScript compilation failed', 'BuildError', 1)
       })
@@ -77,28 +77,28 @@ describe('compile', () => {
     context('when the manifest is not valid', () => {
       context('when the manfiest has invalid fields', () => {
         const manifestPath = `${basePath}/manifests/invalid-manifest.yaml`
-        const command = buildCommand(manifestPath, taskPath, outputDir)
+        const command = buildCommand(manifestPath, functionPath, outputDir)
 
         itThrowsACliError(command, 'More than one entry', 'MoreThanOneEntryError', 1)
       })
 
       context('when the manfiest has repeated fields', () => {
         const manifestPath = `${basePath}/manifests/invalid-manifest-repeated.yaml`
-        const command = buildCommand(manifestPath, taskPath, outputDir)
+        const command = buildCommand(manifestPath, functionPath, outputDir)
 
         itThrowsACliError(command, 'Duplicate Entry', 'DuplicateEntryError', 1)
       })
 
       context('when the manifest is incomplete', () => {
         const manifestPath = `${basePath}/manifests/incomplete-manifest.yaml`
-        const command = buildCommand(manifestPath, taskPath, outputDir)
+        const command = buildCommand(manifestPath, functionPath, outputDir)
 
         itThrowsACliError(command, 'Missing/Incorrect Fields', 'FieldsError', 3)
       })
 
       context('when the manifest is empty', () => {
         const manifestPath = `${basePath}/manifests/empty-manifest.yaml`
-        const command = buildCommand(manifestPath, taskPath, outputDir)
+        const command = buildCommand(manifestPath, functionPath, outputDir)
 
         itThrowsACliError(command, 'Empty Manifest', 'EmptyManifestError', 1)
       })
@@ -107,7 +107,7 @@ describe('compile', () => {
 
   context('when the manifest does not exist', () => {
     const inexistentManifestPath = `${manifestPath}-none`
-    const command = buildCommand(inexistentManifestPath, taskPath, outputDir)
+    const command = buildCommand(inexistentManifestPath, functionPath, outputDir)
 
     itThrowsACliError(command, `Could not find ${inexistentManifestPath}`, 'FileNotFound', 1)
   })

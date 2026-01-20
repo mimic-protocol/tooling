@@ -7,7 +7,7 @@ import {
   relevantTokensQueryProcessor,
   subgraphQueryProcessor,
 } from './processors'
-import { Context, RunTaskOptionalParams, RunTaskResult } from './types'
+import { Context, RunFunctionOptionalParams, RunFunctionResult } from './types'
 import { formatValidationError, processQueries, toIntents } from './utils'
 import { ContextValidator } from './validators'
 
@@ -18,12 +18,12 @@ const DEFAULT_CONTEXT = {
   trigger: { type: 0, data: '0x' },
 }
 
-export async function runTask(
+export async function runFunction(
   taskDir: string,
   context: Context,
-  optional: RunTaskOptionalParams = {},
+  optional: RunFunctionOptionalParams = {},
   oracleUrl: string = ''
-): Promise<RunTaskResult> {
+): Promise<RunFunctionResult> {
   const taskPath = path.join(taskDir, 'task.wasm')
   const inputs = optional.inputs || {}
   const showLogs = optional.showLogs ?? true
@@ -61,7 +61,7 @@ export async function runTask(
   }
 }
 
-function getOracleResponses(optional: RunTaskOptionalParams, contextTimestamp: number) {
+function getOracleResponses(optional: RunFunctionOptionalParams, contextTimestamp: number) {
   const { prices = [], relevantTokens = [], calls = [], subgraphQueries = [] } = optional
 
   const priceResponses = processQueries(prices, priceQueryProcessor, contextTimestamp)

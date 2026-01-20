@@ -27,12 +27,12 @@
 
 The `mimic` CLI is a command-line interface to:
 
-- Initialize a Mimic-compatible task project
-- Generate types from your task manifest and ABIs
-- Compile your AssemblyScript tasks to WebAssembly
-- Test your tasks
-- Deploy compiled tasks to IPFS and the Mimic Registry
-- Link tasks to a project in the Mimic explorer
+- Initialize a Mimic-compatible function project
+- Generate types from your function manifest and ABIs
+- Compile your AssemblyScript functions to WebAssembly
+- Test your functions
+- Deploy compiled functions to IPFS and the Mimic Registry
+- Link functions to a project in the Mimic explorer
 
 ## Setup
 
@@ -64,15 +64,15 @@ COMMANDS
   logout   Remove stored credentials for a profile
   profiles List all configured authentication profiles
   codegen  Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file
-  compile  Compiles task
-  test     Tests your tasks
-  deploy   Uploads your compiled task artifacts to IPFS and registers it into the Mimic Registry
+  compile  Compiles the function
+  test     Tests your functions
+  deploy   Uploads your compiled function artifacts to IPFS and registers it into the Mimic Registry
   init     Initializes a new Mimic-compatible project structure in the specified directory
 ```
 
 ### Authentication
 
-Before deploying tasks, you need to authenticate with your Mimic API key:
+Before deploying functions, you need to authenticate with your Mimic API key:
 
 ```bash
 # Interactive login (recommended)

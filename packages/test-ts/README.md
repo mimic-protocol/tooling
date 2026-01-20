@@ -25,11 +25,11 @@
 
 ## Content
 
-This package provides tooling and helpers to write and run tests for Mimic Protocol tasks using TypeScript. It includes:
+This package provides tooling and helpers to write and run tests for Mimic Protocol functions using TypeScript. It includes:
 
 - Mocking of inputs, balances, prices, contract calls responses, and context variables
-- Simulated task execution with mocked environment
-- Structured task outputs to assert emitted intents using frameworks like Mocha and Chai
+- Simulated function execution with mocked environment
+- Structured function outputs to assert emitted intents using frameworks like Mocha and Chai
 
 ## Setup
 
@@ -50,17 +50,17 @@ $ yarn
 
 ## Usage
 
-Here’s an example of how to test a Mimic task:
+Here’s an example of how to test a Mimic function:
 
 ```ts
-import { runTask } from "@mimicprotocol/test-ts";
+import { runFunction } from "@mimicprotocol/test-ts";
 import { expect } from "chai";
 
-const taskDir = "./my-task";
+const funcDir = "./my-function";
 const context = { user: "0x...", settler: "0x...", timestamp: Date.now() };
 const inputs = { token: "0x...", amount: "10000000" };
 
-const intents = await runTask(taskDir, context, { inputs });
+const intents = await runFunction(funcDir, context, { inputs });
 
 expect(intents).to.be.an("array").that.is.not.empty;
 expect(intents).to.have.lengthOf(1);
@@ -73,7 +73,7 @@ expect(intents[0].transfers[0].token).to.be.equal(inputs.token);
 expect(intents[0].transfers[0].amount).to.be.equal(inputs.amount);
 ```
 
-For full task testing guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
+For full function testing guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
 
 ## Security
 

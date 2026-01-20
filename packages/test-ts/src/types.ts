@@ -96,7 +96,7 @@ export type GenerateMockParams = {
   showLogs: boolean
 }
 
-export type RunTaskOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
+export type RunFunctionOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
 
 export type IntentBase = {
   op: number
@@ -129,7 +129,7 @@ export type Intent = Transfer | Swap | Call
 
 export type OracleResponse = AnyOracleResponse
 
-export type RunTaskResult = {
+export type RunFunctionResult = {
   success: boolean
   timestamp: number
   fuelUsed: number

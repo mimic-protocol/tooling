@@ -41,14 +41,14 @@ export default class RunnerMock {
     },
   }
 
-  constructor(taskFolder: string, mockFolder?: string) {
-    this.mockFolder = mockFolder || join(taskFolder, '..')
-    this.instance = this.initializeWasmInstance(taskFolder)
+  constructor(functionFolder: string, mockFolder?: string) {
+    this.mockFolder = mockFolder || join(functionFolder, '..')
+    this.instance = this.initializeWasmInstance(functionFolder)
   }
 
-  private initializeWasmInstance(taskFolder: string): WebAssembly.Instance {
+  private initializeWasmInstance(functionFolder: string): WebAssembly.Instance {
     try {
-      const taskPath = join(taskFolder, 'task.wasm')
+      const functionPath = join(functionFolder, 'function.wasm')
 
       let { inputs, ...mock } = this.readJsonFile<MockConfig>(join(this.mockFolder, 'mock.json'), MockConfigValidator)
       inputs = inputs || {}
@@ -59,7 +59,7 @@ export default class RunnerMock {
       }
       const imports = this.generateImports(mock, inputs as WebAssembly.ModuleImports)
 
-      const wasmBuffer = fs.readFileSync(taskPath)
+      const wasmBuffer = fs.readFileSync(functionPath)
       const wasmModule = new WebAssembly.Module(wasmBuffer as never)
       const instance = new WebAssembly.Instance(wasmModule, imports)
 
@@ -105,7 +105,7 @@ export default class RunnerMock {
       }
       fn()
     } catch (error) {
-      throw Error(`Task Execution Error - ${error}`)
+      throw Error(`Function Execution Error - ${error}`)
     }
   }
 
