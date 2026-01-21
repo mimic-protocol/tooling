@@ -8,7 +8,7 @@ const AMOUNT = '1000000'
 
 export default function main(): void {
   const context = environment.getContext()
-  const eventTrigger = context.trigger.getEventData()
+  const eventTrigger = context.config.getEventData()
   const transferEvent = TransferEvent.decode(eventTrigger.topics, eventTrigger.eventData)
 
   if (!transferEvent.from.equals(Address.fromString(SENDER_ADDRESS))) throw new Error('Sender address does not match')

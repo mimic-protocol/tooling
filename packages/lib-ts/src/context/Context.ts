@@ -1,6 +1,6 @@
 import { evm } from '../evm'
 import { Address, BigInt, ChainId, EvmDecodeParam, JSON } from '../types'
-import { TriggerType } from '../types/TriggerType'
+import { ConfigType } from '../types/ConfigType'
 
 @json
 export class SerializableSettler {
@@ -22,14 +22,14 @@ export class Settler {
 }
 
 @json
-export class SerializableTrigger {
+export class SerializableConfig {
   constructor(
     public type: u8,
     public data: string
   ) {}
 }
 
-export class EventTriggerData {
+export class EventConfigData {
   constructor(
     public chainId: BigInt,
     public blockHash: string,
@@ -41,35 +41,35 @@ export class EventTriggerData {
 }
 
 @json
-export class Trigger {
+export class Config {
   constructor(
-    public type: TriggerType,
+    public type: ConfigType,
     public data: string
   ) {}
 
-  static fromSerializable(serializable: SerializableTrigger): Trigger {
-    return new Trigger(serializable.type, serializable.data)
+  static fromSerializable(serializable: SerializableConfig): Config {
+    return new Config(serializable.type, serializable.data)
   }
 
   getCronData(): BigInt {
-    if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, trigger type is not cron")
-    return Trigger.deserializeCronTriggerData(this.data)
+    if (this.type !== ConfigType.CRON) throw new Error("Can't get cron data, config type is not cron")
+    return Config.deserializeCronConfigData(this.data)
   }
 
-  getEventData(): EventTriggerData {
-    if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, trigger type is not event")
-    return Trigger.deserializeEventTriggerData(this.data)
+  getEventData(): EventConfigData {
+    if (this.type !== ConfigType.EVENT) throw new Error("Can't get event data, config type is not event")
+    return Config.deserializeEventConfigData(this.data)
   }
 
-  static deserializeCronTriggerData(data: string): BigInt {
+  static deserializeCronConfigData(data: string): BigInt {
     return BigInt.fromString(evm.decode(new EvmDecodeParam('uint256', data)))
   }
 
-  static deserializeEventTriggerData(data: string): EventTriggerData {
+  static deserializeEventConfigData(data: string): EventConfigData {
     const fields = JSON.parse<string[]>(
       evm.decode(new EvmDecodeParam('(uint256,bytes32,uint256,address,bytes32[],bytes)', data))
     )
-    return new EventTriggerData(
+    return new EventConfigData(
       BigInt.fromString(fields[0]),
       fields[1],
       BigInt.fromString(fields[2]),
@@ -88,7 +88,7 @@ export class SerializableContext {
     public user: string,
     public settlers: SerializableSettler[],
     public triggerSig: string,
-    public trigger: SerializableTrigger
+    public config: SerializableConfig
   ) {}
 }
 
@@ -99,7 +99,7 @@ export class Context {
     public user: Address,
     public settlers: Settler[],
     public triggerSig: string,
-    public trigger: Trigger
+    public config: Config
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
@@ -109,7 +109,7 @@ export class Context {
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
       serializable.triggerSig,
-      Trigger.fromSerializable(serializable.trigger)
+      Config.fromSerializable(serializable.config)
     )
   }
 
