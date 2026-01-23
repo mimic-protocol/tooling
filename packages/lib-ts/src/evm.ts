@@ -1,5 +1,6 @@
-import { EvmDecodeParam, EvmEncodeParam } from './types'
 import { JSON } from 'json-as/assembly'
+
+import { EvmDecodeParam, EvmEncodeParam } from './types'
 
 export namespace evm {
   @external('evm', '_encode')
@@ -10,7 +11,7 @@ export namespace evm {
 
   @external('evm', '_keccak')
   declare function _keccak(params: string): string
-  
+
   /**
    * Encodes parameters for EVM smart contract function calls using ABI encoding.
    * @param callParameters - Array of parameters to encode for the contract call
