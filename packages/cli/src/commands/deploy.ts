@@ -84,8 +84,7 @@ export default class Deploy extends Authenticate {
   ): Promise<string> {
     try {
       const form = filesToForm(files)
-      // todo update when endpoint is changed
-      const { data } = await axios.post(`${registryUrl}/tasks`, form, {
+      const { data } = await axios.post(`${registryUrl}/functions`, form, {
         headers: {
           'x-api-key': credentials.apiKey,
           'Content-Type': `multipart/form-data; boundary=${form.getBoundary()}`,
