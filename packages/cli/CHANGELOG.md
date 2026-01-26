@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 0.0.1-rc.35
+
+### Patch Changes
+
+- 9a993b0: Add getNativeBalance
+- da39b85: Added Tokens class
+- 426a4fe: Environment refactored
+
 ## 0.0.1-rc.34
 
 ### Patch Changes

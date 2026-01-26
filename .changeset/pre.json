@@ -8,10 +8,13 @@
     "@mimicprotocol/test-ts": "0.0.1-rc.25"
   },
   "changesets": [
+    "clever-parents-talk",
     "fifty-years-invent",
     "fine-nights-lay",
     "full-areas-sing",
+    "funky-parrots-hope",
     "good-doors-feel",
+    "large-dots-speak",
     "open-dots-notice",
     "pretty-feet-shop",
     "red-wasps-smash",
