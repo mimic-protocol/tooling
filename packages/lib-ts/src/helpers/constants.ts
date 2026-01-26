@@ -12,5 +12,4 @@ export enum ListType {
   DenyList = 1,
 }
 
-// todo replace with correct address once it is deployed
-export const MIMIC_HELPER_ADDRESS = '0x'
+export const MIMIC_HELPER_ADDRESS = '0x4766EF65d66E8D2d92F3089Ee42e5705e8817FF0'
