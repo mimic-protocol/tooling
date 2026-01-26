@@ -1,9 +1,9 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { Consensus, ListType } from './helpers'
+import { evm } from './evm'
+import { Consensus, ListType, MIMIC_HELPER_ADDRESS } from './helpers'
 import { EvmCall, SvmCall, Swap, Transfer } from './intents'
-import { mimicHelpers } from './mimichelpers'
 import {
   EvmCallQuery,
   EvmCallQueryResponse,
@@ -20,7 +20,7 @@ import {
   TokenPriceQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId, Result } from './types'
+import { Address, BigInt, ChainId, EvmDecodeParam, EvmEncodeParam, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -211,6 +211,12 @@ export namespace environment {
    * @returns The native token balance in wei
    */
   export function getNativeTokenBalance(chainId: ChainId, target: Address): Result<BigInt, string> {
-    return mimicHelpers.getNativeTokenBalance(chainId, target)
+    if (chainId === ChainId.SOLANA_MAINNET) return Result.err<BigInt, string>('Solana not supported')
+    const data = '0xeffd663c' + evm.encode([EvmEncodeParam.fromValue('address', target)])
+    const response = evmCallQuery(Address.fromHexString(MIMIC_HELPER_ADDRESS), chainId, data)
+    if (response.isError) return Result.err<BigInt, string>(response.error)
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response.unwrap()))
+    const decoded = BigInt.fromString(decodedResponse)
+    return Result.ok<BigInt, string>(decoded)
   }
 }
