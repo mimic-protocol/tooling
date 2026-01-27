@@ -24,7 +24,7 @@ export async function runFunction(
   optional: RunFunctionOptionalParams = {},
   oracleUrl: string = ''
 ): Promise<RunFunctionResult> {
-  const taskPath = path.join(functionDir, 'task.wasm')
+  const functionPath = path.join(functionDir, 'function.wasm')
   const inputs = optional.inputs || {}
   const showLogs = optional.showLogs ?? true
 
@@ -40,7 +40,7 @@ export async function runFunction(
   const oracleResponses = getOracleResponses(optional, validatedContext.timestamp || DEFAULT_CONTEXT.timestamp)
   const fullContext = { ...DEFAULT_CONTEXT, ...validatedContext, oracleResponses }
 
-  const result = await runExecution(taskPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
+  const result = await runExecution(functionPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
   const logs: string[] = JSON.parse(result.logsJson)
 
   if (showLogs && !result.success && logs.length > 0) {
