@@ -22,14 +22,14 @@ export class Settler {
 }
 
 @json
-export class SerializableConfig {
+export class SerializableTriggerConfig {
   constructor(
     public type: u8,
     public data: string
   ) {}
 }
 
-export class EventConfigData {
+export class EventTriggerConfigData {
   constructor(
     public chainId: BigInt,
     public blockHash: string,
@@ -41,35 +41,35 @@ export class EventConfigData {
 }
 
 @json
-export class Config {
+export class TriggerConfig {
   constructor(
     public type: TriggerType,
     public data: string
   ) {}
 
-  static fromSerializable(serializable: SerializableConfig): Config {
-    return new Config(serializable.type, serializable.data)
+  static fromSerializable(serializable: SerializableTriggerConfig): TriggerConfig {
+    return new TriggerConfig(serializable.type, serializable.data)
   }
 
   getCronData(): BigInt {
     if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, config type is not cron")
-    return Config.deserializeCronConfigData(this.data)
+    return TriggerConfig.deserializeCronTriggerConfigData(this.data)
   }
 
-  getEventData(): EventConfigData {
+  getEventData(): EventTriggerConfigData {
     if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, config type is not event")
-    return Config.deserializeEventConfigData(this.data)
+    return TriggerConfig.deserializeEventTriggerConfigData(this.data)
   }
 
-  static deserializeCronConfigData(data: string): BigInt {
+  static deserializeCronTriggerConfigData(data: string): BigInt {
     return BigInt.fromString(evm.decode(new EvmDecodeParam('uint256', data)))
   }
 
-  static deserializeEventConfigData(data: string): EventConfigData {
+  static deserializeEventTriggerConfigData(data: string): EventTriggerConfigData {
     const fields = JSON.parse<string[]>(
       evm.decode(new EvmDecodeParam('(uint256,bytes32,uint256,address,bytes32[],bytes)', data))
     )
-    return new EventConfigData(
+    return new EventTriggerConfigData(
       BigInt.fromString(fields[0]),
       fields[1],
       BigInt.fromString(fields[2]),
@@ -88,7 +88,7 @@ export class SerializableContext {
     public user: string,
     public settlers: SerializableSettler[],
     public triggerSig: string,
-    public config: SerializableConfig
+    public triggerConfig: SerializableTriggerConfig
   ) {}
 }
 
@@ -99,7 +99,7 @@ export class Context {
     public user: Address,
     public settlers: Settler[],
     public triggerSig: string,
-    public config: Config
+    public triggerConfig: TriggerConfig
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
@@ -109,7 +109,7 @@ export class Context {
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
       serializable.triggerSig,
-      Config.fromSerializable(serializable.config)
+      TriggerConfig.fromSerializable(serializable.triggerConfig)
     )
   }
 
