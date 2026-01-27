@@ -128,6 +128,8 @@ declare function _setFindProgramAddress(params: string, result: string): void
 
 export declare function setEvmDecode(abiType: string, hex: string, decoded: string): void
 
+export declare function setEvmEncode(abiType: string, data: string, encoded: string): void
+
 export declare function _setContext(
   timestamp: u64,
   consensusThreshold: u8,

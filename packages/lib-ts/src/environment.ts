@@ -1,7 +1,8 @@
 import { JSON } from 'json-as/assembly'
 
 import { Context, SerializableContext } from './context'
-import { Consensus, ListType } from './helpers'
+import { evm } from './evm'
+import { Consensus, ListType, MIMIC_HELPER_ADDRESS } from './helpers'
 import { EvmCall, SvmCall, Swap, Transfer } from './intents'
 import {
   EvmCallQuery,
@@ -19,7 +20,7 @@ import {
   TokenPriceQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, ChainId, Result } from './types'
+import { Address, BigInt, ChainId, EvmDecodeParam, EvmEncodeParam, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -93,15 +94,23 @@ export namespace environment {
    * @param consensusFn - Optional. A function for aggregating the price values (default is median).
    * @returns A `Result` containing either the consensus USD price or an error string.
    */
-  export function tokenPriceQuery(token: Token, timestamp: Date | null = null, consensusFn: (values: USD[]) => USD = Consensus.medianUSD): Result<USD, string> {
+  export function tokenPriceQuery(
+    token: Token,
+    timestamp: Date | null = null,
+    consensusFn: (values: USD[]) => USD = Consensus.medianUSD
+  ): Result<USD, string> {
     if (token.isUSD()) return Result.ok<USD, string>(USD.fromI32(1))
-    if (!(token instanceof BlockchainToken)) return Result.err<USD, string>('Price query not supported for token ' + token.toString())
-    
-    const responseStr = _tokenPriceQuery(JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp)))
+    if (!(token instanceof BlockchainToken)) {
+      return Result.err<USD, string>('Price query not supported for token ' + token.toString())
+    }
+
+    const responseStr = _tokenPriceQuery(
+      JSON.stringify(TokenPriceQuery.fromToken(changetype<BlockchainToken>(token), timestamp))
+    )
     const pricesResult = TokenPriceQueryResponse.fromJson<TokenPriceQueryResponse>(responseStr).toResult()
-    
+
     if (pricesResult.isError) return Result.err<USD, string>(pricesResult.error)
-    
+
     const prices = pricesResult.unwrap()
     if (prices.length === 0) return Result.err<USD, string>('Prices not found for token ' + token.toString())
 
@@ -126,9 +135,11 @@ export namespace environment {
     listType: ListType = ListType.DenyList,
     consensusFn: (amounts: TokenBalanceQuery[][]) => TokenAmount[] = Consensus.uniqueTokenAmounts
   ): Result<TokenAmount[], string> {
-    const responseStr = _relevantTokensQuery(JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType)))
+    const responseStr = _relevantTokensQuery(
+      JSON.stringify(RelevantTokensQuery.init(address, chainIds, usdMinAmount, tokensList, listType))
+    )
     const responseResult = RelevantTokensQueryResponse.fromJson<RelevantTokensQueryResponse>(responseStr).toResult()
-    
+
     if (responseResult.isError) return Result.err<TokenAmount[], string>(responseResult.error)
 
     return Result.ok<TokenAmount[], string>(consensusFn(responseResult.unwrap()))
@@ -146,7 +157,7 @@ export namespace environment {
     to: Address,
     chainId: ChainId,
     data: string,
-    timestamp: Date | null = null,
+    timestamp: Date | null = null
   ): Result<string, string> {
     const responseStr = _evmCallQuery(JSON.stringify(EvmCallQuery.from(to, chainId, timestamp, data)))
     return EvmCallQueryResponse.fromJson<EvmCallQueryResponse>(responseStr).toResult()
@@ -164,12 +175,12 @@ export namespace environment {
     chainId: ChainId,
     subgraphId: string,
     query: string,
-    timestamp: Date | null = null,
+    timestamp: Date | null = null
   ): Result<SubgraphQueryResult, string> {
     const responseStr = _subgraphQuery(JSON.stringify(SubgraphQuery.from(chainId, subgraphId, query, timestamp)))
     return SubgraphQueryResponse.fromJson<SubgraphQueryResponse>(responseStr).toResult()
   }
-   
+
   /**
    * Returns on-chain account info for Solana accounts.
    * @param publicKeys - Accounts to read from chain
@@ -178,7 +189,7 @@ export namespace environment {
    */
   export function svmAccountsInfoQuery(
     publicKeys: Address[],
-    timestamp: Date | null = null,
+    timestamp: Date | null = null
   ): Result<SvmAccountsInfoQueryResult, string> {
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
     return SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr).toResult()
@@ -191,5 +202,21 @@ export namespace environment {
   export function getContext(): Context {
     const context = JSON.parse<SerializableContext>(_getContext())
     return Context.fromSerializable(context)
+  }
+
+  /**
+   * Returns the native token balance of target account.
+   * @param chainId - Chain id to check balance
+   * @param target - Address to get balance from
+   * @returns The native token balance in wei
+   */
+  export function getNativeTokenBalance(chainId: ChainId, target: Address): Result<BigInt, string> {
+    if (chainId === ChainId.SOLANA_MAINNET) return Result.err<BigInt, string>('Solana not supported')
+    const data = '0xeffd663c' + evm.encode([EvmEncodeParam.fromValue('address', target)])
+    const response = evmCallQuery(Address.fromHexString(MIMIC_HELPER_ADDRESS), chainId, data)
+    if (response.isError) return Result.err<BigInt, string>(response.error)
+    const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response.unwrap()))
+    const decoded = BigInt.fromString(decodedResponse)
+    return Result.ok<BigInt, string>(decoded)
   }
 }

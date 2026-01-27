@@ -37,6 +37,13 @@ export default {
         },
       },
       evm: {
+        _encode: (paramsPtr) => {
+          const paramsStr = exports.__getString(paramsPtr)
+          const params = JSON.parse(paramsStr)[0]
+          const key = `_evmDecode:${params.abiType}:${params.value}`
+          if (store.has(key)) return exports.__newString(store.get(key))
+          throw new Error(`Encode value not found for key: ${key}`)
+        },
         _decode: (paramsPtr) => {
           const paramsStr = exports.__getString(paramsPtr)
           const params = JSON.parse(paramsStr)
@@ -116,6 +123,13 @@ export default {
           const result = exports.__getString(resultPtr)
           const key = `_evmCallQuery:${to}:${chainId}:${data}`
           store.set(key, result)
+        },
+        setEvmEncode: (abiTypePtr, dataPtr, encodedPtr) => {
+          const abiType = exports.__getString(abiTypePtr)
+          const data = exports.__getString(dataPtr)
+          const key = `_evmDecode:${abiType}:${data}`
+          const encoded = exports.__getString(encodedPtr)
+          store.set(key, encoded)
         },
         setEvmDecode: (abiTypePtr, hexPtr, decodedPtr) => {
           const abiType = exports.__getString(abiTypePtr)

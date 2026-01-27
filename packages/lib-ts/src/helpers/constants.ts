@@ -11,3 +11,5 @@ export enum ListType {
   AllowList = 0,
   DenyList = 1,
 }
+
+export const MIMIC_HELPER_ADDRESS = '0x4766EF65d66E8D2d92F3089Ee42e5705e8817FF0'
