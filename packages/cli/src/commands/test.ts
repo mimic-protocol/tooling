@@ -1,7 +1,11 @@
 import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
-import { execBinCommand } from '../lib/packageManager'
+import { DEFAULT_TASK } from '../constants'
+import { buildForTest, getTestPath, runTests } from '../core'
+import { runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
+import { coreLogger } from '../log'
 
 export default class Test extends Command {
   static override description = 'Runs task tests'
@@ -11,22 +15,47 @@ export default class Test extends Command {
   static override flags = {
     directory: Flags.string({ char: 'd', description: 'task directory', default: './' }),
     'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Test)
-    const { directory, 'skip-compile': skipCompile } = flags
+    const { directory, 'skip-compile': skipCompile, include, exclude } = flags
     const baseDir = path.resolve(directory)
-    const testPath = path.join(baseDir, 'tests')
+
+    const testPaths = new Set<string>()
+
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: DEFAULT_TASK,
+      include,
+      exclude,
+      baseDir,
+    })
 
     if (!skipCompile) {
-      const cg = execBinCommand('mimic', ['codegen'], baseDir)
-      if (cg.status !== 0) this.exit(cg.status ?? 1)
-      const cp = execBinCommand('mimic', ['compile'], baseDir)
-      if (cp.status !== 0) this.exit(cp.status ?? 1)
+      await runTasks(this, tasks, async (config) => {
+        const originalCwd = process.cwd()
+        try {
+          process.chdir(baseDir)
+          await buildForTest(
+            {
+              manifestPath: config.manifest,
+              taskPath: config.task,
+              outputDir: config.output,
+              typesDir: config.types,
+              cwd: baseDir,
+            },
+            coreLogger
+          )
+        } finally {
+          process.chdir(originalCwd)
+        }
+        testPaths.add(getTestPath(baseDir))
+      })
+    } else {
+      testPaths.add(getTestPath(baseDir))
     }
 
-    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
-    this.exit(result.status ?? 1)
+    if (testPaths.size > 0) runTests({ testPaths: Array.from(testPaths), baseDir }, coreLogger)
   }
 }

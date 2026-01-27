@@ -1,7 +1,9 @@
 import { Command, Flags } from '@oclif/core'
 
-import Codegen from './codegen'
-import Compile from './compile'
+import { build } from '../core'
+import { createConfirmClean, runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
+import { coreLogger } from '../log'
 
 export default class Build extends Command {
   static override description = 'Runs code generation and then compiles the task'
@@ -20,18 +22,37 @@ export default class Build extends Command {
       description: 'remove existing generated types before generating new files',
       default: false,
     }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    const { manifest, task, output, types, clean } = flags
+    const { manifest, task, output, types, clean, include, exclude } = flags
 
-    const codegenArgs: string[] = ['--manifest', manifest, '--output', types]
-    if (clean) codegenArgs.push('--clean')
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: {
+        manifest,
+        task: task,
+        output,
+        types,
+      },
+      include,
+      exclude,
+    })
+    await runTasks(this, tasks, async (config) => {
+      await build(
+        {
+          manifestPath: config.manifest,
+          taskPath: config.task,
+          outputDir: config.output,
+          typesDir: config.types,
+          clean,
+          confirmClean: createConfirmClean(this, config.types, coreLogger),
+        },
+        coreLogger
+      )
 
-    await Codegen.run(codegenArgs)
-
-    const compileArgs: string[] = ['--task', task, '--manifest', manifest, '--output', output]
-    await Compile.run(compileArgs)
+      coreLogger.info(`Build complete! Artifacts in ${config.output}/`)
+    })
   }
 }

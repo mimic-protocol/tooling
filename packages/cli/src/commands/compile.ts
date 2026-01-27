@@ -1,10 +1,9 @@
 import { Command, Flags } from '@oclif/core'
-import * as fs from 'fs'
-import * as path from 'path'
 
-import ManifestHandler from '../lib/ManifestHandler'
-import { execBinCommand } from '../lib/packageManager'
-import log from '../log'
+import { compile } from '../core'
+import { runTasks } from '../helpers'
+import MimicConfigHandler, { taskFilterFlags } from '../lib/MimicConfigHandler'
+import { coreLogger } from '../log'
 
 export default class Compile extends Command {
   static override description = 'Compiles task'
@@ -15,45 +14,34 @@ export default class Compile extends Command {
     task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
     manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
+    ...taskFilterFlags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
+    const { task: taskPath, output, manifest, include, exclude } = flags
 
-    const absTaskFile = path.resolve(taskFile)
-    const absOutputDir = path.resolve(outputDir)
+    const tasks = MimicConfigHandler.getFilteredTasks(this, {
+      defaultTask: {
+        manifest,
+        task: taskPath,
+        output,
+        types: '',
+      },
+      include,
+      exclude,
+    })
+    await runTasks(this, tasks, async (config) => {
+      await compile(
+        {
+          manifestPath: config.manifest,
+          taskPath: config.task,
+          outputDir: config.output,
+        },
+        coreLogger
+      )
 
-    if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
-
-    log.startAction('Verifying Manifest')
-    const manifest = ManifestHandler.load(this, manifestDir)
-    log.startAction('Compiling')
-
-    const ascArgs = [
-      absTaskFile,
-      '--target',
-      'release',
-      '--outFile',
-      path.join(absOutputDir, 'task.wasm'),
-      '--optimize',
-      '--exportRuntime',
-      '--transform',
-      'json-as/transform',
-    ]
-
-    const result = execBinCommand('asc', ascArgs, process.cwd())
-    if (result.status !== 0) {
-      this.error('AssemblyScript compilation failed', {
-        code: 'BuildError',
-        suggestions: ['Check the AssemblyScript file'],
-      })
-    }
-
-    log.startAction('Saving files')
-
-    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
-    log.stopAction()
-    console.log(`Build complete! Artifacts in ${outputDir}/`)
+      coreLogger.info(`Build complete! Artifacts in ${config.output}/`)
+    })
   }
 }

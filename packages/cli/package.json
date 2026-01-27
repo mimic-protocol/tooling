@@ -40,6 +40,7 @@
     "@types/lodash": "^4.17.15",
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.10.5",
+    "@types/sinon": "^21.0.0",
     "axios-mock-adapter": "^2.1.0",
     "chai": "^4.3.7",
     "eslint-config-mimic": "^0.0.3",

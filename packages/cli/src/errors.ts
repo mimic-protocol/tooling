@@ -31,3 +31,16 @@ export class EmptyManifestError extends Error {
 export const GENERIC_SUGGESTION = [
   'Contact the Mimic team for further assistance at our website https://www.mimic.fi or discord https://discord.mimic.fi',
 ]
+
+export class CommandError extends Error {
+  public code: string
+  public suggestions: string[]
+
+  constructor(message: string, options: { code: string; suggestions: string[] }) {
+    super(message)
+    this.name = this.constructor.name
+    this.code = options.code
+    this.suggestions = options.suggestions
+    Object.setPrototypeOf(this, new.target.prototype)
+  }
+}
