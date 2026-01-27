@@ -1,6 +1,6 @@
 import { evm } from '../evm'
 import { Address, BigInt, ChainId, EvmDecodeParam, JSON } from '../types'
-import { ConfigType } from '../types/ConfigType'
+import { TriggerType } from '../types/TriggerType'
 
 @json
 export class SerializableSettler {
@@ -43,7 +43,7 @@ export class EventConfigData {
 @json
 export class Config {
   constructor(
-    public type: ConfigType,
+    public type: TriggerType,
     public data: string
   ) {}
 
@@ -52,12 +52,12 @@ export class Config {
   }
 
   getCronData(): BigInt {
-    if (this.type !== ConfigType.CRON) throw new Error("Can't get cron data, config type is not cron")
+    if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, config type is not cron")
     return Config.deserializeCronConfigData(this.data)
   }
 
   getEventData(): EventConfigData {
-    if (this.type !== ConfigType.EVENT) throw new Error("Can't get event data, config type is not event")
+    if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, config type is not event")
     return Config.deserializeEventConfigData(this.data)
   }
 
