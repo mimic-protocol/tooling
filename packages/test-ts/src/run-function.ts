@@ -15,7 +15,7 @@ const DEFAULT_CONTEXT = {
   timestamp: Date.now(),
   consensusThreshold: 1,
   triggerSig: '0x',
-  triggerConfig: { type: 0, data: '0x' },
+  triggerPayload: { type: 0, data: '0x' },
 }
 
 export async function runFunction(
