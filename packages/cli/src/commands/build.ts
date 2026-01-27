@@ -12,7 +12,6 @@ export default class Build extends Command {
 
   static override flags = {
     manifest: Flags.string({ char: 'm', description: 'manifest to use', default: 'manifest.yaml' }),
-    // TODO TEST THIS
     function: Flags.string({ char: 'f', description: 'function to compile', default: 'src/function.ts' }),
     output: Flags.string({ char: 'o', description: 'output directory for build artifacts', default: './build' }),
     types: Flags.string({ char: 'y', description: 'output directory for generated types', default: './src/types' }),

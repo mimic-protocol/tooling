@@ -19,12 +19,12 @@ const DEFAULT_CONTEXT = {
 }
 
 export async function runFunction(
-  taskDir: string,
+  functionDir: string,
   context: Context,
   optional: RunFunctionOptionalParams = {},
   oracleUrl: string = ''
 ): Promise<RunFunctionResult> {
-  const taskPath = path.join(taskDir, 'task.wasm')
+  const taskPath = path.join(functionDir, 'task.wasm')
   const inputs = optional.inputs || {}
   const showLogs = optional.showLogs ?? true
 
