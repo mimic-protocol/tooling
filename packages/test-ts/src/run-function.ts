@@ -7,24 +7,24 @@ import {
   relevantTokensQueryProcessor,
   subgraphQueryProcessor,
 } from './processors'
-import { Context, RunTaskOptionalParams, RunTaskResult } from './types'
+import { Context, RunFunctionOptionalParams, RunFunctionResult } from './types'
 import { formatValidationError, processQueries, toIntents } from './utils'
 import { ContextValidator } from './validators'
 
 const DEFAULT_CONTEXT = {
   timestamp: Date.now(),
   consensusThreshold: 1,
-  configSig: '0x',
-  trigger: { type: 0, data: '0x' },
+  triggerSig: '0x',
+  triggerPayload: { type: 0, data: '0x' },
 }
 
-export async function runTask(
-  taskDir: string,
+export async function runFunction(
+  functionDir: string,
   context: Context,
-  optional: RunTaskOptionalParams = {},
+  optional: RunFunctionOptionalParams = {},
   oracleUrl: string = ''
-): Promise<RunTaskResult> {
-  const taskPath = path.join(taskDir, 'task.wasm')
+): Promise<RunFunctionResult> {
+  const functionPath = path.join(functionDir, 'function.wasm')
   const inputs = optional.inputs || {}
   const showLogs = optional.showLogs ?? true
 
@@ -40,7 +40,7 @@ export async function runTask(
   const oracleResponses = getOracleResponses(optional, validatedContext.timestamp || DEFAULT_CONTEXT.timestamp)
   const fullContext = { ...DEFAULT_CONTEXT, ...validatedContext, oracleResponses }
 
-  const result = await runExecution(taskPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
+  const result = await runExecution(functionPath, JSON.stringify(inputs), JSON.stringify(fullContext), oracleUrl)
   const logs: string[] = JSON.parse(result.logsJson)
 
   if (showLogs && !result.success && logs.length > 0) {
@@ -61,7 +61,7 @@ export async function runTask(
   }
 }
 
-function getOracleResponses(optional: RunTaskOptionalParams, contextTimestamp: number) {
+function getOracleResponses(optional: RunFunctionOptionalParams, contextTimestamp: number) {
   const { prices = [], relevantTokens = [], calls = [], subgraphQueries = [] } = optional
 
   const priceResponses = processQueries(prices, priceQueryProcessor, contextTimestamp)

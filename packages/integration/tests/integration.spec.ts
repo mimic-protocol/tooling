@@ -25,12 +25,12 @@ async function runTestCase(testCase: string): Promise<void> {
   describe(testCase, () => {
     const path = join(__dirname, testCase)
     const manifestPath = join(path, 'manifest.yaml')
-    const taskPath = join(path, 'src', 'task.ts')
+    const functionPath = join(path, 'src', 'function.ts')
     const outputPath = join(path, 'build')
 
     let compilationSuccessful = true
 
-    before('build task', () => {
+    before('build function', () => {
       const typesOutputPath = join(path, 'src', 'types')
       const resultCodegen = spawnSync('yarn', ['mimic', 'codegen', '-m', manifestPath, '-o', typesOutputPath])
 
@@ -41,7 +41,7 @@ async function runTestCase(testCase: string): Promise<void> {
         return
       }
 
-      const result = spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-t', taskPath, '-o', outputPath])
+      const result = spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-f', functionPath, '-o', outputPath])
 
       if (result.status !== 0) {
         compilationSuccessful = false
@@ -55,7 +55,7 @@ async function runTestCase(testCase: string): Promise<void> {
       fs.rmSync(join(path, 'test.log'))
     })
 
-    it('run task', async () => {
+    it('run function', async () => {
       if (!compilationSuccessful) {
         throw new Error(`Unable to run test case '${testCase}' due to compilation errors`)
       }

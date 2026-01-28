@@ -48,7 +48,7 @@ describe('IntentBuilder', () => {
         const settler = randomSettler(chainId)
         const fee = TokenAmount.fromI32(randomERC20Token(chainId), 9)
 
-        setContext(0, 1, userAddressStr, [settler], 'config-transfer')
+        setContext(0, 1, userAddressStr, [settler], 'trigger-transfer')
 
         const builder = EvmCallBuilder.forChain(chainId).addCall(target).addMaxFee(fee)
 
@@ -66,7 +66,7 @@ describe('IntentBuilder', () => {
     describe('when the settler is zero', () => {
       it('throws an error', () => {
         const settler = new SerializableSettler(NULL_ADDRESS, chainId)
-        setContext(0, 1, userAddressStr, [settler], 'config-call')
+        setContext(0, 1, userAddressStr, [settler], 'trigger-call')
 
         expect(() => {
           const builder = EvmCallBuilder.forChain(chainId)
@@ -81,7 +81,7 @@ describe('IntentBuilder', () => {
 
     it('throws an error', () => {
       const settler = randomSettler(chainId)
-      setContext(0, 1, userAddressStr, [settler], 'config-call')
+      setContext(0, 1, userAddressStr, [settler], 'trigger-call')
 
       expect(() => {
         const builder = EvmCallBuilder.forChain(chainId)

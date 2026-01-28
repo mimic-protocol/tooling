@@ -22,14 +22,14 @@ export class Settler {
 }
 
 @json
-export class SerializableTrigger {
+export class SerializableTriggerPayload {
   constructor(
     public type: u8,
     public data: string
   ) {}
 }
 
-export class EventTriggerData {
+export class EventTriggerPayloadData {
   constructor(
     public chainId: BigInt,
     public blockHash: string,
@@ -41,35 +41,35 @@ export class EventTriggerData {
 }
 
 @json
-export class Trigger {
+export class TriggerPayload {
   constructor(
     public type: TriggerType,
     public data: string
   ) {}
 
-  static fromSerializable(serializable: SerializableTrigger): Trigger {
-    return new Trigger(serializable.type, serializable.data)
+  static fromSerializable(serializable: SerializableTriggerPayload): TriggerPayload {
+    return new TriggerPayload(serializable.type, serializable.data)
   }
 
   getCronData(): BigInt {
-    if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, trigger type is not cron")
-    return Trigger.deserializeCronTriggerData(this.data)
+    if (this.type !== TriggerType.CRON) throw new Error("Can't get cron data, config type is not cron")
+    return TriggerPayload.deserializeCronTriggerPayloadData(this.data)
   }
 
-  getEventData(): EventTriggerData {
-    if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, trigger type is not event")
-    return Trigger.deserializeEventTriggerData(this.data)
+  getEventData(): EventTriggerPayloadData {
+    if (this.type !== TriggerType.EVENT) throw new Error("Can't get event data, config type is not event")
+    return TriggerPayload.deserializeEventTriggerPayloadData(this.data)
   }
 
-  static deserializeCronTriggerData(data: string): BigInt {
+  static deserializeCronTriggerPayloadData(data: string): BigInt {
     return BigInt.fromString(evm.decode(new EvmDecodeParam('uint256', data)))
   }
 
-  static deserializeEventTriggerData(data: string): EventTriggerData {
+  static deserializeEventTriggerPayloadData(data: string): EventTriggerPayloadData {
     const fields = JSON.parse<string[]>(
       evm.decode(new EvmDecodeParam('(uint256,bytes32,uint256,address,bytes32[],bytes)', data))
     )
-    return new EventTriggerData(
+    return new EventTriggerPayloadData(
       BigInt.fromString(fields[0]),
       fields[1],
       BigInt.fromString(fields[2]),
@@ -87,8 +87,8 @@ export class SerializableContext {
     public readonly consensusThreshold: u8,
     public user: string,
     public settlers: SerializableSettler[],
-    public configSig: string,
-    public trigger: SerializableTrigger
+    public triggerSig: string,
+    public triggerPayload: SerializableTriggerPayload
   ) {}
 }
 
@@ -98,8 +98,8 @@ export class Context {
     public readonly consensusThreshold: u8,
     public user: Address,
     public settlers: Settler[],
-    public configSig: string,
-    public trigger: Trigger
+    public triggerSig: string,
+    public triggerPayload: TriggerPayload
   ) {}
 
   static fromSerializable(serializable: SerializableContext): Context {
@@ -108,8 +108,8 @@ export class Context {
       serializable.consensusThreshold,
       Address.fromString(serializable.user),
       serializable.settlers.map<Settler>((s) => Settler.fromSerializable(s)),
-      serializable.configSig,
-      Trigger.fromSerializable(serializable.trigger)
+      serializable.triggerSig,
+      TriggerPayload.fromSerializable(serializable.triggerPayload)
     )
   }
 

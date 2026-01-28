@@ -4,12 +4,12 @@ import * as path from 'path'
 import { execBinCommand } from '../lib/packageManager'
 
 export default class Test extends Command {
-  static override description = 'Runs task tests'
+  static override description = 'Runs function tests'
 
   static override examples = ['<%= config.bin %> <%= command.id %> --directory ./']
 
   static override flags = {
-    directory: Flags.string({ char: 'd', description: 'task directory', default: './' }),
+    directory: Flags.string({ char: 'd', description: 'function directory', default: './' }),
     'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
   }
 

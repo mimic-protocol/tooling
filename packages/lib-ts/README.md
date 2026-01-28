@@ -25,11 +25,11 @@
 
 ## Content 
 
-This package provides a lightweight standard library for writing Mimic Protocol tasks in AssemblyScript. It includes:
+This package provides a lightweight standard library for writing Mimic Protocol functions in AssemblyScript. It includes:
 
 - Typed primitives to interact with oracles and contracts
 - Safe and minimal bindings for blockchain-specific operations
-- Utility helpers for developing deterministic, deployable task logic
+- Utility helpers for developing deterministic, deployable function logic
 
 ## Setup
 
@@ -50,7 +50,7 @@ $ yarn
 
 ## Usage
 
-Here’s an example of how to use the library in a Mimic task:
+Here’s an example of how to use the library in a Mimic function:
 
 ```ts
 import { environment, ERC20Token } from '@mimicprotocol/lib-ts'
@@ -60,7 +60,7 @@ const USDC = ERC20Token.fromString('0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
 environment.tokenPriceQuery(USDC, new Date(1744818017000))
 ```
 
-For full task development guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
+For full function development guide and examples please visit [docs.mimic.fi](https://docs.mimic.fi/)
 
 ## Security
 

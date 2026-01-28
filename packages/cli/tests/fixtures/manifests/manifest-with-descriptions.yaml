@@ -1,5 +1,5 @@
 version: 1.0.0
-name: sample task with descriptions
+name: sample function with descriptions
 description: some description
 inputs:
   - firstStaticNumber: uint32

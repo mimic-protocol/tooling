@@ -24,7 +24,7 @@
 
 ## Content 
 
-This repo includes all development tools required to build automated tasks for Mimic Protocol
+This repo includes all development tools required to build automated functions for Mimic Protocol
 
 ## Setup
 

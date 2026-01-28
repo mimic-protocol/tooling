@@ -14,7 +14,7 @@ describe('Call', () => {
     const fee = TokenAmount.fromI32(randomERC20Token(chainId), 100)
     const settler = randomSettler(chainId)
 
-    setContext(1, 1, user.toString(), [settler], 'config-123')
+    setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
     const call = EvmCall.create(chainId, target, calldata, fee)
     expect(call.op).toBe(OperationType.EvmCall)
@@ -50,7 +50,7 @@ describe('Call', () => {
     const value = BigInt.fromI32(10)
     const fee = TokenAmount.fromI32(randomERC20Token(chainId), 100)
 
-    setContext(1, 1, user.toString(), [settler], 'config-123')
+    setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
     const call = EvmCall.create(
       chainId,

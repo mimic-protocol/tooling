@@ -16,7 +16,7 @@ export default {
       `  ${inputsMapping}`,
       '}',
       '',
-      '// The class name is intentionally lowercase and plural to resemble a namespace when used in a task.',
+      '// The class name is intentionally lowercase and plural to resemble a namespace when used in a function.',
       'export class inputs {',
       `  ${inputsClass}`,
       '}',

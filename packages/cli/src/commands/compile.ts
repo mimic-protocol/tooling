@@ -7,21 +7,21 @@ import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
 export default class Compile extends Command {
-  static override description = 'Compiles task'
+  static override description = 'Compiles function'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --task src/task.ts --output ./output']
+  static override examples = ['<%= config.bin %> <%= command.id %> --function src/function.ts --output ./output']
 
   static override flags = {
-    task: Flags.string({ char: 't', description: 'task to compile', default: 'src/task.ts' }),
+    function: Flags.string({ char: 'f', description: 'function to compile', default: 'src/function.ts' }),
     manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
     output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { task: taskFile, output: outputDir, manifest: manifestDir } = flags
+    const { function: functionFile, output: outputDir, manifest: manifestDir } = flags
 
-    const absTaskFile = path.resolve(taskFile)
+    const absFunctionFile = path.resolve(functionFile)
     const absOutputDir = path.resolve(outputDir)
 
     if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
@@ -31,11 +31,11 @@ export default class Compile extends Command {
     log.startAction('Compiling')
 
     const ascArgs = [
-      absTaskFile,
+      absFunctionFile,
       '--target',
       'release',
       '--outFile',
-      path.join(absOutputDir, 'task.wasm'),
+      path.join(absOutputDir, 'function.wasm'),
       '--optimize',
       '--exportRuntime',
       '--transform',

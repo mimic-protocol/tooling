@@ -150,17 +150,17 @@ export default {
           const key = `_findProgramAddress:${paramsStr}`
           store.set(key, resultStr)
         },
-        _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, configSigPtr) => {
+        _setContext: (timestamp, consensusThreshold, userPtr, settlersPtr, triggerSigPtr) => {
           const user = exports.__getString(userPtr)
           const settlers = JSON.parse(exports.__getString(settlersPtr))
-          const configSig = exports.__getString(configSigPtr)
+          const triggerSig = exports.__getString(triggerSigPtr)
           const key = `_getContext`
           const context = {
             timestamp: Number(timestamp.toString()),
             consensusThreshold,
             user,
             settlers,
-            configSig,
+            triggerSig,
           }
           store.set(key, JSON.stringify(context))
         },

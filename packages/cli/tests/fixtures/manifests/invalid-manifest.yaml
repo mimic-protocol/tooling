@@ -1,5 +1,5 @@
 version: 1.0.0
-name: sample task
+name: sample function
 inputs:
   - firstStaticNumber: uint32
     wrongValue: uint32

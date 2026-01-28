@@ -9,7 +9,7 @@ import validSemVers from './fixtures/sem-vers/valid-sem-vers.json'
 describe('ManifestHandler', () => {
   const manifest = {
     version: '1.0.0',
-    name: 'sample task',
+    name: 'sample function',
     description: 'some description',
     inputs: [{ firstStaticNumber: 'uint8' }, { secondStaticNumber: 'uint8' }],
     abis: [{ ERC20: './abis/ERC20.json' }],

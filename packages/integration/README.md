@@ -1,6 +1,6 @@
 # Integration Testing Guide
 
-This package provides tools for creating and running integration tests for Mimic Protocol WebAssembly tasks. Tests verify that your tasks interact correctly with the environment by mocking external calls and validating outputs.
+This package provides tools for creating and running integration tests for Mimic Protocol WebAssembly functions. Tests verify that your functions interact correctly with the environment by mocking external calls and validating outputs.
 
 ## Test Structure
 
@@ -10,8 +10,8 @@ Each test follows a standardized directory structure:
 tests/
 ├── XXX-test-name/        # Numbered test directory (e.g., 001-init-intent)
 │   ├── src/              
-│   │   └── task.ts       # Assemblyscript task implementation
-│   ├── manifest.yaml     # Task manifest with metadata
+│   │   └── function.ts   # Assemblyscript function implementation
+│   ├── manifest.yaml     # Function manifest with metadata
 │   ├── mock.json         # Mock configuration for environment functions
 │   └── expected.log      # Expected output log for validation
 ```
@@ -26,26 +26,26 @@ Follow these steps to create a new integration test:
 
 2. Add required files:
 
-### src/task.ts
+### src/function.ts
 
-Implement your task that will be compiled to WebAssembly:
+Implement your function that will be compiled to WebAssembly:
 
 ```typescript
 import { Address, BigInt, Bytes, environment, NULL_ADDRESS } from '@mimicprotocol/lib-ts'
 
 export default function main(): void {
-  // Your task implementation that calls environment functions
+  // Your function implementation that calls environment functions
 }
 ```
 
 ### manifest.yaml
 
-Define task metadata:
+Define function metadata:
 
 ```yaml
 version: 1.0.0
-name: Your Task Name
-description: Brief description of what this task tests
+name: Your Function Name
+description: Brief description of what this function tests
 ```
 
 ### mock.json
@@ -99,8 +99,8 @@ yarn test
 ```
 
 The test runner:
-1. Compiles each task to WebAssembly
-2. Executes the task with the provided mocks
+1. Compiles each function to WebAssembly
+2. Executes the function with the provided mocks
 3. Compares actual output logs with expected logs
 4. Reports any discrepancies
 
