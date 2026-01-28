@@ -1,5 +1,11 @@
 # @mimicprotocol/test-ts
 
+## 0.0.1-rc.36
+
+### Patch Changes
+
+- 6a4fb70: rename to use functions
+
 ## 0.0.1-rc.35
 
 ### Patch Changes
