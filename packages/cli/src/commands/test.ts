@@ -3,27 +3,32 @@ import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
 
+import Build from './build'
+
+export type TestFlags = Awaited<ReturnType<InstanceType<typeof Test>['parse']>>['flags']
+
 export default class Test extends Command {
   static override description = 'Runs function tests'
 
   static override examples = ['<%= config.bin %> <%= command.id %> --directory ./']
 
   static override flags = {
+    ...Build.flags,
     directory: Flags.string({ char: 'd', description: 'function directory', default: './' }),
-    'skip-compile': Flags.boolean({ description: 'skip codegen and compile steps' }),
+    'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Test)
-    const { directory, 'skip-compile': skipCompile } = flags
+    await this.test(this, flags)
+  }
+  public async test(cmd: Command, flags: TestFlags): Promise<void> {
+    const { directory, 'skip-build': skipBuild } = flags
     const baseDir = path.resolve(directory)
     const testPath = path.join(baseDir, 'tests')
 
-    if (!skipCompile) {
-      const cg = execBinCommand('mimic', ['codegen'], baseDir)
-      if (cg.status !== 0) this.exit(cg.status ?? 1)
-      const cp = execBinCommand('mimic', ['compile'], baseDir)
-      if (cp.status !== 0) this.exit(cp.status ?? 1)
+    if (!skipBuild) {
+      await Build.build(this, flags)
     }
 
     const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)

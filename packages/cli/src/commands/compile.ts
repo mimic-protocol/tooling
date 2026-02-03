@@ -6,6 +6,8 @@ import ManifestHandler from '../lib/ManifestHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
+export type CompileFlags = Awaited<ReturnType<InstanceType<typeof Compile>['parse']>>['flags']
+
 export default class Compile extends Command {
   static override description = 'Compiles function'
 
@@ -19,15 +21,20 @@ export default class Compile extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { function: functionFile, output: outputDir, manifest: manifestDir } = flags
+    await Compile.compile(this, flags)
+  }
 
-    const absFunctionFile = path.resolve(functionFile)
+  public static async compile(
+    cmd: Command,
+    { function: functionDir, output: outputDir, manifest: manifestDir }: CompileFlags
+  ): Promise<void> {
+    const absFunctionFile = path.resolve(functionDir)
     const absOutputDir = path.resolve(outputDir)
 
     if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-    const manifest = ManifestHandler.load(this, manifestDir)
+    const manifest = ManifestHandler.load(cmd, manifestDir)
     log.startAction('Compiling')
 
     const ascArgs = [
@@ -44,7 +51,7 @@ export default class Compile extends Command {
 
     const result = execBinCommand('asc', ascArgs, process.cwd())
     if (result.status !== 0) {
-      this.error('AssemblyScript compilation failed', {
+      cmd.error('AssemblyScript compilation failed', {
         code: 'BuildError',
         suggestions: ['Check the AssemblyScript file'],
       })

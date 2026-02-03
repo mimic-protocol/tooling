@@ -7,6 +7,8 @@ import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } fro
 import log from '../log'
 import { Manifest } from '../types'
 
+export type CodegenFlags = Awaited<ReturnType<InstanceType<typeof Codegen>['parse']>>['flags']
+
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'
 
@@ -24,9 +26,12 @@ export default class Codegen extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    const { manifest: manifestDir, output: outputDir, clean } = flags
-    const manifest = ManifestHandler.load(this, manifestDir)
+    await Codegen.codegen(this, flags)
+  }
 
+  public static async codegen(cmd: Command, flags: CodegenFlags): Promise<void> {
+    const { manifest: manifestDir, output: outputDir, clean } = flags
+    const manifest = ManifestHandler.load(cmd, manifestDir)
     if (clean) {
       const shouldDelete = await confirm({
         message: `Are you sure you want to ${log.warnText('delete')} all the contents in ${log.highlightText(outputDir)}. This action is ${log.warnText('irreversible')}`,
@@ -35,7 +40,7 @@ export default class Codegen extends Command {
       if (!shouldDelete) {
         console.log('You can remove the --clean flag from your command')
         console.log('Stopping initialization...')
-        this.exit(0)
+        cmd.exit(0)
       }
       log.startAction(`Deleting contents of ${outputDir}`)
       if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true, force: true })

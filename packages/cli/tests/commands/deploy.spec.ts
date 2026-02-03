@@ -31,7 +31,7 @@ describe('deploy', () => {
       credentialsManager.saveProfile('default', defaultKey)
     })
 
-    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, '--skip-compile']
+    const command = ['deploy', `-i ${inputDir}`, `-o ${outputDir}`, '--skip-build']
 
     context('when input directory exists', () => {
       beforeEach('create input directory', () => {
@@ -109,7 +109,7 @@ describe('deploy', () => {
 
           context('when output directory does not exist', () => {
             const noOutDir = `${outputDir}/does-not-exist`
-            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, '--skip-compile']
+            const noOutDirCommand = ['deploy', `-i ${inputDir}`, `-o ${noOutDir}`, '--skip-build']
 
             it('saves the CID on a file', async () => {
               await runCommand(noOutDirCommand)

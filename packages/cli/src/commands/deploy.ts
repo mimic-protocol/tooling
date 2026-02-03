@@ -1,4 +1,4 @@
-import { Flags } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
 import FormData from 'form-data'
 import * as fs from 'fs'
@@ -6,14 +6,16 @@ import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
 import { ProfileCredentials } from '../lib/CredentialsManager'
-import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 
 import Authenticate from './authenticate'
+import Build from './build'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export default class Deploy extends Authenticate {
+export type DeployFlags = Awaited<ReturnType<InstanceType<typeof Deploy>['parse']>>['flags']
+
+export default class Deploy extends Command {
   static override description =
     'Uploads your compiled function artifacts to IPFS and registers it into the Mimic Registry'
 
@@ -25,34 +27,37 @@ export default class Deploy extends Authenticate {
 
   static override flags = {
     ...Authenticate.flags,
+    ...Build.flags,
     input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
-    output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
+    output: Flags.string({
+      char: 'o',
+      description: 'Output directory for compilation and deployment CID',
+      default: './build',
+    }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
-    'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
+    'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
+    await this.deploy(this, flags)
+  }
+
+  public async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
+    const { input: inputDir, output: outputDir, 'skip-build': skipBuild, url: registryUrl } = flags
     const fullInputDir = resolve(inputDir)
     const fullOutputDir = resolve(outputDir)
 
-    let credentials = this.authenticate(flags)
+    let credentials = Authenticate.authenticate(cmd, flags)
 
-    if (!skipCompile) {
-      const codegen = execBinCommand('mimic', ['codegen'], process.cwd())
-      if (codegen.status !== 0)
-        this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
-
-      const compile = execBinCommand('mimic', ['compile', '--output', fullInputDir], process.cwd())
-      if (compile.status !== 0)
-        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the function source code'] })
+    if (!skipBuild) {
+      await Build.build(cmd, flags)
     }
 
     log.startAction('Validating')
 
     if (!fs.existsSync(fullInputDir))
-      this.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
+      cmd.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
         code: 'Directory Not Found',
         suggestions: ['Use the --input flag to specify the correct path'],
       })
@@ -60,7 +65,7 @@ export default class Deploy extends Authenticate {
     const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullInputDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
-        this.error(`Could not find ${file}`, {
+        cmd.error(`Could not find ${file}`, {
           code: 'File Not Found',
           suggestions: [`Use ${log.highlightText('mimic compile')} to generate the needed files`],
         })
