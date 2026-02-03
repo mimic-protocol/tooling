@@ -1,3 +1,5 @@
+/* eslint-disable no-secrets/no-secrets */
+
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const EVM_NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 export const SVM_NATIVE_ADDRESS = 'Nativeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
@@ -12,4 +14,4 @@ export enum ListType {
   DenyList = 1,
 }
 
-export const MIMIC_HELPER_ADDRESS = '0x4766EF65d66E8D2d92F3089Ee42e5705e8817FF0'
+export const MIMIC_HELPER_ADDRESS = '0xb5DfCaBAef8fa7B0c73e2bFF01c6014a1f04025a'
