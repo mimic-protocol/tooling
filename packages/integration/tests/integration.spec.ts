@@ -26,32 +26,35 @@ async function runTestCase(testCase: string): Promise<void> {
     const path = join(__dirname, testCase)
     const manifestPath = join(path, 'manifest.yaml')
     const functionPath = join(path, 'src', 'function.ts')
-    const outputPath = join(path, 'build')
+    const buildDirectory = join(path, 'build')
 
     let compilationSuccessful = true
 
     before('build function', () => {
       const typesOutputPath = join(path, 'src', 'types')
-      const resultCodegen = spawnSync('yarn', ['mimic', 'codegen', '-m', manifestPath, '-o', typesOutputPath])
+      const resultCodegen = spawnSync('yarn', [
+        'mimic',
+        'build',
+        '-m',
+        manifestPath,
+        '-y',
+        typesOutputPath,
+        '-b',
+        buildDirectory,
+        '-f',
+        functionPath,
+      ])
 
       if (resultCodegen.status !== 0) {
         compilationSuccessful = false
-        console.error(`Codegen error in test case '${testCase}':`)
+        console.error(`Build error in test case '${testCase}':`)
         console.error(resultCodegen.stderr.toString())
         return
-      }
-
-      const result = spawnSync('yarn', ['mimic', 'compile', '-m', manifestPath, '-f', functionPath, '-o', outputPath])
-
-      if (result.status !== 0) {
-        compilationSuccessful = false
-        console.error(`Compilation error in test case '${testCase}':`)
-        console.error(result.stderr.toString())
       }
     })
 
     after('delete artifacts', () => {
-      fs.rmSync(outputPath, { recursive: true })
+      fs.rmSync(buildDirectory, { recursive: true })
       fs.rmSync(join(path, 'test.log'))
     })
 
@@ -60,7 +63,7 @@ async function runTestCase(testCase: string): Promise<void> {
         throw new Error(`Unable to run test case '${testCase}' due to compilation errors`)
       }
 
-      const mockRunner = new RunnerMock(outputPath, path)
+      const mockRunner = new RunnerMock(buildDirectory, path)
       mockRunner.run()
       const expectedLogs = loadLogs(join(path, 'expected.log'))
       const testLogs = loadLogs(join(path, 'test.log'))
