@@ -1,9 +1,11 @@
 import { Command, Flags } from '@oclif/core'
 
+import { FlagsType } from '../types'
+
 import Codegen from './codegen'
 import Compile from './compile'
 
-export type BuildFlags = Awaited<ReturnType<InstanceType<typeof Build>['parse']>>['flags']
+export type BuildFlags = FlagsType<typeof Build>
 
 export default class Build extends Command {
   static override description = 'Runs code generation and then compiles the function'

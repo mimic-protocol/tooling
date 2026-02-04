@@ -5,9 +5,9 @@ import { join } from 'path'
 
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } from '../lib'
 import log from '../log'
-import { Manifest } from '../types'
+import { FlagsType, Manifest } from '../types'
 
-export type CodegenFlags = Awaited<ReturnType<InstanceType<typeof Codegen>['parse']>>['flags']
+export type CodegenFlags = FlagsType<typeof Codegen>
 
 export default class Codegen extends Command {
   static override description = 'Generates typed interfaces for declared inputs and ABIs from your manifest.yaml file'

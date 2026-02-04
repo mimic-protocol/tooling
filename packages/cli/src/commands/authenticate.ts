@@ -2,8 +2,9 @@ import { Command, Flags } from '@oclif/core'
 
 import { CredentialsManager, ProfileCredentials } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
 
-export type AuthenticateFlags = Awaited<ReturnType<InstanceType<typeof Authenticate>['parse']>>['flags']
+export type AuthenticateFlags = FlagsType<typeof Authenticate>
 
 export default class Authenticate extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

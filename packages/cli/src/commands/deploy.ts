@@ -7,13 +7,14 @@ import { join, resolve } from 'path'
 import { GENERIC_SUGGESTION } from '../errors'
 import { ProfileCredentials } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
 
 import Authenticate from './authenticate'
 import Build from './build'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export type DeployFlags = Awaited<ReturnType<InstanceType<typeof Deploy>['parse']>>['flags']
+export type DeployFlags = FlagsType<typeof Deploy>
 
 export default class Deploy extends Command {
   static override description =

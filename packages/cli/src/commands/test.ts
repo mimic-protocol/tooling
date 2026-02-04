@@ -2,10 +2,11 @@ import { Command, Flags } from '@oclif/core'
 import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
+import { FlagsType } from '../types'
 
 import Build from './build'
 
-export type TestFlags = Awaited<ReturnType<InstanceType<typeof Test>['parse']>>['flags']
+export type TestFlags = FlagsType<typeof Test>
 
 export default class Test extends Command {
   static override description = 'Runs function tests'

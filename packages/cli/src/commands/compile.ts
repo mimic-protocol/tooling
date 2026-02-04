@@ -5,8 +5,9 @@ import * as path from 'path'
 import ManifestHandler from '../lib/ManifestHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { FlagsType } from '../types'
 
-export type CompileFlags = Awaited<ReturnType<InstanceType<typeof Compile>['parse']>>['flags']
+export type CompileFlags = FlagsType<typeof Compile>
 
 export default class Compile extends Command {
   static override description = 'Compiles function'
