@@ -1,4 +1,5 @@
 import { Command, Flags } from '@oclif/core'
+import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
 import { FlagsType } from '../types'
@@ -14,7 +15,7 @@ export default class Test extends Command {
 
   static override flags = {
     ...Build.flags,
-    directory: Flags.string({ char: 'd', description: 'Testing directory', default: './test' }),
+    directory: Flags.string({ char: 'd', description: 'Path to the testing directory', default: 'tests' }),
     'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
@@ -25,12 +26,14 @@ export default class Test extends Command {
 
   public async test(cmd: Command, flags: TestFlags): Promise<void> {
     const { directory, 'skip-build': skipBuild } = flags
+    const baseDir = path.resolve('./')
+    const testPath = path.join(baseDir, directory)
 
     if (!skipBuild) {
       await Build.build(this, flags)
     }
 
-    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${directory}/**/*.spec.ts`], './')
+    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
     this.exit(result.status ?? 1)
   }
 }
