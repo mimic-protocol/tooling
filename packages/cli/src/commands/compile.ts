@@ -17,7 +17,7 @@ export default class Compile extends Command {
   static override flags = {
     function: Flags.string({ char: 'f', description: 'Function to compile', default: 'src/function.ts' }),
     manifest: Flags.string({ char: 'm', description: 'Manifest to validate', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'Output directory', default: './build' }),
+    output: Flags.string({ char: 'o', description: 'Output folder for all compiled files', default: './build' }),
   }
 
   public async run(): Promise<void> {
