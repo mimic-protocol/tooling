@@ -1,5 +1,4 @@
 import { Command, Flags } from '@oclif/core'
-import * as path from 'path'
 
 import { execBinCommand } from '../lib/packageManager'
 import { FlagsType } from '../types'
