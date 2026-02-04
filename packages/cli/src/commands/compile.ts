@@ -17,7 +17,7 @@ export default class Compile extends Command {
   static override flags = {
     function: Flags.string({ char: 'f', description: 'Function to compile', default: 'src/function.ts' }),
     manifest: Flags.string({ char: 'm', description: 'Manifest to validate', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'Output folder for all compiled files', default: './build' }),
+    'build-directory': Flags.string({ char: 'b', description: 'Output directory for compilation', default: './build' }),
   }
 
   public async run(): Promise<void> {
@@ -27,10 +27,10 @@ export default class Compile extends Command {
 
   public static async compile(
     cmd: Command,
-    { function: functionDir, output: outputDir, manifest: manifestDir }: CompileFlags
+    { function: functionDir, 'build-directory': buildDir, manifest: manifestDir }: CompileFlags
   ): Promise<void> {
     const absFunctionFile = path.resolve(functionDir)
-    const absOutputDir = path.resolve(outputDir)
+    const absOutputDir = path.resolve(buildDir)
 
     if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
 
@@ -60,8 +60,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(absOutputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
-    console.log(`Build complete! Artifacts in ${outputDir}/`)
+    console.log(`Build complete! Artifacts in ${absOutputDir}/`)
   }
 }

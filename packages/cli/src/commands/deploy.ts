@@ -21,18 +21,17 @@ export default class Deploy extends Command {
     'Uploads your compiled function artifacts to IPFS and registers it into the Mimic Registry'
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --build-directory ./build',
     '<%= config.bin %> <%= command.id %> --profile staging',
-    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --build-directory ./build',
   ]
 
   static override flags = {
     ...Authenticate.flags,
     ...Build.flags,
-    input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
-    output: Flags.string({
-      char: 'o',
-      description: 'Output directory for compilation and deployment CID',
+    'build-directory': Flags.string({
+      char: 'b',
+      description: 'Output directory for compilation, or input directory for deployment when --skip-build is used',
       default: './build',
     }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
@@ -45,9 +44,8 @@ export default class Deploy extends Command {
   }
 
   public async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
-    const { input: inputDir, output: outputDir, 'skip-build': skipBuild, url: registryUrl } = flags
-    const fullInputDir = resolve(inputDir)
-    const fullOutputDir = resolve(outputDir)
+    const { 'build-directory': buildDir, 'skip-build': skipBuild, url: registryUrl } = flags
+    const fullBuildDir = resolve(buildDir)
 
     let credentials = Authenticate.authenticate(cmd, flags)
 
@@ -57,13 +55,15 @@ export default class Deploy extends Command {
 
     log.startAction('Validating')
 
-    if (!fs.existsSync(fullInputDir))
-      cmd.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
+    if (!fs.existsSync(fullBuildDir) && skipBuild)
+      cmd.error(`Directory ${log.highlightText(fullBuildDir)} does not exist`, {
         code: 'Directory Not Found',
-        suggestions: ['Use the --input flag to specify the correct path'],
+        suggestions: ['Use the --build-directory flag to specify the correct path'],
       })
 
-    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullInputDir, file))
+    if (!fs.existsSync(fullBuildDir)) fs.mkdirSync(fullBuildDir, { recursive: true })
+
+    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullBuildDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
         cmd.error(`Could not find ${file}`, {
@@ -77,9 +77,8 @@ export default class Deploy extends Command {
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
-    if (!fs.existsSync(fullOutputDir)) fs.mkdirSync(fullOutputDir, { recursive: true })
-    fs.writeFileSync(join(fullOutputDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(fullOutputDir)}`)
+    fs.writeFileSync(join(fullBuildDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
+    console.log(`CID saved at ${log.highlightText(fullBuildDir)}`)
     console.log(`Function deployed!`)
   }
 

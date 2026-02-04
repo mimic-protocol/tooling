@@ -1,4 +1,4 @@
-import { Command, Flags } from '@oclif/core'
+import { Command } from '@oclif/core'
 
 import { FlagsType } from '../types'
 
@@ -11,16 +11,11 @@ export default class Build extends Command {
   static override description = 'Runs code generation and then compiles the function'
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> --manifest ./manifest.yaml --function src/function.ts --output ./build --types ./src/types',
+    '<%= config.bin %> <%= command.id %> --manifest ./manifest.yaml --function src/function.ts --build-directory ./build --types-directory ./src/types',
   ]
 
   static override flags = {
     ...Codegen.flags,
-    types: Flags.string({
-      char: 't',
-      description: Codegen.flags.output.description,
-      default: Codegen.flags.output.default,
-    }),
     ...Compile.flags,
   }
 
@@ -31,7 +26,7 @@ export default class Build extends Command {
   }
 
   public static async build(cmd: Command, flags: BuildFlags): Promise<void> {
-    await Codegen.codegen(cmd, { ...flags, output: flags.types })
-    await Compile.compile(cmd, { ...flags })
+    await Codegen.codegen(cmd, flags)
+    await Compile.compile(cmd, flags)
   }
 }

@@ -15,7 +15,7 @@ export default class Test extends Command {
 
   static override flags = {
     ...Build.flags,
-    directory: Flags.string({ char: 'd', description: 'function directory', default: './' }),
+    directory: Flags.string({ char: 'd', description: 'Testing directory', default: './test' }),
     'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
@@ -23,16 +23,15 @@ export default class Test extends Command {
     const { flags } = await this.parse(Test)
     await this.test(this, flags)
   }
+
   public async test(cmd: Command, flags: TestFlags): Promise<void> {
     const { directory, 'skip-build': skipBuild } = flags
-    const baseDir = path.resolve(directory)
-    const testPath = path.join(baseDir, 'tests')
 
     if (!skipBuild) {
       await Build.build(this, flags)
     }
 
-    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
+    const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${directory}/**/*.spec.ts`], './')
     this.exit(result.status ?? 1)
   }
 }
