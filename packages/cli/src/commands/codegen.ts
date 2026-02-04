@@ -16,7 +16,7 @@ export default class Codegen extends Command {
 
   static override flags = {
     manifest: Flags.string({ char: 'm', description: 'Specify a custom manifest file path', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'Ouput directory for generated types', default: './src/types' }),
+    output: Flags.string({ char: 'o', description: 'Output directory for generated types', default: './src/types' }),
     clean: Flags.boolean({
       char: 'c',
       description: 'Remove existing generated types before generating new files',
