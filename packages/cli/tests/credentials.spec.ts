@@ -300,28 +300,6 @@ api_key=staging-key
     })
   })
 
-  describe('ensureLoggedIn', () => {
-    it('should return credentials if profile exists', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
-
-      const credentials = credentialsManager.getCredentials(DEFAULT_PROFILE)
-
-      expect(credentials).to.deep.equal({ apiKey: 'test-key' })
-    })
-
-    it('should throw error with user-friendly message if not logged in', () => {
-      expect(() => credentialsManager.getCredentials(DEFAULT_PROFILE)).to.throw(/Authentication required/)
-    })
-
-    it('should default to "default" profile', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
-
-      const credentials = credentialsManager.getCredentials()
-
-      expect(credentials.apiKey).to.equal('test-key')
-    })
-  })
-
   describe('listProfiles', () => {
     it('should return empty array if no profiles exist', () => {
       const profiles = credentialsManager.getProfiles()

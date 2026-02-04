@@ -156,15 +156,6 @@ export class CredentialsManager {
     return credentials
   }
 
-  getCredentials(profileName: string = DEFAULT_PROFILE): ProfileCredentials {
-    try {
-      return this.getProfile(profileName)
-    } catch (error) {
-      if (error instanceof Error) throw new Error(`Authentication required: ${error.message}`)
-      throw error
-    }
-  }
-
   getProfiles(): string[] {
     const profiles = this.readCredentials()
     return Object.keys(profiles)

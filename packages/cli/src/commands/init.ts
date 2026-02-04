@@ -6,6 +6,9 @@ import simpleGit from 'simple-git'
 
 import { execBinCommand, installDependencies } from '../lib/packageManager'
 import log from '../log'
+import { FlagsType } from '../types'
+
+export type InitFlags = FlagsType<typeof Init> & { directory: string }
 
 export default class Init extends Command {
   static override description = 'Initializes a new Mimic-compatible project structure in the specified directory'
@@ -22,8 +25,11 @@ export default class Init extends Command {
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Init)
-    const { directory } = args
-    const { force } = flags
+    await Init.init(this, { ...flags, ...args })
+  }
+
+  public static async init(cmd: Command, flags: InitFlags): Promise<void> {
+    const { directory, force } = flags
     const absDir = path.resolve(directory)
 
     if (force && fs.existsSync(absDir) && fs.readdirSync(absDir).length > 0) {
@@ -37,7 +43,7 @@ export default class Init extends Command {
       if (!shouldDelete) {
         console.log('You can remove the --force flag from your command')
         console.log('Stopping initialization...')
-        this.exit(0)
+        cmd.exit(0)
       }
       log.startAction(`Deleting contents of ${absDir}`)
       // Delete files individually instead of removing the entire directory to preserve
@@ -51,7 +57,7 @@ export default class Init extends Command {
     log.startAction('Creating files')
 
     if (fs.existsSync(absDir) && fs.readdirSync(absDir).length > 0) {
-      this.error(`Directory ${log.highlightText(absDir)} is not empty`, {
+      cmd.error(`Directory ${log.highlightText(absDir)} is not empty`, {
         code: 'DirectoryNotEmpty',
         suggestions: [
           'You can specify the directory as a positional argument',
@@ -70,7 +76,7 @@ export default class Init extends Command {
       const gitDir = path.join(absDir, '.git')
       if (fs.existsSync(gitDir)) fs.rmSync(gitDir, { recursive: true, force: true })
     } catch (error) {
-      this.error(`Failed to clone template repository. Details: ${error}`)
+      cmd.error(`Failed to clone template repository. Details: ${error}`)
     }
 
     this.installDependencies(absDir)
@@ -79,12 +85,12 @@ export default class Init extends Command {
     console.log('New project initialized!')
   }
 
-  installDependencies(absDir: string) {
+  public static installDependencies(absDir: string) {
     if (process.env.NODE_ENV === 'test') return
     installDependencies(absDir)
   }
 
-  runCodegen(absDir: string) {
+  public static runCodegen(absDir: string) {
     if (process.env.NODE_ENV === 'test') return
     execBinCommand('mimic', ['codegen'], absDir)
   }

@@ -2,6 +2,9 @@ import { Command } from '@oclif/core'
 
 import { CredentialsManager } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
+
+export type ProfilesFlags = FlagsType<typeof Profiles>
 
 export default class Profiles extends Command {
   static override description = 'List all configured authentication profiles'
@@ -9,7 +12,12 @@ export default class Profiles extends Command {
   static override examples = ['<%= config.bin %> <%= command.id %>']
 
   public async run(): Promise<void> {
-    const profiles = CredentialsManager.getDefault().getProfiles()
+    await Profiles.profiles()
+  }
+
+  public static async profiles(): Promise<void> {
+    const credentials = CredentialsManager.getDefault().readCredentials()
+    const profiles = Object.keys(credentials)
 
     if (profiles.length === 0) {
       console.log('No profiles found.')
