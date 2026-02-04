@@ -12,7 +12,9 @@ export type CompileFlags = FlagsType<typeof Compile>
 export default class Compile extends Command {
   static override description = 'Compiles function'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --function src/function.ts --output ./output']
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> --function src/function.ts --build-directory ./build',
+  ]
 
   static override flags = {
     function: Flags.string({ char: 'f', description: 'Function to compile', default: 'src/function.ts' }),

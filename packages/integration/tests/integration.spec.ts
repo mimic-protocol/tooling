@@ -32,12 +32,12 @@ async function runTestCase(testCase: string): Promise<void> {
 
     before('build function', () => {
       const typesOutputPath = join(path, 'src', 'types')
-      const resultCodegen = spawnSync('yarn', [
+      const resultBuild = spawnSync('yarn', [
         'mimic',
         'build',
         '-m',
         manifestPath,
-        '-y',
+        '-t',
         typesOutputPath,
         '-b',
         buildDirectory,
@@ -45,10 +45,10 @@ async function runTestCase(testCase: string): Promise<void> {
         functionPath,
       ])
 
-      if (resultCodegen.status !== 0) {
+      if (resultBuild.status !== 0) {
         compilationSuccessful = false
         console.error(`Build error in test case '${testCase}':`)
-        console.error(resultCodegen.stderr.toString())
+        console.error(resultBuild.stderr.toString())
         return
       }
     })
