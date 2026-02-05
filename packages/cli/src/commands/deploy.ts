@@ -45,7 +45,7 @@ export default class Deploy extends Command {
 
   public async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
     const { 'build-directory': buildDir, 'skip-build': skipBuild, url: registryUrl } = flags
-    const fullBuildDir = resolve(buildDir)
+    const absBuildDir = resolve(buildDir)
 
     let credentials = Authenticate.authenticate(cmd, flags)
 
@@ -53,13 +53,13 @@ export default class Deploy extends Command {
 
     log.startAction('Validating')
 
-    if (!fs.existsSync(fullBuildDir) && skipBuild)
-      cmd.error(`Directory ${log.highlightText(fullBuildDir)} does not exist`, {
+    if (!fs.existsSync(absBuildDir) && skipBuild)
+      cmd.error(`Directory ${log.highlightText(absBuildDir)} does not exist`, {
         code: 'Directory Not Found',
         suggestions: ['Use the --build-directory flag to specify the correct path'],
       })
 
-    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullBuildDir, file))
+    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(absBuildDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
         cmd.error(`Could not find ${file}`, {
@@ -73,8 +73,8 @@ export default class Deploy extends Command {
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
-    fs.writeFileSync(join(fullBuildDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(fullBuildDir)}`)
+    fs.writeFileSync(join(absBuildDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
+    console.log(`CID saved at ${log.highlightText(absBuildDir)}`)
     console.log(`Function deployed!`)
   }
 
