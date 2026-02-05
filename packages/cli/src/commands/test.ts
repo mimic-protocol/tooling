@@ -32,6 +32,6 @@ export default class Test extends Command {
     if (!skipBuild) await Build.build(this, flags)
 
     const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
-    this.exit(result.status ?? 1)
+    cmd.exit(result.status ?? 1)
   }
 }
