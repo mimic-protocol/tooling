@@ -29,7 +29,6 @@ export default class Login extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Login)
-
     await Login.login(this, flags)
   }
 
