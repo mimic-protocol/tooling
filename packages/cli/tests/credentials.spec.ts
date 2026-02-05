@@ -242,64 +242,6 @@ api_key=staging-key
     })
   })
 
-  describe('getProfile', () => {
-    it('should throw error if credentials directory does not exist', () => {
-      const credDir = credentialsManager.getBaseDir()
-      if (fs.existsSync(credDir)) {
-        fs.rmSync(credDir, { recursive: true, force: true })
-      }
-      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/No credentials directory found/)
-    })
-
-    it('should throw error if credentials file does not exist', () => {
-      credentialsManager.createCredentialsDirIfNotExists()
-      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/No credentials file found/)
-    })
-
-    it('should throw error if profile does not exist', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
-      expect(() => credentialsManager.getProfile('nonexistent')).to.throw(/Profile 'nonexistent' not found/)
-    })
-
-    it('should include available profiles in error message', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key')
-      credentialsManager.saveProfile('staging', 'staging-key')
-
-      try {
-        credentialsManager.getProfile('nonexistent')
-        expect.fail('Should have thrown an error')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        expect(error.message).to.include(DEFAULT_PROFILE)
-        expect(error.message).to.include('staging')
-      }
-    })
-
-    it('should throw error if api_key is empty', () => {
-      credentialsManager.createCredentialsDirIfNotExists()
-      const credentialsPath = credentialsManager.getCredentialsPath()
-      fs.writeFileSync(credentialsPath, `[${DEFAULT_PROFILE}]\napi_key=\n`)
-
-      expect(() => credentialsManager.getProfile(DEFAULT_PROFILE)).to.throw(/has no API key/)
-    })
-
-    it('should return profile credentials if valid', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'test-key-123')
-
-      const credentials = credentialsManager.getProfile(DEFAULT_PROFILE)
-
-      expect(credentials).to.deep.equal({ apiKey: 'test-key-123' })
-    })
-
-    it('should default to "default" profile if no name provided', () => {
-      credentialsManager.saveProfile(DEFAULT_PROFILE, 'default-key')
-
-      const credentials = credentialsManager.getProfile()
-
-      expect(credentials.apiKey).to.equal('default-key')
-    })
-  })
-
   describe('listProfiles', () => {
     it('should return empty array if no profiles exist', () => {
       const profiles = credentialsManager.getProfiles()

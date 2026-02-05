@@ -37,8 +37,7 @@ export default class Logout extends Command {
   public static async logout(cmd: Command, flags: LogoutFlags): Promise<void> {
     const { profile: profileName, force } = flags
 
-    const credentials = CredentialsManager.getDefault().readCredentials()
-    const profiles = Object.keys(credentials)
+    const profiles = CredentialsManager.getDefault().getProfiles()
     if (!profiles.includes(profileName)) {
       cmd.error(`Profile '${profileName}' does not exist`, {
         code: 'ProfileNotFound',

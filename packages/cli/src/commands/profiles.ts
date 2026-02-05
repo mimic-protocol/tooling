@@ -16,8 +16,7 @@ export default class Profiles extends Command {
   }
 
   public static async profiles(): Promise<void> {
-    const credentials = CredentialsManager.getDefault().readCredentials()
-    const profiles = Object.keys(credentials)
+    const profiles = CredentialsManager.getDefault().getProfiles()
 
     if (profiles.length === 0) {
       console.log('No profiles found.')
