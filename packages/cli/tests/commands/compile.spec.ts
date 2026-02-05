@@ -16,7 +16,7 @@ describe('compile', () => {
   })
 
   const buildCommand = (manifestPath: string, functionPath: string, outputDir: string) => {
-    return ['compile', `--function ${functionPath}`, `--manifest ${manifestPath}`, `--output ${outputDir}`]
+    return ['compile', `--function ${functionPath}`, `--manifest ${manifestPath}`, `--build-directory ${outputDir}`]
   }
 
   const itCreatesFilesCorrectly = (manifestPath: string, expectedInputs: object) => {

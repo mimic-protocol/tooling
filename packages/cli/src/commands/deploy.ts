@@ -1,4 +1,4 @@
-import { Flags } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
 import axios, { AxiosError } from 'axios'
 import FormData from 'form-data'
 import * as fs from 'fs'
@@ -6,61 +6,63 @@ import { join, resolve } from 'path'
 
 import { GENERIC_SUGGESTION } from '../errors'
 import { ProfileCredentials } from '../lib/CredentialsManager'
-import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { FlagsType } from '../types'
 
 import Authenticate from './authenticate'
+import Build from './build'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
-export default class Deploy extends Authenticate {
+export type DeployFlags = FlagsType<typeof Deploy>
+
+export default class Deploy extends Command {
   static override description =
     'Uploads your compiled function artifacts to IPFS and registers it into the Mimic Registry'
 
   static override examples = [
-    '<%= config.bin %> <%= command.id %> --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --build-directory ./build',
     '<%= config.bin %> <%= command.id %> --profile staging',
-    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --input ./dist --output ./dist',
+    '<%= config.bin %> <%= command.id %> --api-key MY_KEY --build-directory ./build',
   ]
 
   static override flags = {
     ...Authenticate.flags,
-    input: Flags.string({ char: 'i', description: 'Directory containing the compiled artifacts', default: './build' }),
-    output: Flags.string({ char: 'o', description: 'Output directory for deployment CID', default: './build' }),
+    ...Build.flags,
+    'build-directory': Flags.string({
+      char: 'b',
+      description: 'Output directory for compilation, or input directory for deployment when --skip-build is used',
+      default: './build',
+    }),
     url: Flags.string({ char: 'u', description: `Mimic Registry base URL`, default: MIMIC_REGISTRY_DEFAULT }),
-    'skip-compile': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
+    'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    const { input: inputDir, output: outputDir, 'skip-compile': skipCompile, url: registryUrl } = flags
-    const fullInputDir = resolve(inputDir)
-    const fullOutputDir = resolve(outputDir)
+    await this.deploy(this, flags)
+  }
 
-    let credentials = this.authenticate(flags)
+  public async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
+    const { 'build-directory': buildDir, 'skip-build': skipBuild, url: registryUrl } = flags
+    const absBuildDir = resolve(buildDir)
 
-    if (!skipCompile) {
-      const codegen = execBinCommand('mimic', ['codegen'], process.cwd())
-      if (codegen.status !== 0)
-        this.error('Code generation failed', { code: 'CodegenError', suggestions: ['Fix manifest and ABI files'] })
+    let credentials = Authenticate.authenticate(cmd, flags)
 
-      const compile = execBinCommand('mimic', ['compile', '--output', fullInputDir], process.cwd())
-      if (compile.status !== 0)
-        this.error('Compilation failed', { code: 'BuildError', suggestions: ['Check the function source code'] })
-    }
+    if (!skipBuild) await Build.build(cmd, flags)
 
     log.startAction('Validating')
 
-    if (!fs.existsSync(fullInputDir))
-      this.error(`Directory ${log.highlightText(fullInputDir)} does not exist`, {
+    if (!fs.existsSync(absBuildDir) && skipBuild)
+      cmd.error(`Directory ${log.highlightText(absBuildDir)} does not exist`, {
         code: 'Directory Not Found',
-        suggestions: ['Use the --input flag to specify the correct path'],
+        suggestions: ['Use the --build-directory flag to specify the correct path'],
       })
 
-    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullInputDir, file))
+    const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(absBuildDir, file))
     for (const file of neededFiles) {
       if (!fs.existsSync(file))
-        this.error(`Could not find ${file}`, {
+        cmd.error(`Could not find ${file}`, {
           code: 'File Not Found',
           suggestions: [`Use ${log.highlightText('mimic compile')} to generate the needed files`],
         })
@@ -71,9 +73,8 @@ export default class Deploy extends Authenticate {
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
-    if (!fs.existsSync(fullOutputDir)) fs.mkdirSync(fullOutputDir, { recursive: true })
-    fs.writeFileSync(join(fullOutputDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(fullOutputDir)}`)
+    fs.writeFileSync(join(absBuildDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
+    console.log(`CID saved at ${log.highlightText(absBuildDir)}`)
     console.log(`Function deployed!`)
   }
 

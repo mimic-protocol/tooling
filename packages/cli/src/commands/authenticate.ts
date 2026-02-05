@@ -2,6 +2,9 @@ import { Command, Flags } from '@oclif/core'
 
 import { CredentialsManager, ProfileCredentials } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
+
+export type AuthenticateFlags = FlagsType<typeof Authenticate>
 
 export default class Authenticate extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,7 +31,7 @@ export default class Authenticate extends Command {
     }),
   }
 
-  protected authenticate(flags: { profile?: string; 'api-key'?: string }): ProfileCredentials {
+  public static authenticate(cmd: Command, flags: AuthenticateFlags): ProfileCredentials {
     let apiKey = flags['api-key']
     if (!apiKey) {
       try {
@@ -36,7 +39,7 @@ export default class Authenticate extends Command {
         apiKey = credentials.apiKey
       } catch (error) {
         if (error instanceof Error) {
-          this.error(error.message, {
+          cmd.error(error.message, {
             code: 'AuthenticationRequired',
             suggestions: [
               `Run ${log.highlightText('mimic login')} to authenticate`,

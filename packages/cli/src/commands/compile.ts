@@ -5,29 +5,39 @@ import * as path from 'path'
 import ManifestHandler from '../lib/ManifestHandler'
 import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
+import { FlagsType } from '../types'
+
+export type CompileFlags = FlagsType<typeof Compile>
 
 export default class Compile extends Command {
   static override description = 'Compiles function'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --function src/function.ts --output ./output']
+  static override examples = [
+    '<%= config.bin %> <%= command.id %> --function src/function.ts --build-directory ./build',
+  ]
 
   static override flags = {
-    function: Flags.string({ char: 'f', description: 'function to compile', default: 'src/function.ts' }),
-    manifest: Flags.string({ char: 'm', description: 'manifest to validate', default: 'manifest.yaml' }),
-    output: Flags.string({ char: 'o', description: 'output directory', default: './build' }),
+    function: Flags.string({ char: 'f', description: 'Function to compile', default: 'src/function.ts' }),
+    manifest: Flags.string({ char: 'm', description: 'Manifest to validate', default: 'manifest.yaml' }),
+    'build-directory': Flags.string({ char: 'b', description: 'Output directory for compilation', default: './build' }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    const { function: functionFile, output: outputDir, manifest: manifestDir } = flags
+    await Compile.compile(this, flags)
+  }
 
-    const absFunctionFile = path.resolve(functionFile)
-    const absOutputDir = path.resolve(outputDir)
+  public static async compile(
+    cmd: Command,
+    { function: functionDir, 'build-directory': buildDir, manifest: manifestDir }: CompileFlags
+  ): Promise<void> {
+    const absFunctionFile = path.resolve(functionDir)
+    const absBuildDir = path.resolve(buildDir)
 
-    if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
+    if (!fs.existsSync(absBuildDir)) fs.mkdirSync(absBuildDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
-    const manifest = ManifestHandler.load(this, manifestDir)
+    const manifest = ManifestHandler.load(cmd, manifestDir)
     log.startAction('Compiling')
 
     const ascArgs = [
@@ -35,7 +45,7 @@ export default class Compile extends Command {
       '--target',
       'release',
       '--outFile',
-      path.join(absOutputDir, 'function.wasm'),
+      path.join(absBuildDir, 'function.wasm'),
       '--optimize',
       '--exportRuntime',
       '--transform',
@@ -44,7 +54,7 @@ export default class Compile extends Command {
 
     const result = execBinCommand('asc', ascArgs, process.cwd())
     if (result.status !== 0) {
-      this.error('AssemblyScript compilation failed', {
+      cmd.error('AssemblyScript compilation failed', {
         code: 'BuildError',
         suggestions: ['Check the AssemblyScript file'],
       })
@@ -52,8 +62,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(outputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(absBuildDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
-    console.log(`Build complete! Artifacts in ${outputDir}/`)
+    console.log(`Build complete! Artifacts in ${absBuildDir}/`)
   }
 }

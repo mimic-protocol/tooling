@@ -8,48 +8,52 @@ import { itThrowsACliError } from '../helpers'
 describe('codegen', () => {
   const basePath = `${__dirname}/../fixtures`
   const manifestPath = `${basePath}/manifests/manifest.yaml`
-  const outputDir = `${basePath}/src/types`
+  const typesDirectory = `${basePath}/src/types`
 
   afterEach('delete generated files', () => {
-    if (fs.existsSync(outputDir)) fs.rmSync(outputDir, { recursive: true })
+    if (fs.existsSync(typesDirectory)) fs.rmSync(typesDirectory, { recursive: true })
   })
 
   context('when the manifest exists', () => {
     context('when clean flag is not passed', () => {
-      const command = ['codegen', `--manifest ${manifestPath}`, `--output ${outputDir}`]
+      const command = ['codegen', `--manifest ${manifestPath}`, `--types-directory ${typesDirectory}`]
 
       context('when there are inputs and abis', () => {
         it('generates correctly', async () => {
           const { error } = await runCommand(command)
           expect(error).to.be.undefined
-          expect(fs.existsSync(`${outputDir}/ERC20.ts`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/index.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
         })
       })
 
       context('when there are no inputs or abis', () => {
-        const command = ['codegen', `--manifest ${basePath}/manifests/simple-manifest.yaml`, `--output ${outputDir}`]
+        const command = [
+          'codegen',
+          `--manifest ${basePath}/manifests/simple-manifest.yaml`,
+          `--types-directory ${typesDirectory}`,
+        ]
 
         it('generates nothing', async () => {
           const { error } = await runCommand(command)
           expect(error).to.be.undefined
-          expect(fs.existsSync(`${outputDir}/ERC20.ts`)).to.be.false
-          expect(fs.existsSync(`${outputDir}/ERC20.ts`)).to.be.false
-          expect(fs.existsSync(`${outputDir}`)).to.be.false
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.false
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.false
+          expect(fs.existsSync(`${typesDirectory}`)).to.be.false
         })
       })
     })
   })
 
   context('when the manifest does not exist', () => {
-    const command = ['codegen', `--manifest ${manifestPath}fake`, `--output ${outputDir}`]
+    const command = ['codegen', `--manifest ${manifestPath}fake`, `--types-directory ${typesDirectory}`]
 
     itThrowsACliError(command, `Could not find ${manifestPath}fake`, 'FileNotFound', 1)
   })
 
   context('when clean flag is passed', () => {
     let userResponse
-    const command = ['codegen', `--manifest ${manifestPath}`, `--output ${outputDir}`, '--clean']
+    const command = ['codegen', `--manifest ${manifestPath}`, `--types-directory ${typesDirectory}`, '--clean']
 
     context('when the user accepts the confirmation', () => {
       beforeEach('stub user input', () => {
@@ -58,14 +62,14 @@ describe('codegen', () => {
 
       context('when the directory exists', () => {
         beforeEach('create directory', () => {
-          fs.mkdirSync(outputDir, { recursive: true })
+          fs.mkdirSync(typesDirectory, { recursive: true })
         })
 
         it("deletes the folder and it's contents", async () => {
           const { status } = runCommandWithUserInput(command, userResponse)
           expect(status).to.be.equal(0)
-          expect(fs.existsSync(`${outputDir}/index.ts`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/ERC20.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
         })
       })
 
@@ -73,8 +77,8 @@ describe('codegen', () => {
         it("deletes the folder and it's contents", async () => {
           const { status } = runCommandWithUserInput(command, userResponse)
           expect(status).to.be.equal(0)
-          expect(fs.existsSync(`${outputDir}/index.ts`)).to.be.true
-          expect(fs.existsSync(`${outputDir}/ERC20.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
         })
       })
     })

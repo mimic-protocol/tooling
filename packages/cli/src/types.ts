@@ -1,3 +1,4 @@
+import { Command, Interfaces } from '@oclif/core'
 import { z } from 'zod'
 
 import { ManifestValidator } from './validators'
@@ -48,3 +49,5 @@ export enum AssemblyPrimitiveTypes {
 }
 
 export type AssemblyTypes = `${LibTypes}` | `${AssemblyPrimitiveTypes}` | 'unknown'
+
+export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<T['flags']>
