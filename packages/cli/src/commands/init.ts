@@ -85,12 +85,12 @@ export default class Init extends Command {
     console.log('New project initialized!')
   }
 
-  public static installDependencies(absDir: string) {
+  private static installDependencies(absDir: string) {
     if (process.env.NODE_ENV === 'test') return
     installDependencies(absDir)
   }
 
-  public static runCodegen(absDir: string) {
+  private static runCodegen(absDir: string) {
     if (process.env.NODE_ENV === 'test') return
     execBinCommand('mimic', ['codegen'], absDir)
   }
