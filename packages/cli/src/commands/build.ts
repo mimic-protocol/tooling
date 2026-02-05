@@ -21,7 +21,6 @@ export default class Build extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-
     await Build.build(this, flags)
   }
 

@@ -49,9 +49,7 @@ export default class Deploy extends Command {
 
     let credentials = Authenticate.authenticate(cmd, flags)
 
-    if (!skipBuild) {
-      await Build.build(cmd, flags)
-    }
+    if (!skipBuild) await Build.build(cmd, flags)
 
     log.startAction('Validating')
 
@@ -60,8 +58,6 @@ export default class Deploy extends Command {
         code: 'Directory Not Found',
         suggestions: ['Use the --build-directory flag to specify the correct path'],
       })
-
-    if (!fs.existsSync(fullBuildDir)) fs.mkdirSync(fullBuildDir, { recursive: true })
 
     const neededFiles = ['manifest.json', 'function.wasm'].map((file) => join(fullBuildDir, file))
     for (const file of neededFiles) {

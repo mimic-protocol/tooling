@@ -11,12 +11,12 @@ export type TestFlags = FlagsType<typeof Test>
 export default class Test extends Command {
   static override description = 'Runs function tests'
 
-  static override examples = ['<%= config.bin %> <%= command.id %> --directory ./']
+  static override examples = ['<%= config.bin %> <%= command.id %> --directory ./tests']
 
   static override flags = {
     ...Build.flags,
-    directory: Flags.string({ char: 'd', description: 'Path to the testing directory', default: 'tests' }),
-    'skip-build': Flags.boolean({ description: 'Skip codegen and compile steps before uploading', default: false }),
+    directory: Flags.string({ char: 'd', description: 'Path to the testing directory', default: './tests' }),
+    'skip-build': Flags.boolean({ description: 'Skip build before testing', default: false }),
   }
 
   public async run(): Promise<void> {
@@ -29,9 +29,7 @@ export default class Test extends Command {
     const baseDir = path.resolve('./')
     const testPath = path.join(baseDir, directory)
 
-    if (!skipBuild) {
-      await Build.build(this, flags)
-    }
+    if (!skipBuild) await Build.build(this, flags)
 
     const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
     this.exit(result.status ?? 1)

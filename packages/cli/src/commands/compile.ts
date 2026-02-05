@@ -32,9 +32,9 @@ export default class Compile extends Command {
     { function: functionDir, 'build-directory': buildDir, manifest: manifestDir }: CompileFlags
   ): Promise<void> {
     const absFunctionFile = path.resolve(functionDir)
-    const absOutputDir = path.resolve(buildDir)
+    const absBuildDir = path.resolve(buildDir)
 
-    if (!fs.existsSync(absOutputDir)) fs.mkdirSync(absOutputDir, { recursive: true })
+    if (!fs.existsSync(absBuildDir)) fs.mkdirSync(absBuildDir, { recursive: true })
 
     log.startAction('Verifying Manifest')
     const manifest = ManifestHandler.load(cmd, manifestDir)
@@ -45,7 +45,7 @@ export default class Compile extends Command {
       '--target',
       'release',
       '--outFile',
-      path.join(absOutputDir, 'function.wasm'),
+      path.join(absBuildDir, 'function.wasm'),
       '--optimize',
       '--exportRuntime',
       '--transform',
@@ -62,8 +62,8 @@ export default class Compile extends Command {
 
     log.startAction('Saving files')
 
-    fs.writeFileSync(path.join(absOutputDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
+    fs.writeFileSync(path.join(absBuildDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
     log.stopAction()
-    console.log(`Build complete! Artifacts in ${absOutputDir}/`)
+    console.log(`Build complete! Artifacts in ${absBuildDir}/`)
   }
 }
