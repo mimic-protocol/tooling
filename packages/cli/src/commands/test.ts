@@ -21,15 +21,15 @@ export default class Test extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Test)
-    await this.test(this, flags)
+    await Test.test(this, flags)
   }
 
-  public async test(cmd: Command, flags: TestFlags): Promise<void> {
+  public static async test(cmd: Command, flags: TestFlags): Promise<void> {
     const { directory, 'skip-build': skipBuild } = flags
     const baseDir = path.resolve('./')
     const testPath = path.join(baseDir, directory)
 
-    if (!skipBuild) await Build.build(this, flags)
+    if (!skipBuild) await Build.build(cmd, flags)
 
     const result = execBinCommand('tsx', ['./node_modules/mocha/bin/mocha.js', `${testPath}/**/*.spec.ts`], baseDir)
     cmd.exit(result.status ?? 1)

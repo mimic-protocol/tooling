@@ -59,21 +59,21 @@ export default class Codegen extends Command {
     }
 
     if (!fs.existsSync(typesDir)) fs.mkdirSync(typesDir, { recursive: true })
-    generateAbisCode(manifest, typesDir, manifestDir)
-    generateInputsCode(manifest, typesDir)
+    this.generateAbisCode(manifest, typesDir, manifestDir)
+    this.generateInputsCode(manifest, typesDir)
     log.stopAction()
   }
-}
 
-function generateAbisCode(manifest: Manifest, typesDir: string, manifestDir: string) {
-  for (const [contractName, path] of Object.entries(manifest.abis)) {
-    const abi = JSON.parse(fs.readFileSync(join(manifestDir, '../', path), 'utf-8'))
-    const abiInterface = AbisInterfaceGenerator.generate(abi, contractName)
-    if (abiInterface.length > 0) fs.writeFileSync(`${typesDir}/${contractName}.ts`, abiInterface)
+  private static generateAbisCode(manifest: Manifest, typesDir: string, manifestDir: string) {
+    for (const [contractName, path] of Object.entries(manifest.abis)) {
+      const abi = JSON.parse(fs.readFileSync(join(manifestDir, '../', path), 'utf-8'))
+      const abiInterface = AbisInterfaceGenerator.generate(abi, contractName)
+      if (abiInterface.length > 0) fs.writeFileSync(`${typesDir}/${contractName}.ts`, abiInterface)
+    }
   }
-}
 
-function generateInputsCode(manifest: Manifest, typesDir: string) {
-  const inputsInterface = InputsInterfaceGenerator.generate(manifest.inputs)
-  if (inputsInterface.length > 0) fs.writeFileSync(`${typesDir}/index.ts`, inputsInterface)
+  private static generateInputsCode(manifest: Manifest, typesDir: string) {
+    const inputsInterface = InputsInterfaceGenerator.generate(manifest.inputs)
+    if (inputsInterface.length > 0) fs.writeFileSync(`${typesDir}/index.ts`, inputsInterface)
+  }
 }

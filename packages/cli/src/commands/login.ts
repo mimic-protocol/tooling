@@ -1,12 +1,15 @@
 import { confirm, input, password } from '@inquirer/prompts'
-import { Flags } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
 
 import { CredentialsManager } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
 
 import Authenticate from './authenticate'
 
-export default class Login extends Authenticate {
+export type LoginFlags = FlagsType<typeof Login>
+
+export default class Login extends Command {
   static override description = 'Authenticate with Mimic by storing your API key locally'
 
   static override examples = [
@@ -26,6 +29,10 @@ export default class Login extends Authenticate {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Login)
+    await Login.login(this, flags)
+  }
+
+  public static async login(cmd: Command, flags: LoginFlags): Promise<void> {
     const { profile: profileInput, 'api-key': apiKeyFlag } = flags
 
     let apiKey: string
@@ -61,16 +68,21 @@ export default class Login extends Authenticate {
       } catch (error) {
         if (error instanceof Error && error.message.includes('User force closed')) {
           console.log('\nLogin cancelled')
-          this.exit(0)
+          cmd.exit(0)
         }
         throw error
       }
     }
 
-    this.saveAndConfirm(profileName || CredentialsManager.getDefaultProfileName(), apiKey, flags['force-login'])
+    this.saveAndConfirm(cmd, profileName || CredentialsManager.getDefaultProfileName(), apiKey, flags['force-login'])
   }
 
-  private async saveAndConfirm(profileName: string, apiKey: string, forceLogin: boolean): Promise<void> {
+  private static async saveAndConfirm(
+    cmd: Command,
+    profileName: string,
+    apiKey: string,
+    forceLogin: boolean
+  ): Promise<void> {
     try {
       const credentialsManager = CredentialsManager.getDefault()
 
@@ -98,7 +110,7 @@ export default class Login extends Authenticate {
         console.log(`Or with your profile: ${log.highlightText(`mimic deploy --profile ${profileName}`)}`)
       }
     } catch (error) {
-      if (error instanceof Error) this.error(`Failed to save credentials: ${error.message}`)
+      if (error instanceof Error) cmd.error(`Failed to save credentials: ${error.message}`)
       throw error
     }
   }

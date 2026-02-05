@@ -121,50 +121,6 @@ export class CredentialsManager {
     this.writeCredentials(profiles)
   }
 
-  getProfile(profileName: string = DEFAULT_PROFILE): ProfileCredentials {
-    const credentialsDir = this.getBaseDir()
-    const credentialsPath = this.getCredentialsPath()
-
-    if (!fs.existsSync(credentialsDir)) {
-      throw new Error(`No credentials directory found at ${credentialsDir}. Run 'mimic login' to authenticate.`)
-    }
-
-    if (!fs.existsSync(credentialsPath)) {
-      throw new Error(`No credentials file found. Run 'mimic login' to authenticate.`)
-    }
-
-    const profiles = this.readCredentials()
-
-    if (!profiles[profileName]) {
-      const availableProfiles = Object.keys(profiles)
-      const suggestion =
-        availableProfiles.length > 0
-          ? `Available profiles: ${availableProfiles.join(', ')}`
-          : `No profiles found. Run 'mimic login' to create one.`
-
-      throw new Error(`Profile '${profileName}' not found. ${suggestion}`)
-    }
-
-    const credentials = profiles[profileName]
-
-    if (!credentials.apiKey || credentials.apiKey.trim() === '') {
-      throw new Error(
-        `Profile '${profileName}' has no API key. Run 'mimic login --profile ${profileName}' to update credentials.`
-      )
-    }
-
-    return credentials
-  }
-
-  getCredentials(profileName: string = DEFAULT_PROFILE): ProfileCredentials {
-    try {
-      return this.getProfile(profileName)
-    } catch (error) {
-      if (error instanceof Error) throw new Error(`Authentication required: ${error.message}`)
-      throw error
-    }
-  }
-
   getProfiles(): string[] {
     const profiles = this.readCredentials()
     return Object.keys(profiles)

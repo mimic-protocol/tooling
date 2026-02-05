@@ -40,10 +40,10 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    await this.deploy(this, flags)
+    await Deploy.deploy(this, flags)
   }
 
-  public async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
+  public static async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
     const { 'build-directory': buildDir, 'skip-build': skipBuild, url: registryUrl } = flags
     const absBuildDir = resolve(buildDir)
 
@@ -69,7 +69,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(neededFiles, credentials, registryUrl)
+    const CID = await this.uploadToRegistry(cmd, neededFiles, credentials, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
@@ -78,13 +78,14 @@ export default class Deploy extends Command {
     console.log(`Function deployed!`)
   }
 
-  private async uploadToRegistry(
+  private static async uploadToRegistry(
+    cmd: Command,
     files: string[],
     credentials: ProfileCredentials,
     registryUrl: string
   ): Promise<string> {
     try {
-      const form = filesToForm(files)
+      const form = this.filesToForm(files)
       const { data } = await axios.post(`${registryUrl}/functions`, form, {
         headers: {
           'x-api-key': credentials.apiKey,
@@ -93,28 +94,28 @@ export default class Deploy extends Command {
       })
       return data.CID
     } catch (err) {
-      this.handleError(err, 'Failed to upload to registry')
+      this.handleError(cmd, err, 'Failed to upload to registry')
     }
   }
 
-  private handleError(err: unknown, message: string): never {
-    if (!(err instanceof AxiosError)) this.error(err as Error)
+  private static handleError(cmd: Command, err: unknown, message: string): never {
+    if (!(err instanceof AxiosError)) cmd.error(err as Error)
     const statusCode = err.response?.status
     if (statusCode === 400) {
       const errMessage = err.response?.data?.content?.message || message
-      this.error(errMessage, { code: 'Bad Request', suggestions: ['Review the uploaded files'] })
+      cmd.error(errMessage, { code: 'Bad Request', suggestions: ['Review the uploaded files'] })
     }
-    if (statusCode === 401) this.error(message, { code: 'Unauthorized', suggestions: ['Review your key'] })
-    if (statusCode === 403) this.error(message, { code: 'Invalid api key', suggestions: ['Review your key'] })
-    this.error(`${message} - ${err.message}`, { code: `${statusCode} Error`, suggestions: GENERIC_SUGGESTION })
+    if (statusCode === 401) cmd.error(message, { code: 'Unauthorized', suggestions: ['Review your key'] })
+    if (statusCode === 403) cmd.error(message, { code: 'Invalid api key', suggestions: ['Review your key'] })
+    cmd.error(`${message} - ${err.message}`, { code: `${statusCode} Error`, suggestions: GENERIC_SUGGESTION })
   }
-}
 
-const filesToForm = (files: string[]): FormData => {
-  return files.reduce((form, file) => {
-    const fileStream = fs.createReadStream(file)
-    const filename = file.split('/').pop()
-    form.append('file', fileStream, { filename })
-    return form
-  }, new FormData())
+  private static filesToForm(files: string[]): FormData {
+    return files.reduce((form, file) => {
+      const fileStream = fs.createReadStream(file)
+      const filename = file.split('/').pop()
+      form.append('file', fileStream, { filename })
+      return form
+    }, new FormData())
+  }
 }

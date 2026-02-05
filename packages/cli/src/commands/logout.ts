@@ -3,6 +3,9 @@ import { Command, Flags } from '@oclif/core'
 
 import { CredentialsManager } from '../lib/CredentialsManager'
 import log from '../log'
+import { FlagsType } from '../types'
+
+export type LogoutFlags = FlagsType<typeof Logout>
 
 export default class Logout extends Command {
   static override description = 'Remove stored credentials for a profile'
@@ -27,11 +30,15 @@ export default class Logout extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Logout)
+    await Logout.logout(this, flags)
+  }
+
+  public static async logout(cmd: Command, flags: LogoutFlags): Promise<void> {
     const { profile: profileName, force } = flags
 
     const profiles = CredentialsManager.getDefault().getProfiles()
     if (!profiles.includes(profileName)) {
-      this.error(`Profile '${profileName}' does not exist`, {
+      cmd.error(`Profile '${profileName}' does not exist`, {
         code: 'ProfileNotFound',
         suggestions:
           profiles.length > 0
@@ -48,7 +55,7 @@ export default class Logout extends Command {
 
       if (!shouldRemove) {
         console.log('Logout cancelled')
-        this.exit(0)
+        cmd.exit(0)
       }
     }
 
