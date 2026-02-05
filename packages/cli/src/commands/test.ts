@@ -5,6 +5,7 @@ import { execBinCommand } from '../lib/packageManager'
 import { FlagsType } from '../types'
 
 import Build from './build'
+import Functions from './functions'
 
 export type TestFlags = FlagsType<typeof Test>
 
@@ -14,6 +15,7 @@ export default class Test extends Command {
   static override examples = ['<%= config.bin %> <%= command.id %> --directory ./tests']
 
   static override flags = {
+    ...Functions.flags,
     ...Build.flags,
     directory: Flags.string({ char: 'd', description: 'Path to the testing directory', default: './tests' }),
     'skip-build': Flags.boolean({ description: 'Skip build before testing', default: false }),
@@ -21,7 +23,7 @@ export default class Test extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Test)
-    await Test.test(this, flags)
+    await Functions.runFunctions(this, flags, Test.test, 'testing')
   }
 
   public static async test(cmd: Command, flags: TestFlags): Promise<void> {

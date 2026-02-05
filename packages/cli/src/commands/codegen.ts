@@ -7,6 +7,8 @@ import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } fro
 import log from '../log'
 import { FlagsType, Manifest } from '../types'
 
+import Functions, { DefaultFunctionConfig } from './functions'
+
 export type CodegenFlags = FlagsType<typeof Codegen>
 
 export default class Codegen extends Command {
@@ -17,11 +19,16 @@ export default class Codegen extends Command {
   ]
 
   static override flags = {
-    manifest: Flags.string({ char: 'm', description: 'Specify a custom manifest file path', default: 'manifest.yaml' }),
+    ...Functions.flags,
+    manifest: Flags.string({
+      char: 'm',
+      description: 'Specify a custom manifest file path',
+      default: DefaultFunctionConfig.manifest,
+    }),
     'types-directory': Flags.string({
       char: 't',
       description: 'Output directory for generated types',
-      default: './src/types',
+      default: DefaultFunctionConfig['types-directory'],
     }),
     clean: Flags.boolean({
       char: 'c',
@@ -32,7 +39,7 @@ export default class Codegen extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Codegen)
-    await Codegen.codegen(this, flags)
+    await Functions.runFunctions(this, flags, Codegen.codegen, 'code generation')
   }
 
   public static async codegen(cmd: Command, flags: CodegenFlags): Promise<void> {

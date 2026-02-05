@@ -7,7 +7,7 @@ import { execBinCommand } from '../lib/packageManager'
 import log from '../log'
 import { FlagsType } from '../types'
 
-import Functions, { FunctionConfig } from './functions'
+import Functions, { DefaultFunctionConfig } from './functions'
 
 export type CompileFlags = FlagsType<typeof Compile>
 
@@ -20,26 +20,18 @@ export default class Compile extends Command {
 
   static override flags = {
     ...Functions.flags,
-    function: Flags.string({ char: 'f', description: 'Function to compile', default: 'src/function.ts' }),
-    manifest: Flags.string({ char: 'm', description: 'Manifest to validate', default: 'manifest.yaml' }),
-    'build-directory': Flags.string({ char: 'b', description: 'Output directory for compilation', default: './build' }),
+    function: Flags.string({ char: 'f', description: 'Function to compile', default: DefaultFunctionConfig.function }),
+    manifest: Flags.string({ char: 'm', description: 'Manifest to validate', default: DefaultFunctionConfig.manifest }),
+    'build-directory': Flags.string({
+      char: 'b',
+      description: 'Output directory for compilation',
+      default: DefaultFunctionConfig['build-directory'],
+    }),
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Compile)
-    await Compile.compileFunctions(this, Functions.filterFunctions(this, flags), flags)
-  }
-
-  public static async compileFunctions(cmd: Command, functions: FunctionConfig[], flags: CompileFlags): Promise<void> {
-    for (const func of functions) {
-      log.startAction(`Starting compilation for function ${func.name}`)
-      await this.compile(cmd, {
-        ...flags,
-        function: func.function,
-        'build-directory': path.join(flags['build-directory'], func.name),
-        manifest: func.manifest,
-      })
-    }
+    await Functions.runFunctions(this, flags, Compile.compile, 'compilation')
   }
 
   public static async compile(
