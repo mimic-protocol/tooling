@@ -8,7 +8,7 @@ import { backupCredentials, restoreCredentials } from '../helpers'
 
 const DEFAULT_PROFILE = 'default'
 
-describe.only('authenticate', () => {
+describe('authenticate', () => {
   let credentialsManager: CredentialsManager
   let backupDir: string | null = null
   let mockCommand: Command
@@ -16,7 +16,7 @@ describe.only('authenticate', () => {
   beforeEach('backup existing credentials and setup mock command', () => {
     credentialsManager = CredentialsManager.getDefault()
     backupDir = backupCredentials(credentialsManager)
-    mockCommand = new Command([], {} as any)
+    mockCommand = new Command([], {})
   })
 
   afterEach('restore credentials', () => {
