@@ -74,7 +74,7 @@ export default class Login extends Command {
       }
     }
 
-    Login.saveAndConfirm(cmd, profileName || CredentialsManager.getDefaultProfileName(), apiKey, flags['force-login'])
+    this.saveAndConfirm(cmd, profileName || CredentialsManager.getDefaultProfileName(), apiKey, flags['force-login'])
   }
 
   private static async saveAndConfirm(
