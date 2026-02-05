@@ -1,5 +1,13 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.37
+
+### Patch Changes
+
+- ed2d252: Refactor credentials commands
+- 94ef728: add custom storage
+- 7d2279d: Refactor codegen, compile, build, deploy and test commands and their parameters
+
 ## 0.0.1-rc.36
 
 ### Patch Changes
