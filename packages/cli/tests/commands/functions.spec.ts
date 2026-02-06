@@ -5,7 +5,7 @@ import * as sinon from 'sinon'
 
 import Functions, { FunctionConfigSchema, MimicConfigSchema } from '../../src/commands/functions'
 
-describe.only('Functions', () => {
+describe('Functions', () => {
   const basePath = `${__dirname}/../fixtures`
   const configFilePath = `${basePath}/mimic.yaml`
   const validConfig = {
