@@ -79,8 +79,8 @@ export default class Init extends Command {
       cmd.error(`Failed to clone template repository. Details: ${error}`)
     }
 
-    this.installDependencies(absDir)
-    this.runCodegen(absDir)
+    Init.installDependencies(absDir)
+    Init.runCodegen(absDir)
     log.stopAction()
     console.log('New project initialized!')
   }

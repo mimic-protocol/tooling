@@ -66,8 +66,8 @@ export default class Codegen extends Command {
     }
 
     if (!fs.existsSync(typesDir)) fs.mkdirSync(typesDir, { recursive: true })
-    this.generateAbisCode(manifest, typesDir, manifestDir)
-    this.generateInputsCode(manifest, typesDir)
+    Codegen.generateAbisCode(manifest, typesDir, manifestDir)
+    Codegen.generateInputsCode(manifest, typesDir)
     log.stopAction()
   }
 

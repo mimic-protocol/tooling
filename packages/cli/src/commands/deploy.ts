@@ -71,7 +71,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(cmd, neededFiles, credentials, registryUrl)
+    const CID = await Deploy.uploadToRegistry(cmd, neededFiles, credentials, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 
