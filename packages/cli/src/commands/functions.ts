@@ -1,11 +1,24 @@
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
+import { z } from 'zod'
 
 import log from '../log'
 import { FlagsType } from '../types'
 
 export type FunctionsFlags = FlagsType<typeof Functions>
+
+export const FunctionConfigSchema = z.object({
+  name: z.string().min(1, 'Function name is required'),
+  manifest: z.string().min(1, 'Manifest path is required'),
+  function: z.string().min(1, 'Function path is required'),
+  'build-directory': z.string().min(1, 'Build directory is required'),
+  'types-directory': z.string().min(1, 'Types directory is required'),
+})
+
+export const MimicConfigSchema = z.object({
+  tasks: z.array(FunctionConfigSchema).min(1, 'At least one task is required'),
+})
 
 export const DefaultFunctionConfig = {
   name: '',
@@ -42,11 +55,13 @@ export default class Functions extends Command {
       description: `When ${Functions.MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
       multiple: true,
       exclusive: ['exclude'],
+      char: 'i',
     }),
     exclude: Flags.string({
       description: `When ${Functions.MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
       multiple: true,
       exclusive: ['include'],
+      char: 'e',
     }),
   }
 
@@ -69,23 +84,29 @@ export default class Functions extends Command {
       return [{ ...DefaultFunctionConfig, ...flags }]
     }
 
-    // Read and parse YAML file
     const fileContents = fs.readFileSync(flags['config-file'], 'utf8')
-    const config = yaml.load(fileContents) as { tasks: FunctionConfig[] }
+    const rawConfig = yaml.load(fileContents)
 
-    // Get all tasks
-    let tasks = config.tasks || []
+    try {
+      const config = MimicConfigSchema.parse(rawConfig)
 
-    // Apply include filter if specified
-    if (flags.include && flags.include.length > 0) {
-      tasks = tasks.filter((task) => flags.include!.includes(task.name))
+      let tasks = config.tasks || []
+
+      if (flags.include && flags.include.length > 0) {
+        tasks = tasks.filter((task) => flags.include!.includes(task.name))
+      }
+
+      if (flags.exclude && flags.exclude.length > 0) {
+        tasks = tasks.filter((task) => !flags.exclude!.includes(task.name))
+      }
+
+      return tasks
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n')
+        cmd.error(`Invalid ${Functions.MIMIC_CONFIG_FILE} configuration:\n${errors}`, { code: 'InvalidConfig' })
+      }
+      throw error
     }
-
-    // Apply exclude filter if specified
-    if (flags.exclude && flags.exclude.length > 0) {
-      tasks = tasks.filter((task) => !flags.exclude!.includes(task.name))
-    }
-
-    return tasks
   }
 }
