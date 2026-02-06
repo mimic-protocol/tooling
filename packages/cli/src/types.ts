@@ -1,10 +1,11 @@
 import { Command, Interfaces } from '@oclif/core'
 import { z } from 'zod'
 
-import { ManifestValidator } from './validators'
+import { LibRunnerMappingValidator, ManifestValidator } from './validators'
 
 export type Manifest = z.infer<typeof ManifestValidator>
 export type ManifestInputs = z.infer<typeof ManifestValidator.shape.inputs>
+export type LibRunnerMapping = z.infer<typeof LibRunnerMappingValidator>
 
 export type AbiParameter = {
   name?: string

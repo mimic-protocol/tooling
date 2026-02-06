@@ -9,6 +9,7 @@ export const SEM_VER_REGEX =
 
 const String = z.string().min(1)
 
+const SemVer = String.regex(SEM_VER_REGEX, 'Must be a valid semver')
 const SolidityType = String.regex(SOLIDITY_TYPE_REGEX, 'Must be a valid solidity type')
 const TokenType = String.regex(TOKEN_TYPE_REGEX, 'Must be a valid token type')
 const InputType = z.union([SolidityType, TokenType])
@@ -16,12 +17,19 @@ const InputType = z.union([SolidityType, TokenType])
 const InputValue = z.union([InputType, z.object({ type: InputType, description: String.optional() })])
 
 export const ManifestValidator = z.object({
-  version: String.regex(SEM_VER_REGEX, 'Must be a valid semver'),
+  version: SemVer,
   name: String,
   description: String,
   inputs: z.record(String, InputValue),
   abis: z.record(String, String),
   metadata: z.object({
-    libVersion: String.regex(SEM_VER_REGEX, 'Must be a valid semver'),
+    runnerVersion: SemVer,
   }),
 })
+
+export const LibRunnerMappingValidator = z.array(
+  z.object({
+    libVersionRange: String,
+    runnerVersion: SemVer,
+  })
+)

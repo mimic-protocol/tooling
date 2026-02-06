@@ -2,11 +2,12 @@ import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
 import * as path from 'path'
+import * as semver from 'semver'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
 import { Manifest } from '../types'
-import { ManifestValidator } from '../validators'
+import { LibRunnerMappingValidator, ManifestValidator } from '../validators'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,7 +18,7 @@ export default {
       ...manifest,
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
-      metadata: { libVersion: getLibVersion() },
+      metadata: { runnerVersion: getRunnerVersion(getLibVersion()) },
     }
     return ManifestValidator.parse(mergedManifest)
   },
@@ -80,17 +81,49 @@ function handleValidationError(command: Command, err: unknown): never {
   command.error(message, { code, suggestions })
 }
 
+function findFileInNodeModules(relativePath: string): string {
+  let currentDir = process.cwd()
+
+  while (currentDir !== path.dirname(currentDir)) {
+    const filePath = path.join(currentDir, 'node_modules', ...relativePath.split('/'))
+    if (fs.existsSync(filePath)) return filePath
+    currentDir = path.dirname(currentDir)
+  }
+
+  throw new Error(`Could not find ${relativePath} in node_modules`)
+}
+
 function getLibVersion(): string {
   try {
-    let currentDir = process.cwd()
-    while (currentDir !== path.dirname(currentDir)) {
-      const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-      if (fs.existsSync(libPackagePath)) return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
-      currentDir = path.dirname(currentDir)
+    const libPackagePath = findFileInNodeModules('@mimicprotocol/lib-ts/package.json')
+    const packageContent = fs.readFileSync(libPackagePath, 'utf-8')
+    return JSON.parse(packageContent).version
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Could not find')) {
+      throw new Error('Could not find @mimicprotocol/lib-ts package')
+    }
+    throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+  }
+}
+
+export function getRunnerVersion(libVersion: string, mappingPath?: string): string {
+  try {
+    const resolvedMappingPath = mappingPath || findFileInNodeModules('@mimicprotocol/cli/dist/lib-runner-mapping.yaml')
+
+    const mappingContent = fs.readFileSync(resolvedMappingPath, 'utf-8')
+    const mapping = LibRunnerMappingValidator.parse(load(mappingContent))
+
+    for (const entry of mapping) {
+      if (semver.satisfies(libVersion, entry.libVersionRange)) return entry.runnerVersion
     }
 
-    throw new Error('Could not find @mimicprotocol/lib-ts package')
+    throw new Error(`No runner version mapping found for lib-ts version ${libVersion}`)
   } catch (error) {
-    throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
+    if (error instanceof ZodError) {
+      throw new Error(
+        `Failed to read lib-runner-mapping.yaml from @mimicprotocol/cli: Invalid format - ${error.message}`
+      )
+    }
+    throw error
   }
 }
