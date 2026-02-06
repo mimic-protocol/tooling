@@ -11,6 +11,7 @@ import { FlagsType } from '../types'
 
 import Authenticate from './authenticate'
 import Build from './build'
+import Functions from './functions'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
 
@@ -27,6 +28,7 @@ export default class Deploy extends Command {
   ]
 
   static override flags = {
+    ...Functions.flags,
     ...Authenticate.flags,
     ...Build.flags,
     'build-directory': Flags.string({
@@ -40,7 +42,7 @@ export default class Deploy extends Command {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Deploy)
-    await Deploy.deploy(this, flags)
+    await Functions.runFunctions(this, flags, Deploy.deploy, 'deployment')
   }
 
   public static async deploy(cmd: Command, flags: DeployFlags): Promise<void> {
@@ -69,7 +71,7 @@ export default class Deploy extends Command {
     }
 
     log.startAction('Uploading to Mimic Registry')
-    const CID = await this.uploadToRegistry(cmd, neededFiles, credentials, registryUrl)
+    const CID = await Deploy.uploadToRegistry(cmd, neededFiles, credentials, registryUrl)
     console.log(`IPFS CID: ${log.highlightText(CID)}`)
     log.stopAction()
 

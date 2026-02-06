@@ -4,6 +4,7 @@ import { FlagsType } from '../types'
 
 import Codegen from './codegen'
 import Compile from './compile'
+import Functions from './functions'
 
 export type BuildFlags = FlagsType<typeof Build>
 
@@ -15,13 +16,14 @@ export default class Build extends Command {
   ]
 
   static override flags = {
+    ...Functions.flags,
     ...Codegen.flags,
     ...Compile.flags,
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Build)
-    await Build.build(this, flags)
+    await Functions.runFunctions(this, flags, Build.build, 'build')
   }
 
   public static async build(cmd: Command, flags: BuildFlags): Promise<void> {
