@@ -51,6 +51,10 @@ export default class Functions extends Command {
       description: `Path to the ${Functions.MIMIC_CONFIG_FILE} file, this overrides other parameters like build-directory and function`,
       default: Functions.MIMIC_CONFIG_FILE,
     }),
+    'no-config': Flags.boolean({
+      description: `Do not read ${Functions.MIMIC_CONFIG_FILE}; use defaults and explicit flags instead`,
+      default: false,
+    }),
     include: Flags.string({
       description: `When ${Functions.MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
       multiple: true,
@@ -79,7 +83,15 @@ export default class Functions extends Command {
   }
 
   public static filterFunctions(cmd: Command, flags: FunctionsFlags & Partial<FunctionConfig>): FunctionConfig[] {
+    if (flags['no-config']) {
+      return [{ ...DefaultFunctionConfig, ...flags }]
+    }
+
     if (!fs.existsSync(flags['config-file'])) {
+      if (flags['config-file'] !== Functions.MIMIC_CONFIG_FILE) {
+        cmd.error(`Could not find ${flags['config-file']}`, { code: 'ConfigNotFound' })
+      }
+
       // If doesn't exists return the default with the flags the user added
       return [{ ...DefaultFunctionConfig, ...flags }]
     }

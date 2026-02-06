@@ -5,7 +5,7 @@ import * as sinon from 'sinon'
 
 import Functions, { FunctionConfigSchema, MimicConfigSchema } from '../../src/commands/functions'
 
-describe('Functions', () => {
+describe.only('Functions', () => {
   const basePath = `${__dirname}/../fixtures`
   const configFilePath = `${basePath}/mimic.yaml`
   const validConfig = {
@@ -181,6 +181,20 @@ describe('Functions', () => {
           expect(result[0].function).to.equal('src/custom/function.ts')
         })
       })
+
+      context('when a non-default config path is provided', () => {
+        it('throws an error', () => {
+          const customFlags = {
+            'config-file': `${basePath}/custom-mimic.yaml`,
+            include: [],
+            exclude: [],
+          }
+
+          cmdStub.error.throws(new Error('ConfigNotFound'))
+          expect(() => Functions.filterFunctions(cmdStub, customFlags)).to.throw('ConfigNotFound')
+          expect(cmdStub.error.calledOnce).to.be.true
+        })
+      })
     })
 
     context('when config file exists', () => {
@@ -209,6 +223,26 @@ tasks:
       })
 
       context('when config is valid', () => {
+        context('when --no-config is provided', () => {
+          it('returns default config without reading the file', () => {
+            const flags = {
+              'config-file': configFilePath,
+              'no-config': true,
+              include: [],
+              exclude: [],
+            }
+
+            const result = Functions.filterFunctions(cmdStub, flags)
+
+            expect(result).to.have.lengthOf(1)
+            expect(result[0].name).to.equal('')
+            expect(result[0].manifest).to.equal('manifest.yaml')
+            expect(result[0].function).to.equal('src/function.ts')
+            expect(result[0]['build-directory']).to.equal('./build')
+            expect(result[0]['types-directory']).to.equal('./src/types')
+          })
+        })
+
         it('returns all tasks', () => {
           const flags = {
             'config-file': configFilePath,
