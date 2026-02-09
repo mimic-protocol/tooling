@@ -16,8 +16,10 @@ export const FunctionConfigSchema = z.object({
   'types-directory': z.string().min(1, 'Types directory is required'),
 })
 
+export type FunctionConfig = z.infer<typeof FunctionConfigSchema>
+
 export const MimicConfigSchema = z.object({
-  tasks: z.array(FunctionConfigSchema).min(1, 'At least one task is required'),
+  functions: z.array(FunctionConfigSchema).min(1, 'At least one function is required'),
 })
 
 export const DefaultFunctionConfig = {
@@ -27,14 +29,6 @@ export const DefaultFunctionConfig = {
   'build-directory': './build',
   'types-directory': './src/types',
 } as const
-
-export type FunctionConfig = {
-  name: string
-  manifest: string
-  function: string
-  'build-directory': string
-  'types-directory': string
-}
 
 export default class Functions extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -100,19 +94,17 @@ export default class Functions extends Command {
     const rawConfig = yaml.load(fileContents)
 
     try {
-      const config = MimicConfigSchema.parse(rawConfig)
-
-      let tasks = config.tasks || []
+      let { functions } = MimicConfigSchema.parse(rawConfig)
 
       if (flags.include && flags.include.length > 0) {
-        tasks = tasks.filter((task) => flags.include!.includes(task.name))
+        functions = functions.filter((task) => flags.include!.includes(task.name))
       }
 
       if (flags.exclude && flags.exclude.length > 0) {
-        tasks = tasks.filter((task) => !flags.exclude!.includes(task.name))
+        functions = functions.filter((task) => !flags.exclude!.includes(task.name))
       }
 
-      return tasks
+      return functions
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n')
