@@ -9,20 +9,20 @@ describe('Functions', () => {
   const basePath = `${__dirname}/../fixtures`
   const configFilePath = `${basePath}/mimic.yaml`
   const validConfig = {
-    tasks: [
+    functions: [
       {
-        name: 'task1',
+        name: 'function1',
         manifest: 'manifest.yaml',
         function: 'src/function.ts',
         'build-directory': './build',
         'types-directory': './src/types',
       },
       {
-        name: 'task2',
-        manifest: 'src/task2/manifest.yaml',
-        function: 'src/task2/function.ts',
-        'build-directory': './build/task2',
-        'types-directory': './src/task2/types',
+        name: 'function2',
+        manifest: 'src/function2/manifest.yaml',
+        function: 'src/function2/function.ts',
+        'build-directory': './build/function2',
+        'types-directory': './src/function2/types',
       },
     ],
   }
@@ -30,7 +30,7 @@ describe('Functions', () => {
   describe('FunctionConfigSchema', () => {
     context('when all required fields are present', () => {
       it('validates successfully', () => {
-        const config = validConfig.tasks[0]
+        const config = validConfig.functions[0]
         expect(() => FunctionConfigSchema.parse(config)).to.not.throw()
       })
     })
@@ -38,32 +38,32 @@ describe('Functions', () => {
     context('when required fields are missing', () => {
       context('when name is missing', () => {
         it('throws error', () => {
-          const config = { ...validConfig.tasks[0], name: '' }
+          const config = { ...validConfig.functions[0], name: '' }
           expect(() => FunctionConfigSchema.parse(config)).to.throw()
         })
       })
 
       context('when manifest is missing', () => {
         it('throws error', () => {
-          const config = { ...validConfig.tasks[0], manifest: '' }
+          const config = { ...validConfig.functions[0], manifest: '' }
           expect(() => FunctionConfigSchema.parse(config)).to.throw()
         })
       })
       context('when function is missing', () => {
         it('throws error', () => {
-          const config = { ...validConfig.tasks[0], function: '' }
+          const config = { ...validConfig.functions[0], function: '' }
           expect(() => FunctionConfigSchema.parse(config)).to.throw()
         })
       })
       context('when build-directory is missing', () => {
         it('throws error', () => {
-          const config = { ...validConfig.tasks[0], 'build-directory': '' }
+          const config = { ...validConfig.functions[0], 'build-directory': '' }
           expect(() => FunctionConfigSchema.parse(config)).to.throw()
         })
       })
       context('when types-directory is missing', () => {
         it('throws error', () => {
-          const config = { ...validConfig.tasks[0], 'types-directory': '' }
+          const config = { ...validConfig.functions[0], 'types-directory': '' }
           expect(() => FunctionConfigSchema.parse(config)).to.throw()
         })
       })
@@ -71,37 +71,37 @@ describe('Functions', () => {
   })
 
   describe('MimicConfigSchema', () => {
-    context('when config has valid tasks array', () => {
-      it('validates successfully with single task', () => {
-        const config = { tasks: [validConfig.tasks[0]] }
+    context('when config has valid functions array', () => {
+      it('validates successfully with single function', () => {
+        const config = { functions: [validConfig.functions[0]] }
         expect(() => MimicConfigSchema.parse(config)).to.not.throw()
       })
 
-      it('validates successfully with multiple tasks', () => {
+      it('validates successfully with multiple functions', () => {
         expect(() => MimicConfigSchema.parse(validConfig)).to.not.throw()
       })
     })
 
-    context('when tasks array is empty', () => {
+    context('when functions array is empty', () => {
       it('throws validation error', () => {
-        const config = { tasks: [] }
+        const config = { functions: [] }
         expect(() => MimicConfigSchema.parse(config)).to.throw()
       })
     })
 
-    context('when tasks array is missing', () => {
+    context('when functions array is missing', () => {
       it('throws validation error', () => {
         const config = {}
         expect(() => MimicConfigSchema.parse(config)).to.throw()
       })
     })
 
-    context('when a task in the array is invalid', () => {
-      it('throws validation error for invalid task', () => {
+    context('when a function in the array is invalid', () => {
+      it('throws validation error for invalid function', () => {
         const config = {
-          tasks: [
-            validConfig.tasks[0],
-            { ...validConfig.tasks[1], name: '' }, // Invalid: empty name
+          functions: [
+            validConfig.functions[0],
+            { ...validConfig.functions[1], name: '' }, // Invalid: empty name
           ],
         }
         expect(() => MimicConfigSchema.parse(config)).to.throw()
@@ -203,17 +203,17 @@ describe('Functions', () => {
         fs.writeFileSync(
           configFilePath,
           `
-tasks:
-  - name: task1
+functions:
+  - name: function1
     manifest: manifest.yaml
     function: src/function.ts
     build-directory: ./build
     types-directory: ./src/types
-  - name: task2
-    manifest: src/task2/manifest.yaml
-    function: src/task2/function.ts
-    build-directory: ./build/task2
-    types-directory: ./src/task2/types
+  - name: function2
+    manifest: src/function2/manifest.yaml
+    function: src/function2/function.ts
+    build-directory: ./build/function2
+    types-directory: ./src/function2/types
         `
         )
       })
@@ -243,7 +243,7 @@ tasks:
           })
         })
 
-        it('returns all tasks', () => {
+        it('returns all functions', () => {
           const flags = {
             'config-file': configFilePath,
             include: [],
@@ -253,28 +253,28 @@ tasks:
           const result = Functions.filterFunctions(cmdStub, flags)
 
           expect(result).to.have.lengthOf(2)
-          expect(result[0].name).to.equal('task1')
-          expect(result[1].name).to.equal('task2')
+          expect(result[0].name).to.equal('function1')
+          expect(result[1].name).to.equal('function2')
         })
 
         context('when include filter is provided', () => {
-          it('returns only included tasks', () => {
+          it('returns only included functions', () => {
             const flags = {
               'config-file': configFilePath,
-              include: ['task1'],
+              include: ['function1'],
               exclude: [],
             }
 
             const result = Functions.filterFunctions(cmdStub, flags)
 
             expect(result).to.have.lengthOf(1)
-            expect(result[0].name).to.equal('task1')
+            expect(result[0].name).to.equal('function1')
           })
 
-          it('returns multiple included tasks', () => {
+          it('returns multiple included functions', () => {
             const flags = {
               'config-file': configFilePath,
-              include: ['task1', 'task2'],
+              include: ['function1', 'function2'],
               exclude: [],
             }
 
@@ -283,7 +283,7 @@ tasks:
             expect(result).to.have.lengthOf(2)
           })
 
-          it('returns empty array when included task does not exist', () => {
+          it('returns empty array when included function does not exist', () => {
             const flags = {
               'config-file': configFilePath,
               include: ['nonexistent'],
@@ -297,24 +297,24 @@ tasks:
         })
 
         context('when exclude filter is provided', () => {
-          it('excludes specified tasks', () => {
+          it('excludes specified functions', () => {
             const flags = {
               'config-file': configFilePath,
               include: [],
-              exclude: ['task1'],
+              exclude: ['function1'],
             }
 
             const result = Functions.filterFunctions(cmdStub, flags)
 
             expect(result).to.have.lengthOf(1)
-            expect(result[0].name).to.equal('task2')
+            expect(result[0].name).to.equal('function2')
           })
 
-          it('excludes multiple tasks', () => {
+          it('excludes multiple functions', () => {
             const flags = {
               'config-file': configFilePath,
               include: [],
-              exclude: ['task1', 'task2'],
+              exclude: ['function1', 'function2'],
             }
 
             const result = Functions.filterFunctions(cmdStub, flags)
@@ -322,7 +322,7 @@ tasks:
             expect(result).to.have.lengthOf(0)
           })
 
-          it('returns all tasks when excluding non-existent task', () => {
+          it('returns all functions when excluding non-existent function', () => {
             const flags = {
               'config-file': configFilePath,
               include: [],
@@ -339,8 +339,8 @@ tasks:
           beforeEach(() => {
             fs.writeFileSync(
               configFilePath,
-              `tasks:
-  - name: task1
+              `functions:
+  - name: function1
     manifest: manifest.yaml`
             )
           })
@@ -377,8 +377,8 @@ tasks:
           beforeEach(() => {
             fs.writeFileSync(
               configFilePath,
-              `tasks:
-  - name: task1
+              `functions:
+  - name: function1
     invalid yaml: [`
             )
           })
