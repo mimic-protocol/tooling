@@ -94,7 +94,7 @@ export default class Functions extends Command {
     const rawConfig = yaml.load(fileContents)
 
     if (!rawConfig || (typeof rawConfig === 'object' && Object.keys(rawConfig).length === 0)) {
-      cmd.error(`Invalid ${MIMIC_CONFIG_FILE} configuration: file is empty.`, { code: 'InvalidConfig' })
+      cmd.error(`Invalid ${MIMIC_CONFIG_FILE} configuration: file is empty.`)
     }
 
     try {
