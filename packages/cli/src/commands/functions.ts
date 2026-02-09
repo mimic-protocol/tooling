@@ -70,7 +70,7 @@ export default class Functions extends Command {
   ): Promise<void> {
     const functions = Functions.filterFunctions(cmd, flags)
     for (const func of functions) {
-      log.startAction(`Starting ${cmdActions} for function ${func.name ? func.name : func.function}`)
+      log.startAction(`\nStarting ${cmdActions} for function ${func.name ? func.name : func.function}`)
       await cmdLogic(cmd, { ...flags, ...func } as T)
     }
   }
@@ -99,21 +99,13 @@ export default class Functions extends Command {
     try {
       let { functions } = MimicConfigSchema.parse(rawConfig)
 
-      const functionNames = new Set(functions.map((fn) => fn.name))
-
       if (flags.include && flags.include.length > 0) {
-        const missingIncludes = flags.include.filter((name) => !functionNames.has(name))
-        if (missingIncludes.length > 0) {
-          cmd.warn(`Functions not found in ${MIMIC_CONFIG_FILE}: ${missingIncludes.join(', ')}`)
-        }
+        Functions.checkMissingFunctions(cmd, functions, flags.include)
         functions = functions.filter((fn) => flags.include!.includes(fn.name))
       }
 
       if (flags.exclude && flags.exclude.length > 0) {
-        const missingExcludes = flags.exclude.filter((name) => !functionNames.has(name))
-        if (missingExcludes.length > 0) {
-          cmd.warn(`Functions not found in ${MIMIC_CONFIG_FILE}: ${missingExcludes.join(', ')}`)
-        }
+        Functions.checkMissingFunctions(cmd, functions, flags.exclude)
         functions = functions.filter((fn) => !flags.exclude!.includes(fn.name))
       }
 
@@ -124,6 +116,18 @@ export default class Functions extends Command {
         cmd.error(`Invalid ${MIMIC_CONFIG_FILE} configuration:\n${errors}`, { code: 'InvalidConfig' })
       }
       throw error
+    }
+  }
+
+  private static checkMissingFunctions(
+    cmd: Command,
+    functions: FunctionConfig[],
+    filteredFunctionNames: string[]
+  ): void {
+    const functionNames = new Set(functions.map((fn) => fn.name))
+    const missingFunctions = filteredFunctionNames.filter((name) => !functionNames.has(name))
+    if (missingFunctions.length > 0) {
+      cmd.warn(`Functions not found in ${MIMIC_CONFIG_FILE}: ${missingFunctions.join(', ')}`)
     }
   }
 }
