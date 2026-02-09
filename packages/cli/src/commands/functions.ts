@@ -86,7 +86,7 @@ export default class Functions extends Command {
         cmd.error(`Could not find ${flags['config-file']}`, { code: 'ConfigNotFound' })
       }
 
-      // If doesn't exists return the default with the flags the user added
+      // If doesn't exist return the default with the flags the user added
       return [{ ...DefaultFunctionConfig, ...flags }]
     }
 
