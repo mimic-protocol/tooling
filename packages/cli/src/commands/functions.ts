@@ -93,6 +93,10 @@ export default class Functions extends Command {
     const fileContents = fs.readFileSync(flags['config-file'], 'utf8')
     const rawConfig = yaml.load(fileContents)
 
+    if (!rawConfig || (typeof rawConfig === 'object' && Object.keys(rawConfig).length === 0)) {
+      cmd.error(`Invalid ${MIMIC_CONFIG_FILE} configuration: file is empty.`, { code: 'InvalidConfig' })
+    }
+
     try {
       let { functions } = MimicConfigSchema.parse(rawConfig)
 
