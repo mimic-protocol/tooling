@@ -71,7 +71,7 @@ export default class Functions extends Command {
   ): Promise<void> {
     const functions = Functions.filterFunctions(cmd, flags)
     for (const func of functions) {
-      log.startAction(`Starting ${cmdActions} for function ${func.name}`)
+      log.startAction(`Starting ${cmdActions} for function ${func.name ? func.name : func.function}`)
       await cmdLogic(cmd, { ...flags, ...func } as T)
     }
   }
