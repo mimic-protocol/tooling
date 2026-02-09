@@ -30,6 +30,8 @@ export const DefaultFunctionConfig = {
   'types-directory': './src/types',
 } as const
 
+const MIMIC_CONFIG_FILE = 'mimic.yaml'
+
 export default class Functions extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   run(): Promise<any> {
@@ -38,25 +40,23 @@ export default class Functions extends Command {
 
   static override description = 'Filters tasks based on a mimic.yaml configuration file'
 
-  static MIMIC_CONFIG_FILE = 'mimic.yaml'
-
   static flags = {
     'config-file': Flags.string({
-      description: `Path to the ${Functions.MIMIC_CONFIG_FILE} file, this overrides other parameters like build-directory and function`,
-      default: Functions.MIMIC_CONFIG_FILE,
+      description: `Path to the ${MIMIC_CONFIG_FILE} file, this overrides other parameters like build-directory and function`,
+      default: MIMIC_CONFIG_FILE,
     }),
     'no-config': Flags.boolean({
-      description: `Do not read ${Functions.MIMIC_CONFIG_FILE}; use defaults and explicit flags instead`,
+      description: `Do not read ${MIMIC_CONFIG_FILE}; use defaults and explicit flags instead`,
       default: false,
     }),
     include: Flags.string({
-      description: `When ${Functions.MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
+      description: `When ${MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
       multiple: true,
       exclusive: ['exclude'],
       char: 'i',
     }),
     exclude: Flags.string({
-      description: `When ${Functions.MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
+      description: `When ${MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
       multiple: true,
       exclusive: ['include'],
       char: 'e',
@@ -82,7 +82,7 @@ export default class Functions extends Command {
     }
 
     if (!fs.existsSync(flags['config-file'])) {
-      if (flags['config-file'] !== Functions.MIMIC_CONFIG_FILE) {
+      if (flags['config-file'] !== MIMIC_CONFIG_FILE) {
         cmd.error(`Could not find ${flags['config-file']}`, { code: 'ConfigNotFound' })
       }
 
@@ -96,19 +96,29 @@ export default class Functions extends Command {
     try {
       let { functions } = MimicConfigSchema.parse(rawConfig)
 
+      const functionNames = new Set(functions.map((fn) => fn.name))
+
       if (flags.include && flags.include.length > 0) {
-        functions = functions.filter((task) => flags.include!.includes(task.name))
+        const missingIncludes = flags.include.filter((name) => !functionNames.has(name))
+        if (missingIncludes.length > 0) {
+          cmd.warn(`Functions not found in ${MIMIC_CONFIG_FILE}: ${missingIncludes.join(', ')}`)
+        }
+        functions = functions.filter((fn) => flags.include!.includes(fn.name))
       }
 
       if (flags.exclude && flags.exclude.length > 0) {
-        functions = functions.filter((task) => !flags.exclude!.includes(task.name))
+        const missingExcludes = flags.exclude.filter((name) => !functionNames.has(name))
+        if (missingExcludes.length > 0) {
+          cmd.warn(`Functions not found in ${MIMIC_CONFIG_FILE}: ${missingExcludes.join(', ')}`)
+        }
+        functions = functions.filter((fn) => !flags.exclude!.includes(fn.name))
       }
 
       return functions
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors = error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n')
-        cmd.error(`Invalid ${Functions.MIMIC_CONFIG_FILE} configuration:\n${errors}`, { code: 'InvalidConfig' })
+        cmd.error(`Invalid ${MIMIC_CONFIG_FILE} configuration:\n${errors}`, { code: 'InvalidConfig' })
       }
       throw error
     }
