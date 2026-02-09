@@ -38,7 +38,7 @@ export default class Functions extends Command {
     throw new Error('Method not implemented.')
   }
 
-  static override description = 'Filters tasks based on a mimic.yaml configuration file'
+  static override description = `Filters functions based on a ${MIMIC_CONFIG_FILE} configuration file`
 
   static flags = {
     'config-file': Flags.string({
