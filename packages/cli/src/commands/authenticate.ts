@@ -8,18 +8,11 @@ import { FlagsType } from '../types'
 export type AuthenticateFlags = FlagsType<typeof Authenticate>
 
 export default class Authenticate extends Command {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  run(): Promise<any> {
+  run(): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
-  static override description = 'Authenticate with Mimic by storing your API key locally'
-
-  static override examples = [
-    '<%= config.bin %> <%= command.id %>',
-    '<%= config.bin %> <%= command.id %> --profile staging',
-    '<%= config.bin %> <%= command.id %> --profile production --api-key YOUR_API_KEY',
-  ]
+  static override hidden = true
 
   static flags = {
     profile: Flags.string({

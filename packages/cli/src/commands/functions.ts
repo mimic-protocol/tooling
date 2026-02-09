@@ -33,12 +33,11 @@ export const DefaultFunctionConfig = {
 const MIMIC_CONFIG_FILE = 'mimic.yaml'
 
 export default class Functions extends Command {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  run(): Promise<any> {
+  run(): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
-  static override description = `Filters functions based on a ${MIMIC_CONFIG_FILE} configuration file`
+  static override hidden = true
 
   static flags = {
     'config-file': Flags.string({
