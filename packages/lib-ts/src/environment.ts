@@ -20,7 +20,7 @@ import {
   TokenPriceQueryResponse,
 } from './queries'
 import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
-import { Address, BigInt, ChainId, EvmDecodeParam, EvmEncodeParam, Result } from './types'
+import { Address, BigInt, Bytes, ChainId, EvmDecodeParam, EvmEncodeParam, Result } from './types'
 
 export namespace environment {
   @external('environment', '_evmCall')
@@ -218,5 +218,21 @@ export namespace environment {
     const decodedResponse = evm.decode(new EvmDecodeParam('uint256', response.unwrap()))
     const decoded = BigInt.fromString(decodedResponse)
     return Result.ok<BigInt, string>(decoded)
+  }
+
+    /**
+   * Returns the code of the target account.
+   * @param chainId - Chain id to check code
+   * @param target - Address to get code from
+   * @returns The code of the target account
+   */
+  export function getCode(chainId: ChainId, target: Address): Result<Bytes, string> {
+    if (chainId === ChainId.SOLANA_MAINNET) return Result.err<Bytes, string>('Solana not supported')
+    const data = '0x7e105ce2' + evm.encode([EvmEncodeParam.fromValue('address', target)])
+    const response = evmCallQuery(Address.fromHexString(MIMIC_HELPER_ADDRESS), chainId, data)
+    if (response.isError) return Result.err<Bytes, string>(response.error)
+    const decodedResponse = evm.decode(new EvmDecodeParam('bytes', response.unwrap()))
+    const decoded = Bytes.fromHexString(decodedResponse)
+    return Result.ok<Bytes, string>(decoded)
   }
 }
