@@ -1,5 +1,11 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.38
+
+### Patch Changes
+
+- 73e9713: Add getCode function to get the code of an address (Only EVM)
+
 ## 0.0.1-rc.37
 
 ### Patch Changes
