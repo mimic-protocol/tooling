@@ -20,7 +20,7 @@ export class ByteArray extends Uint8Array implements Serializable {
    * The resulting byte array is in little-endian order.
    */
   static empty(): ByteArray {
-    return ByteArray.fromI32(0)
+    return new ByteArray(0)
   }
 
   /**

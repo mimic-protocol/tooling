@@ -14,4 +14,4 @@ export enum ListType {
   DenyList = 1,
 }
 
-export const MIMIC_HELPER_ADDRESS = '0xb5DfCaBAef8fa7B0c73e2bFF01c6014a1f04025a'
+export const MIMIC_HELPER_ADDRESS = '0x5cf82cbed1110fc2f75b3413d53abac492931804'
