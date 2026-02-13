@@ -47,13 +47,14 @@ export default class Compile extends Command {
     log.startAction('Verifying Manifest')
     const manifest = ManifestHandler.load(cmd, manifestDir)
     log.startAction('Compiling')
+    const wasmPath = path.join(absBuildDir, 'function.wasm')
 
     const ascArgs = [
       absFunctionFile,
       '--target',
       'release',
       '--outFile',
-      path.join(absBuildDir, 'function.wasm'),
+      wasmPath,
       '--optimize',
       '--exportRuntime',
       '--transform',
@@ -69,7 +70,6 @@ export default class Compile extends Command {
     }
 
     log.startAction('Injecting metadata')
-    const wasmPath = path.join(absBuildDir, 'function.wasm')
     const wasmBuffer = fs.readFileSync(wasmPath)
     const metadata = {
       runnerTarget: RUNNER_TARGET_VERSION,

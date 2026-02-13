@@ -71,12 +71,12 @@ describe('ManifestHandler', () => {
         })
       })
 
-      context('when dealing with lib version', () => {
-        context('when the lib version is not present', () => {
-          it('adds the lib version to the manifest', () => {
+      context('when dealing with runner target version', () => {
+        context('when the runner target version is not present', () => {
+          it('adds the runner target version to the manifest', () => {
             const parsedManifest = ManifestHandler.validate(manifest)
 
-            expect(parsedManifest.metadata.libVersion).to.match(SEM_VER_REGEX)
+            expect(parsedManifest.metadata.runnerTarget).to.match(SEM_VER_REGEX)
           })
         })
 
