@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 0.0.1-rc.39
+
+### Patch Changes
+
+- 48352fe: Add runner target on compilation
+- Updated dependencies [48352fe]
+  - @mimicprotocol/lib-ts@0.0.1-rc.39
+
 ## 0.0.1-rc.38
 
 ### Patch Changes
