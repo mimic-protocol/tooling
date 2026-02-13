@@ -1,7 +1,7 @@
+import { RUNNER_TARGET_VERSION } from '@mimicprotocol/lib-ts/constants'
 import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
-import * as path from 'path'
 import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, MoreThanOneEntryError } from '../errors'
@@ -17,7 +17,7 @@ export default {
       ...manifest,
       inputs: mergeIfUnique(manifest.inputs),
       abis: mergeIfUnique(manifest.abis),
-      metadata: { libVersion: getLibVersion() },
+      metadata: { runnerTarget: RUNNER_TARGET_VERSION },
     }
     return ManifestValidator.parse(mergedManifest)
   },
@@ -78,19 +78,4 @@ function handleValidationError(command: Command, err: unknown): never {
   }
 
   command.error(message, { code, suggestions })
-}
-
-function getLibVersion(): string {
-  try {
-    let currentDir = process.cwd()
-    while (currentDir !== path.dirname(currentDir)) {
-      const libPackagePath = path.join(currentDir, 'node_modules', '@mimicprotocol', 'lib-ts', 'package.json')
-      if (fs.existsSync(libPackagePath)) return JSON.parse(fs.readFileSync(libPackagePath, 'utf-8')).version
-      currentDir = path.dirname(currentDir)
-    }
-
-    throw new Error('Could not find @mimicprotocol/lib-ts package')
-  } catch (error) {
-    throw new Error(`Failed to read @mimicprotocol/lib-ts version: ${error}`)
-  }
 }

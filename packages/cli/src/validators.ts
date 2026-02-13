@@ -22,6 +22,6 @@ export const ManifestValidator = z.object({
   inputs: z.record(String, InputValue),
   abis: z.record(String, String),
   metadata: z.object({
-    libVersion: String.regex(SEM_VER_REGEX, 'Must be a valid semver'),
+    runnerTarget: String.regex(SEM_VER_REGEX, 'Must be a valid semver'),
   }),
 })
