@@ -1,5 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
-
 export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 export const EVM_NATIVE_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 export const SVM_NATIVE_ADDRESS = 'Nativeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
