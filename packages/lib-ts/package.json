@@ -12,12 +12,17 @@
   "files": [
     "src",
     "index.ts",
-    "constants.ts",
+    "constants.js",
+    "constants.d.ts",
     "asconfig.json"
   ],
   "exports": {
     ".": "./index.ts",
-    "./constants": "./constants.ts"
+    "./constants": {
+      "import": "./constants.js",
+      "require": "./constants.js",
+      "types": "./constants.d.ts"
+    }
   },
   "devDependencies": {
     "@as-pect/cli": "8.1.0",
