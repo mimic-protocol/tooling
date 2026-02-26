@@ -1,5 +1,12 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.40
+
+### Patch Changes
+
+- 32adf4f: Fix ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING for new node versions
+- 2bbe278: update eslint config
+
 ## 0.0.1-rc.39
 
 ### Patch Changes
