@@ -1,5 +1,11 @@
 # @mimicprotocol/lib-ts
 
+## 0.0.1-rc.41
+
+### Patch Changes
+
+- 54f7344: Add Polygon, Avalanche, and BNB chain support
+
 ## 0.0.1-rc.40
 
 ### Patch Changes
