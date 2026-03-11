@@ -22,6 +22,9 @@ export const CHAIN_IDS: ChainId[] = [
   ChainId.ARBITRUM,
   ChainId.OPTIMISM,
   ChainId.GNOSIS,
+  ChainId.BNB,
+  ChainId.POLYGON,
+  ChainId.AVALANCHE,
   ChainId.SONIC,
 ]
 

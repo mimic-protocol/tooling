@@ -1,4 +1,4 @@
-import { Arbitrum, Base, BaseSepolia, Ethereum, Gnosis, Optimism, Sonic } from '../chains'
+import { Arbitrum, Avalanche, Base, BaseSepolia, BNB, Ethereum, Gnosis, Optimism, Polygon, Sonic } from '../chains'
 
 import { TokenProvider } from './TokenProvider'
 
@@ -23,6 +23,12 @@ export class Tokens {
   private readonly wbtc: TokenProvider = new TokenProvider('WBTC')
   private readonly weth: TokenProvider = new TokenProvider('WETH')
   private readonly eth: TokenProvider = new TokenProvider('ETH')
+  private readonly avax: TokenProvider = new TokenProvider('AVAX')
+  private readonly wavax: TokenProvider = new TokenProvider('WAVAX')
+  private readonly pol: TokenProvider = new TokenProvider('POL')
+  private readonly wpol: TokenProvider = new TokenProvider('WPOL')
+  private readonly bnb: TokenProvider = new TokenProvider('BNB')
+  private readonly wbnb: TokenProvider = new TokenProvider('WBNB')
   private readonly xdai: TokenProvider = new TokenProvider('xDAI')
   private readonly sonic: TokenProvider = new TokenProvider('SONIC')
   private readonly wxdai: TokenProvider = new TokenProvider('WXDAI')
@@ -45,6 +51,15 @@ export class Tokens {
     this.weth.register(Arbitrum.CHAIN_ID, Arbitrum.WETH)
     this.eth.register(Arbitrum.CHAIN_ID, Arbitrum.ETH)
 
+    // Avalanche
+    this.usdc.register(Avalanche.CHAIN_ID, Avalanche.USDC)
+    this.usdt.register(Avalanche.CHAIN_ID, Avalanche.USDT)
+    this.dai.register(Avalanche.CHAIN_ID, Avalanche.DAI)
+    this.wbtc.register(Avalanche.CHAIN_ID, Avalanche.WBTC)
+    this.weth.register(Avalanche.CHAIN_ID, Avalanche.WETH)
+    this.avax.register(Avalanche.CHAIN_ID, Avalanche.AVAX)
+    this.wavax.register(Avalanche.CHAIN_ID, Avalanche.WAVAX)
+
     // Base
     this.usdc.register(Base.CHAIN_ID, Base.USDC)
     this.usdt.register(Base.CHAIN_ID, Base.USDT)
@@ -52,6 +67,15 @@ export class Tokens {
     this.wbtc.register(Base.CHAIN_ID, Base.WBTC)
     this.weth.register(Base.CHAIN_ID, Base.WETH)
     this.eth.register(Base.CHAIN_ID, Base.ETH)
+
+    // BNB
+    this.usdc.register(BNB.CHAIN_ID, BNB.USDC)
+    this.usdt.register(BNB.CHAIN_ID, BNB.USDT)
+    this.dai.register(BNB.CHAIN_ID, BNB.DAI)
+    this.wbtc.register(BNB.CHAIN_ID, BNB.WBTC)
+    this.weth.register(BNB.CHAIN_ID, BNB.WETH)
+    this.bnb.register(BNB.CHAIN_ID, BNB.BNB)
+    this.wbnb.register(BNB.CHAIN_ID, BNB.WBNB)
 
     // Optimism
     this.usdc.register(Optimism.CHAIN_ID, Optimism.USDC)
@@ -68,6 +92,15 @@ export class Tokens {
     this.weth.register(Gnosis.CHAIN_ID, Gnosis.WETH)
     this.xdai.register(Gnosis.CHAIN_ID, Gnosis.xDAI)
     this.wxdai.register(Gnosis.CHAIN_ID, Gnosis.WXDAI)
+
+    // Polygon
+    this.usdc.register(Polygon.CHAIN_ID, Polygon.USDC)
+    this.usdt.register(Polygon.CHAIN_ID, Polygon.USDT)
+    this.dai.register(Polygon.CHAIN_ID, Polygon.DAI)
+    this.wbtc.register(Polygon.CHAIN_ID, Polygon.WBTC)
+    this.weth.register(Polygon.CHAIN_ID, Polygon.WETH)
+    this.pol.register(Polygon.CHAIN_ID, Polygon.POL)
+    this.wpol.register(Polygon.CHAIN_ID, Polygon.WPOL)
 
     // Sonic
     this.usdc.register(Sonic.CHAIN_ID, Sonic.USDC)
@@ -109,6 +142,30 @@ export class Tokens {
 
   static get ETH(): TokenProvider {
     return Tokens.getInstance().eth
+  }
+
+  static get AVAX(): TokenProvider {
+    return Tokens.getInstance().avax
+  }
+
+  static get WAVAX(): TokenProvider {
+    return Tokens.getInstance().wavax
+  }
+
+  static get POL(): TokenProvider {
+    return Tokens.getInstance().pol
+  }
+
+  static get WPOL(): TokenProvider {
+    return Tokens.getInstance().wpol
+  }
+
+  static get BNB(): TokenProvider {
+    return Tokens.getInstance().bnb
+  }
+
+  static get WBNB(): TokenProvider {
+    return Tokens.getInstance().wbnb
   }
 
   static get XDAI(): TokenProvider {
