@@ -29,8 +29,14 @@ export class ERC20Token extends BlockchainToken {
       case ChainId.ARBITRUM:
       case ChainId.OPTIMISM:
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'ETH')
+      case ChainId.BNB:
+        return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'BNB')
       case ChainId.GNOSIS:
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'xDAI')
+      case ChainId.POLYGON:
+        return ERC20Token.fromString('0x0000000000000000000000000000000000001010', chainId, 18, 'POL')
+      case ChainId.AVALANCHE:
+        return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'AVAX')
       case ChainId.SONIC:
         return ERC20Token.fromString(EVM_NATIVE_ADDRESS, chainId, 18, 'SONIC')
       default:

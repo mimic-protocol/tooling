@@ -136,6 +136,19 @@ describe('ERC20Token', () => {
       })
     })
 
+    describe('when the chain id is bnb', () => {
+      const chainId = ChainId.BNB
+
+      it('returns the expected token', () => {
+        const token = ERC20Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('BNB')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
     describe('when the chain id is gnosis', () => {
       const chainId = ChainId.GNOSIS
 
@@ -145,6 +158,32 @@ describe('ERC20Token', () => {
         expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
         expect(token.chainId).toBe(chainId)
         expect(token.symbol).toBe('xDAI')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is polygon', () => {
+      const chainId = ChainId.POLYGON
+
+      it('returns the expected token', () => {
+        const token = ERC20Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe('0x0000000000000000000000000000000000001010')
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('POL')
+        expect(token.decimals).toBe(18)
+      })
+    })
+
+    describe('when the chain id is avalanche', () => {
+      const chainId = ChainId.AVALANCHE
+
+      it('returns the expected token', () => {
+        const token = ERC20Token.native(chainId)
+
+        expect(token.address.toHexString()).toBe(EVM_NATIVE_ADDRESS)
+        expect(token.chainId).toBe(chainId)
+        expect(token.symbol).toBe('AVAX')
         expect(token.decimals).toBe(18)
       })
     })
