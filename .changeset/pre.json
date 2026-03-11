@@ -8,6 +8,7 @@
     "@mimicprotocol/test-ts": "0.0.1-rc.25"
   },
   "changesets": [
+    "bright-apes-add-chains",
     "clever-parents-talk",
     "empty-books-smile",
     "fifty-years-invent",
