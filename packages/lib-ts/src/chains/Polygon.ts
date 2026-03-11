@@ -6,7 +6,7 @@ import { ChainId } from '../types'
 export namespace Polygon {
   export const CHAIN_ID = ChainId.POLYGON
   export const POL = ERC20Token.native(CHAIN_ID)
-  export const USDC = ERC20Token.fromString('0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', CHAIN_ID, 6, 'USDC')
+  export const USDC = ERC20Token.fromString('0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', CHAIN_ID, 6, 'USDC')
   export const USDT = ERC20Token.fromString('0xc2132D05D31c914a87C6611C10748AEb04B58e8F', CHAIN_ID, 6, 'USDT0')
   export const DAI = ERC20Token.fromString('0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', CHAIN_ID, 18, 'DAI')
   export const WBTC = ERC20Token.fromString('0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6', CHAIN_ID, 8, 'WBTC')
