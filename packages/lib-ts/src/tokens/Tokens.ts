@@ -1,4 +1,4 @@
-import { Arbitrum, Avalanche, BNB, Base, BaseSepolia, Ethereum, Gnosis, Optimism, Polygon, Sonic } from '../chains'
+import { Arbitrum, Avalanche, Base, BaseSepolia, BNB, Ethereum, Gnosis, Optimism, Polygon, Sonic } from '../chains'
 
 import { TokenProvider } from './TokenProvider'
 
