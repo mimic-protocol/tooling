@@ -22,12 +22,7 @@ export default function main(): void {
 
   const aaveContract = new AAVE(Address.fromString('0x794a61358d6845594f94dc1db02a252b5b4814ad'), chainId)
 
-  aaveContract
-    .withdraw(USDCe.address, userTokens[0].amount, context.user)
-    .addMaxFee(feeUsdt)
-    .addUser(inputs.smartAccount)
-    .build()
-    .send()
+  aaveContract.withdraw(USDCe.address, userTokens[0].amount, context.user).addUser(inputs.smartAccount).send(feeUsdt)
 
-  weth.deposit(BigInt.fromI32(10)).addMaxFee(feeUsdt).addUser(inputs.smartAccount).build().send()
+  weth.deposit(BigInt.fromI32(10)).addUser(inputs.smartAccount).send(feeUsdt)
 }

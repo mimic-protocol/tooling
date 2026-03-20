@@ -9,7 +9,5 @@ export default function main(): void {
 
   TransferBuilder.forChain(Optimism.CHAIN_ID)
     .addTransferFromTokenAmount(amount, recipient)
-    .addMaxFee(TokenAmount.fromStringDecimal(Optimism.USDC, '1'))
-    .build()
-    .send()
+    .send(TokenAmount.fromStringDecimal(Optimism.USDC, '1'))
 }

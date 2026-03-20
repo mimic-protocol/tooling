@@ -3,7 +3,7 @@ import { JSON } from 'json-as/assembly'
 import { Context, SerializableContext } from './context'
 import { evm } from './evm'
 import { Consensus, ListType, MIMIC_HELPER_ADDRESS } from './helpers'
-import { EvmCall, SvmCall, Swap, Transfer } from './intents'
+import { Intent } from './intents'
 import {
   EvmCallQuery,
   EvmCallQueryResponse,
@@ -23,17 +23,8 @@ import { BlockchainToken, Token, TokenAmount, USD } from './tokens'
 import { Address, BigInt, Bytes, ChainId, EvmDecodeParam, EvmEncodeParam, Result } from './types'
 
 export namespace environment {
-  @external('environment', '_evmCall')
-  declare function _evmCall(params: string): void
-
-  @external('environment', '_svmCall')
-  declare function _svmCall(params: string): void
-
-  @external('environment', '_swap')
-  declare function _swap(params: string): void
-
-  @external('environment', '_transfer')
-  declare function _transfer(params: string): void
+  @external('environment', '_sendIntent')
+  declare function _sendIntent(params: string): void
 
   @external('environment', '_tokenPriceQuery')
   declare function _tokenPriceQuery(params: string): string
@@ -54,35 +45,11 @@ export namespace environment {
   declare function _getContext(): string
 
   /**
-   * Generates a EVM Call intent containing contract calls on the blockchain.
-   * @param call - The EvmCall intent to generate
+   * Sends an intent containing one or more operations to the execution environment.
+   * @param intent - The intent to send
    */
-  export function evmCall(call: EvmCall): void {
-    _evmCall(JSON.stringify(call))
-  }
-
-  /**
-   * Generates a SVM Call intent containing contract calls on the blockchain.
-   * @param call - The SvmCall intent to generate
-   */
-  export function svmCall(call: SvmCall): void {
-    _svmCall(JSON.stringify(call))
-  }
-
-  /**
-   * Generates a Swap intent for token exchange operations.
-   * @param swap - The Swap intent to generate
-   */
-  export function swap(swap: Swap): void {
-    _swap(JSON.stringify(swap))
-  }
-
-  /**
-   * Generates a Transfer intent for sending tokens to recipients.
-   * @param transfer - The Transfer intent to generate
-   */
-  export function transfer(transfer: Transfer): void {
-    _transfer(JSON.stringify(transfer))
+  export function sendIntent(intent: Intent): void {
+    _sendIntent(JSON.stringify(intent))
   }
 
   /**

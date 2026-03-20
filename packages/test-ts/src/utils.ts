@@ -10,13 +10,15 @@ import {
 import { Wallet } from 'ethers'
 
 import {
-  Call,
+  CallOperation,
   Intent,
+  Operation,
   OracleResponse,
   QueryMock,
   QueryProcessor,
-  Swap,
-  Transfer,
+  SvmCallOperation,
+  SwapOperation,
+  TransferOperation,
   ValidationErrorContext,
 } from './types'
 
@@ -24,13 +26,23 @@ const SIGNER = new OracleSigner(EthersSigner.fromPrivateKey(Wallet.createRandom(
 
 export function toIntents(intentsJson: string) {
   const raw = JSON.parse(intentsJson)
-  return raw.map((intent: Partial<Intent>) => {
-    if (intent.op == OpType.Swap) {
-      const { sourceChain, destinationChain } = intent as Swap
-      return { ...intent, sourceChain: Number(sourceChain), destinationChain: Number(destinationChain) }
-    } else {
-      const { chainId } = intent as Transfer | Call
-      return { ...intent, chainId: Number(chainId) }
+  return raw.map((intent: Intent) => {
+    return {
+      ...intent,
+      operations: intent.operations.map((operation: Operation) => {
+        if (operation.opType == OpType.Swap) {
+          const swap = operation as SwapOperation
+          return {
+            ...swap,
+            chainId: Number(swap.chainId),
+            sourceChain: Number(swap.sourceChain),
+            destinationChain: Number(swap.destinationChain),
+          }
+        }
+
+        const nonSwap = operation as TransferOperation | CallOperation | SvmCallOperation
+        return { ...nonSwap, chainId: Number(nonSwap.chainId) }
+      }),
     }
   })
 }

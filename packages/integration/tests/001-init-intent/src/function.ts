@@ -4,7 +4,7 @@ import {
   Bytes,
   ChainId,
   ERC20Token,
-  EvmCallBuilder,
+  IntentBuilder,
   NULL_ADDRESS,
   TokenAmount,
 } from '@mimicprotocol/lib-ts'
@@ -16,5 +16,5 @@ export default function main(): void {
   const value = BigInt.fromI32(5)
   const fee = TokenAmount.fromI32(ERC20Token.fromString(NULL_ADDRESS, chainId), 10)
 
-  EvmCallBuilder.forChain(chainId).addCall(target, data, value).addMaxFee(fee).build().send()
+  new IntentBuilder().addMaxFee(fee).addEvmCallOperation(chainId, target, data, value).send()
 }
