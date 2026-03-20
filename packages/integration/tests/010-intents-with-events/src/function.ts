@@ -2,11 +2,9 @@ import { Address, Bytes, DenominationToken, environment, evm, EvmCallBuilder, To
 
 export default function main(): void {
   EvmCallBuilder.forChain(1)
-    .addMaxFee(TokenAmount.fromStringDecimal(DenominationToken.USD(), '1'))
     .addCall(Address.fromString('0x0000000000000000000000000000000000000001'), Bytes.empty())
     .addUser(environment.getContext().user)
     .addEvent(Bytes.fromHexString(evm.keccak('event1')), Bytes.fromUTF8('data'))
     .addEvent(Bytes.fromHexString(evm.keccak('event2')), Bytes.fromUTF8('data'))
-    .build()
-    .send()
+    .send(TokenAmount.fromStringDecimal(DenominationToken.USD(), '1'))
 }

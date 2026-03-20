@@ -2,7 +2,7 @@ import { JSON } from 'json-as'
 
 import { OperationType, Swap, SwapBuilder, SwapTokenIn, SwapTokenOut } from '../../src/intents'
 import { ERC20Token, SPLToken, TokenAmount } from '../../src/tokens'
-import { Address, BigInt, ChainId } from '../../src/types'
+import { Address, ChainId } from '../../src/types'
 import {
   randomERC20Token,
   randomEvmAddress,
@@ -16,117 +16,50 @@ describe('Swap', () => {
   it('creates a simple Swap with default values', () => {
     const chainId = 1
     const user = randomEvmAddress()
-    const tokenIn = ERC20Token.fromAddress(randomEvmAddress(), chainId)
-    const amountIn = BigInt.fromI32(10)
-    const tokenOut = ERC20Token.fromAddress(randomEvmAddress(), chainId)
-    const minAmountOut = BigInt.fromI32(100)
+    const tokenIn = SwapTokenIn.fromI32(randomERC20Token(chainId), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomERC20Token(chainId), 100, randomEvmAddress())
     const settler = randomSettler(chainId)
 
     setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
-    const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
-    expect(swap.op).toBe(OperationType.Swap)
+    const swap = new Swap(chainId, [tokenIn], [tokenOut], chainId)
+    expect(swap.opType).toBe(OperationType.Swap)
     expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe('300')
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
 
     expect(swap.sourceChain).toBe(chainId)
     expect(swap.tokensIn.length).toBe(1)
-    expect(swap.tokensIn[0].token).toBe(tokenIn.address.toString())
-    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
+    expect(swap.tokensIn[0].token).toBe(tokenIn.token)
+    expect(swap.tokensIn[0].amount).toBe(tokenIn.amount)
 
     expect(swap.destinationChain).toBe(chainId)
     expect(swap.tokensOut.length).toBe(1)
-    expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
-    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
-    expect(swap.tokensOut[0].recipient).toBe(user.toString())
+    expect(swap.tokensOut[0].token).toBe(tokenOut.token)
+    expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
+    expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
 
     expect(swap.events.length).toBe(0)
 
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
+      `{"opType":0,"chainId":${chainId},"user":"${user}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${chainId}}`
     )
   })
 
   it('creates a simple Swap with valid parameters and stringifies it', () => {
     const chainId = 1
+    const destinationChain = 10
+    const randomUser = randomEvmAddress()
     const user = randomEvmAddress()
     const settler = randomSettler(chainId)
-    const deadline = BigInt.fromI32(999999)
-    const tokenIn = ERC20Token.fromAddress(randomEvmAddress(), chainId)
-    const amountIn = BigInt.fromI32(10)
-    const tokenOut = ERC20Token.fromAddress(randomEvmAddress(), chainId)
-    const minAmountOut = BigInt.fromI32(100)
+    const tokenIn = SwapTokenIn.fromI32(randomERC20Token(chainId), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomERC20Token(chainId), 100, randomEvmAddress())
 
     setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
-    const swap = Swap.create(
-      chainId,
-      tokenIn,
-      amountIn,
-      tokenOut,
-      minAmountOut,
-      Address.fromString(settler.address),
-      user,
-      deadline,
-      null,
-      []
-    )
-    expect(swap.op).toBe(OperationType.Swap)
-    expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe(deadline.toString())
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
+    const swap = new Swap(chainId, [tokenIn], [tokenOut], destinationChain, randomUser, [])
+    expect(swap.opType).toBe(OperationType.Swap)
+    expect(swap.user).toBe(randomUser.toString())
 
     expect(swap.sourceChain).toBe(chainId)
-    expect(swap.tokensIn.length).toBe(1)
-    expect(swap.tokensIn[0].token).toBe(tokenIn.address.toString())
-    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
-
-    expect(swap.destinationChain).toBe(chainId)
-    expect(swap.tokensOut.length).toBe(1)
-    expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
-    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
-    expect(swap.tokensOut[0].recipient).toBe(user.toString())
-
-    expect(swap.events.length).toBe(0)
-
-    expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
-    )
-  })
-
-  it('creates a complex Swap with valid parameters and stringifies it', () => {
-    const sourceChain = 1
-    const destinationChain = 10
-    const user = randomEvmAddress()
-    const settler = randomSettler(sourceChain)
-    const deadline = BigInt.fromI32(999999)
-    const tokenIn = SwapTokenIn.fromI32(randomERC20Token(sourceChain), 10)
-    const tokenOut = SwapTokenOut.fromI32(randomERC20Token(destinationChain), 100, randomEvmAddress())
-
-    setContext(1, 1, user.toString(), [settler], 'trigger-456')
-
-    const swap = new Swap(
-      sourceChain,
-      [tokenIn],
-      [tokenOut],
-      destinationChain,
-      Address.fromString(settler.address),
-      user,
-      deadline
-    )
-    expect(swap.op).toBe(OperationType.Swap)
-    expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe(deadline.toString())
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
-
-    expect(swap.sourceChain).toBe(sourceChain)
     expect(swap.tokensIn.length).toBe(1)
     expect(swap.tokensIn[0].token).toBe(tokenIn.token)
     expect(swap.tokensIn[0].amount).toBe(tokenIn.amount)
@@ -140,7 +73,7 @@ describe('Swap', () => {
     expect(swap.events.length).toBe(0)
 
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"opType":0,"chainId":${chainId},"user":"${randomUser}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 
@@ -182,7 +115,7 @@ describe('SwapBuilder', () => {
     builder.addTokenOutFromTokenAmount(tokenOutAmount, recipientAddress)
 
     const swap = builder.build()
-    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.opType).toBe(OperationType.Swap)
     expect(swap.sourceChain).toBe(sourceChain)
     expect(swap.destinationChain).toBe(destinationChain)
     expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())
@@ -275,120 +208,22 @@ describe('Swap - SVM', () => {
   it('creates a simple Swap with default values', () => {
     const chainId = ChainId.SOLANA_MAINNET
     const user = randomSvmAddress()
-    const tokenIn = SPLToken.fromAddress(randomSvmAddress(), chainId, 6, 'USDC')
-    const amountIn = BigInt.fromI32(10)
-    const tokenOut = SPLToken.fromAddress(randomSvmAddress(), chainId, 6, 'USDT')
-    const minAmountOut = BigInt.fromI32(100)
+    const tokenIn = SwapTokenIn.fromI32(randomSPLToken(chainId), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomSPLToken(chainId), 100, randomSvmAddress())
     const settler = randomSettler(chainId)
 
     setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
-    const swap = Swap.create(chainId, tokenIn, amountIn, tokenOut, minAmountOut)
-    expect(swap.op).toBe(OperationType.Swap)
+    const swap = new Swap(chainId, [tokenIn], [tokenOut], chainId)
+    expect(swap.opType).toBe(OperationType.Swap)
     expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe('300')
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
 
     expect(swap.sourceChain).toBe(chainId)
-    expect(swap.tokensIn.length).toBe(1)
-    expect(swap.tokensIn[0].token).toBe(tokenIn.address.toString())
-    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
-
-    expect(swap.destinationChain).toBe(chainId)
-    expect(swap.tokensOut.length).toBe(1)
-    expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
-    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
-    expect(swap.tokensOut[0].recipient).toBe(user.toString())
-
-    expect(swap.events.length).toBe(0)
-
-    expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"300","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
-    )
-  })
-
-  it('creates a simple Swap with valid parameters and stringifies it', () => {
-    const chainId = ChainId.SOLANA_MAINNET
-    const user = randomSvmAddress()
-    const settler = randomSettler(chainId)
-    const deadline = BigInt.fromI32(999999)
-    const tokenIn = SPLToken.fromAddress(randomSvmAddress(), chainId, 6, 'USDC')
-    const amountIn = BigInt.fromI32(10)
-    const tokenOut = SPLToken.fromAddress(randomSvmAddress(), chainId, 6, 'USDT')
-    const minAmountOut = BigInt.fromI32(100)
-
-    setContext(1, 1, user.toString(), [settler], 'trigger-456')
-
-    const swap = Swap.create(
-      chainId,
-      tokenIn,
-      amountIn,
-      tokenOut,
-      minAmountOut,
-      Address.fromString(settler.address),
-      user,
-      deadline
-    )
-    expect(swap.op).toBe(OperationType.Swap)
-    expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe(deadline.toString())
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
-
-    expect(swap.sourceChain).toBe(chainId)
-    expect(swap.tokensIn.length).toBe(1)
-    expect(swap.tokensIn[0].token).toBe(tokenIn.address.toString())
-    expect(swap.tokensIn[0].amount).toBe(amountIn.toString())
-
-    expect(swap.destinationChain).toBe(chainId)
-    expect(swap.tokensOut.length).toBe(1)
-    expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
-    expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.toString())
-    expect(swap.tokensOut[0].recipient).toBe(user.toString())
-
-    expect(swap.events.length).toBe(0)
-
-    expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.address.toString()}","amount":"${amountIn}"}],"tokensOut":[{"token":"${tokenOut.address.toString()}","minAmount":"${minAmountOut}","recipient":"${user}"}],"destinationChain":${chainId}}`
-    )
-  })
-
-  it('creates a complex Swap with valid parameters and stringifies it', () => {
-    const sourceChain = ChainId.SOLANA_MAINNET
-    const destinationChain = ChainId.SOLANA_MAINNET
-    const user = randomSvmAddress()
-    const settler = randomSettler(sourceChain)
-    const deadline = BigInt.fromI32(999999)
-    const tokenIn = SwapTokenIn.fromI32(randomSPLToken(sourceChain), 10)
-    const tokenOut = SwapTokenOut.fromI32(randomSPLToken(destinationChain), 100, randomSvmAddress())
-
-    setContext(1, 1, user.toString(), [settler], 'trigger-456')
-
-    const swap = new Swap(
-      sourceChain,
-      [tokenIn],
-      [tokenOut],
-      destinationChain,
-      Address.fromString(settler.address),
-      user,
-      deadline
-    )
-    expect(swap.op).toBe(OperationType.Swap)
-    expect(swap.user).toBe(user.toString())
-    expect(swap.settler).toBe(settler.address.toString())
-    expect(swap.deadline).toBe(deadline.toString())
-    expect(swap.nonce).toBe('0x')
-    expect(swap.maxFees.length).toBe(0)
-
-    expect(swap.sourceChain).toBe(sourceChain)
     expect(swap.tokensIn.length).toBe(1)
     expect(swap.tokensIn[0].token).toBe(tokenIn.token)
     expect(swap.tokensIn[0].amount).toBe(tokenIn.amount)
 
-    expect(swap.destinationChain).toBe(destinationChain)
+    expect(swap.destinationChain).toBe(chainId)
     expect(swap.tokensOut.length).toBe(1)
     expect(swap.tokensOut[0].token).toBe(tokenOut.token)
     expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
@@ -397,7 +232,38 @@ describe('Swap - SVM', () => {
     expect(swap.events.length).toBe(0)
 
     expect(JSON.stringify(swap)).toBe(
-      `{"op":0,"settler":"${settler.address}","user":"${user}","deadline":"${deadline}","nonce":"0x","maxFees":[],"events":[],"sourceChain":${sourceChain},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"opType":0,"chainId":${chainId},"user":"${user}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${chainId}}`
+    )
+  })
+
+  it('creates a simple Swap with valid parameters and stringifies it', () => {
+    const chainId = ChainId.SOLANA_MAINNET
+    const user = randomSvmAddress()
+    const settler = randomSettler(chainId)
+    const tokenIn = SwapTokenIn.fromI32(randomSPLToken(chainId), 10)
+    const tokenOut = SwapTokenOut.fromI32(randomSPLToken(chainId), 100, randomSvmAddress())
+
+    setContext(1, 1, user.toString(), [settler], 'trigger-456')
+
+    const swap = new Swap(chainId, [tokenIn], [tokenOut], chainId, user, [])
+    expect(swap.opType).toBe(OperationType.Swap)
+    expect(swap.user).toBe(user.toString())
+
+    expect(swap.sourceChain).toBe(chainId)
+    expect(swap.tokensIn.length).toBe(1)
+    expect(swap.tokensIn[0].token).toBe(tokenIn.token)
+    expect(swap.tokensIn[0].amount).toBe(tokenIn.amount)
+
+    expect(swap.destinationChain).toBe(chainId)
+    expect(swap.tokensOut.length).toBe(1)
+    expect(swap.tokensOut[0].token).toBe(tokenOut.token)
+    expect(swap.tokensOut[0].minAmount).toBe(tokenOut.minAmount)
+    expect(swap.tokensOut[0].recipient).toBe(tokenOut.recipient)
+
+    expect(swap.events.length).toBe(0)
+
+    expect(JSON.stringify(swap)).toBe(
+      `{"opType":0,"chainId":${chainId},"user":"${user}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${chainId}}`
     )
   })
 
@@ -439,7 +305,7 @@ describe('SwapBuilder - SVM', () => {
     builder.addTokenOutFromTokenAmount(tokenOutAmount, recipientAddress)
 
     const swap = builder.build()
-    expect(swap.op).toBe(OperationType.Swap)
+    expect(swap.opType).toBe(OperationType.Swap)
     expect(swap.sourceChain).toBe(sourceChain)
     expect(swap.destinationChain).toBe(destinationChain)
     expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())

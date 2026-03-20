@@ -22,7 +22,7 @@ export default function main(): void {
   const bytes = Bytes.fromI32(123)
   const callFee = TokenAmount.fromI32(USDC, 10)
 
-  EvmCallBuilder.forChain(chainId).addCall(target).addCall(target, bytes).addMaxFee(callFee).build().send()
+  EvmCallBuilder.forChain(chainId).addCall(target).addCall(target, bytes).send(callFee)
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount).times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
@@ -32,16 +32,11 @@ export default function main(): void {
   SwapBuilder.forChains(chainId, chainId)
     .addTokenInFromTokenAmount(tokenIn)
     .addTokenOutFromTokenAmount(tokenOut, target)
-    .build()
     .send()
 
   // Normal Transfer
   const tokenAmount = TokenAmount.fromI32(USDC, inputs.amount)
   const transferFee = TokenAmount.fromI32(USDC, 10)
 
-  TransferBuilder.forChain(chainId)
-    .addTransferFromTokenAmount(tokenAmount, target)
-    .addMaxFee(transferFee)
-    .build()
-    .send()
+  TransferBuilder.forChain(chainId).addTransferFromTokenAmount(tokenAmount, target).send(transferFee)
 }

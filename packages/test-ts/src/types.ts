@@ -98,34 +98,46 @@ export type GenerateMockParams = {
 
 export type RunFunctionOptionalParams = Partial<Omit<GenerateMockParams, 'context'>>
 
-export type IntentBase = {
-  op: number
-  settler: string
+export type OperationBase = {
+  opType: number
   user: string
-  deadline: string
-  nonce: string
-  maxFees: { token: string; amount: string }[]
+  chainId: number
   events: { topic: string; data: string }[]
 }
 
-export type Transfer = IntentBase & {
-  chainId: number
+export type TransferOperation = OperationBase & {
   transfers: { token: string; amount: string; recipient: string }[]
 }
 
-export type Swap = IntentBase & {
+export type SwapOperation = OperationBase & {
   sourceChain: number
   destinationChain: number
   tokensIn: { token: string; amount: string }[]
   tokensOut: { token: string; minAmount: string; recipient: string }[]
 }
 
-export type Call = IntentBase & {
-  chainId: number
+export type CallOperation = OperationBase & {
   calls: { target: string; data: string; value: string }[]
 }
 
-export type Intent = Transfer | Swap | Call
+export type SvmCallOperation = OperationBase & {
+  instructions: {
+    programId: string
+    accountsMeta: { pubkey: string; isSigner: boolean; isWritable: boolean }[]
+    data: string
+  }[]
+}
+
+export type Operation = TransferOperation | SwapOperation | CallOperation | SvmCallOperation
+
+export type Intent = {
+  settler: string
+  feePayer: string
+  deadline: string
+  nonce: string
+  maxFees: { token: string; amount: string }[]
+  operations: Operation[]
+}
 
 export type OracleResponse = AnyOracleResponse
 

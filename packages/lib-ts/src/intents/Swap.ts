@@ -2,13 +2,14 @@ import { environment } from '../environment'
 import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt, Bytes, ChainId } from '../types'
 
-import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
+import { IntentBuilder } from './Intent'
+import { Operation, OperationBuilder, OperationEvent, OperationType } from './Operation'
 
 /**
  * Builder for creating Swap intents with token exchange operations.
  * Supports both single-chain and cross-chain swaps with multiple input and output tokens.
  */
-export class SwapBuilder extends IntentBuilder {
+export class SwapBuilder extends OperationBuilder {
   protected sourceChain: ChainId
   protected destinationChain: ChainId
   protected tokensIn: SwapTokenIn[] = []
@@ -205,33 +206,6 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the settler address for this intent.
-   * @param settler - The settler address as an Address instance
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addSettler(settler: Address): SwapBuilder {
-    return changetype<SwapBuilder>(super.addSettler(settler))
-  }
-
-  /**
-   * Sets the settler address from a string.
-   * @param settler - The settler address as a hex string
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addSettlerAsString(settler: string): SwapBuilder {
-    return changetype<SwapBuilder>(super.addSettlerAsString(settler))
-  }
-
-  /**
-   * Sets the deadline for this intent.
-   * @param deadline - The deadline as a timestamp
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addDeadline(deadline: BigInt): SwapBuilder {
-    return changetype<SwapBuilder>(super.addDeadline(deadline))
-  }
-
-  /**
    * Sets the user address for this intent.
    * @param user - The user address
    * @returns This SwapBuilder instance for method chaining
@@ -250,26 +224,6 @@ export class SwapBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the nonce for this intent.
-   * @param nonce - A unique identifier to prevent replay attacks
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addNonce(nonce: string): SwapBuilder {
-    return changetype<SwapBuilder>(super.addNonce(nonce))
-  }
-
-  /**
-   * Adds a max fee for this intent.
-   * @param fee - The max fee token amount (must be on same chain)
-   * @returns This SwapBuilder instance for method chaining
-   */
-  addMaxFee(fee: TokenAmount): SwapBuilder {
-    if (!fee.token.hasChain(this.destinationChain)) throw new Error('Fee token must be on the destination chain')
-    this.maxFees.push(fee)
-    return this
-  }
-
-  /**
    * Sets an event for the intent.
    * @param topic - The topic to be indexed in the event
    * @param data - The event data
@@ -284,7 +238,7 @@ export class SwapBuilder extends IntentBuilder {
    * @param events - The list of events to be added
    * @returns This SwapBuilder instance for method chaining
    */
-  addEvents(events: IntentEvent[]): SwapBuilder {
+  addEvents(events: OperationEvent[]): SwapBuilder {
     return changetype<SwapBuilder>(super.addEvents(events))
   }
 
@@ -295,18 +249,16 @@ export class SwapBuilder extends IntentBuilder {
   build(): Swap {
     if (this.tokensIn.length === 0 || this.tokensOut.length === 0) throw new Error('Tokens in and out are required')
 
-    return new Swap(
-      this.sourceChain,
-      this.tokensIn,
-      this.tokensOut,
-      this.destinationChain,
-      this.settler,
-      this.user,
-      this.deadline,
-      this.nonce,
-      this.maxFees,
-      this.events
-    )
+    return new Swap(this.sourceChain, this.tokensIn, this.tokensOut, this.destinationChain, this.user, this.events)
+  }
+
+  /**
+   * Builds this operation and sends it inside an intent with the provided fee data.
+   * @param maxFee - The max fee to pay for the intent (optional for swaps)
+   * @param feePayer - The fee payer for the intent (optional)
+   */
+  send(maxFee: TokenAmount | null = null, feePayer: Address | null = null): void {
+    this.build().send(maxFee, feePayer)
   }
 }
 
@@ -439,7 +391,7 @@ export class SwapTokenOut {
  * Represents a Swap intent for exchanging tokens between blockchain networks.
  */
 @json
-export class Swap extends Intent {
+export class Swap extends Operation {
   /**
    * Creates a simple single-chain swap intent.
    * @param chainId - The blockchain network identifier
@@ -448,29 +400,11 @@ export class Swap extends Intent {
    * @param tokenOut - The output token
    * @param minAmountOut - The minimum amount to receive
    * @param settler - The settler address (optional)
-   * @param user - The user address (optional)
+   * @param recipient - The recipient address (optional)
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
    * @returns A new Swap instance
    */
-  static create(
-    chainId: ChainId,
-    tokenIn: Token,
-    amountIn: BigInt,
-    tokenOut: Token,
-    minAmountOut: BigInt,
-    settler: Address | null = null,
-    user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    events: IntentEvent[] | null = null
-  ): Swap {
-    const context = environment.getContext()
-    const recipient = user || context.user
-    const swapIn = SwapTokenIn.fromBigInt(tokenIn, amountIn)
-    const swapOut = SwapTokenOut.fromBigInt(tokenOut, minAmountOut, recipient)
-    return new Swap(chainId, [swapIn], [swapOut], chainId, settler, user, deadline, nonce, [], events)
-  }
 
   /**
    * Creates a new Swap intent.
@@ -489,23 +423,23 @@ export class Swap extends Intent {
     public tokensIn: SwapTokenIn[],
     public tokensOut: SwapTokenOut[],
     public destinationChain: ChainId,
-    settler: Address | null = null,
     user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    maxFees: TokenAmount[] | null = null,
-    events: IntentEvent[] | null = null
+    events: OperationEvent[] | null = null
   ) {
-    const fees: MaxFee[] = maxFees ? maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee)) : []
-    super(OperationType.Swap, sourceChain, fees, settler, user, deadline, nonce, events)
+    super(OperationType.Swap, sourceChain, user, events)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }
 
   /**
    * Sends this Swap intent to the execution environment.
+   * @param maxFee - The max fee to pay for the intent (optional for swaps)
+   * @param feePayer - The fee payer for the intent (optional)
    */
-  send(): void {
-    environment.swap(this)
+  send(maxFee: TokenAmount | null = null, feePayer: Address | null = null): void {
+    const intentBuilder = new IntentBuilder().addOperation(this)
+    if (maxFee) intentBuilder.addMaxFee(maxFee)
+    if (feePayer) intentBuilder.addFeePayer(feePayer)
+    environment.sendIntent(intentBuilder.build())
   }
 }
