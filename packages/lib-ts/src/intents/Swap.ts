@@ -393,20 +393,6 @@ export class SwapTokenOut {
 @json
 export class Swap extends Operation {
   /**
-   * Creates a simple single-chain swap intent.
-   * @param chainId - The blockchain network identifier
-   * @param tokenIn - The input token
-   * @param amountIn - The amount to swap from
-   * @param tokenOut - The output token
-   * @param minAmountOut - The minimum amount to receive
-   * @param settler - The settler address (optional)
-   * @param recipient - The recipient address (optional)
-   * @param deadline - The deadline timestamp (optional)
-   * @param nonce - The nonce for replay protection (optional)
-   * @returns A new Swap instance
-   */
-
-  /**
    * Creates a new Swap intent.
    * @param sourceChain - The source blockchain network identifier
    * @param tokensIn - Array of input token configurations
@@ -426,7 +412,8 @@ export class Swap extends Operation {
     user: Address | null = null,
     events: OperationEvent[] | null = null
   ) {
-    super(OperationType.Swap, sourceChain, user, events)
+    const opType = sourceChain == destinationChain ? OperationType.Swap : OperationType.CrossChainSwap
+    super(opType, sourceChain, user, events)
     if (tokensIn.length === 0) throw new Error('TokenIn list cannot be empty')
     if (tokensOut.length === 0) throw new Error('TokenOut list cannot be empty')
   }

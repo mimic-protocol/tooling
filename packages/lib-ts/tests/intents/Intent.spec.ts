@@ -2,7 +2,7 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../../src/context'
 import { NULL_ADDRESS } from '../../src/helpers'
-import { EvmCallBuilder, IntentBuilder } from '../../src/intents'
+import { EvmCallBuilder, IntentBuilder, SwapBuilder } from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomERC20Token, randomSettler, setContext } from '../helpers'
@@ -121,6 +121,40 @@ describe('IntentBuilder', () => {
       expect(() => {
         new IntentBuilder().build()
       }).toThrow('Operation list cannot be empty')
+    })
+  })
+
+  describe('when operations have different chainIds', () => {
+    it('throws an error', () => {
+      const settler = randomSettler(chainId)
+      setContext(0, 1, '0x0000000000000000000000000000000000000002', [settler], 'trigger-call')
+
+      expect(() => {
+        new IntentBuilder()
+          .addOperationBuilder(EvmCallBuilder.forChain(1).addCall(Address.fromString(targetAddressStr)))
+          .addOperationBuilder(EvmCallBuilder.forChain(10).addCall(Address.fromString(targetAddressStr)))
+          .build()
+      }).toThrow('All operations must have the same chainId')
+    })
+  })
+
+  describe('when a cross-chain swap is combined with another operation', () => {
+    it('throws an error', () => {
+      const settler = randomSettler(chainId)
+      setContext(0, 1, '0x0000000000000000000000000000000000000002', [settler], 'trigger-call')
+
+      expect(() => {
+        const tokenIn = randomERC20Token(1)
+        const tokenOut = randomERC20Token(10)
+        new IntentBuilder()
+          .addOperationBuilder(
+            SwapBuilder.forChains(1, 10)
+              .addTokenInFromStringDecimal(tokenIn, '1')
+              .addTokenOutFromStringDecimal(tokenOut, '1', Address.fromString(targetAddressStr))
+          )
+          .addOperationBuilder(EvmCallBuilder.forChain(1).addCall(Address.fromString(targetAddressStr)))
+          .build()
+      }).toThrow('Cross-chain swap must be the only operation in an intent')
     })
   })
 })

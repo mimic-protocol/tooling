@@ -56,7 +56,7 @@ describe('Swap', () => {
     setContext(1, 1, user.toString(), [settler], 'trigger-456')
 
     const swap = new Swap(chainId, [tokenIn], [tokenOut], destinationChain, randomUser, [])
-    expect(swap.opType).toBe(OperationType.Swap)
+    expect(swap.opType).toBe(OperationType.CrossChainSwap)
     expect(swap.user).toBe(randomUser.toString())
 
     expect(swap.sourceChain).toBe(chainId)
@@ -73,7 +73,7 @@ describe('Swap', () => {
     expect(swap.events.length).toBe(0)
 
     expect(JSON.stringify(swap)).toBe(
-      `{"opType":0,"chainId":${chainId},"user":"${randomUser}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
+      `{"opType":3,"chainId":${chainId},"user":"${randomUser}","events":[],"sourceChain":${chainId},"tokensIn":[{"token":"${tokenIn.token}","amount":"${tokenIn.amount}"}],"tokensOut":[{"token":"${tokenOut.token}","minAmount":"${tokenOut.minAmount}","recipient":"${tokenOut.recipient}"}],"destinationChain":${destinationChain}}`
     )
   })
 
@@ -115,7 +115,7 @@ describe('SwapBuilder', () => {
     builder.addTokenOutFromTokenAmount(tokenOutAmount, recipientAddress)
 
     const swap = builder.build()
-    expect(swap.opType).toBe(OperationType.Swap)
+    expect(swap.opType).toBe(OperationType.CrossChainSwap)
     expect(swap.sourceChain).toBe(sourceChain)
     expect(swap.destinationChain).toBe(destinationChain)
     expect(swap.tokensIn[0].token).toBe(tokenInAddress.toString())

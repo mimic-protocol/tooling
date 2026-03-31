@@ -7,7 +7,7 @@ import { SvmAccountMeta } from '../types/svm/SvmAccountMeta'
 
 import { EvmCall, EvmCallData } from './Call/EvmCall'
 import { SvmCall, SvmInstruction } from './Call/SvmCall'
-import { Operation, OperationBuilder, OperationEvent } from './Operation'
+import { Operation, OperationBuilder, OperationEvent, OperationType } from './Operation'
 import { Swap, SwapTokenIn, SwapTokenOut } from './Swap'
 import { Transfer, TransferData } from './Transfer'
 
@@ -333,8 +333,18 @@ export class Intent {
     this.operations = operations || []
     if (this.operations.length === 0) throw new Error('Operation list cannot be empty')
 
-    this.maxFees = maxFees ? maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee)) : []
     const defaultChainId = this.operations[0].chainId
+    for (let i = 0; i < this.operations.length; i++) {
+      const operation = this.operations[i]
+
+      if (operation.chainId !== defaultChainId) throw new Error('All operations must have the same chainId')
+
+      if (operation.opType === OperationType.CrossChainSwap) {
+        if (this.operations.length > 1) throw new Error('Cross-chain swap must be the only operation in an intent')
+      }
+    }
+
+    this.maxFees = maxFees ? maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee)) : []
     this.settler = settler ? settler.toString() : context.findSettler(defaultChainId).toString()
     this.feePayer = feePayer ? feePayer.toString() : context.user.toString()
     this.deadline = deadline ? deadline.toString() : (context.timestamp / 1000 + DEFAULT_DEADLINE).toString()

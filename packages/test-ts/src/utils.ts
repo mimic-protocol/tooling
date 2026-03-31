@@ -30,7 +30,7 @@ export function toIntents(intentsJson: string) {
     return {
       ...intent,
       operations: intent.operations.map((operation: Operation) => {
-        if (operation.opType == OpType.Swap) {
+        if (operation.opType == OpType.Swap || operation.opType == OpType.CrossChainSwap) {
           const swap = operation as SwapOperation
           return {
             ...swap,

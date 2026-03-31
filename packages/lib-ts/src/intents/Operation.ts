@@ -6,6 +6,7 @@ export enum OperationType {
   Swap,
   Transfer,
   EvmCall,
+  CrossChainSwap,
   SvmCall,
 }
 
