@@ -10,8 +10,12 @@ describe('codegen', () => {
   const manifestPath = `${basePath}/manifests/manifest.yaml`
   const typesDirectory = `${basePath}/src/types`
 
+  beforeEach('clean generated files before each test', () => {
+    if (fs.existsSync(typesDirectory)) fs.rmSync(typesDirectory, { recursive: true, force: true })
+  })
+
   afterEach('delete generated files', () => {
-    if (fs.existsSync(typesDirectory)) fs.rmSync(typesDirectory, { recursive: true })
+    if (fs.existsSync(typesDirectory)) fs.rmSync(typesDirectory, { recursive: true, force: true })
   })
 
   context('when the manifest exists', () => {
@@ -21,6 +25,20 @@ describe('codegen', () => {
       context('when there are inputs and abis', () => {
         it('generates correctly', async () => {
           const { error } = await runCommand(command)
+          expect(error).to.be.undefined
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
+        })
+
+        it('accepts the function flag without affecting generated files', async () => {
+          const { error } = await runCommand([...command, '--function', `${basePath}/functions/function.ts`])
+          expect(error).to.be.undefined
+          expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
+          expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
+        })
+
+        it('accepts the function shorthand flag without affecting generated files', async () => {
+          const { error } = await runCommand([...command, `-f ${basePath}/functions/function.ts`])
           expect(error).to.be.undefined
           expect(fs.existsSync(`${typesDirectory}/ERC20.ts`)).to.be.true
           expect(fs.existsSync(`${typesDirectory}/index.ts`)).to.be.true
