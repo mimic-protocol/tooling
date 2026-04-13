@@ -4,6 +4,7 @@ import {
   Bytes,
   ERC20Token,
   EvmCallBuilder,
+  IntentBuilder,
   SwapBuilder,
   TokenAmount,
   TransferBuilder,
@@ -22,21 +23,26 @@ export default function main(): void {
   const bytes = Bytes.fromI32(123)
   const callFee = TokenAmount.fromI32(USDC, 10)
 
-  EvmCallBuilder.forChain(chainId).addCall(target).addCall(target, bytes).send(callFee)
+  const evmcall = EvmCallBuilder.forChain(chainId).addCall(target).addCall(target, bytes)
+  evmcall.send(callFee)
 
   // Normal swap
   const minAmountOut = BigInt.fromI32(inputs.amount).times(BigInt.fromI32(inputs.slippage)).div(BigInt.fromI32(100))
   const tokenIn = TokenAmount.fromI32(USDC, inputs.amount)
   const tokenOut = TokenAmount.fromStringDecimal(WBTC, minAmountOut.toString())
 
-  SwapBuilder.forChains(chainId, chainId)
+  const swap = SwapBuilder.forChains(chainId, chainId)
     .addTokenInFromTokenAmount(tokenIn)
     .addTokenOutFromTokenAmount(tokenOut, target)
-    .send()
+  swap.send()
 
   // Normal Transfer
   const tokenAmount = TokenAmount.fromI32(USDC, inputs.amount)
   const transferFee = TokenAmount.fromI32(USDC, 10)
 
-  TransferBuilder.forChain(chainId).addTransferFromTokenAmount(tokenAmount, target).send(transferFee)
+  const transfer = TransferBuilder.forChain(chainId).addTransferFromTokenAmount(tokenAmount, target)
+  transfer.send(transferFee)
+
+  // Same operations grouped in a single intent
+  new IntentBuilder().addMaxFee(callFee).addOperationsBuilders([evmcall, swap, transfer]).send()
 }
