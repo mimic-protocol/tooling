@@ -36,7 +36,7 @@ describe('SvmCall', () => {
       expect(svmCall.events.length).toBe(0)
 
       expect(JSON.stringify(svmCall)).toBe(
-        `{"opType":4,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[],"instructions":[{"programId":"${programId.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta[0].pubkey}","isWritable":${accountsMeta[0].isWritable},"isSigner":${accountsMeta[0].isSigner}}],"data":"${data.toHexString()}"}]}`
+        `{"opType":5,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[],"instructions":[{"programId":"${programId.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta[0].pubkey}","isWritable":${accountsMeta[0].isWritable},"isSigner":${accountsMeta[0].isSigner}}],"data":"${data.toHexString()}"}]}`
       )
     })
 
@@ -69,7 +69,7 @@ describe('SvmCall', () => {
       expect(svmCall.events[0].data).toBe('0x64617461')
 
       expect(JSON.stringify(svmCall)).toBe(
-        `{"opType":4,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[{"topic":"0x746f706963","data":"0x64617461"}],"instructions":[{"programId":"${programId.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta[0].pubkey}","isWritable":${accountsMeta[0].isWritable},"isSigner":${accountsMeta[0].isSigner}}],"data":"${data.toHexString()}"}]}`
+        `{"opType":5,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[{"topic":"0x746f706963","data":"0x64617461"}],"instructions":[{"programId":"${programId.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta[0].pubkey}","isWritable":${accountsMeta[0].isWritable},"isSigner":${accountsMeta[0].isSigner}}],"data":"${data.toHexString()}"}]}`
       )
     })
   })
@@ -107,7 +107,7 @@ describe('SvmCall', () => {
       expect(svmCall.events.length).toBe(0)
 
       expect(JSON.stringify(svmCall)).toBe(
-        `{"opType":4,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[],"instructions":[{"programId":"${programId1.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta1[0].pubkey}","isWritable":${accountsMeta1[0].isWritable},"isSigner":${accountsMeta1[0].isSigner}}],"data":"${data1.toHexString()}"},{"programId":"${programId2.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta2[0].pubkey}","isWritable":${accountsMeta2[0].isWritable},"isSigner":${accountsMeta2[0].isSigner}}],"data":"${data2.toHexString()}"}]}`
+        `{"opType":5,"chainId":${ChainId.SOLANA_MAINNET},"user":"${user}","events":[],"instructions":[{"programId":"${programId1.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta1[0].pubkey}","isWritable":${accountsMeta1[0].isWritable},"isSigner":${accountsMeta1[0].isSigner}}],"data":"${data1.toHexString()}"},{"programId":"${programId2.toBase58String()}","accountsMeta":[{"pubkey":"${accountsMeta2[0].pubkey}","isWritable":${accountsMeta2[0].isWritable},"isSigner":${accountsMeta2[0].isSigner}}],"data":"${data2.toHexString()}"}]}`
       )
     })
   })

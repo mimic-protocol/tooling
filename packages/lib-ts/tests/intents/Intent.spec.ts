@@ -2,7 +2,14 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../../src/context'
 import { NULL_ADDRESS } from '../../src/helpers'
-import { EvmCallBuilder, IntentBuilder, SwapBuilder } from '../../src/intents'
+import {
+  EvmCallBuilder,
+  EvmDynamicArg,
+  EvmDynamicArgKind,
+  EvmDynamicCall,
+  IntentBuilder,
+  SwapBuilder,
+} from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomERC20Token, randomSettler, setContext } from '../helpers'
@@ -81,6 +88,29 @@ describe('IntentBuilder', () => {
         expect(JSON.stringify(intent)).toBe(
           `{"settler":"${settler}","feePayer":"${feePayer}","deadline":"123456789","nonce":"0xabcdef123456","maxFees":[],"operations":[{"opType":2,"chainId":${chainId},"user":"0x0000000000000000000000000000000000000004","events":[],"calls":[{"target":"${target}","data":"0x1234","value":"0"}]}]}`
         )
+      })
+
+      it('adds a dynamic call operation from raw parameters', () => {
+        const target = Address.fromString(targetAddressStr)
+        const settler = randomSettler(chainId)
+
+        setContext(0, 1, userAddressStr, [settler], 'trigger-dynamic-call')
+
+        const intent = new IntentBuilder()
+          .addEvmDynamicCallOperation(
+            chainId,
+            target,
+            Bytes.fromHexString('0x12345678'),
+            [new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString('0x' + '00'.repeat(64)))],
+            BigInt.fromI32(7)
+          )
+          .build()
+
+        expect(intent.operations.length).toBe(1)
+        expect(intent.operations[0].opType).toBe(4)
+        const operation = changetype<EvmDynamicCall>(intent.operations[0])
+        expect(operation.calls[0].selector).toBe('0x12345678')
+        expect(operation.calls[0].value).toBe('7')
       })
     })
 

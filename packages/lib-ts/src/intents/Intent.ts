@@ -6,6 +6,7 @@ import { Address, BigInt, Bytes, ChainId } from '../types'
 import { SvmAccountMeta } from '../types/svm/SvmAccountMeta'
 
 import { EvmCall, EvmCallData } from './Call/EvmCall'
+import { EvmDynamicArg, EvmDynamicCall, EvmDynamicCallData } from './Call/EvmDynamicCall'
 import { SvmCall, SvmInstruction } from './Call/SvmCall'
 import { Operation, OperationBuilder, OperationEvent, OperationType } from './Operation'
 import { Swap, SwapTokenIn, SwapTokenOut } from './Swap'
@@ -82,6 +83,31 @@ export class IntentBuilder {
     events: OperationEvent[] | null = null
   ): IntentBuilder {
     return this.addOperation(new EvmCall(chainId, [new EvmCallData(target, data, value)], user, events))
+  }
+
+  /**
+   * Adds a single EVM dynamic call operation to this intent from raw parameters.
+   * @param chainId - The blockchain network identifier
+   * @param target - The contract address to call
+   * @param selector - The function selector to call
+   * @param arguments_ - The dynamic arguments to resolve at execution time
+   * @param value - The native token value to send
+   * @param user - The user that should execute the operation
+   * @param events - The operation events to emit
+   * @returns This IntentBuilder instance for method chaining
+   */
+  addEvmDynamicCallOperation(
+    chainId: ChainId,
+    target: Address,
+    selector: Bytes,
+    arguments_: EvmDynamicArg[] = [],
+    value: BigInt = BigInt.zero(),
+    user: Address | null = null,
+    events: OperationEvent[] | null = null
+  ): IntentBuilder {
+    return this.addOperation(
+      new EvmDynamicCall(chainId, [new EvmDynamicCallData(target, selector, arguments_, value)], user, events)
+    )
   }
 
   /**

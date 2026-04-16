@@ -1,0 +1,343 @@
+import { environment } from '../../environment'
+import { evm } from '../../evm'
+import { TokenAmount } from '../../tokens'
+import { Address, BigInt, Bytes, ChainId, EvmEncodeParam } from '../../types'
+import { IntentBuilder } from '../Intent'
+import { Operation, OperationBuilder, OperationEvent, OperationType } from '../Operation'
+
+export enum EvmDynamicArgKind {
+  Literal = 0,
+  Variable = 1,
+  StaticCall = 2,
+}
+
+function validateSelector(selector: Bytes): void {
+  if (selector.length != 4) throw new Error('Selector must be 4 bytes')
+}
+
+function cloneArguments(arguments_: EvmDynamicArg[]): EvmDynamicArg[] {
+  const cloned = new Array<EvmDynamicArg>(arguments_.length)
+  for (let i = 0; i < arguments_.length; i++) {
+    const argument = arguments_[i]
+    cloned[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data))
+  }
+  return cloned
+}
+
+/**
+ * Builder for creating EVM dynamic call operations.
+ */
+export class EvmDynamicCallBuilder extends OperationBuilder {
+  protected chainId: ChainId
+  protected calls: EvmDynamicCallData[] = []
+
+  /**
+   * Creates an EvmDynamicCallBuilder for the specified EVM blockchain network.
+   * @param chainId - The blockchain network identifier
+   * @returns A new EvmDynamicCallBuilder instance
+   */
+  static forChain(chainId: ChainId): EvmDynamicCallBuilder {
+    return new EvmDynamicCallBuilder(chainId)
+  }
+
+  /**
+   * Creates a new EvmDynamicCallBuilder instance.
+   * @param chainId - The EVM blockchain network identifier
+   */
+  private constructor(chainId: ChainId) {
+    super()
+    this.chainId = chainId
+  }
+
+  /**
+   * Adds a dynamic contract call to the operation.
+   * @param target - The contract address to call
+   * @param selector - The function selector to call
+   * @param arguments_ - The dynamic call arguments
+   * @param value - The native token value to send
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addCall(
+    target: Address,
+    selector: Bytes,
+    arguments_: EvmDynamicArg[] = [],
+    value: BigInt = BigInt.zero()
+  ): EvmDynamicCallBuilder {
+    this.calls.push(new EvmDynamicCallData(target, selector, arguments_, value))
+    return this
+  }
+
+  /**
+   * Adds multiple dynamic contract calls to the operation.
+   * @param calls - The contract calls to add
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addCalls(calls: EvmDynamicCallData[]): EvmDynamicCallBuilder {
+    for (let i = 0; i < calls.length; i++) {
+      this.addCall(
+        Address.fromString(calls[i].target),
+        Bytes.fromHexString(calls[i].selector),
+        cloneArguments(calls[i].arguments),
+        BigInt.fromString(calls[i].value)
+      )
+    }
+    return this
+  }
+
+  /**
+   * Adds the calls from another EvmDynamicCallBuilder to this EvmDynamicCallBuilder.
+   * @param builder - The EvmDynamicCallBuilder to add the calls from
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addCallsFromBuilder(builder: EvmDynamicCallBuilder): EvmDynamicCallBuilder {
+    return this.addCalls(builder.getCalls())
+  }
+
+  /**
+   * Adds the calls from multiple EvmDynamicCallBuilders to this EvmDynamicCallBuilder.
+   * @param builders - The EvmDynamicCallBuilders to add the calls from
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addCallsFromBuilders(builders: EvmDynamicCallBuilder[]): EvmDynamicCallBuilder {
+    for (let i = 0; i < builders.length; i++) this.addCallsFromBuilder(builders[i])
+    return this
+  }
+
+  /**
+   * Returns a copy of the calls array.
+   * @returns A copy of the calls array
+   */
+  getCalls(): EvmDynamicCallData[] {
+    return this.calls.slice(0)
+  }
+
+  /**
+   * Sets the user address for this operation.
+   * @param user - The user address
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addUser(user: Address): EvmDynamicCallBuilder {
+    return changetype<EvmDynamicCallBuilder>(super.addUser(user))
+  }
+
+  /**
+   * Sets the user address from a string.
+   * @param user - The user address as a hex string
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addUserAsString(user: string): EvmDynamicCallBuilder {
+    return changetype<EvmDynamicCallBuilder>(super.addUserAsString(user))
+  }
+
+  /**
+   * Sets an event for the operation.
+   * @param topic - The topic to be indexed in the event
+   * @param data - The event data
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addEvent(topic: Bytes, data: Bytes): EvmDynamicCallBuilder {
+    return changetype<EvmDynamicCallBuilder>(super.addEvent(topic, data))
+  }
+
+  /**
+   * Sets multiple events for the operation.
+   * @param events - The list of events to be added
+   * @returns This EvmDynamicCallBuilder instance for method chaining
+   */
+  addEvents(events: OperationEvent[]): EvmDynamicCallBuilder {
+    return changetype<EvmDynamicCallBuilder>(super.addEvents(events))
+  }
+
+  /**
+   * Builds and returns the final EvmDynamicCall operation.
+   * @returns A new EvmDynamicCall instance with all configured parameters
+   */
+  build(): EvmDynamicCall {
+    return new EvmDynamicCall(this.chainId, this.calls, this.user, this.events)
+  }
+
+  /**
+   * Builds this operation and sends it inside an intent with the provided fee data.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
+   */
+  send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    this.build().send(maxFee, feePayer)
+  }
+}
+
+/**
+ * Represents a static call argument specification for a dynamic argument.
+ */
+@json
+export class EvmDynamicStaticCallArg {
+  public target: string
+  public selector: string
+  public arguments: EvmDynamicArg[]
+
+  /**
+   * Creates a new EvmDynamicStaticCallArg instance.
+   * @param target - The contract address to call
+   * @param selector - The function selector to call
+   * @param arguments_ - The dynamic arguments to pass to the static call
+   */
+  constructor(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = []) {
+    validateSelector(selector)
+    this.target = target.toString()
+    this.selector = selector.toHexString()
+    this.arguments = cloneArguments(arguments_)
+  }
+
+  /**
+   * Converts this static call specification into an ABI tuple parameter.
+   * @returns The ABI tuple parameter representation
+   */
+  toEvmEncodeParam(): EvmEncodeParam {
+    return EvmEncodeParam.fromValues('()', [
+      EvmEncodeParam.fromValue('address', Address.fromString(this.target)),
+      EvmEncodeParam.fromValue('bytes4', Bytes.fromHexString(this.selector)),
+      EvmEncodeParam.fromValues(
+        '()[]',
+        this.arguments.map<EvmEncodeParam>((argument: EvmDynamicArg) => argument.toEvmEncodeParam())
+      ),
+    ])
+  }
+}
+
+/**
+ * Represents a single dynamic argument in a dynamic call.
+ */
+@json
+export class EvmDynamicArg {
+  public kind: EvmDynamicArgKind
+  public data: string
+
+  /**
+   * Creates a literal dynamic argument from ABI-encoded parameters.
+   * @param parameters - The ABI parameters to encode as a literal argument
+   * @returns A new literal dynamic argument
+   */
+  static literal(parameters: EvmEncodeParam[]): EvmDynamicArg {
+    const encodedParameters = new Array<EvmEncodeParam>(parameters.length + 1)
+    encodedParameters[0] = EvmEncodeParam.fromValue('string', Bytes.fromUTF8(''))
+    for (let i = 0; i < parameters.length; i++) encodedParameters[i + 1] = parameters[i]
+    return new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString(evm.encode(encodedParameters)))
+  }
+
+  /**
+   * Creates a variable reference dynamic argument.
+   * @param opIndex - The referenced operation index
+   * @param subIndex - The referenced output index within the operation
+   * @returns A new variable dynamic argument
+   */
+  static variable(opIndex: u32, subIndex: u32): EvmDynamicArg {
+    return new EvmDynamicArg(
+      EvmDynamicArgKind.Variable,
+      Bytes.fromHexString(
+        evm.encode([
+          EvmEncodeParam.fromValue('uint256', BigInt.fromU32(opIndex)),
+          EvmEncodeParam.fromValue('uint256', BigInt.fromU32(subIndex)),
+        ])
+      )
+    )
+  }
+
+  /**
+   * Creates a static-call dynamic argument.
+   * @param target - The contract address to call
+   * @param selector - The function selector to call
+   * @param arguments_ - The dynamic arguments to pass to the static call
+   * @returns A new static-call dynamic argument
+   */
+  static staticCall(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = []): EvmDynamicArg {
+    const staticCallArg = new EvmDynamicStaticCallArg(target, selector, arguments_)
+    return new EvmDynamicArg(
+      EvmDynamicArgKind.StaticCall,
+      Bytes.fromHexString(evm.encode([staticCallArg.toEvmEncodeParam()]))
+    )
+  }
+
+  /**
+   * Creates a new EvmDynamicArg instance.
+   * @param kind - The argument resolution strategy
+   * @param data - The ABI-encoded argument data
+   */
+  constructor(kind: EvmDynamicArgKind, data: Bytes) {
+    this.kind = kind
+    this.data = data.toHexString()
+  }
+
+  /**
+   * Converts this dynamic argument into an ABI tuple parameter.
+   * @returns The ABI tuple parameter representation
+   */
+  toEvmEncodeParam(): EvmEncodeParam {
+    return EvmEncodeParam.fromValues('()', [
+      EvmEncodeParam.fromValue('uint8', BigInt.fromI32(this.kind as i32)),
+      EvmEncodeParam.fromValue('bytes', Bytes.fromHexString(this.data)),
+    ])
+  }
+}
+
+/**
+ * Represents data for a single dynamic contract call within an EVM dynamic call operation.
+ */
+@json
+export class EvmDynamicCallData {
+  public target: string
+  public value: string
+  public selector: string
+  public arguments: EvmDynamicArg[]
+
+  /**
+   * Creates a new EvmDynamicCallData instance.
+   * @param target - The contract address to call
+   * @param selector - The function selector to call
+   * @param arguments_ - The dynamic arguments for the call
+   * @param value - The native token value to send
+   */
+  constructor(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = [], value: BigInt = BigInt.zero()) {
+    validateSelector(selector)
+    this.target = target.toString()
+    this.value = value.toString()
+    this.selector = selector.toHexString()
+    this.arguments = cloneArguments(arguments_)
+  }
+}
+
+/**
+ * Represents an EVM dynamic call operation containing one or more dynamic contract calls.
+ */
+@json
+export class EvmDynamicCall extends Operation {
+  public calls: EvmDynamicCallData[]
+
+  /**
+   * Creates a new EvmDynamicCall operation.
+   * @param chainId - The blockchain network identifier
+   * @param calls - Array of dynamic contract calls to execute
+   * @param user - The user address
+   * @param events - The operation events to emit
+   */
+  constructor(
+    chainId: ChainId,
+    calls: EvmDynamicCallData[],
+    user: Address | null = null,
+    events: OperationEvent[] | null = null
+  ) {
+    super(OperationType.EvmDynamicCall, chainId, user, events)
+    if (calls.length === 0) throw new Error('Call list cannot be empty')
+    this.calls = calls
+  }
+
+  /**
+   * Sends this EvmDynamicCall operation wrapped in an intent.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
+   */
+  public send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    const intentBuilder = new IntentBuilder().addMaxFee(maxFee).addOperation(this)
+    if (feePayer) intentBuilder.addFeePayer(feePayer)
+    environment.sendIntent(intentBuilder.build())
+  }
+}
