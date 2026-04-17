@@ -8,7 +8,6 @@ import { Operation, OperationBuilder, OperationEvent, OperationType } from '../O
 export enum EvmDynamicArgKind {
   Literal = 0,
   Variable = 1,
-  StaticCall = 2,
 }
 
 function validateSelector(selector: Bytes): void {
@@ -167,44 +166,6 @@ export class EvmDynamicCallBuilder extends OperationBuilder {
 }
 
 /**
- * Represents a static call argument specification for a dynamic argument.
- */
-@json
-export class EvmDynamicStaticCallArg {
-  public target: string
-  public selector: string
-  public arguments: EvmDynamicArg[]
-
-  /**
-   * Creates a new EvmDynamicStaticCallArg instance.
-   * @param target - The contract address to call
-   * @param selector - The function selector to call
-   * @param arguments_ - The dynamic arguments to pass to the static call
-   */
-  constructor(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = []) {
-    validateSelector(selector)
-    this.target = target.toString()
-    this.selector = selector.toHexString()
-    this.arguments = cloneArguments(arguments_)
-  }
-
-  /**
-   * Converts this static call specification into an ABI tuple parameter.
-   * @returns The ABI tuple parameter representation
-   */
-  toEvmEncodeParam(): EvmEncodeParam {
-    return EvmEncodeParam.fromValues('()', [
-      EvmEncodeParam.fromValue('address', Address.fromString(this.target)),
-      EvmEncodeParam.fromValue('bytes4', Bytes.fromHexString(this.selector)),
-      EvmEncodeParam.fromValues(
-        '()[]',
-        this.arguments.map<EvmEncodeParam>((argument: EvmDynamicArg) => argument.toEvmEncodeParam())
-      ),
-    ])
-  }
-}
-
-/**
  * Represents a single dynamic argument in a dynamic call.
  */
 @json
@@ -239,21 +200,6 @@ export class EvmDynamicArg {
           EvmEncodeParam.fromValue('uint256', BigInt.fromU32(subIndex)),
         ])
       )
-    )
-  }
-
-  /**
-   * Creates a static-call dynamic argument.
-   * @param target - The contract address to call
-   * @param selector - The function selector to call
-   * @param arguments_ - The dynamic arguments to pass to the static call
-   * @returns A new static-call dynamic argument
-   */
-  static staticCall(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = []): EvmDynamicArg {
-    const staticCallArg = new EvmDynamicStaticCallArg(target, selector, arguments_)
-    return new EvmDynamicArg(
-      EvmDynamicArgKind.StaticCall,
-      Bytes.fromHexString(evm.encode([staticCallArg.toEvmEncodeParam()]))
     )
   }
 

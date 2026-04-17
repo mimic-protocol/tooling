@@ -23,7 +23,6 @@ export default function main(): void {
   const call = EvmDynamicCallBuilder.forChain(chainId).addCall(inputs.target, inputs.selector, [
     EvmDynamicArg.literal([EvmEncodeParam.fromValue('uint256', BigInt.fromI32(123))]),
     EvmDynamicArg.variable(0, 0),
-    EvmDynamicArg.staticCall(inputs.target, inputs.selector),
   ])
 
   new IntentBuilder().addMaxFee(maxFee).addOperationsBuilders([swap, call]).send()

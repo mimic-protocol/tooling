@@ -6,7 +6,6 @@ import {
   EvmDynamicCall,
   EvmDynamicCallBuilder,
   EvmDynamicCallData,
-  EvmDynamicStaticCallArg,
   OperationEvent,
   OperationType,
 } from '../../src/intents'
@@ -100,20 +99,6 @@ describe('EvmDynamicArg', () => {
 
     expect(argument.kind).toBe(EvmDynamicArgKind.Variable)
     expect(argument.data).toBe('0x5678')
-  })
-
-  it('encodes static-call arguments', () => {
-    const target = randomEvmAddress()
-    const selector = Bytes.fromHexString('0x12345678')
-    const nested = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64))
-    const staticCallArg = new EvmDynamicStaticCallArg(target, selector, [nested])
-
-    setEvmEncode('()', staticCallArg.toEvmEncodeParam().value, '0x9abc')
-
-    const argument = EvmDynamicArg.staticCall(target, selector, [nested])
-
-    expect(argument.kind).toBe(EvmDynamicArgKind.StaticCall)
-    expect(argument.data).toBe('0x9abc')
   })
 })
 
