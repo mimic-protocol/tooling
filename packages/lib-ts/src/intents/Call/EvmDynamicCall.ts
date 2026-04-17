@@ -10,19 +10,6 @@ export enum EvmDynamicArgKind {
   Variable = 1,
 }
 
-function validateSelector(selector: Bytes): void {
-  if (selector.length != 4) throw new Error('Selector must be 4 bytes')
-}
-
-function cloneArguments(arguments_: EvmDynamicArg[]): EvmDynamicArg[] {
-  const cloned = new Array<EvmDynamicArg>(arguments_.length)
-  for (let i = 0; i < arguments_.length; i++) {
-    const argument = arguments_[i]
-    cloned[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data))
-  }
-  return cloned
-}
-
 /**
  * Builder for creating EVM dynamic call operations.
  */
@@ -76,7 +63,7 @@ export class EvmDynamicCallBuilder extends OperationBuilder {
       this.addCall(
         Address.fromString(calls[i].target),
         Bytes.fromHexString(calls[i].selector),
-        cloneArguments(calls[i].arguments),
+        calls[i].arguments,
         BigInt.fromString(calls[i].value)
       )
     }
@@ -212,17 +199,6 @@ export class EvmDynamicArg {
     this.kind = kind
     this.data = data.toHexString()
   }
-
-  /**
-   * Converts this dynamic argument into an ABI tuple parameter.
-   * @returns The ABI tuple parameter representation
-   */
-  toEvmEncodeParam(): EvmEncodeParam {
-    return EvmEncodeParam.fromValues('()', [
-      EvmEncodeParam.fromValue('uint8', BigInt.fromI32(this.kind as i32)),
-      EvmEncodeParam.fromValue('bytes', Bytes.fromHexString(this.data)),
-    ])
-  }
 }
 
 /**
@@ -243,11 +219,15 @@ export class EvmDynamicCallData {
    * @param value - The native token value to send
    */
   constructor(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = [], value: BigInt = BigInt.zero()) {
-    validateSelector(selector)
+    if (selector.length !== 4) throw new Error('Selector must be 4 bytes')
     this.target = target.toString()
     this.value = value.toString()
     this.selector = selector.toHexString()
-    this.arguments = cloneArguments(arguments_)
+    this.arguments = new Array<EvmDynamicArg>(arguments_.length)
+    for (let i = 0; i < arguments_.length; i++) {
+      const argument = arguments_[i]
+      this.arguments[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data))
+    }
   }
 }
 

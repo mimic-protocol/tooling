@@ -68,6 +68,48 @@ describe('EvmDynamicCall', () => {
     )
   })
 
+  it('creates a complex operation with multiple calls', () => {
+    const chainId = 1
+    const user = randomEvmAddress()
+    const settler = randomSettler(chainId)
+    const target1 = randomEvmAddress()
+    const target2 = randomEvmAddress()
+    const selector1 = Bytes.fromHexString('0x12345678')
+    const selector2 = Bytes.fromHexString('0x90abcdef')
+    const argument1 = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64))
+    const argument2 = new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64))
+
+    setContext(1, 1, user.toString(), [settler], 'trigger-123')
+
+    const call = new EvmDynamicCall(
+      chainId,
+      [
+        new EvmDynamicCallData(target1, selector1, [argument1], BigInt.fromI32(1)),
+        new EvmDynamicCallData(target2, selector2, [argument2], BigInt.fromI32(2)),
+      ],
+      user
+    )
+
+    expect(call.calls.length).toBe(2)
+    expect(call.calls[0].target).toBe(target1.toString())
+    expect(call.calls[0].selector).toBe(selector1.toHexString())
+    expect(call.calls[0].arguments.length).toBe(1)
+    expect(call.calls[0].arguments[0].kind).toBe(EvmDynamicArgKind.Literal)
+    expect(call.calls[0].arguments[0].data).toBe(argument1.data)
+    expect(call.calls[0].value).toBe('1')
+
+    expect(call.calls[1].target).toBe(target2.toString())
+    expect(call.calls[1].selector).toBe(selector2.toHexString())
+    expect(call.calls[1].arguments.length).toBe(1)
+    expect(call.calls[1].arguments[0].kind).toBe(EvmDynamicArgKind.Variable)
+    expect(call.calls[1].arguments[0].data).toBe(argument2.data)
+    expect(call.calls[1].value).toBe('2')
+
+    expect(JSON.stringify(call)).toBe(
+      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[],"calls":[{"target":"${target1}","value":"1","selector":"${selector1.toHexString()}","arguments":[{"kind":0,"data":"${argument1.data}"}]},{"target":"${target2}","value":"2","selector":"${selector2.toHexString()}","arguments":[{"kind":1,"data":"${argument2.data}"}]}]}`
+    )
+  })
+
   it('throws an error when there is no call data', () => {
     expect(() => {
       new EvmDynamicCall(1, [])
