@@ -4,4 +4,4 @@
 "@mimicprotocol/cli": patch
 ---
 
-Add dynamic call operation and bump to runner version v0.0.3
+Add dynamic call operation
