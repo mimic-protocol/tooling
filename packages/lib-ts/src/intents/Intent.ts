@@ -90,7 +90,7 @@ export class IntentBuilder {
    * @param chainId - The blockchain network identifier
    * @param target - The contract address to call
    * @param selector - The function selector to call
-   * @param arguments_ - The dynamic arguments to resolve at execution time
+   * @param args - The dynamic arguments to resolve at execution time
    * @param value - The native token value to send
    * @param user - The user that should execute the operation
    * @param events - The operation events to emit
@@ -100,13 +100,13 @@ export class IntentBuilder {
     chainId: ChainId,
     target: Address,
     selector: Bytes,
-    arguments_: EvmDynamicArg[] = [],
+    args: EvmDynamicArg[] = [],
     value: BigInt = BigInt.zero(),
     user: Address | null = null,
     events: OperationEvent[] | null = null
   ): IntentBuilder {
     return this.addOperation(
-      new EvmDynamicCall(chainId, [new EvmDynamicCallData(target, selector, arguments_, value)], user, events)
+      new EvmDynamicCall(chainId, [new EvmDynamicCallData(target, selector, args, value)], user, events)
     )
   }
 

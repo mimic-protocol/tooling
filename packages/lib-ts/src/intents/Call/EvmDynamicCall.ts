@@ -39,17 +39,17 @@ export class EvmDynamicCallBuilder extends OperationBuilder {
    * Adds a dynamic contract call to the operation.
    * @param target - The contract address to call
    * @param selector - The function selector to call
-   * @param arguments_ - The dynamic call arguments
+   * @param args - The dynamic call arguments
    * @param value - The native token value to send
    * @returns This EvmDynamicCallBuilder instance for method chaining
    */
   addCall(
     target: Address,
     selector: Bytes,
-    arguments_: EvmDynamicArg[] = [],
+    args: EvmDynamicArg[] = [],
     value: BigInt = BigInt.zero()
   ): EvmDynamicCallBuilder {
-    this.calls.push(new EvmDynamicCallData(target, selector, arguments_, value))
+    this.calls.push(new EvmDynamicCallData(target, selector, args, value))
     return this
   }
 
@@ -215,17 +215,17 @@ export class EvmDynamicCallData {
    * Creates a new EvmDynamicCallData instance.
    * @param target - The contract address to call
    * @param selector - The function selector to call
-   * @param arguments_ - The dynamic arguments for the call
+   * @param args - The dynamic arguments for the call
    * @param value - The native token value to send
    */
-  constructor(target: Address, selector: Bytes, arguments_: EvmDynamicArg[] = [], value: BigInt = BigInt.zero()) {
+  constructor(target: Address, selector: Bytes, args: EvmDynamicArg[] = [], value: BigInt = BigInt.zero()) {
     if (selector.length !== 4) throw new Error('Selector must be 4 bytes')
     this.target = target.toString()
     this.value = value.toString()
     this.selector = selector.toHexString()
-    this.arguments = new Array<EvmDynamicArg>(arguments_.length)
-    for (let i = 0; i < arguments_.length; i++) {
-      const argument = arguments_[i]
+    this.arguments = new Array<EvmDynamicArg>(args.length)
+    for (let i = 0; i < args.length; i++) {
+      const argument = args[i]
       this.arguments[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data))
     }
   }
