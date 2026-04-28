@@ -159,26 +159,26 @@ export class EvmDynamicCallBuilder extends OperationBuilder {
 export class EvmDynamicArg {
   public kind: EvmDynamicArgKind
   public data: string
+  public isDynamic: bool
 
   /**
    * Creates a literal dynamic argument from ABI-encoded parameters.
    * @param parameters - The ABI parameters to encode as a literal argument
+   * @param isDynamic - Whether the resolved argument is ABI-dynamic
    * @returns A new literal dynamic argument
    */
-  static literal(parameters: EvmEncodeParam[]): EvmDynamicArg {
-    const encodedParameters = new Array<EvmEncodeParam>(parameters.length + 1)
-    encodedParameters[0] = EvmEncodeParam.fromValue('string', Bytes.fromUTF8(''))
-    for (let i = 0; i < parameters.length; i++) encodedParameters[i + 1] = parameters[i]
-    return new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString(evm.encode(encodedParameters)))
+  static literal(parameters: EvmEncodeParam[], isDynamic: bool): EvmDynamicArg {
+    return new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString(evm.encode(parameters)), isDynamic)
   }
 
   /**
    * Creates a variable reference dynamic argument.
    * @param opIndex - The referenced operation index
    * @param subIndex - The referenced output index within the operation
+   * @param isDynamic - Whether the resolved argument is ABI-dynamic
    * @returns A new variable dynamic argument
    */
-  static variable(opIndex: u32, subIndex: u32): EvmDynamicArg {
+  static variable(opIndex: u32, subIndex: u32, isDynamic: bool): EvmDynamicArg {
     return new EvmDynamicArg(
       EvmDynamicArgKind.Variable,
       Bytes.fromHexString(
@@ -186,7 +186,8 @@ export class EvmDynamicArg {
           EvmEncodeParam.fromValue('uint256', BigInt.fromU32(opIndex)),
           EvmEncodeParam.fromValue('uint256', BigInt.fromU32(subIndex)),
         ])
-      )
+      ),
+      isDynamic
     )
   }
 
@@ -194,10 +195,12 @@ export class EvmDynamicArg {
    * Creates a new EvmDynamicArg instance.
    * @param kind - The argument resolution strategy
    * @param data - The ABI-encoded argument data
+   * @param isDynamic - Whether the resolved argument is ABI-dynamic
    */
-  constructor(kind: EvmDynamicArgKind, data: Bytes) {
+  constructor(kind: EvmDynamicArgKind, data: Bytes, isDynamic: bool) {
     this.kind = kind
     this.data = data.toHexString()
+    this.isDynamic = isDynamic
   }
 }
 
@@ -226,7 +229,7 @@ export class EvmDynamicCallData {
     this.arguments = new Array<EvmDynamicArg>(args.length)
     for (let i = 0; i < args.length; i++) {
       const argument = args[i]
-      this.arguments[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data))
+      this.arguments[i] = new EvmDynamicArg(argument.kind, Bytes.fromHexString(argument.data), argument.isDynamic)
     }
   }
 }

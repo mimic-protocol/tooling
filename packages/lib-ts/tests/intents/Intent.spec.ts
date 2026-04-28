@@ -180,7 +180,7 @@ describe('IntentBuilder', () => {
           chainId,
           target,
           Bytes.fromHexString('0x12345678'),
-          [new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString('0x1234'))],
+          [new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString('0x1234'), false)],
           BigInt.fromI32(7)
         )
         .build()

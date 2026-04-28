@@ -18,7 +18,7 @@ describe('EvmDynamicCall', () => {
     const user = randomEvmAddress()
     const target = randomEvmAddress()
     const selector = Bytes.fromHexString('0x12345678')
-    const argument = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64))
+    const argument = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64), false)
     const settler = randomSettler(chainId)
 
     setContext(1, 1, user.toString(), [settler], 'trigger-123')
@@ -35,9 +35,10 @@ describe('EvmDynamicCall', () => {
     expect(call.calls[0].arguments.length).toBe(1)
     expect(call.calls[0].arguments[0].kind).toBe(EvmDynamicArgKind.Literal)
     expect(call.calls[0].arguments[0].data).toBe(argument.data)
+    expect(call.calls[0].arguments[0].isDynamic).toBe(false)
 
     expect(JSON.stringify(call)).toBe(
-      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[],"calls":[{"target":"${target}","value":"0","selector":"${selector.toHexString()}","arguments":[{"kind":0,"data":"${argument.data}"}]}]}`
+      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[],"calls":[{"target":"${target}","value":"0","selector":"${selector.toHexString()}","arguments":[{"kind":0,"data":"${argument.data}","isDynamic":false}]}]}`
     )
   })
 
@@ -47,7 +48,7 @@ describe('EvmDynamicCall', () => {
     const settler = randomSettler(chainId)
     const target = randomEvmAddress()
     const selector = Bytes.fromHexString('0x90abcdef')
-    const argument = new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64))
+    const argument = new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64), true)
     const value = BigInt.fromI32(10)
 
     setContext(1, 1, user.toString(), [settler], 'trigger-123')
@@ -63,8 +64,9 @@ describe('EvmDynamicCall', () => {
     expect(call.events.length).toBe(1)
     expect(call.events[0].topic).toBe('0x746f706963')
     expect(call.events[0].data).toBe('0x64617461')
+    expect(call.calls[0].arguments[0].isDynamic).toBe(true)
     expect(JSON.stringify(call)).toBe(
-      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[{"topic":"0x746f706963","data":"0x64617461"}],"calls":[{"target":"${target}","value":"${value.toString()}","selector":"${selector.toHexString()}","arguments":[{"kind":1,"data":"${argument.data}"}]}]}`
+      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[{"topic":"0x746f706963","data":"0x64617461"}],"calls":[{"target":"${target}","value":"${value.toString()}","selector":"${selector.toHexString()}","arguments":[{"kind":1,"data":"${argument.data}","isDynamic":true}]}]}`
     )
   })
 
@@ -76,8 +78,8 @@ describe('EvmDynamicCall', () => {
     const target2 = randomEvmAddress()
     const selector1 = Bytes.fromHexString('0x12345678')
     const selector2 = Bytes.fromHexString('0x90abcdef')
-    const argument1 = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64))
-    const argument2 = new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64))
+    const argument1 = new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64), false)
+    const argument2 = new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64), false)
 
     setContext(1, 1, user.toString(), [settler], 'trigger-123')
 
@@ -96,6 +98,7 @@ describe('EvmDynamicCall', () => {
     expect(call.calls[0].arguments.length).toBe(1)
     expect(call.calls[0].arguments[0].kind).toBe(EvmDynamicArgKind.Literal)
     expect(call.calls[0].arguments[0].data).toBe(argument1.data)
+    expect(call.calls[0].arguments[0].isDynamic).toBe(false)
     expect(call.calls[0].value).toBe('1')
 
     expect(call.calls[1].target).toBe(target2.toString())
@@ -103,10 +106,11 @@ describe('EvmDynamicCall', () => {
     expect(call.calls[1].arguments.length).toBe(1)
     expect(call.calls[1].arguments[0].kind).toBe(EvmDynamicArgKind.Variable)
     expect(call.calls[1].arguments[0].data).toBe(argument2.data)
+    expect(call.calls[1].arguments[0].isDynamic).toBe(false)
     expect(call.calls[1].value).toBe('2')
 
     expect(JSON.stringify(call)).toBe(
-      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[],"calls":[{"target":"${target1}","value":"1","selector":"${selector1.toHexString()}","arguments":[{"kind":0,"data":"${argument1.data}"}]},{"target":"${target2}","value":"2","selector":"${selector2.toHexString()}","arguments":[{"kind":1,"data":"${argument2.data}"}]}]}`
+      `{"opType":4,"chainId":${chainId},"user":"${user}","events":[],"calls":[{"target":"${target1}","value":"1","selector":"${selector1.toHexString()}","arguments":[{"kind":0,"data":"${argument1.data}","isDynamic":false}]},{"target":"${target2}","value":"2","selector":"${selector2.toHexString()}","arguments":[{"kind":1,"data":"${argument2.data}","isDynamic":false}]}]}`
     )
   })
 
@@ -125,22 +129,43 @@ describe('EvmDynamicCall', () => {
 
 describe('EvmDynamicArg', () => {
   it('encodes literal arguments', () => {
-    const emptyString = Bytes.fromUTF8('').toHexString()
-    setEvmEncode('string', emptyString, '0x1234')
+    setEvmEncode('uint256', '1', '0x1234')
 
-    const argument = EvmDynamicArg.literal([EvmEncodeParam.fromValue('uint256', BigInt.fromI32(1))])
+    const argument = EvmDynamicArg.literal([EvmEncodeParam.fromValue('uint256', BigInt.fromI32(1))], false)
 
     expect(argument.kind).toBe(EvmDynamicArgKind.Literal)
     expect(argument.data).toBe('0x1234')
+    expect(argument.isDynamic).toBe(false)
+  })
+
+  it('encodes dynamic literal arguments', () => {
+    setEvmEncode('string', 'foo', '0x1234')
+
+    const argument = EvmDynamicArg.literal([EvmEncodeParam.fromValue('string', 'foo')], true)
+
+    expect(argument.kind).toBe(EvmDynamicArgKind.Literal)
+    expect(argument.data).toBe('0x1234')
+    expect(argument.isDynamic).toBe(true)
   })
 
   it('encodes variable references', () => {
     setEvmEncode('uint256', '1', '0x5678')
 
-    const argument = EvmDynamicArg.variable(1, 0)
+    const argument = EvmDynamicArg.variable(1, 0, false)
 
     expect(argument.kind).toBe(EvmDynamicArgKind.Variable)
     expect(argument.data).toBe('0x5678')
+    expect(argument.isDynamic).toBe(false)
+  })
+
+  it('encodes dynamic variable references', () => {
+    setEvmEncode('uint256', '1', '0x5678')
+
+    const argument = EvmDynamicArg.variable(1, 0, true)
+
+    expect(argument.kind).toBe(EvmDynamicArgKind.Variable)
+    expect(argument.data).toBe('0x5678')
+    expect(argument.isDynamic).toBe(true)
   })
 })
 
@@ -159,13 +184,13 @@ describe('EvmDynamicCallBuilder', () => {
     builder.addCall(
       target1,
       selector1,
-      [new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64))],
+      [new EvmDynamicArg(EvmDynamicArgKind.Literal, randomBytes(64), false)],
       BigInt.fromString('1')
     )
     builder.addCall(
       target2,
       selector2,
-      [new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64))],
+      [new EvmDynamicArg(EvmDynamicArgKind.Variable, randomBytes(64), false)],
       BigInt.fromString('2')
     )
 
