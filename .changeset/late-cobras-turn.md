@@ -4,4 +4,4 @@
 "@mimicprotocol/cli": patch
 ---
 
-Refactor intents to have operations and bump to runner version v0.0.2
+Refactor intents to have operations and bump to runner version v0.1.0
