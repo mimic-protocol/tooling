@@ -21,8 +21,8 @@ export default function main(): void {
     .addTokenOutFromTokenAmount(TokenAmount.fromI32(USDC, 95), inputs.target)
 
   const call = EvmDynamicCallBuilder.forChain(chainId).addCall(inputs.target, inputs.selector, [
-    EvmDynamicArg.literal([EvmEncodeParam.fromValue('uint256', BigInt.fromI32(123))]),
-    EvmDynamicArg.variable(0, 0),
+    EvmDynamicArg.literal([EvmEncodeParam.fromValue('uint256', BigInt.fromI32(123))], false),
+    EvmDynamicArg.variable(0, 0, false),
   ])
 
   new IntentBuilder().addMaxFee(maxFee).addOperationsBuilders([swap, call]).send()
