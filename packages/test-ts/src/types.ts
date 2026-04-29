@@ -120,6 +120,10 @@ export type CallOperation = OperationBase & {
   calls: { target: string; data: string; value: string }[]
 }
 
+export type DynamicCallOperation = OperationBase & {
+  calls: { target: string; value: string; selector: string; arguments: { kind: number; data: string }[] }[]
+}
+
 export type SvmCallOperation = OperationBase & {
   instructions: {
     programId: string
@@ -128,7 +132,7 @@ export type SvmCallOperation = OperationBase & {
   }[]
 }
 
-export type Operation = TransferOperation | SwapOperation | CallOperation | SvmCallOperation
+export type Operation = TransferOperation | SwapOperation | CallOperation | DynamicCallOperation | SvmCallOperation
 
 export type Intent = {
   settler: string

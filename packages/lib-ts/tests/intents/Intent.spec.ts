@@ -2,10 +2,19 @@ import { JSON } from 'json-as'
 
 import { SerializableSettler } from '../../src/context'
 import { NULL_ADDRESS } from '../../src/helpers'
-import { EvmCallBuilder, IntentBuilder, SwapBuilder } from '../../src/intents'
+import {
+  EvmCallBuilder,
+  EvmDynamicArg,
+  EvmDynamicArgKind,
+  EvmDynamicCall,
+  IntentBuilder,
+  SwapBuilder,
+} from '../../src/intents'
 import { TokenAmount } from '../../src/tokens'
 import { Address, BigInt, Bytes } from '../../src/types'
 import { randomERC20Token, randomSettler, setContext } from '../helpers'
+
+/* eslint-disable no-secrets/no-secrets */
 
 describe('IntentBuilder', () => {
   const chainId = 1
@@ -155,6 +164,33 @@ describe('IntentBuilder', () => {
           .addOperationBuilder(EvmCallBuilder.forChain(1).addCall(Address.fromString(targetAddressStr)))
           .build()
       }).toThrow('Cross-chain swap must be the only operation in an intent')
+    })
+  })
+
+  describe('addEvmDynamicCallOperation', () => {
+    it('adds a dynamic call operation from raw parameters', () => {
+      const target = Address.fromString(targetAddressStr)
+      const settler = randomSettler(chainId)
+      const userAddressStr = '0x0000000000000000000000000000000000000002'
+
+      setContext(0, 1, userAddressStr, [settler], 'trigger-dynamic-call')
+
+      const intent = new IntentBuilder()
+        .addEvmDynamicCallOperation(
+          chainId,
+          target,
+          Bytes.fromHexString('0x12345678'),
+          [new EvmDynamicArg(EvmDynamicArgKind.Literal, Bytes.fromHexString('0x1234'), false)],
+          BigInt.fromI32(7)
+        )
+        .build()
+
+      expect(intent.operations.length).toBe(1)
+      expect(intent.operations[0].opType).toBe(4)
+
+      const operation = changetype<EvmDynamicCall>(intent.operations[0])
+      expect(operation.calls[0].selector).toBe('0x12345678')
+      expect(operation.calls[0].value).toBe('7')
     })
   })
 })
