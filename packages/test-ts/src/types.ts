@@ -116,11 +116,11 @@ export type SwapOperation = OperationBase & {
   tokensOut: { token: string; minAmount: string; recipient: string }[]
 }
 
-export type CallOperation = OperationBase & {
+export type EvmCallOperation = OperationBase & {
   calls: { target: string; data: string; value: string }[]
 }
 
-export type DynamicCallOperation = OperationBase & {
+export type DynamicEvmCallOperation = OperationBase & {
   calls: { target: string; value: string; selector: string; arguments: { kind: number; data: string }[] }[]
 }
 
@@ -132,7 +132,12 @@ export type SvmCallOperation = OperationBase & {
   }[]
 }
 
-export type Operation = TransferOperation | SwapOperation | CallOperation | DynamicCallOperation | SvmCallOperation
+export type Operation =
+  | TransferOperation
+  | SwapOperation
+  | EvmCallOperation
+  | DynamicEvmCallOperation
+  | SvmCallOperation
 
 export type Intent = {
   settler: string

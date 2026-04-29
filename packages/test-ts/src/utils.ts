@@ -10,7 +10,7 @@ import {
 import { Wallet } from 'ethers'
 
 import {
-  CallOperation,
+  EvmCallOperation,
   Intent,
   Operation,
   OracleResponse,
@@ -40,7 +40,7 @@ export function toIntents(intentsJson: string) {
           }
         }
 
-        const nonSwap = operation as TransferOperation | CallOperation | SvmCallOperation
+        const nonSwap = operation as TransferOperation | EvmCallOperation | SvmCallOperation
         return { ...nonSwap, chainId: Number(nonSwap.chainId) }
       }),
     }
