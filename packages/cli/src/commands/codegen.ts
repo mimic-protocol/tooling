@@ -20,6 +20,11 @@ export default class Codegen extends Command {
 
   static override flags = {
     ...Functions.flags,
+    function: Flags.string({
+      char: 'f',
+      description: 'Function to use when resolving function configuration',
+      default: DefaultFunctionConfig.function,
+    }),
     manifest: Flags.string({
       char: 'm',
       description: 'Specify a custom manifest file path',

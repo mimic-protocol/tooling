@@ -1,5 +1,40 @@
 # @mimicprotocol/test-ts
 
+## 0.0.1
+
+### Patch Changes
+
+- 54f7344: Add Polygon, Avalanche, and BNB chain support
+- 9a993b0: Add getNativeBalance
+- 8aa883e: Bump sdk and runner versions
+- 32adf4f: Fix ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING for new node versions
+- 72bb607: Fix relevant tokens query price filter
+- 8853afe: Fix clashing Result import
+- 2bbe278: update eslint config
+- 1e48dff: Bump runner-node to version 0.0.1-rc.8
+- da39b85: Added Tokens class
+- 9530e1c: Revert test command directory change
+- 4a47218: Add function filter to codegen
+- 426a4fe: Environment refactored
+- 73e9713: Add getCode function to get the code of an address (Only EVM)
+- 52b567d: Align oracle types naming convention
+- 6a4fb70: rename to use functions
+- 7657416: Add address and chain to event data
+- e1277c7: Refactor Result to use unwrap instead of value
+- 73a7900: Add login, logout and profiles commands
+- 323663a: Change directory to positional argument in init and test command
+- 213f37f: Fix class names overlapping
+- 73a9cde: Fix npx init
+- faac37c: Ensure early returns in favor of else blocks
+- 0a6602a: Handle oracle query errors
+- 48352fe: Add runner target on compilation
+- ed2d252: Refactor credentials commands
+- 21aba8d: Improve mocks error messages
+- 94ef728: add custom storage
+- 5c8c562: Fix MockConfig validator
+- d455822: Bump SDK version
+- 7d2279d: Refactor codegen, compile, build, deploy and test commands and their parameters
+
 ## 0.0.1-rc.41
 
 ### Patch Changes

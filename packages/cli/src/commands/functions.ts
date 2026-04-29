@@ -49,13 +49,13 @@ export default class Functions extends Command {
       default: false,
     }),
     include: Flags.string({
-      description: `When ${MIMIC_CONFIG_FILE} exists, only run tasks with these names (space-separated)`,
+      description: `When ${MIMIC_CONFIG_FILE} exists, only run functions with these names (space-separated)`,
       multiple: true,
       exclusive: ['exclude'],
       char: 'i',
     }),
     exclude: Flags.string({
-      description: `When ${MIMIC_CONFIG_FILE} exists, exclude tasks with these names (space-separated)`,
+      description: `When ${MIMIC_CONFIG_FILE} exists, exclude functions with these names (space-separated)`,
       multiple: true,
       exclusive: ['include'],
       char: 'e',
