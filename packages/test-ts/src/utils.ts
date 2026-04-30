@@ -40,7 +40,7 @@ export function toIntents(intentsJson: string) {
           }
         }
 
-        const nonSwap = operation as TransferOperation | EvmCallOperation | SvmCallOperation
+        const nonSwap = operation as TransferOperation | EvmCallOperation | EvmDynamicCallOperation | SvmCallOperation
         return { ...nonSwap, chainId: Number(nonSwap.chainId) }
       }),
     }
