@@ -1,5 +1,15 @@
 # @mimicprotocol/lib-ts
 
+## 0.1.0
+
+### Minor Changes
+
+- 45a5f9f: Add operations and dynamic call operation
+
+### Patch Changes
+
+- 45a5f9f: Refactor intents to have operations and bump to runner version v0.1.0
+
 ## 0.0.1
 
 ### Patch Changes
