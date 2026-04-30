@@ -120,7 +120,7 @@ export type EvmCallOperation = OperationBase & {
   calls: { target: string; data: string; value: string }[]
 }
 
-export type DynamicEvmCallOperation = OperationBase & {
+export type EvmDynamicCallOperation = OperationBase & {
   calls: { target: string; value: string; selector: string; arguments: { kind: number; data: string }[] }[]
 }
 
