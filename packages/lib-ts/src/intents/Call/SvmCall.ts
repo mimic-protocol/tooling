@@ -1,14 +1,15 @@
 import { environment } from '../../environment'
 import { TokenAmount } from '../../tokens'
-import { Address, BigInt, Bytes, ChainId } from '../../types'
+import { Address, Bytes, ChainId } from '../../types'
 import { SvmAccountMeta } from '../../types/svm/SvmAccountMeta'
-import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from '../Intent'
+import { IntentBuilder } from '../Intent'
+import { Operation, OperationBuilder, OperationEvent, OperationType } from '../Operation'
 
 /**
  * Builder for creating SVM Call intents with program call operations.
  * Allows chaining multiple calls and configuring fees and settlement parameters.
  */
-export class SvmCallBuilder extends IntentBuilder {
+export class SvmCallBuilder extends OperationBuilder {
   protected chainId: ChainId
   protected instructions: SvmInstruction[] = []
 
@@ -76,33 +77,6 @@ export class SvmCallBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the settler address for this intent.
-   * @param settler - The settler address as an Address instance
-   * @returns This SvmCallBuilder instance for method chaining
-   */
-  addSettler(settler: Address): SvmCallBuilder {
-    return changetype<SvmCallBuilder>(super.addSettler(settler))
-  }
-
-  /**
-   * Sets the settler address from a string.
-   * @param settler - The settler address as a hex string
-   * @returns This SvmCallBuilder instance for method chaining
-   */
-  addSettlerAsString(settler: string): SvmCallBuilder {
-    return changetype<SvmCallBuilder>(super.addSettlerAsString(settler))
-  }
-
-  /**
-   * Sets the deadline for this intent.
-   * @param deadline - The deadline as a timestamp
-   * @returns This SvmCallBuilder instance for method chaining
-   */
-  addDeadline(deadline: BigInt): SvmCallBuilder {
-    return changetype<SvmCallBuilder>(super.addDeadline(deadline))
-  }
-
-  /**
    * Sets the user address for this intent.
    * @param user - The user address
    * @returns This SvmCallBuilder instance for method chaining
@@ -121,26 +95,6 @@ export class SvmCallBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the nonce for this intent.
-   * @param nonce - A unique identifier to prevent replay attacks
-   * @returns This SvmCallBuilder instance for method chaining
-   */
-  addNonce(nonce: string): SvmCallBuilder {
-    return changetype<SvmCallBuilder>(super.addNonce(nonce))
-  }
-
-  /**
-   * Adds a max fee for this intent.
-   * @param fee - The max fee token amount (must be on same chain)
-   * @returns This SvmCallBuilder instance for method chaining
-   */
-  addMaxFee(fee: TokenAmount): SvmCallBuilder {
-    if (!fee.token.hasChain(this.chainId)) throw new Error('Fee token must be on the same chain')
-    this.maxFees.push(fee)
-    return this
-  }
-
-  /**
    * Sets an event for the intent.
    * @param topic - The topic to be indexed in the event
    * @param data - The event data
@@ -155,7 +109,7 @@ export class SvmCallBuilder extends IntentBuilder {
    * @param events - The list of events to be added
    * @returns This SvmCallBuilder instance for method chaining
    */
-  addEvents(events: IntentEvent[]): SvmCallBuilder {
+  addEvents(events: OperationEvent[]): SvmCallBuilder {
     return changetype<SvmCallBuilder>(super.addEvents(events))
   }
 
@@ -164,7 +118,16 @@ export class SvmCallBuilder extends IntentBuilder {
    * @returns A new SvmCall instance with all configured parameters
    */
   build(): SvmCall {
-    return new SvmCall(this.instructions, this.maxFees, this.settler, this.user, this.deadline, this.nonce, this.events)
+    return new SvmCall(this.instructions, this.user, this.events)
+  }
+
+  /**
+   * Builds this operation and sends it inside an intent with the provided fee data.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
+   */
+  send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    this.build().send(maxFee, feePayer)
   }
 }
 
@@ -193,7 +156,7 @@ export class SvmInstructionBuilder {
   }
 
   instruction(): SvmInstruction {
-    return SvmInstruction.create(this.programId, this.accountsMeta, this.data)
+    return new SvmInstruction(this.programId.toBase58String(), this.accountsMeta, this.data.toHexString())
   }
 }
 
@@ -204,43 +167,14 @@ export class SvmInstruction {
     public accountsMeta: SvmAccountMeta[],
     public data: string
   ) {}
-
-  static create(programId: Address, accountsMeta: SvmAccountMeta[], data: Bytes): SvmInstruction {
-    return new SvmInstruction(programId.toBase58String(), accountsMeta, data.toHexString())
-  }
 }
 
 /**
  * Represents a SVM Call intent containing one or more program calls to be executed.
  */
 @json
-export class SvmCall extends Intent {
-  public chainId: ChainId
+export class SvmCall extends Operation {
   public instructions: SvmInstruction[]
-
-  /**
-   * Creates a SvmCall intent with a single program call.
-   * @param maxFee - The max fee to pay for the call intent
-   * @param settler - The settler address (optional)
-   * @param user - The user address (optional)
-   * @param deadline - The deadline timestamp (optional)
-   * @param nonce - The nonce for replay protection (optional)
-   * @returns A new Call instance
-   */
-  static create(
-    programId: Address,
-    accountsMeta: SvmAccountMeta[],
-    data: Bytes,
-    maxFee: TokenAmount,
-    settler: Address | null = null,
-    user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    events: IntentEvent[] | null = null
-  ): SvmCall {
-    const instruction = SvmInstruction.create(programId, accountsMeta, data)
-    return new SvmCall([instruction], [maxFee], settler, user, deadline, nonce, events)
-  }
 
   /**
    * Creates a new SvmCall intent.
@@ -251,28 +185,20 @@ export class SvmCall extends Intent {
    * @param deadline - The deadline timestamp (optional)
    * @param nonce - The nonce for replay protection (optional)
    */
-  constructor(
-    instructions: SvmInstruction[],
-    maxFees: TokenAmount[],
-    settler: Address | null = null,
-    user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    events: IntentEvent[] | null = null
-  ) {
-    const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
-    super(OperationType.SvmCall, ChainId.SOLANA_MAINNET, fees, settler, user, deadline, nonce, events)
+  constructor(instructions: SvmInstruction[], user: Address | null = null, events: OperationEvent[] | null = null) {
+    super(OperationType.SvmCall, ChainId.SOLANA_MAINNET, user, events)
     if (instructions.length === 0) throw new Error('Call list cannot be empty')
-    if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
-
     this.instructions = instructions
-    this.chainId = ChainId.SOLANA_MAINNET
   }
 
   /**
    * Sends this SvmCall intent to the execution environment.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
    */
-  public send(): void {
-    environment.svmCall(this)
+  public send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    const intentBuilder = new IntentBuilder().addMaxFee(maxFee).addOperation(this)
+    if (feePayer) intentBuilder.addFeePayer(feePayer)
+    environment.sendIntent(intentBuilder.build())
   }
 }

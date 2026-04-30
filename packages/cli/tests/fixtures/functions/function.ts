@@ -1,4 +1,13 @@
-import { Address, BigInt, Bytes, ERC20Token, EvmCallBuilder, NULL_ADDRESS, TokenAmount } from '@mimicprotocol/lib-ts'
+import {
+  Address,
+  BigInt,
+  Bytes,
+  ERC20Token,
+  EvmCallBuilder,
+  IntentBuilder,
+  NULL_ADDRESS,
+  TokenAmount,
+} from '@mimicprotocol/lib-ts'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare namespace input {
@@ -16,5 +25,9 @@ export default function main(): void {
   const maxFeeAmount = BigInt.fromI32(input.firstStaticNumber).times(BigInt.fromI32(input.secondStaticNumber))
   const maxFee = TokenAmount.fromBigInt(maxFeeToken, maxFeeAmount)
 
-  EvmCallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
+  new IntentBuilder()
+    .addSettler(settler)
+    .addMaxFee(maxFee)
+    .addOperationBuilder(EvmCallBuilder.forChain(chainId).addCall(target, data))
+    .send()
 }

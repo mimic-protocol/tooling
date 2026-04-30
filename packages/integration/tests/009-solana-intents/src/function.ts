@@ -23,9 +23,7 @@ export default function main(): void {
   TransferBuilder.forChain(ChainId.SOLANA_MAINNET)
     .addTransferFromI32(splToken, 4000, solanaUser)
     .addUser(solanaUser)
-    .addMaxFee(new TokenAmount(splToken, BigInt.fromI32(1)))
-    .build()
-    .send()
+    .send(new TokenAmount(splToken, BigInt.fromI32(1)))
 
   // Swap
 
@@ -33,7 +31,6 @@ export default function main(): void {
     .addTokenInFromStringDecimal(splToken, '1000')
     .addTokenOutFromTokenAmount(new TokenAmount(splToken, BigInt.fromI32(2000)), solanaUser)
     .addUser(solanaUser)
-    .build()
     .send()
 
   // Call
@@ -50,7 +47,5 @@ export default function main(): void {
   SvmCallBuilder.forChain()
     .addInstruction(ix)
     .addUser(solanaUser)
-    .addMaxFee(new TokenAmount(splToken, BigInt.fromI32(1)))
-    .build()
-    .send()
+    .send(new TokenAmount(splToken, BigInt.fromI32(1)))
 }

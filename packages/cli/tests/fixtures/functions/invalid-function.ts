@@ -4,6 +4,7 @@ import {
   BlockchainToken,
   Bytes,
   EvmCallBuilder,
+  IntentBuilder,
   NULL_ADDRESS,
   TokenAmount,
 } from '@mimicprotocol/lib-ts'
@@ -17,5 +18,9 @@ export default function main(): void {
   const maxFeeAmount = BigInt.zero().plus(BigInt.fromI32(undeclaredVariable))
   const maxFee = TokenAmount.fromBigInt(maxFeeToken, maxFeeAmount)
 
-  EvmCallBuilder.forChain(chainId).addCall(target, data).addSettler(settler).addMaxFee(maxFee).build().send()
+  new IntentBuilder()
+    .addSettler(settler)
+    .addMaxFee(maxFee)
+    .addOperationBuilder(EvmCallBuilder.forChain(chainId).addCall(target, data))
+    .send()
 }

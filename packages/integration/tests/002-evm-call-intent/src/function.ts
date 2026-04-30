@@ -9,7 +9,5 @@ export default function main(): void {
   EvmCallBuilder.forChain(inputs.chainId)
     .addCall(inputs.target, inputs.data, inputs.value)
     .addUser(inputs.user)
-    .addMaxFee(maxFee)
-    .build()
-    .send()
+    .send(maxFee)
 }

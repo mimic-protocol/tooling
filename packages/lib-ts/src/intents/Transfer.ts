@@ -1,14 +1,15 @@
 import { environment } from '../environment'
-import { ERC20Token, Token, TokenAmount } from '../tokens'
+import { Token, TokenAmount } from '../tokens'
 import { Address, BigInt, Bytes, ChainId } from '../types'
 
-import { Intent, IntentBuilder, IntentEvent, MaxFee, OperationType } from './Intent'
+import { IntentBuilder } from './Intent'
+import { Operation, OperationBuilder, OperationEvent, OperationType } from './Operation'
 
 /**
  * Builder for creating Transfer intents with token transfer operations.
  * Supports multiple transfers within a single transaction on the same chain.
  */
-export class TransferBuilder extends IntentBuilder {
+export class TransferBuilder extends OperationBuilder {
   protected chainId: ChainId
   protected transfers: TransferData[] = []
 
@@ -136,33 +137,6 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the settler address for this intent.
-   * @param settler - The settler address as an Address instance
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addSettler(settler: Address): TransferBuilder {
-    return changetype<TransferBuilder>(super.addSettler(settler))
-  }
-
-  /**
-   * Sets the settler address from a string.
-   * @param settler - The settler address as a hex or base58 string accordingly
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addSettlerAsString(settler: string): TransferBuilder {
-    return changetype<TransferBuilder>(super.addSettlerAsString(settler))
-  }
-
-  /**
-   * Sets the deadline for this intent.
-   * @param deadline - The deadline as a timestamp
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addDeadline(deadline: BigInt): TransferBuilder {
-    return changetype<TransferBuilder>(super.addDeadline(deadline))
-  }
-
-  /**
    * Sets the user address for this intent.
    * @param user - The user address
    * @returns This TransferBuilder instance for method chaining
@@ -181,26 +155,6 @@ export class TransferBuilder extends IntentBuilder {
   }
 
   /**
-   * Sets the nonce for this intent.
-   * @param nonce - A unique identifier to prevent replay attacks
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addNonce(nonce: string): TransferBuilder {
-    return changetype<TransferBuilder>(super.addNonce(nonce))
-  }
-
-  /**
-   * Adds a max fee for this intent.
-   * @param fee - The max fee token amount (must be on same chain)
-   * @returns This TransferBuilder instance for method chaining
-   */
-  addMaxFee(fee: TokenAmount): TransferBuilder {
-    if (!fee.token.hasChain(this.chainId)) throw new Error('Fee token must be on the same chain')
-    this.maxFees.push(fee)
-    return this
-  }
-
-  /**
    * Sets an event for the intent.
    * @param topic - The topic to be indexed in the event
    * @param data - The event data
@@ -215,7 +169,7 @@ export class TransferBuilder extends IntentBuilder {
    * @param events - The list of events to be added
    * @returns This TransferBuilder instance for method chaining
    */
-  addEvents(events: IntentEvent[]): TransferBuilder {
+  addEvents(events: OperationEvent[]): TransferBuilder {
     return changetype<TransferBuilder>(super.addEvents(events))
   }
 
@@ -224,16 +178,16 @@ export class TransferBuilder extends IntentBuilder {
    * @returns A new Transfer instance with all configured parameters
    */
   build(): Transfer {
-    return new Transfer(
-      this.chainId,
-      this.transfers,
-      this.maxFees,
-      this.settler,
-      this.user,
-      this.deadline,
-      this.nonce,
-      this.events
-    )
+    return new Transfer(this.chainId, this.transfers, this.user, this.events)
+  }
+
+  /**
+   * Builds this operation and sends it inside an intent with the provided fee data.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
+   */
+  send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    this.build().send(maxFee, feePayer)
   }
 }
 
@@ -307,47 +261,8 @@ export class TransferData {
  * Represents a Transfer intent for sending tokens to recipients on a blockchain network.
  */
 @json
-export class Transfer extends Intent {
-  public chainId: ChainId
+export class Transfer extends Operation {
   public transfers: TransferData[]
-
-  /**
-   * Creates a simple single-token transfer intent.
-   * @param token - The Token to transfer
-   * @param amount - The amount to transfer
-   * @param recipient - The address to receive the tokens
-   * @param maxFee - The max fee to pay for the transfer intent
-   * @param settler - The settler address (optional)
-   * @param user - The user address (optional)
-   * @param deadline - The deadline timestamp (optional)
-   * @param nonce - The nonce for replay protection (optional)
-   * @returns A new Transfer instance
-   */
-  static create(
-    token: Token,
-    amount: BigInt,
-    recipient: Address,
-    maxFee: BigInt,
-    settler: Address | null = null,
-    user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    events: IntentEvent[] | null = null
-  ): Transfer {
-    const transferAmount = TokenAmount.fromBigInt(token, amount)
-    const transferData = TransferData.fromTokenAmount(transferAmount, recipient)
-    const maxFees = [TokenAmount.fromBigInt(token, maxFee)]
-    return new Transfer(
-      token instanceof ERC20Token ? (token as ERC20Token).chainId : ChainId.SOLANA_MAINNET,
-      [transferData],
-      maxFees,
-      settler,
-      user,
-      deadline,
-      nonce,
-      events
-    )
-  }
 
   /**
    * Creates a new Transfer intent.
@@ -362,33 +277,22 @@ export class Transfer extends Intent {
   constructor(
     chainId: ChainId,
     transfers: TransferData[],
-    maxFees: TokenAmount[],
-    settler: Address | null = null,
     user: Address | null = null,
-    deadline: BigInt | null = null,
-    nonce: string | null = null,
-    events: IntentEvent[] | null = null
+    events: OperationEvent[] | null = null
   ) {
-    const fees: MaxFee[] = maxFees.map((fee: TokenAmount) => MaxFee.fromTokenAmount(fee))
-    super(OperationType.Transfer, chainId, fees, settler, user, deadline, nonce, events)
+    super(OperationType.Transfer, chainId, user, events)
     if (transfers.length === 0) throw new Error('Transfer list cannot be empty')
-    if (maxFees.length == 0) throw new Error('At least a max fee must be specified')
-
     this.transfers = transfers
-    this.chainId = chainId
   }
 
   /**
    * Sends this Transfer intent to the execution environment.
+   * @param maxFee - The max fee to pay for the intent
+   * @param feePayer - The fee payer for the intent (optional)
    */
-  send(): void {
-    environment.transfer(this)
-  }
-
-  /**
-   * Whether the chainId is Solana or not
-   */
-  isSVM(): bool {
-    return this.chainId === ChainId.SOLANA_MAINNET
+  send(maxFee: TokenAmount, feePayer: Address | null = null): void {
+    const intentBuilder = new IntentBuilder().addMaxFee(maxFee).addOperation(this)
+    if (feePayer) intentBuilder.addFeePayer(feePayer)
+    environment.sendIntent(intentBuilder.build())
   }
 }
