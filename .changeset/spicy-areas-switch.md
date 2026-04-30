@@ -1,7 +1,7 @@
 ---
-"@mimicprotocol/test-ts": patch
-"@mimicprotocol/lib-ts": patch
-"@mimicprotocol/cli": patch
+"@mimicprotocol/test-ts": minor
+"@mimicprotocol/lib-ts": minor
+"@mimicprotocol/cli": minor
 ---
 
-Add dynamic call operation
+Add operations and dynamic call operation
