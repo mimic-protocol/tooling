@@ -1,5 +1,6 @@
 import {
   EthersSigner,
+  EvmDynamicCallOperation,
   OpType,
   OracleQueryName,
   OracleQueryParams,

@@ -677,58 +677,58 @@
     globby "^11.0.0"
     read-yaml-file "^1.1.0"
 
-"@mimicprotocol/runner-node-darwin-arm64@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-darwin-arm64/-/runner-node-darwin-arm64-0.1.0-rc.1.tgz#c686a9d213dbf9c955d455636eec87479a6a7088"
-  integrity sha512-R9ZNvDj+snjAIKjB5u5wAdB9f8EBfqjvnpzNMHygOYboYuGEFwHIcj8LLYTNnIUX45CeBVwPhH1gckn1s62umA==
+"@mimicprotocol/runner-node-darwin-arm64@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-darwin-arm64/-/runner-node-darwin-arm64-0.1.0.tgz#45548fa3fc51ec159734f2b420cfbdaf9d66a9a3"
+  integrity sha512-J3ykKFmW6wMI63h3M4Njrt+XjCvX7oXgrzoVHbDsj/Jx9Pjg5akZFL6fEZ9ljjY6jrmlvCE8DwM2b6eVyG3kEQ==
 
-"@mimicprotocol/runner-node-darwin-x64@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-darwin-x64/-/runner-node-darwin-x64-0.1.0-rc.1.tgz#9bcfa6b2fb1859c52fbbf11cd939b3862a695ebc"
-  integrity sha512-P27DBztgn3afBRE9o7qPnM+aQfUiNkAA/OLumBUDxvJq2X0J9UnIgy3qKqRuMRX7IVoq0hGA0kVwLn+J1DctKg==
+"@mimicprotocol/runner-node-darwin-x64@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-darwin-x64/-/runner-node-darwin-x64-0.1.0.tgz#60721cc66ad78f643b03e245d0e7c0eb68c72eeb"
+  integrity sha512-07739siHMJndIsPBHY8nK0Uv00q62j1eybZ34QBEynoh8HniTCapEbTtU8H9ac9QBu2bdx2VfssLNQxE9mbCBQ==
 
-"@mimicprotocol/runner-node-linux-arm64-gnu@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-arm64-gnu/-/runner-node-linux-arm64-gnu-0.1.0-rc.1.tgz#6db12a3dcfbc677aa160747c8de160ab242a8c70"
-  integrity sha512-MtMjSfS/L8/tQM4roA5FVa12ILMbdCWkXdwpowrTLcWg4Kc3vVOP4hT/rX8YHqcJEZK8kamWOZ85hLG8OHSwBQ==
+"@mimicprotocol/runner-node-linux-arm64-gnu@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-arm64-gnu/-/runner-node-linux-arm64-gnu-0.1.0.tgz#7ae21a7b46009483608e6328fb5814980eaf1c60"
+  integrity sha512-RUtegSQLZqvYVUtvHcXgGcqitPJMIAEpvPlB41WV6+z7HAU04i6OciIGzOpct1DWvaEKj5lRAGD2M0af17kIVA==
 
-"@mimicprotocol/runner-node-linux-x64-gnu@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-x64-gnu/-/runner-node-linux-x64-gnu-0.1.0-rc.1.tgz#802910c8fb4adaba834c7636497ad5a150487f7e"
-  integrity sha512-4pUb3dpq9V4lZXcmVg2+RoNA7RaerV+j9pGhehoheXw5spLaLqyZttPm9sqQPfeEJx0D/xucpMy0FFRgUCRylA==
+"@mimicprotocol/runner-node-linux-x64-gnu@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-x64-gnu/-/runner-node-linux-x64-gnu-0.1.0.tgz#d0e0bd7b3d99071564f74f9a1cd9429fa7cb4c4e"
+  integrity sha512-HfuVdaWJW1t2GWNLYhAIGh+bBskUz21MivJlq4tmYyAHbic+4e0BxCrvpsuAQoks9aJR3y7Snftrc7eSjIompw==
 
-"@mimicprotocol/runner-node-linux-x64-musl@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-x64-musl/-/runner-node-linux-x64-musl-0.1.0-rc.1.tgz#9fd2374d976c093e97dd5bee6078db124650fd56"
-  integrity sha512-80S5LmSbklgxAX3vHc60J5PHg9i7P90bAOkcuBZ5rPDwcWweHfAfKcIK9xZmG1rPL4xKgq4EFL8hm+mxajXUfQ==
+"@mimicprotocol/runner-node-linux-x64-musl@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-linux-x64-musl/-/runner-node-linux-x64-musl-0.1.0.tgz#d7de018fee7ac76094d6aee7ae6a28619eaf0dfe"
+  integrity sha512-QUOqXbtTaruJu+MffmtqwK4+pKhG11uAZQpoV3IoNWOSCugu2PL8glDgn24NN0mN4fzzFy66xB/5zJJlhMEWtQ==
 
-"@mimicprotocol/runner-node-win32-arm64-msvc@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-win32-arm64-msvc/-/runner-node-win32-arm64-msvc-0.1.0-rc.1.tgz#b8a5968ca9032fe03619f0eba82d4b68b1c89cc8"
-  integrity sha512-B2fG9GEhWCzO+7GEuVFyVuFuyCo4KFzudrR1Hfxt6m03atTFnrLjmMLBFal+ZIdbD/iliAj7Q2h/efFDs/Rqkg==
+"@mimicprotocol/runner-node-win32-arm64-msvc@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-win32-arm64-msvc/-/runner-node-win32-arm64-msvc-0.1.0.tgz#991b4b930d857e7311c4b67d77210726ebde89f4"
+  integrity sha512-BgzVfTPhuzeNLD3sUt1c3VTcgmWP3JLOsv+n/Op6SgZIfGsa84uw3peIPh4OZSBmqOpWTjvXLHxjI9D2scxnhg==
 
-"@mimicprotocol/runner-node-win32-x64-msvc@0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-win32-x64-msvc/-/runner-node-win32-x64-msvc-0.1.0-rc.1.tgz#ff95dda3b4e97c6f36e759ac9d231f2803818eca"
-  integrity sha512-vi1oOB6dggs8ipsTBP4tP6bqhcKIKsCPT3s0uRKg1zV77pHCzXXwh8KhmQ+IQRqdbUeuDHd+g+eTM6mqQrsXxA==
+"@mimicprotocol/runner-node-win32-x64-msvc@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node-win32-x64-msvc/-/runner-node-win32-x64-msvc-0.1.0.tgz#640034312e7248ff178b33c01474ed0b44ed2585"
+  integrity sha512-kCefqdkMWj3s2gT3DROFhKPwO4viA/ilIL11baAlQiZaab1SnvKyE+sm7mf9knj5NKSSAuah7XyeRoI9tlgZpA==
 
-"@mimicprotocol/runner-node@^0.1.0-rc.1":
-  version "0.1.0-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node/-/runner-node-0.1.0-rc.1.tgz#27d346172c5f99820c7b403f2a5cae2774cbcaec"
-  integrity sha512-oMVjEm9tnYNm2R+N9FcdT6wUEy4RBCswh1b0w6gwmDv5EysZ42uffn0wbEfEHn/XojBP7bKDGbPRw/FufGCmjA==
+"@mimicprotocol/runner-node@~0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/runner-node/-/runner-node-0.1.0.tgz#33fa8e8088e80083ad4506bfbc5b86838e9e9082"
+  integrity sha512-3gy4ZQPIGaeZREwEO57GzQLcTSi8QdJ53AuFlHF5TDtbL3t5r9mksK3CjJ5dr5iPzy7IFgbb1pCP7QsRPlHAng==
   optionalDependencies:
-    "@mimicprotocol/runner-node-darwin-arm64" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-darwin-x64" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-linux-arm64-gnu" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-linux-x64-gnu" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-linux-x64-musl" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-win32-arm64-msvc" "0.1.0-rc.1"
-    "@mimicprotocol/runner-node-win32-x64-msvc" "0.1.0-rc.1"
+    "@mimicprotocol/runner-node-darwin-arm64" "0.1.0"
+    "@mimicprotocol/runner-node-darwin-x64" "0.1.0"
+    "@mimicprotocol/runner-node-linux-arm64-gnu" "0.1.0"
+    "@mimicprotocol/runner-node-linux-x64-gnu" "0.1.0"
+    "@mimicprotocol/runner-node-linux-x64-musl" "0.1.0"
+    "@mimicprotocol/runner-node-win32-arm64-msvc" "0.1.0"
+    "@mimicprotocol/runner-node-win32-x64-msvc" "0.1.0"
 
-"@mimicprotocol/sdk@^0.0.2-rc.1":
-  version "0.0.2-rc.1"
-  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.0.2-rc.1.tgz#2d8f69a006709c15631ae60e9ec437be9ec178ab"
-  integrity sha512-mGuBKp4JCdJh0b/awozp1qUULYdbRmsXdmVuwbT1ZZfVnZmlSpANqkiA2PGPUB8VEdQ9NvhgWhZcFZJzHy2exQ==
+"@mimicprotocol/sdk@~0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.1.0.tgz#a0bb3661cd0129bac253cba6c79dea7b6026b44e"
+  integrity sha512-wJqjsZC9qQOKi5j7rOutCSHg9aV1/Sg8+nMaLt0IX/z5P1Dk2BBFb8OJc1q1MFW9PZOAJSaFhtZlRxKkzhoopA==
   dependencies:
     "@coral-xyz/anchor" "0.32.1"
     "@solana/web3.js" "^1.98.4"
