@@ -136,7 +136,7 @@ export type Operation =
   | TransferOperation
   | SwapOperation
   | EvmCallOperation
-  | DynamicEvmCallOperation
+  | EvmDynamicCallOperation
   | SvmCallOperation
 
 export type Intent = {
