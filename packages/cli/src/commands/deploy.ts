@@ -14,6 +14,7 @@ import Build from './build'
 import Functions from './functions'
 
 const MIMIC_REGISTRY_DEFAULT = 'https://api-protocol.mimic.fi'
+const MIMIC_EXPLORER = 'https://protocol.mimic.fi'
 
 export type DeployFlags = FlagsType<typeof Deploy>
 
@@ -76,8 +77,9 @@ export default class Deploy extends Command {
     log.stopAction()
 
     fs.writeFileSync(join(absBuildDir, 'CID.json'), JSON.stringify({ CID }, null, 2))
-    console.log(`CID saved at ${log.highlightText(absBuildDir)}`)
+    console.log(`CID saved at ${absBuildDir}/CID.json`)
     console.log(`Function deployed!`)
+    console.log(`View on explorer: ${log.highlightText(`${MIMIC_EXPLORER}/configure/${CID}`)}`)
   }
 
   private static async uploadToRegistry(
