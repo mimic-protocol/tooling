@@ -1,5 +1,11 @@
 # @mimicprotocol/lib-ts
 
+## 0.1.1
+
+### Patch Changes
+
+- 7d9b76c: print explorer url on deploy
+
 ## 0.1.0
 
 ### Minor Changes

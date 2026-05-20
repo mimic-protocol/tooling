@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 1.0.1
+
+### Patch Changes
+
+- 7d9b76c: print explorer url on deploy
+- Updated dependencies [7d9b76c]
+  - @mimicprotocol/lib-ts@0.1.1
+
 ## 1.0.0
 
 ### Minor Changes

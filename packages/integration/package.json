@@ -9,9 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@mimicprotocol/cli": "1.0.0",
-    "@mimicprotocol/lib-ts": "0.1.0",
-    "@mimicprotocol/test-ts": "0.1.0",
+    "@mimicprotocol/cli": "1.0.1",
+    "@mimicprotocol/lib-ts": "0.1.1",
+    "@mimicprotocol/test-ts": "0.1.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
