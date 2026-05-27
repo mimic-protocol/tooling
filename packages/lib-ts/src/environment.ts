@@ -5,8 +5,11 @@ import { evm } from './evm'
 import { Consensus, ListType, MIMIC_HELPER_ADDRESS } from './helpers'
 import { Intent } from './intents'
 import {
+  ApiQuery,
+  ApiQueryResponse,
   EvmCallQuery,
   EvmCallQueryResponse,
+  MethodType,
   RelevantTokensQuery,
   RelevantTokensQueryResponse,
   SubgraphQuery,
@@ -37,6 +40,9 @@ export namespace environment {
 
   @external('environment', '_subgraphQuery')
   declare function _subgraphQuery(params: string): string
+
+  @external('environment', '_apiQuery')
+  declare function _apiQuery(params: string): string
 
   @external('environment', '_svmAccountsInfoQuery')
   declare function _svmAccountsInfoQuery(params: string): string
@@ -160,6 +166,24 @@ export namespace environment {
   ): Result<SvmAccountsInfoQueryResult, string> {
     const responseStr = _svmAccountsInfoQuery(JSON.stringify(SvmAccountsInfoQuery.from(publicKeys, timestamp)))
     return SvmAccountsInfoQueryResponse.fromJson<SvmAccountsInfoQueryResponse>(responseStr).toResult()
+  }
+
+  /**
+   * Executes an HTTP API call and returns the raw (stringified) response body.
+   * @param url - The endpoint URL to call
+   * @param method - The HTTP method to use (GET, POST or PUT)
+   * @param data - Optional. The request payload as a stringified JSON
+   * @param timestamp - Optional. Cache/snapshot timestamp used to fetch a previously cached response at the given point in time
+   * @returns A `Result` containing either the response body as a string or an error string
+   */
+  export function apiQuery(
+    url: string,
+    method: MethodType,
+    data: string | null = null,
+    timestamp: Date | null = null
+  ): Result<string, string> {
+    const responseStr = _apiQuery(JSON.stringify(ApiQuery.from(url, method, data, timestamp)))
+    return ApiQueryResponse.fromJson<ApiQueryResponse>(responseStr).toResult()
   }
 
   /**
