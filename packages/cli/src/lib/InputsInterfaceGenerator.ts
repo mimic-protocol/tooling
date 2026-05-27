@@ -44,17 +44,10 @@ function generateImports(inputs: Record<string, string>): string {
 }
 
 function generateInputsMapping(inputs: Record<string, string>, originalInputs: ManifestInputs): string {
+  const variableTypes = new Set(['string', 'Address', 'Bytes', 'BigInt', 'BlockchainToken', 'TokenAmount'])
   return Object.entries(inputs)
     .map(([name, type]) => {
-      const declaration =
-        type === 'string' ||
-        type === 'Address' ||
-        type === 'Bytes' ||
-        type === 'BigInt' ||
-        type === 'BlockchainToken' ||
-        type === 'TokenAmount'
-          ? `var ${name}: string | null`
-          : `const ${name}: ${type}`
+      const declaration = variableTypes.has(type) ? `var ${name}: string | null` : `const ${name}: ${type}`
 
       const originalInput = originalInputs[name]
       const hasDescription = typeof originalInput === 'object' && !!originalInput.description
