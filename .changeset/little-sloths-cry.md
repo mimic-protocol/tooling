@@ -4,4 +4,4 @@
 "@mimicprotocol/test-ts": patch
 ---
 
-add api query
+Add api query

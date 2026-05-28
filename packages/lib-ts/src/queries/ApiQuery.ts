@@ -2,48 +2,22 @@ import { Result } from '../types'
 
 import { QueryResponseBase } from './QueryResponse'
 
-export enum MethodType {
-  GET,
-  POST,
-  PUT,
-}
-
-export function methodTypeToString(method: MethodType): string {
-  switch (method) {
-    case MethodType.GET:
-      return 'GET'
-    case MethodType.POST:
-      return 'POST'
-    case MethodType.PUT:
-      return 'PUT'
-    default:
-      throw new Error('Invalid MethodType')
-  }
-}
-
 @json
 class ApiQueryBase {
-  constructor(
-    public readonly url: string,
-    public readonly method: string,
-    public readonly data: string
-  ) {}
+  constructor(public readonly url: string) {}
 }
 
 @json
 export class ApiQuery extends ApiQueryBase {
   public readonly timestamp: i64
 
-  constructor(url: string, method: MethodType, data: string, timestamp: i64) {
-    super(url, methodTypeToString(method), data)
+  constructor(url: string, timestamp: i64) {
+    super(url)
     this.timestamp = timestamp
   }
 
-  static from(url: string, method: MethodType, data: string | null, timestamp: Date | null): ApiQueryBase {
-    if (!data) data = '{}'
-    return timestamp
-      ? new ApiQuery(url, method, data, changetype<Date>(timestamp).getTime())
-      : new ApiQueryBase(url, methodTypeToString(method), data)
+  static from(url: string, timestamp: Date | null): ApiQueryBase {
+    return timestamp ? new ApiQuery(url, changetype<Date>(timestamp).getTime()) : new ApiQueryBase(url)
   }
 }
 

@@ -9,7 +9,6 @@ import {
   ApiQueryResponse,
   EvmCallQuery,
   EvmCallQueryResponse,
-  MethodType,
   RelevantTokensQuery,
   RelevantTokensQueryResponse,
   SubgraphQuery,
@@ -169,20 +168,16 @@ export namespace environment {
   }
 
   /**
-   * Executes an HTTP API call and returns the raw (stringified) response body.
+   * Executes an HTTP API GET call and returns the raw (stringified) response body.
    * @param url - The endpoint URL to call
-   * @param method - The HTTP method to use (GET, POST or PUT)
-   * @param data - Optional. The request payload as a stringified JSON
    * @param timestamp - Optional. Cache/snapshot timestamp used to fetch a previously cached response at the given point in time
    * @returns A `Result` containing either the response body as a string or an error string
    */
   export function apiQuery(
     url: string,
-    method: MethodType,
-    data: string | null = null,
     timestamp: Date | null = null
   ): Result<string, string> {
-    const responseStr = _apiQuery(JSON.stringify(ApiQuery.from(url, method, data, timestamp)))
+    const responseStr = _apiQuery(JSON.stringify(ApiQuery.from(url, timestamp)))
     return ApiQueryResponse.fromJson<ApiQueryResponse>(responseStr).toResult()
   }
 
