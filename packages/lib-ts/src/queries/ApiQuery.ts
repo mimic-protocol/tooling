@@ -31,6 +31,6 @@ export class ApiQueryResponse extends QueryResponseBase {
   }
 
   toResult(): Result<string, string> {
-    return this.buildResult<string>(this.data, 'Unknown error getting api call')
+    return this.buildResult<string>(this.data, 'Unknown error getting API response')
   }
 }
