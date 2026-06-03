@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 1.0.2
+
+### Patch Changes
+
+- 4dc04c8: Add api query
+- Updated dependencies [4dc04c8]
+  - @mimicprotocol/lib-ts@0.1.2
+
 ## 1.0.1
 
 ### Patch Changes
