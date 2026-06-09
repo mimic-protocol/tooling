@@ -1,5 +1,11 @@
 # @mimicprotocol/lib-ts
 
+## 0.1.3
+
+### Patch Changes
+
+- 1d61caf: add api query oracle mock to test
+
 ## 0.1.2
 
 ### Patch Changes
