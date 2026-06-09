@@ -15,8 +15,14 @@ export const evmCallQueryProcessor: QueryProcessor<
   requestValidator: EvmCallRequestValidator,
   responseValidator: EvmCallTypedValueValidator,
   transformParams: (req, timestamp) => {
-    const data = req.params
-      ? concat([req.fnSelector, ...req.params.map((p) => AbiCoder.defaultAbiCoder().encode([p.abiType], [p.value]))])
+    const data = req.params?.length
+      ? concat([
+          req.fnSelector,
+          AbiCoder.defaultAbiCoder().encode(
+            req.params.map((p) => p.abiType),
+            req.params.map((p) => p.value)
+          ),
+        ])
       : req.fnSelector
     return {
       to: req.to,

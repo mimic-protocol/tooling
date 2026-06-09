@@ -9,6 +9,8 @@ import {
 } from '@mimicprotocol/sdk'
 
 import {
+  ApiQueryRequestValidator,
+  ApiQueryResponseValidator,
   ContextValidator,
   EvmCallRequestValidator,
   EvmCallTypedValueValidator,
@@ -86,6 +88,11 @@ export type SubgraphQueryResponse = z.infer<typeof SubgraphQueryResponseValidato
 
 export type SubgraphQueryMock = QueryMock<SubgraphQueryRequest, SubgraphQueryResponse>
 
+export type ApiQueryRequest = z.infer<typeof ApiQueryRequestValidator>
+export type ApiQueryResponse = z.infer<typeof ApiQueryResponseValidator>
+
+export type ApiQueryMock = QueryMock<ApiQueryRequest, ApiQueryResponse>
+
 export type GenerateMockParams = {
   context: Context
   inputs: Inputs
@@ -93,6 +100,7 @@ export type GenerateMockParams = {
   relevantTokens: RelevantTokensQueryMock[]
   calls: EvmCallQueryMock[]
   subgraphQueries: SubgraphQueryMock[]
+  apiQueries: ApiQueryMock[]
   showLogs: boolean
 }
 

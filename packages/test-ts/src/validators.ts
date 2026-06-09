@@ -2,6 +2,8 @@ import {
   AddressValidator,
   ChainIdValidator,
   HexValidator,
+  OracleApiRequestValidator,
+  OracleApiResultValidator,
   OracleEvmCallRequestValidator,
   OracleRelevantTokenResultValidator,
   OracleRelevantTokensRequestValidator,
@@ -106,3 +108,11 @@ export const SubgraphQueryRequestValidator = OracleSubgraphQueryRequestValidator
 })
 
 export const SubgraphQueryResponseValidator = OracleSubgraphQueryResultValidator
+
+// ========= Api Call =========
+
+export const ApiQueryRequestValidator = OracleApiRequestValidator.omit({ timestamp: true }).extend({
+  timestamp: PastTimestamp.optional(),
+})
+
+export const ApiQueryResponseValidator = OracleApiResultValidator
