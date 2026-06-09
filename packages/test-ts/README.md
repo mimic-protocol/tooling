@@ -27,7 +27,7 @@
 
 This package provides tooling and helpers to write and run tests for Mimic Protocol functions using TypeScript. It includes:
 
-- Mocking of inputs, balances, prices, contract calls responses, and context variables
+- Mocking of inputs, balances, prices, contract calls responses, api requests, and context variables
 - Simulated function execution with mocked environment
 - Structured function outputs to assert emitted intents using frameworks like Mocha and Chai
 
