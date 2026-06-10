@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 1.0.4
+
+### Patch Changes
+
+- b7c855e: Use SDK for manifest validation
+- Updated dependencies [b7c855e]
+  - @mimicprotocol/lib-ts@0.1.4
+
 ## 1.0.3
 
 ### Patch Changes
