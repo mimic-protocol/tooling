@@ -1,4 +1,4 @@
-import { ManifestInputs } from '../types'
+import { ManifestInputs } from '@mimicprotocol/sdk'
 
 export default {
   generate(inputs: ManifestInputs): string {

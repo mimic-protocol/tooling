@@ -1,7 +1,7 @@
+import { SEMVER_REGEX } from '@mimicprotocol/sdk'
 import { expect } from 'chai'
 
 import ManifestHandler from '../src/lib/ManifestHandler'
-import { SEM_VER_REGEX } from '../src/validators'
 
 import invalidSemVers from './fixtures/sem-vers/invalid-sem-vers.json'
 import validSemVers from './fixtures/sem-vers/valid-sem-vers.json'
@@ -76,7 +76,7 @@ describe('ManifestHandler', () => {
           it('adds the runner target version to the manifest', () => {
             const parsedManifest = ManifestHandler.validate(manifest)
 
-            expect(parsedManifest.metadata.runnerTarget).to.match(SEM_VER_REGEX)
+            expect(parsedManifest.metadata.runnerTarget).to.match(SEMVER_REGEX)
           })
         })
 
@@ -138,7 +138,7 @@ describe('ManifestHandler', () => {
       context('when an input is invalid', () => {
         itReturnsAnError(
           { ...manifest, inputs: [...manifest.inputs, { wrong: 'u8' }] },
-          'Must be a valid solidity type'
+          'Must be a valid Solidity type or custom type (Token, TokenAmount)'
         )
       })
 

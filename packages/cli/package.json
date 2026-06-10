@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "@inquirer/prompts": "^7.2.4",
+    "@mimicprotocol/sdk": "^0.1.7",
     "@oclif/core": "^4.2.2",
     "@oclif/plugin-not-found": "^3.2.38",
     "axios": "^1.7.9",

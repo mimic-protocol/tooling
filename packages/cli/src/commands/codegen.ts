@@ -1,11 +1,12 @@
 import { confirm } from '@inquirer/prompts'
+import { Manifest } from '@mimicprotocol/sdk'
 import { Command, Flags } from '@oclif/core'
 import * as fs from 'fs'
 import { join } from 'path'
 
 import { AbisInterfaceGenerator, InputsInterfaceGenerator, ManifestHandler } from '../lib'
 import log from '../log'
-import { FlagsType, Manifest } from '../types'
+import { FlagsType } from '../types'
 
 import Functions, { DefaultFunctionConfig } from './functions'
 

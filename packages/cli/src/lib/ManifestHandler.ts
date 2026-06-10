@@ -1,12 +1,10 @@
 import { RUNNER_TARGET_VERSION } from '@mimicprotocol/lib-ts/constants'
+import { Manifest, ManifestValidator, ZodError } from '@mimicprotocol/sdk'
 import { Command } from '@oclif/core'
 import * as fs from 'fs'
 import { load } from 'js-yaml'
-import { ZodError } from 'zod'
 
 import { DuplicateEntryError, EmptyManifestError, GENERIC_SUGGESTION, MoreThanOneEntryError } from '../errors'
-import { Manifest } from '../types'
-import { ManifestValidator } from '../validators'
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
