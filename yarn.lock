@@ -725,6 +725,18 @@
     "@mimicprotocol/runner-node-win32-arm64-msvc" "0.1.1"
     "@mimicprotocol/runner-node-win32-x64-msvc" "0.1.1"
 
+"@mimicprotocol/sdk@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.1.7.tgz#a40be86f2cbbfb20eb98c2af580660f40459e9d0"
+  integrity sha512-gza2noCNPC8RLlMNwWdxRktd4l2h5ZttqPjvAuKaIHmkagZZqfCaBu1XrjlYkqSevpZEYnBSfc6Fj8KqcJn5zQ==
+  dependencies:
+    "@coral-xyz/anchor" "0.32.1"
+    "@solana/web3.js" "^1.98.4"
+    borsh "^2.0.0"
+    cron-parser "^5.3.1"
+    ethers "^6.13.5"
+    zod "^3.23.8"
+
 "@mimicprotocol/sdk@~0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@mimicprotocol/sdk/-/sdk-0.1.5.tgz#2820867ac4acfa34bf3a0d7809b771cc0ba34173"
