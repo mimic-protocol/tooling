@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/lib-ts",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "GPL-3.0",
   "private": false,
   "type": "module",

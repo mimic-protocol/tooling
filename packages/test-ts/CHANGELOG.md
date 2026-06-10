@@ -1,5 +1,11 @@
 # @mimicprotocol/test-ts
 
+## 0.1.4
+
+### Patch Changes
+
+- b7c855e: Use SDK for manifest validation
+
 ## 0.1.3
 
 ### Patch Changes
