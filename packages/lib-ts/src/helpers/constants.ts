@@ -13,3 +13,4 @@ export enum ListType {
 }
 
 export const MIMIC_HELPER_ADDRESS = '0x5cf82cbed1110fc2f75b3413d53abac492931804'
+export const MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS = ''
