@@ -8,25 +8,27 @@ import { MIMIC_HELPER_ADDRESS, MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS } from './cons
 const MIMIC_HELPER = Address.fromHexString(MIMIC_HELPER_ADDRESS)
 const MIMIC_PUBLIC_SMART_ACCOUNT = Address.fromHexString(MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS)
 
-const PCT_SELECTOR = Bytes.fromHexString('0x73d9f5d0')
+const PCT_SELECTOR = Bytes.fromHexString('0xe7032021')
 const TRANSFER_SELECTOR = Bytes.fromHexString('0xa9059cbb')
 const BALANCE_OF_SELECTOR = Bytes.fromHexString('0x70a08231')
+
+const MAX_PCT_BPS: u16 = 10_000
 
 export class Allocation {
   constructor(
     public recipient: Address,
-    public pct: u8
+    public pctBps: u16
   ) {}
 }
 
 /**
- * Creates an IntentBuilder containing operations to swap tokens and split the output to multiple recipients.
+ * @dev Creates an IntentBuilder containing operations to swap tokens and transfer the output to multiple recipients.
  * The last recipient percentage is ignored, and will receive the remaining balance after the other allocations.
- * @param chainId The chain ID of the swap.
+ * @param chainId The chain ID of the swap and the transfers.
  * @param amountIn The amount of tokens to swap.
  * @param minAmountOut The minimum amount of tokens to receive from the swap.
- * @param allocations An array containing a recipient address and a percentage (0-100).
- *        It represents how the output of the swap will be split among the recipients.
+ * @param allocations An array containing a recipient address and a percentage in basis points (e.g., 50 = 0.5%, 10_000 = 100%).
+ *        It represents how the output of the swap will be split among the recipients. The total allocation must add up to 10_000.
  * @param user The user address for the swap (optional). If not provided, the context user will be used.
  * @returns An IntentBuilder object that can be used to build and send the intent.
  */
@@ -37,8 +39,9 @@ export function buildSwapAndSplit(
   allocations: Allocation[],
   user: Address | null = null
 ): IntentBuilder {
-  const totalPct = allocations.reduce<u8>((total, allocation) => total + allocation.pct, 0)
-  if (totalPct !== 100) throw new Error('Total allocation percentage must be 100')
+  let totalPctBps: u32 = 0
+  for (let i = 0; i < allocations.length; i++) totalPctBps += allocations[i].pctBps
+  if (totalPctBps !== MAX_PCT_BPS) throw new Error('Total allocation percentage must be 10_000 bps')
 
   const builder = new IntentBuilder()
 
@@ -54,10 +57,10 @@ export function buildSwapAndSplit(
   const dynamicCall1 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
-    const pct = allocations[i].pct
+    const pctBps = allocations[i].pctBps
     dynamicCall1.addCall(MIMIC_HELPER, PCT_SELECTOR, [
       SWAP_OUTPUT, // amount
-      EvmDynamicArg.literal([new EvmEncodeParam('uint8', pct.toString())], false), // percent
+      EvmDynamicArg.literal([new EvmEncodeParam('uint16', pctBps.toString())], false), // percent bps
     ])
   }
 
