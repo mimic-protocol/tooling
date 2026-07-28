@@ -25,8 +25,8 @@ export class Allocation {
  * @dev Creates an IntentBuilder containing operations to swap tokens and transfer the output to multiple recipients.
  * The last recipient percentage is ignored, and will receive the remaining balance after the other allocations.
  * @param chainId The chain ID of the swap and the transfers.
- * @param amountIn The amount of tokens to swap.
- * @param minAmountOut The minimum amount of tokens to receive from the swap.
+ * @param amountIn The amount of tokens to swap. If the token is native, the `user` must be a smart account.
+ * @param minAmountOut The minimum amount of tokens to receive from the swap. ERC20 tokens only.
  * @param allocations An array containing a recipient address and a percentage in basis points (e.g., 50 = 0.5%, 10_000 = 100%).
  *        It represents how the output of the swap will be split among the recipients. The total allocation must add up to 10_000.
  * @param user The user address for the swap (optional). If not provided, the context user will be used.
@@ -39,9 +39,14 @@ export function buildSwapAndSplit(
   allocations: Allocation[],
   user: Address | null = null
 ): IntentBuilder {
+  if (allocations.length <= 1) throw new Error('More than 1 allocation is needed')
+
   let totalPctBps: u32 = 0
   for (let i = 0; i < allocations.length; i++) totalPctBps += allocations[i].pctBps
   if (totalPctBps !== MAX_PCT_BPS) throw new Error('Total allocation percentage must be 10_000 bps')
+
+  const tokenOut = minAmountOut.token.address
+  if (tokenOut.isNative()) throw new Error('Output token cannot be native')
 
   const builder = new IntentBuilder()
 
@@ -70,9 +75,8 @@ export function buildSwapAndSplit(
   const dynamicCall2 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
-    const target = minAmountOut.token.address
     const recipient = allocations[i].recipient
-    dynamicCall2.addCall(target, TRANSFER_SELECTOR, [
+    dynamicCall2.addCall(tokenOut, TRANSFER_SELECTOR, [
       EvmDynamicArg.literal([new EvmEncodeParam('address', recipient.toString())], false), // to
       EvmDynamicArg.variable(1, i, false), // value (dynamicCall1 sub 'i' result)
     ])
@@ -82,7 +86,7 @@ export function buildSwapAndSplit(
 
   // Get the remaining balance
   const dynamicCall3 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
-  dynamicCall3.addCall(minAmountOut.token.address, BALANCE_OF_SELECTOR, [
+  dynamicCall3.addCall(tokenOut, BALANCE_OF_SELECTOR, [
     EvmDynamicArg.literal([new EvmEncodeParam('address', MIMIC_PUBLIC_SMART_ACCOUNT.toString())], false), // account
   ])
 
@@ -91,7 +95,7 @@ export function buildSwapAndSplit(
   // Transfer the remaining balance to the last recipient
   const lastRecipient = allocations[allocations.length - 1].recipient
   const dynamicCall4 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
-  dynamicCall4.addCall(minAmountOut.token.address, TRANSFER_SELECTOR, [
+  dynamicCall4.addCall(tokenOut, TRANSFER_SELECTOR, [
     EvmDynamicArg.literal([new EvmEncodeParam('address', lastRecipient.toString())], false), // to
     EvmDynamicArg.variable(3, 0, false), // value (dynamicCall3 result)
   ])
