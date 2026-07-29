@@ -58,13 +58,12 @@ export function buildSwapAndSplit(
   builder.addOperationBuilder(swap)
 
   // Calculate the corresponding amount for each allocation, except the last one
-  const SWAP_OUTPUT = EvmDynamicArg.variable(0, 0, false)
   const dynamicCall1 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const pctBps = allocations[i].pctBps
     dynamicCall1.addCall(MIMIC_HELPER, PCT_SELECTOR, [
-      SWAP_OUTPUT, // amount
+      EvmDynamicArg.variable(0, 0, false), // amount (swap output)
       EvmDynamicArg.literal([new EvmEncodeParam('uint16', pctBps.toString())], false), // percent bps
     ])
   }
