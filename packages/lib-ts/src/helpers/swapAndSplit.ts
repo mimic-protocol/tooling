@@ -58,9 +58,10 @@ export function buildSwapAndSplit(
   const builder = new IntentBuilder()
 
   const swap = SwapBuilder.forChain(chainId)
-    .addUser(user || environment.getContext().user)
     .addTokenInFromTokenAmount(amountIn)
     .addTokenOutFromTokenAmount(minAmountOut, MIMIC_PUBLIC_SMART_ACCOUNT)
+
+  if (user) swap.addUser(user)
 
   builder.addOperationBuilder(swap)
 
