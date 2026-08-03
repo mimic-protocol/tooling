@@ -59,48 +59,48 @@ export function buildSwapAndSplit(
   builder.addOperationBuilder(swap)
 
   // Calculate the corresponding amount for each allocation, except the last one, which will receive the remaining balance
-  const dynamicCall1 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const pctDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const pctBps = allocations[i].pctBps
-    dynamicCall1.addCall(MIMIC_HELPER, PCT_SELECTOR, [
+    pctDynamicCall.addCall(MIMIC_HELPER, PCT_SELECTOR, [
       EvmDynamicArg.variable(0, 0, false), // amount (swap output)
       EvmDynamicArg.literal([new EvmEncodeParam('uint16', pctBps.toString())], false), // percent bps
     ])
   }
 
-  builder.addOperationBuilder(dynamicCall1)
+  builder.addOperationBuilder(pctDynamicCall)
 
   // Transfer the corresponding amounts to each recipient, except the last one, which will receive the remaining balance
-  const dynamicCall2 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const transferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const recipient = allocations[i].recipient
-    dynamicCall2.addCall(tokenOut, TRANSFER_SELECTOR, [
+    transferDynamicCall.addCall(tokenOut, TRANSFER_SELECTOR, [
       EvmDynamicArg.literal([new EvmEncodeParam('address', recipient.toString())], false), // to
-      EvmDynamicArg.variable(1, i, false), // value (dynamicCall1 sub 'i' result)
+      EvmDynamicArg.variable(1, i, false), // value (pctDynamicCall sub 'i' result)
     ])
   }
 
-  builder.addOperationBuilder(dynamicCall2)
+  builder.addOperationBuilder(transferDynamicCall)
 
   // Get the remaining balance
-  const dynamicCall3 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
-  dynamicCall3.addCall(tokenOut, BALANCE_OF_SELECTOR, [
+  const balanceOfDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  balanceOfDynamicCall.addCall(tokenOut, BALANCE_OF_SELECTOR, [
     EvmDynamicArg.literal([new EvmEncodeParam('address', MIMIC_PUBLIC_SMART_ACCOUNT.toString())], false), // account
   ])
 
-  builder.addOperationBuilder(dynamicCall3)
+  builder.addOperationBuilder(balanceOfDynamicCall)
 
   // Transfer the remaining balance to the last recipient
   const lastRecipient = allocations[allocations.length - 1].recipient
-  const dynamicCall4 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
-  dynamicCall4.addCall(tokenOut, TRANSFER_SELECTOR, [
+  const lastTransferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  lastTransferDynamicCall.addCall(tokenOut, TRANSFER_SELECTOR, [
     EvmDynamicArg.literal([new EvmEncodeParam('address', lastRecipient.toString())], false), // to
-    EvmDynamicArg.variable(3, 0, false), // value (dynamicCall3 result)
+    EvmDynamicArg.variable(3, 0, false), // value (balanceOfDynamicCall result)
   ])
 
-  builder.addOperationBuilder(dynamicCall4)
+  builder.addOperationBuilder(lastTransferDynamicCall)
 
   return builder
 }
