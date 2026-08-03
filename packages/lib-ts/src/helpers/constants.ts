@@ -7,6 +7,8 @@ export const MAX_UINT256_HEX = '0xffffffffffffffffffffffffffffffffffffffffffffff
 
 export const STANDARD_DECIMALS: u8 = 18
 
+export const ONE_HUNDRED_PCT_BPS: u16 = 10_000
+
 export enum ListType {
   AllowList = 0,
   DenyList = 1,

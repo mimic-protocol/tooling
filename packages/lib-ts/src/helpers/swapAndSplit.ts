@@ -1,9 +1,8 @@
-import { environment } from '../environment'
 import { EvmDynamicArg, EvmDynamicCallBuilder, IntentBuilder, SwapBuilder } from '../intents'
 import { TokenAmount } from '../tokens'
 import { Address, Bytes, ChainId, EvmEncodeParam } from '../types'
 
-import { MIMIC_HELPER_ADDRESS, MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS } from './constants'
+import { MIMIC_HELPER_ADDRESS, MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS, ONE_HUNDRED_PCT_BPS } from './constants'
 
 const MIMIC_HELPER = Address.fromHexString(MIMIC_HELPER_ADDRESS)
 const MIMIC_PUBLIC_SMART_ACCOUNT = Address.fromHexString(MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS)
@@ -12,7 +11,7 @@ const PCT_SELECTOR = Bytes.fromHexString('0xe7032021')
 const TRANSFER_SELECTOR = Bytes.fromHexString('0xa9059cbb')
 const BALANCE_OF_SELECTOR = Bytes.fromHexString('0x70a08231')
 
-const MAX_PCT_BPS: u16 = 10_000
+const MIN_ALLOCATIONS: i32 = 2
 
 const SWAP_OP_INDEX: u32 = 0
 const SWAP_OP_SUB_INDEX: u32 = 0
@@ -46,11 +45,13 @@ export function buildSwapAndSplit(
   allocations: Allocation[],
   user: Address | null = null
 ): IntentBuilder {
-  if (allocations.length <= 1) throw new Error('More than 1 allocation is needed')
+  if (allocations.length < MIN_ALLOCATIONS) throw new Error(`At least ${MIN_ALLOCATIONS} allocations are required`)
 
   let totalPctBps: u32 = 0
   for (let i = 0; i < allocations.length; i++) totalPctBps += allocations[i].pctBps
-  if (totalPctBps !== MAX_PCT_BPS) throw new Error('Total allocation percentage must add up to 10_000 bps')
+  if (totalPctBps !== ONE_HUNDRED_PCT_BPS) {
+    throw new Error(`Total allocation percentage must add up to ${ONE_HUNDRED_PCT_BPS} bps`)
+  }
 
   const tokenOut = minAmountOut.token.address
   if (tokenOut.isNative()) throw new Error('Output token cannot be native')
