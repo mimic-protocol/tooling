@@ -23,7 +23,8 @@ export class Allocation {
 
 /**
  * @dev Creates an IntentBuilder containing operations to swap tokens and transfer the output to multiple recipients.
- * The last recipient percentage is ignored, and will receive the remaining balance after the other allocations.
+ * Each recipient receives the percentage of the output token specified in the allocations array.
+ * The last recipient receives its specified percentage plus any remaining balance caused by rounding.
  * @param chainId The chain ID of the swap and the transfers.
  * @param amountIn The amount of tokens to swap. If the token is native, the `user` must be a smart account.
  * @param minAmountOut The minimum amount of tokens to receive from the swap. ERC20 tokens only.
@@ -43,7 +44,7 @@ export function buildSwapAndSplit(
 
   let totalPctBps: u32 = 0
   for (let i = 0; i < allocations.length; i++) totalPctBps += allocations[i].pctBps
-  if (totalPctBps !== MAX_PCT_BPS) throw new Error('Total allocation percentage must be 10_000 bps')
+  if (totalPctBps !== MAX_PCT_BPS) throw new Error('Total allocation percentage must add up to 10_000 bps')
 
   const tokenOut = minAmountOut.token.address
   if (tokenOut.isNative()) throw new Error('Output token cannot be native')
@@ -57,7 +58,7 @@ export function buildSwapAndSplit(
 
   builder.addOperationBuilder(swap)
 
-  // Calculate the corresponding amount for each allocation, except the last one
+  // Calculate the corresponding amount for each allocation, except the last one, which will receive the remaining balance
   const dynamicCall1 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
@@ -70,7 +71,7 @@ export function buildSwapAndSplit(
 
   builder.addOperationBuilder(dynamicCall1)
 
-  // Transfer the corresponding amounts to each recipient, except the last one
+  // Transfer the corresponding amounts to each recipient, except the last one, which will receive the remaining balance
   const dynamicCall2 = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
 
   for (let i = 0; i < allocations.length - 1; i++) {
