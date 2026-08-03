@@ -14,6 +14,12 @@ const BALANCE_OF_SELECTOR = Bytes.fromHexString('0x70a08231')
 
 const MAX_PCT_BPS: u16 = 10_000
 
+const SWAP_OP_INDEX: u32 = 0
+const SWAP_OP_SUB_INDEX: u32 = 0
+const PCT_OP_INDEX: u32 = 1
+const BALANCE_OF_OP_INDEX: u32 = 3
+const BALANCE_OF_OP_SUB_INDEX: u32 = 0
+
 export class Allocation {
   constructor(
     public recipient: Address,
@@ -60,11 +66,12 @@ export function buildSwapAndSplit(
 
   // Calculate the corresponding amount for each allocation, except the last one, which will receive the remaining balance
   const pctDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const swapOutput = EvmDynamicArg.variable(SWAP_OP_INDEX, SWAP_OP_SUB_INDEX, false)
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const pctBps = allocations[i].pctBps
     pctDynamicCall.addCall(MIMIC_HELPER, PCT_SELECTOR, [
-      EvmDynamicArg.variable(0, 0, false), // amount (swap output)
+      swapOutput, // amount
       EvmDynamicArg.literal([new EvmEncodeParam('uint16', pctBps.toString())], false), // percent bps
     ])
   }
@@ -76,9 +83,10 @@ export function buildSwapAndSplit(
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const recipient = allocations[i].recipient
+    const pctOutput = EvmDynamicArg.variable(PCT_OP_INDEX, i, false)
     transferDynamicCall.addCall(tokenOut, TRANSFER_SELECTOR, [
       EvmDynamicArg.literal([new EvmEncodeParam('address', recipient.toString())], false), // to
-      EvmDynamicArg.variable(1, i, false), // value (pctDynamicCall sub 'i' result)
+      pctOutput, // value
     ])
   }
 
@@ -93,11 +101,13 @@ export function buildSwapAndSplit(
   builder.addOperationBuilder(balanceOfDynamicCall)
 
   // Transfer the remaining balance to the last recipient
-  const lastRecipient = allocations[allocations.length - 1].recipient
   const lastTransferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const lastRecipient = allocations[allocations.length - 1].recipient
+  const balanceOfOutput = EvmDynamicArg.variable(BALANCE_OF_OP_INDEX, BALANCE_OF_OP_SUB_INDEX, false)
+
   lastTransferDynamicCall.addCall(tokenOut, TRANSFER_SELECTOR, [
     EvmDynamicArg.literal([new EvmEncodeParam('address', lastRecipient.toString())], false), // to
-    EvmDynamicArg.variable(3, 0, false), // value (balanceOfDynamicCall result)
+    balanceOfOutput, // value
   ])
 
   builder.addOperationBuilder(lastTransferDynamicCall)
