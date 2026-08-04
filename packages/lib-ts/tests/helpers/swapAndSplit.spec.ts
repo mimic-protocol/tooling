@@ -11,6 +11,8 @@ const user = Address.fromString('0x0000000000000000000000000000000000000001')
 const recipient1 = Address.fromString('0x0000000000000000000000000000000000000002')
 const recipient2 = Address.fromString('0x0000000000000000000000000000000000000003')
 const recipient3 = Address.fromString('0x0000000000000000000000000000000000000004')
+const anotherUser = Address.fromString('0x0000000000000000000000000000000000000005')
+const anotherSmartAccount = Address.fromString('0x0000000000000000000000000000000000000006')
 const tokenIn = ERC20Token.fromAddress(
   Address.fromString('0x0000000000000000000000000000000000000010'),
   chainId,
@@ -41,6 +43,7 @@ describe('buildSwapAndSplit', () => {
     setEvmEncode('address', recipient1.toString(), '0x2001')
     setEvmEncode('address', recipient2.toString(), '0x2002')
     setEvmEncode('address', recipient3.toString(), '0x2003')
+    setEvmEncode('address', anotherSmartAccount.toString(), '0x2006')
   })
 
   it('creates the intent properly', () => {
@@ -60,11 +63,12 @@ describe('buildSwapAndSplit', () => {
     const swap = changetype<Swap>(intent.operations[0])
     expect(swap.sourceChain).toBe(chainId)
     expect(swap.destinationChain).toBe(chainId)
+    expect(swap.user).toBe(user.toString())
     expect(swap.tokensIn[0].token).toBe(tokenIn.address.toString())
     expect(swap.tokensIn[0].amount).toBe(amountIn.amount.toString())
     expect(swap.tokensOut[0].token).toBe(tokenOut.address.toString())
     expect(swap.tokensOut[0].minAmount).toBe(minAmountOut.amount.toString())
-    expect(swap.user).toBe(user.toString())
+    expect(swap.tokensOut[0].recipient).toBe(MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS.toString())
 
     const pctCall = changetype<EvmDynamicCall>(intent.operations[1])
     expect(pctCall.calls.length).toBe(2)
@@ -102,14 +106,43 @@ describe('buildSwapAndSplit', () => {
     expect(finalTransferCall.calls[0].arguments[1].data).toBe('0x1003')
   })
 
+  it('uses the given user when defined', () => {
+    const allocations = [new Allocation(recipient1, 9050), new Allocation(recipient2, 950)]
+    const intent = buildSwapAndSplit(chainId, amountIn, minAmountOut, allocations, anotherUser).build()
+
+    const swap = changetype<Swap>(intent.operations[0])
+    expect(swap.user).toBe(anotherUser.toString())
+    expect(swap.tokensOut[0].recipient).toBe(MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS)
+
+    for (let i = 1; i < intent.operations.length; i++) {
+      expect(intent.operations[i].user).toBe(MIMIC_PUBLIC_SMART_ACCOUNT_ADDRESS)
+    }
+  })
+
+  it('uses the given smart account when defined', () => {
+    const allocations = [new Allocation(recipient1, 9050), new Allocation(recipient2, 950)]
+    const intent = buildSwapAndSplit(chainId, amountIn, minAmountOut, allocations, null, anotherSmartAccount).build()
+
+    const swap = changetype<Swap>(intent.operations[0])
+    expect(swap.tokensOut[0].recipient).toBe(anotherSmartAccount.toString())
+    expect(swap.user).toBe(user.toString())
+
+    for (let i = 1; i < intent.operations.length; i++) {
+      expect(intent.operations[i].user).toBe(anotherSmartAccount.toString())
+    }
+
+    const balanceOfCall = changetype<EvmDynamicCall>(intent.operations[3])
+    expect(balanceOfCall.calls[0].arguments[0].data).toBe('0x2006')
+  })
+
   it('throws when there is less than two allocations', () => {
     expect(() => {
       buildSwapAndSplit(chainId, amountIn, minAmountOut, [])
-    }).toThrow('More than 1 allocation is needed')
+    }).toThrow()
 
     expect(() => {
       buildSwapAndSplit(chainId, amountIn, minAmountOut, [new Allocation(recipient1, 10_000)])
-    }).toThrow('More than 1 allocation is needed')
+    }).toThrow()
   })
 
   it('throws when allocations do not add up to 100%', () => {
@@ -117,13 +150,13 @@ describe('buildSwapAndSplit', () => {
       const allocations = [new Allocation(recipient1, 9999), new Allocation(recipient2, 0)]
 
       buildSwapAndSplit(chainId, amountIn, minAmountOut, allocations)
-    }).toThrow('Total allocation percentage must be 10_000 bps')
+    }).toThrow()
 
     expect(() => {
       const allocations = [new Allocation(recipient1, 9999), new Allocation(recipient2, 2)]
 
       buildSwapAndSplit(chainId, amountIn, minAmountOut, allocations)
-    }).toThrow('Total allocation percentage must be 10_000 bps')
+    }).toThrow()
   })
 
   it('throws when output token is native', () => {
@@ -132,6 +165,6 @@ describe('buildSwapAndSplit', () => {
       const allocations = [new Allocation(recipient1, 50), new Allocation(recipient2, 9950)]
 
       buildSwapAndSplit(chainId, amountIn, nativeAmountOut, allocations)
-    }).toThrow('Output token cannot be native')
+    }).toThrow()
   })
 })

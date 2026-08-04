@@ -36,6 +36,8 @@ export class Allocation {
  * @param allocations An array containing a recipient address and a percentage in basis points (e.g., 50 = 0.5%, 10_000 = 100%).
  *        It represents how the output of the swap will be split among the recipients. The total allocation must add up to 10_000.
  * @param user The user address for the swap (optional). If not provided, the context user will be used.
+ * @param smartAccount The smart account that receives the swap output and executes the transfers (optional).
+ *        If not provided, the Mimic public smart account will be used.
  * @returns An IntentBuilder object that can be used to build and send the intent.
  */
 export function buildSwapAndSplit(
@@ -43,7 +45,8 @@ export function buildSwapAndSplit(
   amountIn: TokenAmount,
   minAmountOut: TokenAmount,
   allocations: Allocation[],
-  user: Address | null = null
+  user: Address | null = null,
+  smartAccount: Address = MIMIC_PUBLIC_SMART_ACCOUNT
 ): IntentBuilder {
   if (allocations.length < MIN_ALLOCATIONS) throw new Error(`At least ${MIN_ALLOCATIONS} allocations are required`)
 
@@ -60,14 +63,14 @@ export function buildSwapAndSplit(
 
   const swap = SwapBuilder.forChain(chainId)
     .addTokenInFromTokenAmount(amountIn)
-    .addTokenOutFromTokenAmount(minAmountOut, MIMIC_PUBLIC_SMART_ACCOUNT)
+    .addTokenOutFromTokenAmount(minAmountOut, smartAccount)
 
   if (user) swap.addUser(user)
 
   builder.addOperationBuilder(swap)
 
   // Calculate the corresponding amount for each allocation, except the last one, which will receive the remaining balance
-  const pctDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const pctDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(smartAccount)
   const swapOutput = EvmDynamicArg.variable(SWAP_OP_INDEX, SWAP_OP_SUB_INDEX, false)
 
   for (let i = 0; i < allocations.length - 1; i++) {
@@ -81,7 +84,7 @@ export function buildSwapAndSplit(
   builder.addOperationBuilder(pctDynamicCall)
 
   // Transfer the corresponding amounts to each recipient, except the last one, which will receive the remaining balance
-  const transferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const transferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(smartAccount)
 
   for (let i = 0; i < allocations.length - 1; i++) {
     const recipient = allocations[i].recipient
@@ -95,15 +98,15 @@ export function buildSwapAndSplit(
   builder.addOperationBuilder(transferDynamicCall)
 
   // Get the remaining balance
-  const balanceOfDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const balanceOfDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(smartAccount)
   balanceOfDynamicCall.addCall(tokenOut, BALANCE_OF_SELECTOR, [
-    EvmDynamicArg.literal([new EvmEncodeParam('address', MIMIC_PUBLIC_SMART_ACCOUNT.toString())], false), // account
+    EvmDynamicArg.literal([new EvmEncodeParam('address', smartAccount.toString())], false), // account
   ])
 
   builder.addOperationBuilder(balanceOfDynamicCall)
 
   // Transfer the remaining balance to the last recipient
-  const lastTransferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(MIMIC_PUBLIC_SMART_ACCOUNT)
+  const lastTransferDynamicCall = EvmDynamicCallBuilder.forChain(chainId).addUser(smartAccount)
   const lastRecipient = allocations[allocations.length - 1].recipient
   const balanceOfOutput = EvmDynamicArg.variable(BALANCE_OF_OP_INDEX, BALANCE_OF_OP_SUB_INDEX, false)
 
