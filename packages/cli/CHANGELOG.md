@@ -1,5 +1,13 @@
 # @mimicprotocol/cli
 
+## 1.0.5
+
+### Patch Changes
+
+- eb09be3: Add swapAndSplit function
+- Updated dependencies [eb09be3]
+  - @mimicprotocol/lib-ts@0.1.5
+
 ## 1.0.4
 
 ### Patch Changes

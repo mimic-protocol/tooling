@@ -1,6 +1,6 @@
 {
   "name": "@mimicprotocol/cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "GPL-3.0",
   "private": false,
   "type": "commonjs",
@@ -51,7 +51,7 @@
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
-    "@mimicprotocol/lib-ts": ">=0.1.4"
+    "@mimicprotocol/lib-ts": ">=0.1.5"
   },
   "peerDependenciesMeta": {
     "@mimicprotocol/lib-ts": {

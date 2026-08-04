@@ -1,5 +1,11 @@
 # @mimicprotocol/lib-ts
 
+## 0.1.5
+
+### Patch Changes
+
+- eb09be3: Add swapAndSplit function
+
 ## 0.1.4
 
 ### Patch Changes
