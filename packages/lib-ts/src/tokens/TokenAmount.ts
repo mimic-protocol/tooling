@@ -1,11 +1,12 @@
 import { environment } from '../environment'
+import { ONE_HUNDRED_PCT_BPS } from '../helpers/constants'
 import { BigInt, JSON, Result } from '../types'
 
 import { BlockchainToken } from './BlockchainToken'
 import { SerializableToken, Token } from './Token'
 import { USD } from './USD'
 
-const BPS_SCALE = BigInt.fromI32(10_000)
+const BPS_SCALE = BigInt.fromI32(ONE_HUNDRED_PCT_BPS)
 
 /**
  * Represents an amount of a specific token, combining the token metadata with a quantity.
